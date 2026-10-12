@@ -221,7 +221,8 @@ returns jsonb language sql stable security definer set search_path = public as $
 $$;
 
 drop function if exists public.registrar(text, text, text);
-create or replace function public.registrar(p_nombre text, p_pin text, p_foto text default null, p_frase text default null)
+drop function if exists public.registrar(text, text, text, text);
+create or replace function public.registrar(p_nombre text, p_pin text, p_foto text default null, p_frase text default null, p_publico boolean default false)
 returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare
   c public.config;
@@ -243,7 +244,8 @@ begin
     raise exception 'NOMBRE_OCUPADO';
   end if;
 
-  if c.semana = 0 and (select count(*) from public.jugadores where rol = 'jugador') < c.cupo then
+  -- quien elige "solo ver" entra como público aunque haya lugar
+  if not coalesce(p_publico, false) and c.semana = 0 and (select count(*) from public.jugadores where rol = 'jugador') < c.cupo then
     v_rol := 'jugador';
   else
     v_rol := 'espectador';

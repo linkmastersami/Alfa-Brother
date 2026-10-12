@@ -249,6 +249,19 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .ad-aviso.bien{color:var(--ok)}
 .ad-aviso.mal{color:var(--sello)}
 
+/* ---------- v8: elegir cómo entrar ---------- */
+#s-inicio{position:relative}
+#s-inicio .btn-sonido.flotante{position:absolute}
+.modo-entrada{display:grid;gap:8px}
+.modo{display:flex;gap:10px;align-items:flex-start;border:2px solid rgba(27,20,64,.25);border-radius:12px;padding:10px 12px;background:#fff;cursor:pointer}
+.modo input{position:absolute;opacity:0;pointer-events:none}
+.modo-ic{font-size:1.6rem;line-height:1}
+.modo b{display:block}
+.modo small{display:block;color:var(--suave);font-size:.82rem;line-height:1.3}
+.modo:has(input:checked){border-color:var(--sello);box-shadow:0 0 0 3px rgba(215,38,61,.18)}
+.modo:has(input:focus-visible){outline:3px solid var(--luz);outline-offset:2px}
+.modo.apagado{opacity:.5;cursor:not-allowed}
+
 /* ---------- v7: bienvenida ---------- */
 .bienvenida{max-width:400px;width:100%;text-align:center;animation:entra-conf .4s ease-out both}
 .bienvenida .logo{margin:-6px auto 4px}
@@ -483,6 +496,13 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
     <input class="in" id="r-nombre" maxlength="30" required>
     <label class="campo" for="r-frase">Tu frase o apodo (opcional)</label>
     <input class="in" id="r-frase" maxlength="60" placeholder="Ej. El que nunca contesta el teléfono">
+    <span class="campo" style="display:block;margin:14px 0 6px;font-weight:600;font-size:.92rem">¿Cómo quieres entrar?</span>
+    <div class="modo-entrada" role="radiogroup">
+      <label class="modo" id="modo-jugar"><input type="radio" name="r-modo" value="jugar" checked>
+        <span class="modo-ic">🏠</span><span><b>Quiero jugar</b><small id="modo-jugar-txt">Soy habitante: compito, me pueden eliminar y mi voto cuenta.</small></span></label>
+      <label class="modo"><input type="radio" name="r-modo" value="publico">
+        <span class="modo-ic">🍿</span><span><b>Solo quiero ver</b><small>Soy público: veo todo y voto, pero nadie me elimina y mi voto no decide.</small></span></label>
+    </div>
     <label class="campo" for="r-pin">Crea un PIN de 4 números</label>
     <input class="in pin" id="r-pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required>
     <label class="campo" for="r-pin2">Repite el PIN</label>
@@ -1162,13 +1182,15 @@ async function cargarInfoPublica() {
     const libres = Math.max(0, i.cupo - i.habitantes);
     $('#r-lugares').textContent = `${i.habitantes} de ${i.cupo}`;
     const av = $('#r-aviso');
-    if (libres === 0 || i.semana > 0) {
-      av.textContent = 'Los lugares de habitante ya están llenos. Entrarás como público: puedes ver todo y votar, pero tu voto no decide quién sale.';
-      av.classList.remove('hidden');
-    } else {
-      av.textContent = `Quedan ${libres} ${libres === 1 ? 'lugar' : 'lugares'} de habitante.`;
-      av.classList.remove('hidden');
-    }
+    const hayLugar = libres > 0 && i.semana === 0;
+    const jugar = $('#modo-jugar'), rJugar = $('input[name=r-modo][value=jugar]');
+    rJugar.disabled = !hayLugar;
+    jugar.classList.toggle('apagado', !hayLugar);
+    $('#modo-jugar-txt').textContent = hayLugar
+      ? `Soy habitante: compito, me pueden eliminar y mi voto cuenta. Quedan ${libres} ${libres === 1 ? 'lugar' : 'lugares'}.`
+      : (i.semana > 0 ? 'Ya empezó el juego: solo se puede entrar como público.' : 'Ya no hay lugares de habitante.');
+    if (!hayLugar) $('input[name=r-modo][value=publico]').checked = true;
+    av.classList.add('hidden');
   } catch { }
 }
 function pintarFotoRegistro() {
@@ -1191,7 +1213,7 @@ $('#f-registro').addEventListener('submit', async e => {
   if (pin !== pin2) return mostrarError(err, 'Los PIN no coinciden.');
   const btn = e.submitter; btn.disabled = true;
   try {
-    const r = await rpc('registrar', { p_nombre: $('#r-nombre').value, p_pin: pin, p_foto: fotoRegistro, p_frase: $('#r-frase').value });
+    const r = await rpc('registrar', { p_nombre: $('#r-nombre').value, p_pin: pin, p_foto: fotoRegistro, p_frase: $('#r-frase').value, p_publico: $('input[name=r-modo]:checked').value === 'publico' });
     token = r.token; store.set('ab_token', token); store.set('ab_conocido', '1');
     await selloEnviado(r.rol === 'jugador' ? '¡BIENVENIDO!' : 'PÚBLICO');
     await entrarCasa();
