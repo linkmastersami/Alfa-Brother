@@ -310,7 +310,12 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .silla.yo .av{box-shadow:0 0 0 3px var(--luz)}
 .silla.nueva .asiento{animation:llega .6s cubic-bezier(.2,1.6,.4,1)}
 @keyframes llega{0%{transform:scale(.2) translateY(-30px);opacity:0}100%{transform:none;opacity:1}}
-.prediccion select{margin-top:4px}
+.pred-casilla{appearance:none;width:100%;display:flex;align-items:center;gap:10px;min-height:56px;padding:8px 12px;border:2px dashed var(--texto);border-radius:12px;background:rgba(255,255,255,.55);color:var(--texto);font-weight:600;font-size:1rem;cursor:pointer;text-align:left}
+.pred-casilla.llena{border-style:solid;background:#fff}
+.pred-casilla span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pred-casilla small{color:var(--tinta);font-weight:600}
+.cand.elegido .av{box-shadow:0 0 0 3px var(--sello)}
+.cand .tu{display:block;color:var(--suave);font-size:.7rem}
 .aciertos li{margin:4px 0}
 
 @media (prefers-reduced-motion: reduce){
@@ -494,6 +499,16 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
       <button class="btn sec" id="t-atras">Atrás</button>
       <button class="btn" id="t-sig">Siguiente</button>
     </div>
+  </div>
+</div>
+
+<!-- ============================ ELEGIR HABITANTE -->
+<div id="m-elegir" class="modal hidden">
+  <div class="formato rosa" style="max-height:88dvh;overflow:auto">
+    <div class="folio"><span>Predicción secreta</span><span>Habitantes en la casa</span></div>
+    <h2 id="el-titulo"></h2>
+    <div class="candidatos" id="el-lista"></div>
+    <button class="btn sec" id="el-cerrar" style="margin-top:14px;color:var(--texto)">Cancelar</button>
   </div>
 </div>
 
@@ -968,7 +983,7 @@ async function entrarCasa() {
 }
 function cerrarSesion() {
   if (token) rpc('salir', { p_token: token }).catch(() => { });
-  token = null; est = null; store.del('ab_token');
+  token = null; est = null; predSel = null; store.del('ab_token');
   mostrar('s-inicio');
 }
 
@@ -1152,16 +1167,21 @@ function pintarExtrasSala() {
   const { jugadores, mi_prediccion } = est;
   const habitantes = jugadores.filter(j => j.rol === 'jugador');
   let h = '';
-  const opts = sel => `<option value="">Elige a alguien</option>` +
-    habitantes.map(j => `<option value="${j.id}" ${j.id === sel ? 'selected' : ''}>${esc(j.nombre)}</option>`).join('');
+  // la selección vive aquí para que no se pierda cuando la pantalla se actualiza
+  if (!predSel) predSel = { ganador: mi_prediccion?.ganador_id || null, primero: mi_prediccion?.primero_id || null };
+  const casilla = (campo, etiqueta) => {
+    const j = predSel[campo] && porId(predSel[campo]);
+    return `<span class="campo" style="display:block;margin:12px 0 4px;font-weight:600;font-size:.92rem">${etiqueta}</span>
+      <button class="pred-casilla ${j ? 'llena' : ''}" data-elegir="${campo}">
+        ${j ? avatar(j, 38) + `<span>${esc(j.nombre)}</span><small>Cambiar</small>` : '<span>Toca para elegir a un habitante</span>'}
+      </button>`;
+  };
   h += `<div class="formato rosa prediccion"><div class="folio"><span>Predicción secreta</span><span>${mi_prediccion ? 'Guardada' : 'Pendiente'}</span></div>
     <h2>¿Quién crees que…?</h2>
     <p>Nadie la verá hasta el final del juego. Ahí se revela quién le atinó.</p>
-    <label class="campo" for="pred-ganador">…gana Alfa Brother</label>
-    <select class="in" id="pred-ganador">${opts(mi_prediccion?.ganador_id)}</select>
-    <label class="campo" for="pred-primero">…sale primero</label>
-    <select class="in" id="pred-primero">${opts(mi_prediccion?.primero_id)}</select>
-    <div style="margin-top:14px"><button class="btn" id="pred-guardar">${mi_prediccion ? 'Cambiar mi predicción' : 'Guardar predicción'}</button></div>
+    ${casilla('ganador', '…gana Alfa Brother')}
+    ${casilla('primero', '…sale primero')}
+    <div style="margin-top:14px"><button class="btn" id="pred-guardar" ${predSel.ganador && predSel.primero ? '' : 'disabled'}>${mi_prediccion ? 'Cambiar mi predicción' : 'Guardar predicción'}</button></div>
     <p class="ayuda" style="margin-top:8px">Puedes cambiarla hasta que empiece la semana 1.</p></div>`;
 
   h += `<div class="formato amarillo"><div class="folio"><span>Calienta motores</span><span>No cuenta</span></div>
@@ -1174,16 +1194,34 @@ function pintarExtrasSala() {
   return h;
 }
 
+let predSel = null;
+// Ventana con las fotos de los habitantes que están en la casa
+function abrirElegir(campo) {
+  const enCasa = est.jugadores.filter(j => j.rol === 'jugador' && j.estado === 'activo');
+  $('#el-titulo').textContent = campo === 'ganador' ? '¿Quién gana Alfa Brother?' : '¿Quién sale primero?';
+  $('#el-lista').innerHTML = enCasa.map(j => `<button class="cand ${predSel[campo] === j.id ? 'elegido' : ''}" data-id="${j.id}">
+      ${avatar(j, 56)}<span class="n">${esc(j.nombre)}</span>${j.id === est.yo.id ? '<small class="tu">(tú)</small>' : ''}</button>`).join('')
+    || '<p class="ayuda" style="grid-column:1/-1">Todavía no hay habitantes en la casa.</p>';
+  $$('#el-lista [data-id]').forEach(b => b.onclick = () => {
+    predSel[campo] = b.dataset.id;
+    $('#m-elegir').classList.add('hidden');
+    SFX.tocar('swish');
+    pintarAccion();
+  });
+  $('#m-elegir').classList.remove('hidden');
+}
+
 function conectarSalaEspera() {
   const b = $('#pred-guardar');
   if (b) b.onclick = async () => {
     b.disabled = true;
     try {
-      await rpc('predecir', { p_token: token, p_ganador: $('#pred-ganador').value || null, p_primero: $('#pred-primero').value || null });
+      await rpc('predecir', { p_token: token, p_ganador: predSel.ganador, p_primero: predSel.primero });
       await selloEnviado('GUARDADA');
       refrescar();
     } catch (e) { toast(mensajeError(e)); b.disabled = false; }
   };
+  $$('[data-elegir]').forEach(x => x.onclick = () => abrirElegir(x.dataset.elegir));
   $$('[data-practica]').forEach(x => x.onclick = () => abrirPractica(x.dataset.practica));
   $$('[data-compartir]').forEach(x => x.onclick = compartirJuego);
   pintarReloj();
@@ -1231,6 +1269,7 @@ $('#cp-copiar').onclick = async () => {
   cerrarCompartir();
 };
 $('#cp-cerrar').onclick = cerrarCompartir;
+$('#el-cerrar').onclick = () => $('#m-elegir').classList.add('hidden');
 
 function pintarReloj() {
   const el = $('#sala-reloj');
