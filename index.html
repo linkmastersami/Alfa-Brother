@@ -1250,12 +1250,15 @@ async function refrescar() {
     SFX.tocar('fanfarria'); lluviaBilletes();
     toast(`👑 ${l?.nombre || 'Alguien'} es el líder de la semana`, 4000);
   }
-  // la gala se abre sola, con telón para activar el sonido
-  if (libre && g.fase === 'gala' && g.gala_revelada && !store.get('ab_gala_' + g.semana)) {
-    abrirGala(g.semana, true, true);
+  // ¿la app estaba abierta antes de la revelación? Entonces la gala es "en vivo"
+  if (g.fase === 'gala' && !g.gala_revelada) esperandoGala = g.semana;
+  // la última gala que este celular no ha visto se abre sola, aunque ya haya pasado
+  const ultima = est.galas[0];
+  if (libre && ultima && !store.get('ab_gala_' + ultima)) {
+    abrirGala(ultima, true, true, esperandoGala !== ultima);
   }
 }
-let firmaFase = null, conocidos = null, nuevos = [];
+let firmaFase = null, conocidos = null, nuevos = [], esperandoGala = null;
 async function entrarCasa() {
   mostrar('s-casa');
   $('#c-accion').innerHTML = '';
@@ -2502,7 +2505,7 @@ async function esperar(ms) {
   const fin = performance.now() + ms;
   while (performance.now() < fin) { if (saltarGala) throw 'saltar'; await sleep(50); }
 }
-async function abrirGala(semana, marcarVista, conTelon = false) {
+async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
   let r;
   try { r = await rpc('gala', { p_token: token, p_semana: semana }); } catch (e) { toast(mensajeError(e)); return; }
   if (!r) return;
@@ -2522,9 +2525,13 @@ async function abrirGala(semana, marcarVista, conTelon = false) {
     await new Promise(res => {
       E.innerHTML = `<div class="telon"><svg class="logo js-logo vivo" width="110" height="110" viewBox="0 0 120 120">${LOGO('g')}</svg>
         <p class="typed" style="color:#C9C3EE;margin:0">Semana ${r.semana}</p>
-        <h1 class="display gala-titulo">¡Empieza la gala!</h1>
-        <p style="margin:0;color:#C9C3EE">Sube el volumen 🔊</p>
-        <button class="btn" id="g-entrar">Entrar a la gala</button></div>`;
+        ${tarde
+          ? `<h1 class="display gala-titulo">¡Te perdiste la gala!</h1>
+             <p style="margin:0;color:#C9C3EE">Pasó mientras no estabas. Aquí está la repetición de la semana ${r.semana}.<br>Sube el volumen 🔊</p>
+             <button class="btn" id="g-entrar">Ver la gala</button>`
+          : `<h1 class="display gala-titulo">¡Empieza la gala!</h1>
+             <p style="margin:0;color:#C9C3EE">Sube el volumen 🔊</p>
+             <button class="btn" id="g-entrar">Entrar a la gala</button>`}</div>`;
       $('#g-entrar').onclick = res;
     });
   }
