@@ -1,0 +1,1323 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1B1440">
+<title>Alfa Brother: Te Vamos a Cobrar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* =====================================================================
+   ALFA BROTHER — paleta: noche de estudio + formatos de cobro en papel
+   ===================================================================== */
+:root{
+  --noche:#1B1440;      /* fondo del estudio */
+  --noche-2:#2A2160;    /* superficies sobre la noche */
+  --amarillo:#FBE9A6;   /* copia amarilla del formato */
+  --rosa:#F7C6D0;       /* copia rosa del formato */
+  --papel:#FFFDF6;      /* original del formato */
+  --sello:#D7263D;      /* sello rojo de cobranza */
+  --tinta:#2337A8;      /* bolígrafo azul */
+  --texto:#1B1440;
+  --suave:#5C5680;
+  --luz:#FFD54A;        /* reflector de la gala */
+  --ok:#1E8E5A;
+  --r:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--noche);color:#fff;font-family:"Work Sans",system-ui,sans-serif;font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+body{min-height:100dvh;background:
+  radial-gradient(120% 60% at 50% -10%, #3B2E8C 0%, transparent 60%), var(--noche)}
+button,input,textarea,select{font:inherit}
+img{display:block}
+.hidden{display:none!important}
+.wrap{max-width:480px;margin:0 auto;padding:16px 16px calc(32px + env(safe-area-inset-bottom))}
+h1,h2,h3{margin:0;font-weight:400}
+.display{font-family:Anton,Impact,sans-serif;letter-spacing:.01em;line-height:1}
+.typed{font-family:"Special Elite","Courier New",monospace}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--luz);outline-offset:2px}
+
+/* Botones */
+.btn{appearance:none;border:0;border-radius:999px;padding:14px 20px;font-weight:700;font-size:1rem;cursor:pointer;width:100%;
+  background:var(--sello);color:#fff;box-shadow:0 3px 0 #8E1426;transition:transform .08s}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #8E1426}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sec{background:transparent;color:inherit;box-shadow:inset 0 0 0 2px currentColor}
+.btn.tinta{background:var(--tinta);box-shadow:0 3px 0 #13206B}
+.btn.chico{width:auto;padding:9px 14px;font-size:.9rem}
+.link{appearance:none;background:none;border:0;color:inherit;text-decoration:underline;cursor:pointer;padding:6px 0;font-size:.95rem}
+
+/* Formato de cobro (tarjeta de papel con borde perforado) */
+.formato{position:relative;background:var(--papel);color:var(--texto);border-radius:4px 4px var(--r) var(--r);padding:22px 18px 18px;margin-top:18px}
+.formato::before{content:"";position:absolute;left:0;right:0;top:-7px;height:8px;
+  background:radial-gradient(circle at 6px 8px, transparent 4px, var(--papel) 4.5px) 0 0/12px 8px repeat-x}
+.formato.amarillo{background:var(--amarillo)}
+.formato.amarillo::before{background:radial-gradient(circle at 6px 8px, transparent 4px, var(--amarillo) 4.5px) 0 0/12px 8px repeat-x}
+.formato.rosa{background:var(--rosa)}
+.formato.rosa::before{background:radial-gradient(circle at 6px 8px, transparent 4px, var(--rosa) 4.5px) 0 0/12px 8px repeat-x}
+.folio{font-family:"Special Elite",monospace;font-size:.82rem;color:var(--suave);display:flex;justify-content:space-between;gap:8px;margin-bottom:6px}
+.formato h2{font-family:Anton,Impact,sans-serif;font-size:1.7rem;line-height:1.05;margin-bottom:6px}
+.formato p{margin:6px 0}
+
+/* Formularios */
+label.campo{display:block;margin:12px 0 4px;font-weight:600;font-size:.92rem}
+input.in,textarea.in,select.in{width:100%;padding:12px 14px;border:2px solid var(--texto);border-radius:10px;background:#fff;color:var(--texto);font-size:1rem}
+textarea.in{resize:vertical;min-height:64px}
+input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Special Elite",monospace}
+.ayuda{font-size:.85rem;color:var(--suave)}
+.error{background:var(--sello);color:#fff;border-radius:10px;padding:10px 12px;margin-top:12px;font-weight:600;font-size:.92rem}
+.aviso{background:var(--noche);color:#fff;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:.92rem}
+
+/* Logo */
+.logo{display:block;margin:0 auto;user-select:none;-webkit-user-select:none;cursor:default;touch-action:manipulation}
+.titulo-inicio{text-align:center;margin:10px 0 2px;font-size:2.7rem;color:#fff}
+.lema{text-align:center;font-family:Anton,Impact,sans-serif;font-size:1.25rem;color:var(--luz);transform:rotate(-2deg);margin:0 0 6px}
+.sub-inicio{text-align:center;color:#C9C3EE;font-size:.92rem;margin:0}
+
+.pestanas{display:flex;gap:6px;margin-top:22px}
+.pestanas button{flex:1;appearance:none;border:0;border-radius:10px 10px 0 0;padding:12px;font-weight:700;cursor:pointer;background:var(--noche-2);color:#C9C3EE}
+.pestanas button[aria-selected="true"]{background:var(--papel);color:var(--texto)}
+.formato.unido{margin-top:0;border-radius:0 0 var(--r) var(--r)}
+.formato.unido::before{display:none}
+
+/* Foto en registro */
+.foto-elegir{display:flex;align-items:center;gap:14px;margin-top:6px}
+.foto-elegir .av{flex:none}
+
+/* Avatares */
+.av{border-radius:50%;overflow:hidden;display:grid;place-items:center;font-family:Anton,Impact,sans-serif;color:#fff;flex:none;position:relative}
+.av img{width:100%;height:100%;object-fit:cover}
+
+/* Cabecera de la casa */
+.cabecera{display:flex;align-items:center;gap:12px}
+.cabecera .t{flex:1;min-width:0}
+.cabecera .t h1{font-family:Anton,Impact,sans-serif;font-size:1.5rem;line-height:1}
+.cabecera .t div{color:#C9C3EE;font-size:.88rem}
+.yo-chip{display:flex;align-items:center;gap:8px;background:var(--noche-2);border-radius:999px;padding:4px 12px 4px 4px;font-size:.88rem;font-weight:600;max-width:46%}
+.yo-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.fase-banda{margin-top:16px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.fase-banda .display{font-size:2.3rem;color:var(--luz)}
+.fase-banda small{color:#C9C3EE;text-align:right}
+
+/* Sello */
+.sello{display:inline-block;border:3px solid var(--sello);color:var(--sello);font-family:Anton,Impact,sans-serif;padding:2px 10px;border-radius:6px;transform:rotate(-6deg);font-size:1rem;letter-spacing:.02em;background:transparent}
+
+/* Habitantes */
+.seccion-t{font-family:Anton,Impact,sans-serif;font-size:1.35rem;margin:28px 0 10px;display:flex;justify-content:space-between;align-items:baseline}
+.seccion-t small{font-family:"Work Sans",sans-serif;font-size:.85rem;color:#C9C3EE}
+.rejilla{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 8px}
+.hab{text-align:center;font-size:.8rem;line-height:1.15;position:relative}
+.hab .av{margin:0 auto 6px}
+.hab .n{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hab.fuera .av{filter:grayscale(1) brightness(.6)}
+.hab.fuera .n{color:#8E88B5;text-decoration:line-through}
+.hab .corona{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:1.1rem}
+.hab .marca{position:absolute;top:22px;left:50%;transform:translateX(-50%) rotate(-12deg);font-family:Anton,Impact,sans-serif;font-size:.68rem;color:#fff;background:var(--sello);padding:1px 5px;border-radius:3px}
+.espectadores{display:flex;flex-wrap:wrap;gap:6px}
+.espectadores span{background:var(--noche-2);border-radius:999px;padding:4px 10px;font-size:.82rem;color:#C9C3EE}
+
+.galas{display:flex;flex-wrap:wrap;gap:8px}
+.pie{margin-top:32px;display:flex;justify-content:space-between;color:#C9C3EE}
+
+/* Votación */
+.renglon{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px;border:2px dashed var(--texto);border-radius:12px;margin-top:10px;background:rgba(255,255,255,.55);cursor:pointer}
+.renglon.activo{border-style:solid;border-color:var(--sello);background:#fff;box-shadow:0 0 0 3px rgba(215,38,61,.2)}
+.renglon .pts{font-family:Anton,Impact,sans-serif;font-size:1.6rem;color:var(--sello);width:44px;text-align:center;line-height:1}
+.renglon .pts small{display:block;font-family:"Work Sans",sans-serif;font-size:.65rem;color:var(--suave)}
+.renglon .quien{display:flex;align-items:center;gap:8px;min-width:0;font-weight:600}
+.renglon .quien span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.renglon .quitar{appearance:none;border:0;background:none;font-size:1.3rem;cursor:pointer;color:var(--suave);padding:4px 8px}
+.renglon textarea{grid-column:1/-1;min-height:44px;font-size:.92rem;padding:8px 10px}
+.candidatos{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 8px;margin-top:8px}
+.cand{appearance:none;border:0;background:none;color:var(--texto);text-align:center;font-size:.78rem;cursor:pointer;padding:4px 0;line-height:1.15;position:relative}
+.cand .av{margin:0 auto 4px}
+.cand .n{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cand .ficha{position:absolute;top:0;right:6px;background:var(--sello);color:#fff;font-family:Anton,Impact,sans-serif;border-radius:50%;width:22px;height:22px;display:grid;place-items:center;font-size:.8rem}
+.cand.lider .n::after{content:" 👑"}
+
+/* Pruebas */
+.marcador{display:flex;justify-content:space-between;font-family:Anton,Impact,sans-serif;font-size:1.3rem;margin-bottom:10px}
+.barra{height:8px;border-radius:99px;background:rgba(27,20,64,.15);overflow:hidden;margin-bottom:14px}
+.barra i{display:block;height:100%;background:var(--sello);transition:width .25s linear}
+.opciones{display:grid;gap:10px;margin-top:14px}
+.opcion{appearance:none;border:2px solid var(--texto);background:#fff;color:var(--texto);border-radius:12px;padding:14px;text-align:left;font-weight:600;font-size:1rem;cursor:pointer}
+.opcion.bien{background:var(--ok);border-color:var(--ok);color:#fff}
+.opcion.mal{background:var(--sello);border-color:var(--sello);color:#fff}
+.pregunta{font-size:1.25rem;font-weight:700;line-height:1.25}
+.cartas{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;perspective:600px}
+.carta{appearance:none;border:0;padding:0;aspect-ratio:3/4;position:relative;cursor:pointer;background:none;transform-style:preserve-3d;transition:transform .3s}
+.carta .cara{position:absolute;inset:0;border-radius:8px;display:grid;place-items:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.carta .atras{background:var(--tinta);color:var(--amarillo);font-family:Anton,Impact,sans-serif;font-size:1.1rem;
+  background-image:repeating-linear-gradient(45deg, rgba(255,255,255,.08) 0 6px, transparent 6px 12px)}
+.carta .frente{background:#fff;border:2px solid var(--texto);font-size:2rem;transform:rotateY(180deg)}
+.carta.vuelta{transform:rotateY(180deg)}
+.carta.par .frente{background:#DFF3E8;border-color:var(--ok)}
+.cuenta{font-size:1.15rem;line-height:1.35}
+.cuenta b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.6rem;color:var(--tinta)}
+
+/* Gala */
+#gala{position:fixed;inset:0;z-index:50;background:radial-gradient(90% 60% at 50% 0%, #4A3AA8 0%, var(--noche) 70%);overflow:auto;color:#fff}
+#gala .wrap{min-height:100dvh;display:flex;flex-direction:column}
+#gala .escena{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:14px;padding:24px 0}
+.reflector{position:fixed;inset:0;pointer-events:none;background:conic-gradient(from 200deg at 50% -10%, transparent 0 40deg, rgba(255,213,74,.12) 45deg 60deg, transparent 65deg 100deg, rgba(255,213,74,.10) 105deg 118deg, transparent 123deg);}
+.gala-titulo{font-size:3.4rem;color:var(--luz)}
+.conteo{width:100%;display:flex;flex-direction:column;gap:8px}
+.fila-conteo{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;background:rgba(255,255,255,.08);border-radius:12px;padding:8px 12px;text-align:left}
+.fila-conteo .p{font-family:Anton,Impact,sans-serif;font-size:1.5rem;color:var(--luz);min-width:2ch;text-align:right}
+.fila-conteo.salvo{outline:2px solid var(--ok)}
+.suspenso{font-size:2rem;line-height:1.1}
+.puntos-suspenso::after{content:"";animation:puntos 1.2s steps(4) infinite}
+@keyframes puntos{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.revelado{position:relative;display:inline-block}
+.sello-grande{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%) rotate(-14deg);border:5px solid var(--sello);color:var(--sello);background:rgba(255,253,246,.92);
+  font-family:Anton,Impact,sans-serif;font-size:1.9rem;line-height:1;padding:8px 14px;border-radius:10px;white-space:nowrap;animation:golpe .45s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes golpe{0%{transform:translate(-50%,-50%) rotate(-14deg) scale(3);opacity:0}100%{transform:translate(-50%,-50%) rotate(-14deg) scale(1);opacity:1}}
+.tabla-final{width:100%;color:var(--texto)}
+.res{border-top:1px dashed rgba(27,20,64,.35);padding:10px 0}
+.res:first-of-type{border-top:0}
+.res .fila{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:10px}
+.res .nm{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res .nm small{display:block;font-weight:500;color:var(--suave)}
+.res .pt{font-family:Anton,Impact,sans-serif;font-size:1.5rem;text-align:right}
+.res .pb{font-size:.8rem;color:var(--suave);text-align:right;min-width:52px}
+.res.fuera .nm{color:var(--sello)}
+.motivos{margin:8px 0 0 48px;padding:0;list-style:none;display:grid;gap:6px}
+.motivos li{font-family:"Special Elite",monospace;font-size:.88rem;background:rgba(255,255,255,.65);border-radius:8px;padding:6px 10px}
+.motivos li em{font-style:normal;color:var(--suave);font-family:"Work Sans",sans-serif;font-size:.75rem}
+.btn-saltar{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:3;width:auto}
+
+/* Modales */
+.modal{position:fixed;inset:0;z-index:60;background:rgba(10,6,30,.7);display:grid;place-items:center;padding:16px}
+.modal .formato{width:100%;max-width:420px}
+
+/* Panel admin */
+#admin{position:fixed;inset:0;z-index:40;background:#EFEBDD;color:var(--texto);overflow:auto}
+#admin .wrap{padding-top:12px}
+.adm-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.adm-top h1{font-family:Anton,Impact,sans-serif;font-size:1.5rem}
+.adm-tabs{display:flex;gap:6px;overflow-x:auto;margin:12px -16px 0;padding:0 16px 4px;scrollbar-width:none}
+.adm-tabs button{appearance:none;border:0;border-radius:999px;padding:8px 14px;background:#fff;color:var(--texto);font-weight:600;white-space:nowrap;cursor:pointer}
+.adm-tabs button[aria-selected="true"]{background:var(--texto);color:#fff}
+.adm-caja{background:#fff;border-radius:12px;padding:14px;margin-top:12px}
+.adm-caja h3{font-family:Anton,Impact,sans-serif;font-size:1.2rem;margin-bottom:8px}
+.adm-fila{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #EEE9D8}
+.adm-fila:first-of-type{border-top:0}
+.adm-fila .info{flex:1;min-width:0}
+.adm-fila .info b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-fila .info small{color:var(--suave)}
+.adm-acciones{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.pill{display:inline-block;border-radius:999px;padding:1px 8px;font-size:.75rem;font-weight:700;background:#EEE9D8}
+.pill.rojo{background:var(--sello);color:#fff}
+.pill.azul{background:var(--tinta);color:#fff}
+.pill.verde{background:var(--ok);color:#fff}
+.voto-adm{padding:10px 0;border-top:1px solid #EEE9D8;font-size:.92rem}
+.voto-adm:first-of-type{border-top:0}
+.voto-adm ul{margin:4px 0 0;padding-left:18px}
+.voto-adm .mot{color:var(--suave);font-family:"Special Elite",monospace}
+.voto-adm .mot.oc{text-decoration:line-through}
+.mini{appearance:none;border:1px solid #CFC8B0;background:#fff;border-radius:8px;padding:2px 8px;font-size:.78rem;cursor:pointer;margin-left:4px;color:var(--texto)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.95rem}
+.kv dt{color:var(--suave)}
+.kv dd{margin:0;font-weight:600}
+.radio-op{display:flex;align-items:center;gap:8px;margin-top:6px}
+.radio-op input[type=radio]{width:20px;height:20px;accent-color:var(--ok)}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--texto);color:#fff;padding:10px 16px;border-radius:999px;z-index:90;font-weight:600;font-size:.92rem;max-width:90vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================ PANTALLA: CONFIGURACIÓN PENDIENTE -->
+<section id="s-config" class="wrap hidden">
+  <div class="formato amarillo">
+    <h2>Falta conectar Supabase</h2>
+    <p>Abre este archivo y llena <b>SUPABASE_URL</b> y <b>SUPABASE_ANON_KEY</b> (están al principio del código, en la sección de configuración). La guía explica dónde encontrarlos.</p>
+  </div>
+</section>
+
+<!-- ============================ PANTALLA: INICIO -->
+<section id="s-inicio" class="wrap hidden">
+  <div style="margin-top:18px"><svg class="logo js-logo" width="132" height="132" viewBox="0 0 120 120" aria-label="Alfa Brother"></svg></div>
+  <h1 class="titulo-inicio display">Alfa Brother</h1>
+  <p class="lema">¡Te vamos a cobrar!</p>
+  <p class="sub-inicio">El reality de Grupo Alfa. Cada semana alguien sale de la casa.</p>
+
+  <div class="pestanas" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="entrar">Entrar</button>
+    <button role="tab" aria-selected="false" data-tab="registro">Registrarme</button>
+  </div>
+
+  <form id="f-entrar" class="formato unido" autocomplete="off">
+    <div class="folio"><span>Acceso a la casa</span><span>Folio ****</span></div>
+    <label class="campo" for="e-nombre">Tu nombre</label>
+    <input class="in" id="e-nombre" maxlength="30" required>
+    <label class="campo" for="e-pin">PIN de 4 números</label>
+    <input class="in pin" id="e-pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required>
+    <div class="error hidden" id="e-error"></div>
+    <div style="margin-top:16px"><button class="btn" type="submit">Entrar a la casa</button></div>
+  </form>
+
+  <form id="f-registro" class="formato unido hidden" autocomplete="off">
+    <div class="folio"><span>Alta de habitante</span><span id="r-lugares"></span></div>
+    <label class="campo" for="r-nombre">Nombre (así te verán los demás)</label>
+    <input class="in" id="r-nombre" maxlength="30" required>
+    <label class="campo" for="r-pin">Crea un PIN de 4 números</label>
+    <input class="in pin" id="r-pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required>
+    <label class="campo" for="r-pin2">Repite el PIN</label>
+    <input class="in pin" id="r-pin2" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required>
+    <span class="campo" style="display:block;margin:12px 0 4px;font-weight:600;font-size:.92rem">Foto (opcional)</span>
+    <div class="foto-elegir">
+      <div id="r-foto-prev"></div>
+      <div>
+        <label class="btn sec chico" for="r-foto" style="display:inline-block">Elegir foto</label>
+        <input id="r-foto" type="file" accept="image/*" class="hidden">
+        <div class="ayuda">Sin foto se muestra la inicial de tu nombre.</div>
+      </div>
+    </div>
+    <div class="aviso hidden" id="r-aviso"></div>
+    <div class="error hidden" id="r-error"></div>
+    <div style="margin-top:16px"><button class="btn" type="submit">Registrarme</button></div>
+    <p class="ayuda" style="margin-top:10px">Guarda tu PIN: lo necesitas para entrar desde otro celular.</p>
+  </form>
+</section>
+
+<!-- ============================ PANTALLA: LA CASA -->
+<section id="s-casa" class="wrap hidden">
+  <header class="cabecera">
+    <svg class="logo js-logo" width="52" height="52" viewBox="0 0 120 120" aria-label="Alfa Brother"></svg>
+    <div class="t"><h1>Alfa Brother</h1><div>¡Te vamos a cobrar!</div></div>
+    <div class="yo-chip" id="c-yo"></div>
+  </header>
+
+  <div class="fase-banda">
+    <span class="display" id="c-semana"></span>
+    <small id="c-fase"></small>
+  </div>
+
+  <div id="c-accion"></div>
+
+  <div class="seccion-t"><span>Habitantes</span><small id="c-cuenta"></small></div>
+  <div class="rejilla" id="c-habitantes"></div>
+
+  <div id="c-espect-box" class="hidden">
+    <div class="seccion-t"><span>Público</span><small id="c-espect-n"></small></div>
+    <div class="espectadores" id="c-espect"></div>
+  </div>
+
+  <div id="c-galas-box" class="hidden">
+    <div class="seccion-t"><span>Galas pasadas</span></div>
+    <div class="galas" id="c-galas"></div>
+  </div>
+
+  <div class="pie">
+    <button class="link" id="c-cambiar-foto">Cambiar mi foto</button>
+    <input id="c-foto" type="file" accept="image/*" class="hidden">
+    <button class="link" id="c-salir">Salir</button>
+  </div>
+</section>
+
+<!-- ============================ PANTALLA: VOTAR -->
+<section id="s-votar" class="wrap hidden">
+  <button class="link" data-volver>← Regresar a la casa</button>
+  <div class="formato rosa">
+    <div class="folio"><span>Formato de cobro</span><span id="v-folio"></span></div>
+    <h2>¿A quién le cobramos esta semana?</h2>
+    <p id="v-instr" style="font-size:.95rem"></p>
+    <div id="v-publico" class="aviso hidden">Votas como público: tu voto aparece en la tabla de la gala, pero no decide quién sale.</div>
+    <div id="v-renglones"></div>
+    <div class="seccion-t" style="color:var(--texto);margin-top:20px"><span>Habitantes</span><small style="color:var(--suave)">Toca a alguien para ponerlo en el renglón marcado</small></div>
+    <div class="candidatos" id="v-candidatos"></div>
+    <div class="error hidden" id="v-error"></div>
+    <div style="margin-top:18px"><button class="btn" id="v-enviar" disabled>Enviar mi voto</button></div>
+    <p class="ayuda" style="margin-top:10px">Los motivos se leen en la gala sin tu nombre. Puedes cambiar tu voto mientras la votación siga abierta.</p>
+  </div>
+</section>
+
+<!-- ============================ PANTALLA: PRUEBA -->
+<section id="s-prueba" class="wrap hidden">
+  <button class="link" data-volver id="p-volver">← Regresar a la casa</button>
+  <div class="formato amarillo" id="p-caja"></div>
+</section>
+
+<!-- ============================ GALA -->
+<section id="gala" class="hidden" aria-live="polite">
+  <div class="reflector"></div>
+  <button class="btn sec chico btn-saltar" id="g-saltar">Saltar</button>
+  <div class="wrap"><div class="escena" id="g-escena"></div></div>
+</section>
+
+<!-- ============================ PANEL ADMIN -->
+<section id="admin" class="hidden">
+  <div class="wrap">
+    <div class="adm-top">
+      <h1>Cabina de producción</h1>
+      <button class="btn sec chico" id="a-cerrar">Cerrar</button>
+    </div>
+    <div class="adm-tabs" role="tablist" id="a-tabs">
+      <button data-at="juego" aria-selected="true">Juego</button>
+      <button data-at="votos" aria-selected="false">Votos</button>
+      <button data-at="pruebas" aria-selected="false">Pruebas</button>
+      <button data-at="trivia" aria-selected="false">Trivia</button>
+      <button data-at="habitantes" aria-selected="false">Habitantes</button>
+    </div>
+    <div id="a-contenido"></div>
+    <div style="margin-top:28px;text-align:center"><button class="link" id="a-logout">Cerrar sesión de producción</button></div>
+  </div>
+</section>
+
+<!-- ============================ MODAL CLAVE -->
+<div id="m-clave" class="modal hidden">
+  <form class="formato" id="f-clave" autocomplete="off">
+    <h2>Clave</h2>
+    <input class="in" id="k-clave" type="password" autocomplete="off">
+    <div class="error hidden" id="k-error"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn sec" type="button" id="k-cancelar">Cancelar</button>
+      <button class="btn tinta" type="submit">Continuar</button>
+    </div>
+  </form>
+</div>
+
+<div id="toast" class="toast hidden" role="status"></div>
+
+<script>
+/* =====================================================================
+   CONFIGURACIÓN — llena estos datos con los de tu proyecto de Supabase
+   (Project Settings → API). La "anon key" es pública por diseño.
+   ===================================================================== */
+const SUPABASE_URL      = 'PEGA_AQUI_TU_PROJECT_URL';
+const SUPABASE_ANON_KEY = 'PEGA_AQUI_TU_ANON_KEY';
+const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
+/* ===================================================================== */
+
+const PRUEBAS = {
+  trivia:  { nombre: 'Trivia de la oficina',   desc: 'Preguntas sobre la oficina y los compañeros. Tienes 12 segundos por pregunta; contestar rápido da puntos extra.' },
+  memoria: { nombre: 'Memoria de expedientes', desc: 'Voltea los expedientes y encuentra los 8 pares. Gana quien termine más rápido y con menos errores.' },
+  adeudo:  { nombre: 'Calcula el adeudo',      desc: 'Tienes 45 segundos para resolver cuentas de cobranza. +100 por acierto, −50 por error.' },
+};
+const ERRORES = {
+  SESION_INVALIDA: 'Tu sesión terminó. Entra otra vez con tu nombre y PIN.',
+  NOMBRE_OCUPADO: 'Ese nombre ya está registrado. Usa otro o entra con tu PIN.',
+  NOMBRE_INVALIDO: 'El nombre debe tener entre 2 y 30 letras.',
+  PIN_INVALIDO: 'El PIN debe ser de 4 números.',
+  PIN_INCORRECTO: 'Nombre o PIN incorrecto.',
+  NO_EXISTE: 'Nombre o PIN incorrecto.',
+  BLOQUEADO: 'Demasiados intentos. Espera 10 minutos o pide que te reinicien el PIN.',
+  FOTO_INVALIDA: 'No se pudo usar esa foto. Prueba con otra.',
+  PRUEBA_CERRADA: 'La prueba ya está cerrada.',
+  NO_PARTICIPA: 'Solo los habitantes activos compiten por el liderazgo.',
+  YA_JUGASTE: 'Ya usaste tu intento de esta semana.',
+  SIN_INTENTO: 'No encontramos tu intento. Recarga la página.',
+  VOTACION_CERRADA: 'La votación ya está cerrada.',
+  VOTOS_INCOMPLETOS: 'Te faltan renglones por llenar.',
+  VOTOS_INVALIDOS: 'Revisa tu voto: solo puedes votar por habitantes activos y no por ti.',
+  MOTIVO_LARGO: 'Cada motivo puede tener máximo 200 letras.',
+  NO_AUTORIZADO: 'No tienes permiso para esto.',
+  NO_EMPATADO: 'Esa persona no está en el empate.',
+  FASE_INCORRECTA: 'Eso no se puede hacer en la fase actual.',
+  SIN_TRIVIAS: 'Activa al menos una pregunta de trivia antes de iniciar la semana.',
+  SIN_CANDIDATOS: 'No hay candidatos para eliminar.',
+  PRUEBA_INVALIDA: 'Prueba no válida.',
+  FASE_INVALIDA: 'Fase no válida.',
+};
+
+/* ---------- utilidades ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} },
+};
+function toast(msg, ms = 2600) {
+  const t = $('#toast'); t.textContent = msg; t.classList.remove('hidden');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.add('hidden'), ms);
+}
+function mensajeError(e) {
+  const m = String(e?.message || e || '');
+  for (const k of Object.keys(ERRORES)) if (m.includes(k)) return ERRORES[k];
+  if (/Failed to fetch|NetworkError|network/i.test(m)) return 'Sin conexión. Revisa tu internet e intenta de nuevo.';
+  return 'Algo falló: ' + m;
+}
+function mostrarError(el, e) { el.textContent = typeof e === 'string' ? e : mensajeError(e); el.classList.remove('hidden'); }
+function colorDe(nombre) {
+  const paleta = ['#2337A8', '#D7263D', '#7A3FB5', '#0F7C8C', '#B5541F', '#1E8E5A', '#A8235E', '#4A5BD1'];
+  let h = 0; for (const ch of String(nombre)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return paleta[h % paleta.length];
+}
+
+/* ---------- Supabase ---------- */
+const configurado = !SUPABASE_URL.startsWith('PEGA_') && !SUPABASE_ANON_KEY.startsWith('PEGA_');
+const sb = configurado ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+async function rpc(fn, args = {}) {
+  const { data, error } = await sb.rpc(fn, args);
+  if (error) throw new Error(error.message);
+  if (data && typeof data === 'object' && !Array.isArray(data) && data.error) throw new Error(data.error);
+  return data;
+}
+
+/* ---------- estado local ---------- */
+let token = store.get('ab_token');
+let est = null;          // respuesta de estado()
+let fotos = {};          // id -> dataURL
+let fotosFirma = null;
+let pantalla = null;
+let galaAbierta = false;
+
+function mostrar(id) {
+  ['s-config', 's-inicio', 's-casa', 's-votar', 's-prueba'].forEach(s => $('#' + s).classList.toggle('hidden', s !== id));
+  pantalla = id; window.scrollTo(0, 0);
+}
+
+/* ---------- logo (ojo con signo de pesos) ---------- */
+const LOGO = `
+  <circle cx="60" cy="60" r="57" fill="#FFD54A"/>
+  <path d="M10 60 Q60 14 110 60 Q60 106 10 60 Z" fill="#FFFDF6" stroke="#1B1440" stroke-width="6" stroke-linejoin="round"/>
+  <circle cx="60" cy="60" r="23" fill="#D7263D"/>
+  <circle cx="60" cy="60" r="12" fill="#1B1440"/>
+  <text x="60" y="68" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="22" fill="#FFD54A">$</text>
+  <circle cx="69" cy="50" r="4" fill="#fff" opacity=".85"/>`;
+$$('.js-logo').forEach(svg => svg.innerHTML = LOGO);
+
+/* ---------- avatar ---------- */
+function avatar(j, size = 56) {
+  const f = fotos[j.id];
+  const inicial = esc(String(j.nombre || '?').trim().charAt(0).toUpperCase());
+  const st = `width:${size}px;height:${size}px;font-size:${Math.round(size * .48)}px;background:${colorDe(j.nombre)}`;
+  return f ? `<div class="av" style="${st}"><img src="${f}" alt=""></div>` : `<div class="av" style="${st}" aria-hidden="true">${inicial}</div>`;
+}
+function porId(id) { return est?.jugadores.find(j => j.id === id); }
+
+/* ---------- foto: recorte cuadrado y compresión ---------- */
+function comprimirFoto(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const lado = Math.min(img.width, img.height);
+      const c = document.createElement('canvas'); c.width = c.height = 240;
+      c.getContext('2d').drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, 240, 240);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', .78));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('FOTO_INVALIDA')); };
+    img.src = url;
+  });
+}
+
+/* =====================================================================
+   INICIO: entrar / registrarse
+   ===================================================================== */
+let fotoRegistro = null;
+$$('.pestanas button').forEach(b => b.onclick = () => {
+  $$('.pestanas button').forEach(x => x.setAttribute('aria-selected', x === b));
+  $('#f-entrar').classList.toggle('hidden', b.dataset.tab !== 'entrar');
+  $('#f-registro').classList.toggle('hidden', b.dataset.tab !== 'registro');
+  if (b.dataset.tab === 'registro') cargarInfoPublica();
+});
+
+async function cargarInfoPublica() {
+  try {
+    const i = await rpc('info_publica');
+    const libres = Math.max(0, i.cupo - i.habitantes);
+    $('#r-lugares').textContent = `${i.habitantes} de ${i.cupo}`;
+    const av = $('#r-aviso');
+    if (libres === 0 || i.semana > 0) {
+      av.textContent = 'Los lugares de habitante ya están llenos. Entrarás como público: puedes ver todo y votar, pero tu voto no decide quién sale.';
+      av.classList.remove('hidden');
+    } else {
+      av.textContent = `Quedan ${libres} ${libres === 1 ? 'lugar' : 'lugares'} de habitante.`;
+      av.classList.remove('hidden');
+    }
+  } catch { }
+}
+function pintarFotoRegistro() {
+  const n = $('#r-nombre').value.trim() || '?';
+  $('#r-foto-prev').innerHTML = fotoRegistro
+    ? `<div class="av" style="width:64px;height:64px"><img src="${fotoRegistro}" alt="Tu foto"></div>`
+    : avatar({ id: '_', nombre: n }, 64);
+}
+$('#r-nombre').addEventListener('input', pintarFotoRegistro);
+$('#r-foto').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { fotoRegistro = await comprimirFoto(f); pintarFotoRegistro(); } catch (err) { mostrarError($('#r-error'), err); }
+});
+
+$('#f-registro').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('#r-error'); err.classList.add('hidden');
+  const pin = $('#r-pin').value, pin2 = $('#r-pin2').value;
+  if (!/^\d{4}$/.test(pin)) return mostrarError(err, ERRORES.PIN_INVALIDO);
+  if (pin !== pin2) return mostrarError(err, 'Los PIN no coinciden.');
+  const btn = e.submitter; btn.disabled = true;
+  try {
+    const r = await rpc('registrar', { p_nombre: $('#r-nombre').value, p_pin: pin, p_foto: fotoRegistro });
+    token = r.token; store.set('ab_token', token);
+    toast(r.rol === 'jugador' ? '¡Bienvenido a la casa!' : 'Entraste como público');
+    await entrarCasa();
+  } catch (x) { mostrarError(err, x); }
+  btn.disabled = false;
+});
+
+$('#f-entrar').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('#e-error'); err.classList.add('hidden');
+  const btn = e.submitter; btn.disabled = true;
+  try {
+    const r = await rpc('entrar', { p_nombre: $('#e-nombre').value, p_pin: $('#e-pin').value });
+    token = r.token; store.set('ab_token', token);
+    await entrarCasa();
+  } catch (x) { mostrarError(err, x); }
+  btn.disabled = false;
+});
+
+/* =====================================================================
+   LA CASA
+   ===================================================================== */
+async function refrescar() {
+  if (!token) return;
+  try {
+    est = await rpc('estado', { p_token: token });
+  } catch (e) {
+    if (String(e.message).includes('SESION_INVALIDA')) { cerrarSesion(); toast(ERRORES.SESION_INVALIDA); }
+    return;
+  }
+  if (est.fotos_firma !== fotosFirma) {
+    try { fotos = await rpc('fotos', { p_token: token }) || {}; fotosFirma = est.fotos_firma; } catch { }
+  }
+  if (pantalla === 's-casa') pintarCasa();
+  const g = est.juego;
+  if (g.fase === 'gala' && g.gala_revelada && !store.get('ab_gala_' + g.semana) && !galaAbierta && pantalla === 's-casa' && $('#admin').classList.contains('hidden')) {
+    abrirGala(g.semana, true);
+  }
+}
+async function entrarCasa() {
+  mostrar('s-casa');
+  $('#c-accion').innerHTML = '';
+  await refrescar();
+}
+function cerrarSesion() {
+  if (token) rpc('salir', { p_token: token }).catch(() => { });
+  token = null; est = null; store.del('ab_token');
+  mostrar('s-inicio');
+}
+
+function faseTexto(g) {
+  if (g.semana === 0) return 'Inscripciones abiertas';
+  return {
+    prueba: 'Prueba del líder',
+    votacion: 'Votación abierta',
+    decision: 'Empate: decide el líder',
+    gala: g.gala_revelada ? 'Gala terminada' : 'Gala en preparación',
+  }[g.fase] || '';
+}
+
+function pintarCasa() {
+  const { yo, juego: g, jugadores } = est;
+  const habitantes = jugadores.filter(j => j.rol === 'jugador');
+  const publico = jugadores.filter(j => j.rol === 'espectador');
+  const activos = habitantes.filter(j => j.estado === 'activo');
+
+  $('#c-yo').innerHTML = `${avatar(yo, 30)}<span>${esc(yo.nombre)}</span>`;
+  $('#c-semana').textContent = g.semana === 0 ? 'Semana 0' : 'Semana ' + g.semana;
+  $('#c-fase').textContent = faseTexto(g);
+  $('#c-cuenta').textContent = g.semana === 0 ? `${habitantes.length} de ${g.cupo}` : `${activos.length} siguen en la casa`;
+
+  $('#c-habitantes').innerHTML = habitantes.map(j => {
+    const fuera = j.estado === 'eliminado';
+    return `<div class="hab ${fuera ? 'fuera' : ''}">
+      ${j.id === g.lider_id && !fuera ? '<span class="corona" aria-label="Líder">👑</span>' : ''}
+      ${avatar(j, 58)}
+      ${fuera ? '<span class="marca">COBRADO</span>' : ''}
+      <span class="n">${esc(j.nombre)}</span>
+    </div>`;
+  }).join('') || '<p style="grid-column:1/-1;color:#C9C3EE">Todavía no hay habitantes.</p>';
+
+  $('#c-espect-box').classList.toggle('hidden', !publico.length);
+  $('#c-espect-n').textContent = publico.length + (publico.length === 1 ? ' persona' : ' personas');
+  $('#c-espect').innerHTML = publico.map(j => `<span>${esc(j.nombre)}</span>`).join('');
+
+  $('#c-galas-box').classList.toggle('hidden', !est.galas.length);
+  $('#c-galas').innerHTML = est.galas.map(s => `<button class="btn sec chico" data-gala="${s}">Semana ${s}</button>`).join('');
+  $$('[data-gala]').forEach(b => b.onclick = () => abrirGala(+b.dataset.gala, false));
+
+  pintarAccion();
+}
+
+function pintarAccion() {
+  const { yo, juego: g, mis_votos, mi_intento } = est;
+  const soyHabitanteActivo = yo.rol === 'jugador' && yo.estado === 'activo';
+  const lider = porId(g.lider_id);
+  let h = '';
+
+  // Ganador
+  if (g.semana > 0 && g.activos === 1 && g.fase === 'gala' && g.gala_revelada) {
+    const gan = est.jugadores.find(j => j.rol === 'jugador' && j.estado === 'activo');
+    h = `<div class="formato amarillo" style="text-align:center">
+      <div class="folio"><span>Liquidación final</span><span>Pagado</span></div>
+      <div style="display:flex;justify-content:center;margin:8px 0">${avatar(gan, 96)}</div>
+      <h2>${esc(gan.nombre)} gana Alfa Brother</h2>
+      <p>Fue el único al que nadie le pudo cobrar.</p></div>`;
+  } else if (g.semana === 0) {
+    h = `<div class="formato">
+      <div class="folio"><span>Aviso</span><span>Semana 0</span></div>
+      <h2>La casa abre pronto</h2>
+      <p>Se están registrando los habitantes. Cuando empiece la semana 1 aquí verás la prueba del líder.</p>
+      ${yo.rol === 'espectador' ? '<p><span class="sello">PÚBLICO</span></p>' : ''}</div>`;
+  } else if (g.fase === 'prueba') {
+    const p = PRUEBAS[g.prueba];
+    let cuerpo;
+    if (!soyHabitanteActivo) cuerpo = `<p>${yo.rol === 'espectador' ? 'El público no compite por el liderazgo.' : 'Ya no estás en la casa, así que no compites por el liderazgo. Tu voto sí sigue contando.'}</p>`;
+    else if (mi_intento?.terminado) cuerpo = `<p>Tu puntaje: <b class="display" style="font-size:1.6rem">${mi_intento.puntaje}</b></p><p class="ayuda">El líder se anuncia cuando cierre la prueba.</p>`;
+    else if (mi_intento) cuerpo = `<p>Tu intento quedó incompleto y cuenta como cero.</p>`;
+    else cuerpo = `<p>${esc(p.desc)}</p><p><b>Solo tienes un intento.</b></p><button class="btn" id="a-jugar">Jugar la prueba</button>`;
+    h = `<div class="formato amarillo"><div class="folio"><span>Prueba del líder</span><span>Semana ${g.semana}</span></div><h2>${esc(p.nombre)}</h2>${cuerpo}</div>`;
+  } else if (g.fase === 'votacion') {
+    const voté = mis_votos.length > 0;
+    const resumen = voté ? `<ul style="margin:6px 0 10px;padding-left:18px">${mis_votos.map(v => `<li><b>${v.puntos} ${v.puntos === 1 ? 'punto' : 'puntos'}:</b> ${esc(porId(v.id)?.nombre)}</li>`).join('')}</ul>` : '';
+    h = `<div class="formato rosa"><div class="folio"><span>Formato de cobro</span><span>Semana ${g.semana}</span></div>
+      <h2>${voté ? 'Tu voto está registrado' : 'Es hora de votar'}</h2>
+      ${lider ? `<p>Líder de la semana: <b>${esc(lider.nombre)}</b> 👑. Si queda con más puntos, se salva.</p>` : ''}
+      ${voté ? resumen : '<p>Reparte 3, 2 y 1 puntos entre tres habitantes. Quien junte más puntos sale de la casa.</p>'}
+      ${yo.rol === 'espectador' ? '<p class="ayuda">Tu voto es del público: sale en la tabla pero no decide.</p>' : ''}
+      <button class="btn" id="a-votar">${voté ? 'Cambiar mi voto' : 'Votar'}</button></div>`;
+  } else if (g.fase === 'decision') {
+    const emp = g.empatados.map(porId).filter(Boolean);
+    if (yo.id === g.lider_id) {
+      h = `<div class="formato rosa"><div class="folio"><span>Empate</span><span>Solo para el líder</span></div>
+        <h2>Tú decides quién sale</h2><p>Estos habitantes quedaron empatados. Elige a quién se le cobra:</p>
+        <div style="display:grid;gap:10px;margin-top:10px">${emp.map(j => `<button class="btn sec" data-decide="${j.id}" style="display:flex;align-items:center;gap:10px;justify-content:flex-start">${avatar(j, 36)} ${esc(j.nombre)}</button>`).join('')}</div></div>`;
+    } else {
+      h = `<div class="formato rosa"><div class="folio"><span>Empate</span><span>Semana ${g.semana}</span></div>
+        <h2>Hubo empate</h2><p>${lider ? `<b>${esc(lider.nombre)}</b>, el líder, está decidiendo quién sale.` : 'La producción está decidiendo quién sale.'}</p></div>`;
+    }
+  } else if (g.fase === 'gala' && !g.gala_revelada) {
+    h = `<div class="formato"><div class="folio"><span>Aviso</span><span>Semana ${g.semana}</span></div>
+      <h2>La gala está por comenzar</h2><p>La votación cerró. Mantén esta pantalla abierta: la revelación aparecerá sola.</p></div>`;
+  } else if (g.fase === 'gala') {
+    const elim = porId(g.eliminado_id);
+    h = `<div class="formato"><div class="folio"><span>Gala</span><span>Semana ${g.semana}</span></div>
+      <h2>${elim ? esc(elim.nombre) + ' salió de la casa' : 'Gala terminada'}</h2>
+      <p>Pronto empieza la siguiente semana.</p>
+      <button class="btn sec" style="color:var(--texto)" data-gala="${g.semana}">Ver la gala otra vez</button></div>`;
+  }
+
+  if (yo.rol === 'jugador' && yo.estado === 'eliminado' && !(g.activos === 1 && g.gala_revelada)) {
+    h += `<p style="margin-top:12px;color:#C9C3EE;font-size:.9rem">Ya no estás en la casa, pero tu voto sigue contando cada semana.</p>`;
+  }
+
+  $('#c-accion').innerHTML = h;
+  $('#a-jugar')?.addEventListener('click', abrirPrueba);
+  $('#a-votar')?.addEventListener('click', abrirVotacion);
+  $$('[data-decide]').forEach(b => b.onclick = async () => {
+    const j = porId(b.dataset.decide);
+    if (!confirm(`¿Seguro que sale ${j.nombre}?`)) return;
+    try { await rpc('lider_decide', { p_token: token, p_id: j.id }); toast('Decisión enviada'); refrescar(); } catch (e) { toast(mensajeError(e)); }
+  });
+  $$('#c-accion [data-gala]').forEach(b => b.onclick = () => abrirGala(+b.dataset.gala, false));
+}
+
+$('#c-salir').onclick = () => { if (confirm('¿Salir de este celular? Necesitarás tu PIN para volver a entrar.')) cerrarSesion(); };
+$('#c-cambiar-foto').onclick = () => $('#c-foto').click();
+$('#c-foto').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { const d = await comprimirFoto(f); await rpc('cambiar_foto', { p_token: token, p_foto: d }); toast('Foto actualizada'); fotosFirma = null; refrescar(); }
+  catch (x) { toast(mensajeError(x)); }
+  e.target.value = '';
+});
+$$('[data-volver]').forEach(b => b.onclick = () => { mostrar('s-casa'); refrescar(); });
+
+/* =====================================================================
+   VOTACIÓN 3-2-1
+   ===================================================================== */
+let voto = [];      // [{puntos, id, motivo}]
+let renglonActivo = 0;
+
+function abrirVotacion() {
+  const { yo, juego: g, jugadores, mis_votos } = est;
+  const candidatos = jugadores.filter(j => j.rol === 'jugador' && j.estado === 'activo' && j.id !== yo.id);
+  const n = Math.min(3, candidatos.length);
+  voto = [3, 2, 1].slice(0, n).map(p => {
+    const prev = mis_votos.find(v => v.puntos === p);
+    return { puntos: p, id: prev?.id || null, motivo: prev?.motivo || '' };
+  });
+  renglonActivo = Math.max(0, voto.findIndex(v => !v.id));
+  $('#v-folio').textContent = 'Semana ' + g.semana;
+  $('#v-instr').textContent = n === 3
+    ? 'Da 3 puntos a quien más quieres que salga, 2 al segundo y 1 al tercero. Si quieres, escribe por qué.'
+    : `Quedan pocos habitantes: reparte ${voto.map(v => v.puntos).join(' y ')} puntos.`;
+  $('#v-publico').classList.toggle('hidden', yo.rol !== 'espectador');
+  $('#v-error').classList.add('hidden');
+  pintarVoto();
+  mostrar('s-votar');
+}
+function pintarVoto() {
+  const { yo, juego: g, jugadores } = est;
+  const candidatos = jugadores.filter(j => j.rol === 'jugador' && j.estado === 'activo' && j.id !== yo.id);
+  $('#v-renglones').innerHTML = voto.map((v, i) => {
+    const j = v.id && porId(v.id);
+    return `<div class="renglon ${i === renglonActivo ? 'activo' : ''}" data-r="${i}">
+      <div class="pts">${v.puntos}<small>${v.puntos === 1 ? 'punto' : 'puntos'}</small></div>
+      <div class="quien">${j ? avatar(j, 34) + `<span>${esc(j.nombre)}</span>` : '<span style="color:var(--suave);font-weight:500">Elige a alguien</span>'}</div>
+      ${j ? `<button class="quitar" data-quitar="${i}" aria-label="Quitar">×</button>` : '<span></span>'}
+      <textarea class="in" data-mot="${i}" maxlength="200" placeholder="¿Por qué? (opcional)">${esc(v.motivo)}</textarea>
+    </div>`;
+  }).join('');
+  $('#v-candidatos').innerHTML = candidatos.map(j => {
+    const asignado = voto.find(v => v.id === j.id);
+    return `<button class="cand ${j.id === g.lider_id ? 'lider' : ''}" data-cand="${j.id}">
+      ${asignado ? `<span class="ficha">${asignado.puntos}</span>` : ''}${avatar(j, 52)}<span class="n">${esc(j.nombre)}</span></button>`;
+  }).join('');
+  $$('.renglon').forEach(r => r.addEventListener('click', e => {
+    if (e.target.closest('textarea,.quitar')) return;
+    renglonActivo = +r.dataset.r; pintarVoto();
+  }));
+  $$('[data-quitar]').forEach(b => b.onclick = () => { voto[+b.dataset.quitar].id = null; renglonActivo = +b.dataset.quitar; pintarVoto(); });
+  $$('[data-mot]').forEach(t => t.oninput = () => { voto[+t.dataset.mot].motivo = t.value; });
+  $$('[data-cand]').forEach(b => b.onclick = () => {
+    const id = b.dataset.cand;
+    const ya = voto.findIndex(v => v.id === id);
+    if (ya >= 0) voto[ya].id = voto[renglonActivo].id;   // intercambia
+    voto[renglonActivo].id = id;
+    const libre = voto.findIndex(v => !v.id);
+    if (libre >= 0) renglonActivo = libre;
+    pintarVoto();
+  });
+  $('#v-enviar').disabled = voto.some(v => !v.id);
+}
+$('#v-enviar').onclick = async () => {
+  const btn = $('#v-enviar'); btn.disabled = true;
+  try {
+    await rpc('votar', { p_token: token, p_votos: voto.map(v => ({ id: v.id, puntos: v.puntos, motivo: v.motivo.trim() })) });
+    toast('Voto enviado');
+    mostrar('s-casa'); refrescar();
+  } catch (e) { mostrarError($('#v-error'), e); btn.disabled = false; }
+};
+
+/* =====================================================================
+   PRUEBAS DEL LÍDER
+   ===================================================================== */
+function abrirPrueba() {
+  const p = PRUEBAS[est.juego.prueba];
+  $('#p-volver').classList.remove('hidden');
+  $('#p-caja').innerHTML = `<div class="folio"><span>Prueba del líder</span><span>Semana ${est.juego.semana}</span></div>
+    <h2>${esc(p.nombre)}</h2><p>${esc(p.desc)}</p>
+    <p><b>Solo tienes un intento.</b> Si sales o recargas la página a la mitad, tu puntaje queda en cero.</p>
+    <div class="error hidden" id="p-error"></div>
+    <div style="margin-top:16px"><button class="btn" id="p-empezar">Empezar</button></div>`;
+  $('#p-empezar').onclick = async () => {
+    $('#p-empezar').disabled = true;
+    try {
+      const r = await rpc('iniciar_prueba', { p_token: token });
+      $('#p-volver').classList.add('hidden');
+      if (r.prueba === 'trivia') jugarTrivia(r.preguntas);
+      else if (r.prueba === 'memoria') jugarMemoria();
+      else jugarAdeudo();
+    } catch (e) { mostrarError($('#p-error'), e); }
+  };
+  mostrar('s-prueba');
+}
+function finPrueba(html) {
+  $('#p-volver').classList.remove('hidden');
+  $('#p-caja').innerHTML = `<div class="folio"><span>Prueba terminada</span><span>Semana ${est.juego.semana}</span></div>${html}
+    <div style="margin-top:16px"><button class="btn" data-volver-fin>Regresar a la casa</button></div>`;
+  $('[data-volver-fin]').onclick = () => { mostrar('s-casa'); refrescar(); };
+}
+async function enviarPuntaje(p) {
+  for (let i = 0; i < 3; i++) {
+    try { return await rpc('enviar_puntaje', { p_token: token, p_puntaje: p }); }
+    catch (e) { if (i === 2) throw e; await sleep(1200); }
+  }
+}
+
+/* ---- Trivia ---- */
+async function jugarTrivia(preguntas) {
+  const caja = $('#p-caja');
+  const respuestas = [];
+  const LIM = 12000;
+  for (let i = 0; i < preguntas.length; i++) {
+    const q = preguntas[i];
+    const r = await new Promise(resolve => {
+      caja.innerHTML = `<div class="marcador"><span>Pregunta ${i + 1} de ${preguntas.length}</span><span id="t-seg">12</span></div>
+        <div class="barra"><i id="t-barra" style="width:100%"></i></div>
+        <div class="pregunta">${esc(q.pregunta)}</div>
+        <div class="opciones">${q.opciones.map((o, k) => `<button class="opcion" data-op="${k}">${esc(o)}</button>`).join('')}</div>`;
+      const t0 = performance.now();
+      const iv = setInterval(() => {
+        const ms = performance.now() - t0;
+        $('#t-barra').style.width = Math.max(0, 100 - ms / LIM * 100) + '%';
+        $('#t-seg').textContent = Math.max(0, Math.ceil((LIM - ms) / 1000));
+        if (ms >= LIM) { clearInterval(iv); resolve({ id: q.id, opcion: -1, ms: LIM }); }
+      }, 100);
+      $$('.opcion', caja).forEach(b => b.onclick = () => {
+        clearInterval(iv);
+        $$('.opcion', caja).forEach(x => x.disabled = true);
+        b.style.outline = '4px solid var(--tinta)';
+        resolve({ id: q.id, opcion: +b.dataset.op, ms: Math.round(performance.now() - t0) });
+      });
+    });
+    respuestas.push(r);
+    await sleep(350);
+  }
+  caja.innerHTML = '<h2>Calificando…</h2>';
+  try {
+    const res = await rpc('enviar_trivia', { p_token: token, p_respuestas: respuestas });
+    finPrueba(`<h2>${res.bien} de ${res.total} correctas</h2><p>Puntaje: <b class="display" style="font-size:2rem">${res.puntaje}</b></p>`);
+  } catch (e) { finPrueba(`<h2>No se guardó</h2><p>${esc(mensajeError(e))}</p>`); }
+}
+
+/* ---- Memoria de expedientes ---- */
+function jugarMemoria() {
+  const iconos = ['📁', '💰', '📞', '🧾', '💳', '🏦', '📄', '⏰'];
+  const mazo = [...iconos, ...iconos].map((ic, i) => ({ ic, k: i })).sort(() => Math.random() - .5);
+  let abiertas = [], pares = 0, errores = 0, bloqueo = false;
+  const t0 = performance.now();
+  const caja = $('#p-caja');
+  caja.innerHTML = `<div class="marcador"><span id="m-t">0 s</span><span id="m-e">0 errores</span></div>
+    <div class="cartas">${mazo.map((c, i) => `<button class="carta" data-i="${i}" aria-label="Expediente ${i + 1}">
+      <span class="cara atras">EXP</span><span class="cara frente">${c.ic}</span></button>`).join('')}</div>`;
+  const iv = setInterval(() => { $('#m-t').textContent = Math.floor((performance.now() - t0) / 1000) + ' s'; }, 250);
+  $$('.carta', caja).forEach(b => b.onclick = async () => {
+    if (bloqueo || b.classList.contains('vuelta')) return;
+    b.classList.add('vuelta'); abiertas.push(b);
+    if (abiertas.length < 2) return;
+    const [a, c] = abiertas; abiertas = [];
+    if (mazo[a.dataset.i].ic === mazo[c.dataset.i].ic) {
+      a.classList.add('par'); c.classList.add('par'); pares++;
+      if (pares === iconos.length) {
+        clearInterval(iv);
+        const seg = (performance.now() - t0) / 1000;
+        const puntaje = Math.max(0, Math.round(1000 - seg * 10 - errores * 20));
+        await sleep(500);
+        try { await enviarPuntaje(puntaje); finPrueba(`<h2>¡Expedientes en orden!</h2><p>${seg.toFixed(1)} segundos y ${errores} errores.</p><p>Puntaje: <b class="display" style="font-size:2rem">${puntaje}</b></p>`); }
+        catch (e) { finPrueba(`<h2>No se guardó</h2><p>${esc(mensajeError(e))}</p>`); }
+      }
+    } else {
+      errores++; $('#m-e').textContent = errores + (errores === 1 ? ' error' : ' errores');
+      bloqueo = true; await sleep(700); a.classList.remove('vuelta'); c.classList.remove('vuelta'); bloqueo = false;
+    }
+  });
+}
+
+/* ---- Calcula el adeudo ---- */
+function problemaAdeudo() {
+  const r = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const tipo = r(0, 3);
+  let texto, ok;
+  if (tipo === 0) { const a = r(10, 90) * 50, b = r(2, 30) * 25; texto = `Adeudo de <b>$${a.toLocaleString('es-MX')}</b> más intereses de <b>$${b.toLocaleString('es-MX')}</b>`; ok = a + b; }
+  else if (tipo === 1) { const a = r(20, 99) * 50, b = r(2, 19) * 50; texto = `Debía <b>$${a.toLocaleString('es-MX')}</b> y abonó <b>$${b.toLocaleString('es-MX')}</b>`; ok = a - b; }
+  else if (tipo === 2) { const p = [10, 20, 25, 50][r(0, 3)], a = r(2, 40) * 100; texto = `Recargo del <b>${p}%</b> sobre <b>$${a.toLocaleString('es-MX')}</b>`; ok = a * p / 100; }
+  else { const m = r(2, 6), a = r(3, 40) * 50; texto = `<b>${m}</b> mensualidades atrasadas de <b>$${a.toLocaleString('es-MX')}</b>`; ok = m * a; }
+  const opciones = new Set([ok]);
+  while (opciones.size < 3) { const d = [50, 100, 150, 250, 500][r(0, 4)] * (Math.random() < .5 ? -1 : 1); if (ok + d > 0) opciones.add(ok + d); }
+  return { texto, ok, opciones: [...opciones].sort(() => Math.random() - .5) };
+}
+function jugarAdeudo() {
+  const DUR = 45000;
+  let puntaje = 0, bien = 0, mal = 0, fin = false;
+  const caja = $('#p-caja');
+  const t0 = performance.now();
+  const terminar = async () => {
+    if (fin) return; fin = true; clearInterval(iv);
+    puntaje = Math.max(0, puntaje);
+    caja.innerHTML = '<h2>Guardando…</h2>';
+    try { await enviarPuntaje(puntaje); finPrueba(`<h2>¡Se acabó el tiempo!</h2><p>${bien} aciertos y ${mal} errores.</p><p>Puntaje: <b class="display" style="font-size:2rem">${puntaje}</b></p>`); }
+    catch (e) { finPrueba(`<h2>No se guardó</h2><p>${esc(mensajeError(e))}</p>`); }
+  };
+  const iv = setInterval(() => {
+    const ms = performance.now() - t0;
+    const b = $('#ad-barra'); if (b) b.style.width = Math.max(0, 100 - ms / DUR * 100) + '%';
+    const s = $('#ad-seg'); if (s) s.textContent = Math.max(0, Math.ceil((DUR - ms) / 1000)) + ' s';
+    if (ms >= DUR) terminar();
+  }, 100);
+  const siguiente = () => {
+    if (fin) return;
+    const p = problemaAdeudo();
+    caja.innerHTML = `<div class="marcador"><span id="ad-seg">45 s</span><span>${puntaje} pts</span></div>
+      <div class="barra"><i id="ad-barra"></i></div>
+      <div class="cuenta">${p.texto}.<br>¿Cuánto es?</div>
+      <div class="opciones">${p.opciones.map(o => `<button class="opcion" data-v="${o}">$${o.toLocaleString('es-MX')}</button>`).join('')}</div>`;
+    $$('.opcion', caja).forEach(b => b.onclick = async () => {
+      $$('.opcion', caja).forEach(x => x.disabled = true);
+      if (+b.dataset.v === p.ok) { puntaje += 100; bien++; b.classList.add('bien'); }
+      else { puntaje -= 50; mal++; b.classList.add('mal'); $$('.opcion', caja).find(x => +x.dataset.v === p.ok)?.classList.add('bien'); }
+      await sleep(+b.dataset.v === p.ok ? 250 : 700);
+      siguiente();
+    });
+  };
+  siguiente();
+}
+
+/* =====================================================================
+   GALA DE ELIMINACIÓN
+   ===================================================================== */
+let saltarGala = false;
+async function esperar(ms) {
+  const fin = performance.now() + ms;
+  while (performance.now() < fin) { if (saltarGala) throw 'saltar'; await sleep(50); }
+}
+async function abrirGala(semana, marcarVista) {
+  let r;
+  try { r = await rpc('gala', { p_token: token, p_semana: semana }); } catch (e) { toast(mensajeError(e)); return; }
+  if (!r) return;
+  if (marcarVista) store.set('ab_gala_' + semana, '1');
+  galaAbierta = true; saltarGala = false;
+  const G = $('#gala'), E = $('#g-escena');
+  G.classList.remove('hidden'); document.body.style.overflow = 'hidden';
+  $('#g-saltar').classList.remove('hidden');
+  $('#g-saltar').onclick = () => { saltarGala = true; };
+  const tabla = r.tabla;
+  const elim = tabla.find(t => t.id === r.eliminado_id) || { id: r.eliminado_id, nombre: r.eliminado, puntos: 0 };
+  const persona = id => porId(id) || tabla.find(t => t.id === id) || { id, nombre: '?' };
+  try {
+    E.innerHTML = `<p class="typed" style="color:#C9C3EE;margin:0">Semana ${r.semana}</p>
+      <h1 class="display gala-titulo">Gala de eliminación</h1>
+      <p class="lema" style="font-size:1.4rem">¡Te vamos a cobrar!</p>`;
+    await esperar(2600);
+
+    if (r.lider_id) {
+      E.innerHTML = `<p class="typed" style="color:#C9C3EE;margin:0">Líder de la semana</p>
+        <div style="font-size:2rem">👑</div>${avatar(persona(r.lider_id), 120)}
+        <h2 class="display" style="font-size:2.2rem">${esc(r.lider)}</h2>
+        <p>${r.lider_salvado ? 'Recibió muchos votos… pero el liderazgo lo protege.' : 'Está protegido esta semana.'}</p>`;
+      await esperar(3200);
+    }
+
+    // conteo de puntos, del menor al mayor, dejando al eliminado al final
+    const orden = tabla.filter(t => t.id !== r.eliminado_id).sort((a, b) => a.puntos - b.puntos);
+    E.innerHTML = `<h2 class="display" style="font-size:2rem;color:var(--luz)">Los votos</h2><div class="conteo" id="g-conteo"></div>`;
+    const cont = $('#g-conteo');
+    for (const t of orden) {
+      const fila = document.createElement('div');
+      fila.className = 'fila-conteo';
+      fila.innerHTML = `${avatar(persona(t.id), 40)}<span style="font-weight:600">${esc(t.nombre)}${t.lider ? ' 👑' : ''}</span><span class="p">0</span>`;
+      cont.appendChild(fila);
+      const P = $('.p', fila);
+      const pasos = Math.min(t.puntos, 12);
+      for (let k = 1; k <= pasos; k++) { P.textContent = Math.round(t.puntos * k / pasos); await esperar(45); }
+      P.textContent = t.puntos;
+      fila.classList.add('salvo');
+      fila.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      await esperar(orden.length > 10 ? 380 : 650);
+    }
+    await esperar(1200);
+
+    E.innerHTML = `${r.desempate ? '<p style="color:#C9C3EE">Hubo empate y el líder tuvo que decidir.</p>' : ''}
+      <p class="display suspenso">El habitante que deja la casa es<span class="puntos-suspenso"></span></p>`;
+    await esperar(3500);
+
+    E.innerHTML = `<div class="revelado">${avatar(persona(elim.id), 170)}<div class="sello-grande">¡TE VAMOS A COBRAR!</div></div>
+      <h2 class="display" style="font-size:2.6rem;margin-top:10px">${esc(elim.nombre)}</h2>
+      <p style="margin:0">${elim.puntos} puntos en contra</p>`;
+    if (navigator.vibrate) navigator.vibrate([80, 40, 160]);
+    await esperar(4200);
+  } catch (e) { if (e !== 'saltar') console.error(e); }
+
+  // tabla completa
+  $('#g-saltar').classList.add('hidden');
+  const ordenFinal = [...tabla].sort((a, b) => b.puntos - a.puntos || b.publico - a.publico);
+  E.style.justifyContent = 'flex-start';
+  E.innerHTML = `<h2 class="display" style="font-size:2rem;color:var(--luz);margin-top:8px">Semana ${r.semana}: tabla de cobro</h2>
+    <p style="margin:0;color:#C9C3EE">Salió <b style="color:#fff">${esc(r.eliminado)}</b>${r.lider ? ` · Líder: <b style="color:#fff">${esc(r.lider)}</b>` : ''}</p>
+    <div class="formato tabla-final" style="text-align:left">
+      <div class="folio"><span>Habitante</span><span>Puntos · Público</span></div>
+      ${ordenFinal.map(t => `<div class="res ${t.id === r.eliminado_id ? 'fuera' : ''}">
+        <div class="fila">${avatar(persona(t.id), 38)}
+          <span class="nm">${esc(t.nombre)}${t.lider ? ' 👑' : ''}<small>${t.votos} ${t.votos === 1 ? 'voto' : 'votos'}${t.motivos.length ? ` · ${t.motivos.length} ${t.motivos.length === 1 ? 'motivo' : 'motivos'}` : ''}</small></span>
+          <span class="pt">${t.puntos}</span><span class="pb">${t.publico} del público</span></div>
+        ${t.motivos.length ? `<details style="margin-top:4px"><summary style="cursor:pointer;font-size:.85rem;color:var(--tinta);margin-left:48px">Ver por qué votaron</summary>
+          <ul class="motivos">${t.motivos.map(m => `<li>“${esc(m.t)}”${m.p ? ' <em>(público)</em>' : ''}</li>`).join('')}</ul></details>` : ''}
+      </div>`).join('')}
+    </div>
+    <div style="width:100%;margin-top:16px"><button class="btn" id="g-cerrar">Regresar a la casa</button></div>`;
+  E.scrollTop = 0; G.scrollTop = 0;
+  $('#g-cerrar').onclick = () => {
+    G.classList.add('hidden'); E.style.justifyContent = ''; document.body.style.overflow = '';
+    galaAbierta = false; refrescar();
+  };
+}
+
+/* =====================================================================
+   ACCESO SECRETO: tocar el logo 10 veces
+   ===================================================================== */
+let toques = 0, toqueT = null;
+$$('.js-logo').forEach(l => l.addEventListener('click', () => {
+  toques++; clearTimeout(toqueT);
+  toqueT = setTimeout(() => toques = 0, 2500);
+  if (toques >= 10) { toques = 0; entrarProduccion(); }
+}));
+async function entrarProduccion() {
+  if (!sb) return;
+  const { data } = await sb.auth.getSession();
+  if (data.session && await esAdmin()) return abrirAdmin();
+  $('#k-clave').value = ''; $('#k-error').classList.add('hidden');
+  $('#m-clave').classList.remove('hidden'); $('#k-clave').focus();
+}
+async function esAdmin() { try { return await rpc('es_admin'); } catch { return false; } }
+$('#k-cancelar').onclick = () => $('#m-clave').classList.add('hidden');
+$('#f-clave').addEventListener('submit', async e => {
+  e.preventDefault();
+  const { error } = await sb.auth.signInWithPassword({ email: ADMIN_EMAIL, password: $('#k-clave').value });
+  if (error || !(await esAdmin())) { await sb.auth.signOut(); return mostrarError($('#k-error'), 'Clave incorrecta.'); }
+  $('#m-clave').classList.add('hidden');
+  abrirAdmin();
+});
+
+/* =====================================================================
+   PANEL DE PRODUCCIÓN
+   ===================================================================== */
+let adm = { tab: 'juego', cfg: null, jug: [], timer: null };
+const nombreDe = id => adm.jug.find(j => j.id === id)?.nombre || '—';
+
+function abrirAdmin() {
+  $('#admin').classList.remove('hidden'); document.body.style.overflow = 'hidden';
+  cargarAdmin();
+  clearInterval(adm.timer);
+  adm.timer = setInterval(() => { if (['juego', 'votos', 'pruebas'].includes(adm.tab) && !document.hidden) cargarAdmin(true); }, 6000);
+}
+function cerrarAdmin() {
+  $('#admin').classList.add('hidden'); document.body.style.overflow = '';
+  clearInterval(adm.timer); refrescar();
+}
+$('#a-cerrar').onclick = cerrarAdmin;
+$('#a-logout').onclick = async () => { await sb.auth.signOut(); cerrarAdmin(); };
+$$('#a-tabs button').forEach(b => b.onclick = () => {
+  adm.tab = b.dataset.at;
+  $$('#a-tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  cargarAdmin();
+});
+
+async function q(promesa) {
+  const { data, error } = await promesa;
+  if (error) throw new Error(error.message);
+  return data;
+}
+async function accion(fn, args, okMsg) {
+  try { const r = await rpc(fn, args); if (okMsg) toast(okMsg); await cargarAdmin(); return r; }
+  catch (e) { toast(mensajeError(e), 4000); }
+}
+
+async function cargarAdmin(silencioso) {
+  const C = $('#a-contenido');
+  // no repintar mientras se escribe en un formulario del panel
+  if (silencioso && C.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  try {
+    [adm.cfg, adm.jug] = await Promise.all([
+      q(sb.from('config').select('*').eq('id', 1).single()),
+      q(sb.from('jugadores').select('id,nombre,rol,estado,semana_eliminado,fallos,bloqueado_hasta,foto,creado').order('creado')),
+    ]);
+    const vista = { juego: adminJuego, votos: adminVotos, pruebas: adminPruebas, trivia: adminTrivia, habitantes: adminHabitantes }[adm.tab];
+    await vista(C);
+  } catch (e) { C.innerHTML = `<div class="error">${esc(mensajeError(e))}</div>`; }
+}
+
+/* ---- Juego: fases ---- */
+async function adminJuego(C) {
+  const c = adm.cfg;
+  const hab = adm.jug.filter(j => j.rol === 'jugador');
+  const act = hab.filter(j => j.estado === 'activo');
+  let h = `<div class="adm-caja"><h3>Estado</h3><dl class="kv">
+    <dt>Semana</dt><dd>${c.semana}</dd>
+    <dt>Fase</dt><dd>${esc(faseTexto({ ...c }))}</dd>
+    <dt>Prueba</dt><dd>${c.prueba ? esc(PRUEBAS[c.prueba].nombre) : '—'}</dd>
+    <dt>Líder</dt><dd>${c.lider_id ? esc(nombreDe(c.lider_id)) : '—'}</dd>
+    <dt>Habitantes</dt><dd>${act.length} activos de ${hab.length} · ${adm.jug.length - hab.length} de público</dd>
+  </dl></div>`;
+
+  const opcionesPrueba = Object.entries(PRUEBAS).map(([k, v]) => `<option value="${k}">${esc(v.nombre)}</option>`).join('');
+
+  if (c.fase === 'registro' || (c.fase === 'gala' && c.gala_revelada)) {
+    h += `<div class="adm-caja"><h3>Iniciar semana ${c.semana + 1}</h3>
+      ${c.semana === 0 ? `<p class="ayuda">Al iniciar la semana 1 se cierran los lugares de habitante: quien se registre después entra como público.</p>` : ''}
+      <label class="campo" for="ad-prueba">Prueba del líder</label>
+      <select class="in" id="ad-prueba">${opcionesPrueba}</select>
+      <div class="adm-acciones"><button class="btn" id="ad-iniciar">Iniciar semana ${c.semana + 1}</button></div></div>`;
+  }
+  if (c.fase === 'prueba') {
+    const ints = await q(sb.from('intentos').select('*').eq('semana', c.semana).order('puntaje', { ascending: false, nullsFirst: false }));
+    const top = ints.find(i => i.puntaje !== null && adm.jug.find(j => j.id === i.jugador_id)?.estado === 'activo');
+    h += `<div class="adm-caja"><h3>Prueba en curso</h3>
+      <p>${ints.filter(i => i.terminado).length} de ${act.length} ya jugaron. Va ganando: <b>${top ? esc(nombreDe(top.jugador_id)) + ` (${top.puntaje})` : 'nadie'}</b></p>
+      <label class="campo" for="ad-lider">Líder</label>
+      <select class="in" id="ad-lider"><option value="">Automático: mejor puntaje</option>${act.map(j => `<option value="${j.id}">${esc(j.nombre)}</option>`).join('')}</select>
+      <div class="adm-acciones"><button class="btn" id="ad-cerrar-prueba">Cerrar prueba y nombrar líder</button></div></div>`;
+  }
+  if (c.fase === 'votacion') {
+    const votos = await q(sb.from('votos').select('votante_id,es_publico').eq('semana', c.semana));
+    const ya = new Set(votos.filter(v => !v.es_publico).map(v => v.votante_id));
+    const faltan = hab.filter(j => !ya.has(j.id));
+    h += `<div class="adm-caja"><h3>Votación abierta</h3>
+      <p><b>${ya.size}</b> de ${hab.length} habitantes han votado (incluye eliminados).</p>
+      ${faltan.length ? `<p class="ayuda">Faltan: ${faltan.map(j => esc(j.nombre)).join(', ')}</p>` : ''}
+      <label class="campo" for="ad-lider2">Cambiar líder</label>
+      <select class="in" id="ad-lider2"><option value="">—</option>${act.map(j => `<option value="${j.id}" ${j.id === c.lider_id ? 'selected' : ''}>${esc(j.nombre)}</option>`).join('')}</select>
+      <div class="adm-acciones"><button class="btn" id="ad-cerrar-vot">Cerrar votación</button>
+      <button class="btn sec chico" data-fase="prueba">Regresar a la prueba</button></div></div>`;
+  }
+  if (c.fase === 'decision') {
+    h += `<div class="adm-caja"><h3>Empate</h3>
+      <p>${c.lider_id ? `Esperando a que <b>${esc(nombreDe(c.lider_id))}</b> decida desde su celular. Si tarda, puedes decidir tú:` : 'No hay líder. Decide tú quién sale:'}</p>
+      <div class="adm-acciones">${c.empatados.map(id => `<button class="btn sec chico" data-decidir="${id}">Sale ${esc(nombreDe(id))}</button>`).join('')}</div>
+      <div class="adm-acciones"><button class="btn sec chico" data-fase="votacion">Reabrir votación</button></div></div>`;
+  }
+  if (c.fase === 'gala' && !c.gala_revelada) {
+    h += `<div class="adm-caja"><h3>Gala lista</h3>
+      <p>Sale: <b>${esc(nombreDe(c.eliminado_id))}</b>. Nadie más lo sabe todavía.</p>
+      <p class="ayuda">Al revelar, la gala aparece sola en todos los celulares que tengan el juego abierto.</p>
+      <div class="adm-acciones"><button class="btn" id="ad-revelar">Revelar en todos los celulares</button>
+      <button class="btn sec chico" data-fase="votacion">Reabrir votación</button></div></div>`;
+  }
+  h += `<div class="adm-caja"><h3>Reiniciar</h3><p class="ayuda">Borra votos, pruebas y galas, y regresa a la semana 0. Los jugadores registrados se quedan.</p>
+    <div class="adm-acciones"><button class="btn sec chico" id="ad-reiniciar">Reiniciar juego</button></div></div>`;
+  C.innerHTML = h;
+
+  $('#ad-iniciar')?.addEventListener('click', () => accion('admin_iniciar_semana', { p_prueba: $('#ad-prueba').value }, 'Semana iniciada'));
+  $('#ad-cerrar-prueba')?.addEventListener('click', async () => {
+    const id = await accion('admin_cerrar_prueba', { p_lider: $('#ad-lider').value || null });
+    toast(id ? 'Líder: ' + nombreDe(id) : 'Prueba cerrada sin líder');
+  });
+  $('#ad-lider2')?.addEventListener('change', e => accion('admin_set_lider', { p_id: e.target.value || null }, 'Líder actualizado'));
+  $('#ad-cerrar-vot')?.addEventListener('click', async () => {
+    if (!confirm('¿Cerrar la votación?')) return;
+    const r = await accion('admin_cerrar_votacion', {});
+    if (r) toast(r.empate ? 'Hubo empate: decide el líder' : 'Votación cerrada. La gala está lista.', 3500);
+  });
+  $$('[data-decidir]').forEach(b => b.onclick = () => { if (confirm('¿Sale ' + nombreDe(b.dataset.decidir) + '?')) accion('admin_decidir', { p_id: b.dataset.decidir }, 'Decidido'); });
+  $$('[data-fase]').forEach(b => b.onclick = () => { if (confirm('¿Seguro?')) accion('admin_fase', { p_fase: b.dataset.fase }, 'Fase cambiada'); });
+  $('#ad-revelar')?.addEventListener('click', () => { if (confirm('¿Revelar la gala en todos los celulares?')) accion('admin_revelar', {}, '¡Gala revelada!'); });
+  $('#ad-reiniciar')?.addEventListener('click', () => {
+    if (prompt('Escribe REINICIAR para borrar votos, pruebas y galas') === 'REINICIAR') accion('admin_reiniciar_juego', {}, 'Juego reiniciado');
+  });
+}
+
+/* ---- Votos ---- */
+async function adminVotos(C) {
+  const c = adm.cfg;
+  const sem = adm.semVotos ?? c.semana;
+  const votos = await q(sb.from('votos').select('*').eq('semana', sem).order('creado'));
+  const porVotante = {};
+  votos.forEach(v => (porVotante[v.votante_id] ??= []).push(v));
+  const totales = {};
+  votos.forEach(v => { const t = (totales[v.votado_id] ??= { p: 0, pub: 0 }); v.es_publico ? t.pub += v.puntos : t.p += v.puntos; });
+  const orden = Object.entries(totales).sort((a, b) => b[1].p - a[1].p);
+  const semanas = Array.from({ length: c.semana }, (_, i) => i + 1);
+
+  C.innerHTML = `<div class="adm-caja"><label class="campo" for="ad-sem" style="margin-top:0">Semana</label>
+      <select class="in" id="ad-sem">${semanas.map(s => `<option ${s === sem ? 'selected' : ''}>${s}</option>`).join('') || '<option>0</option>'}</select></div>
+    <div class="adm-caja"><h3>Puntos</h3>
+      ${orden.length ? orden.map(([id, t]) => `<div class="adm-fila"><div class="info"><b>${esc(nombreDe(id))}${id === c.lider_id && sem === c.semana ? ' 👑' : ''}</b></div>
+        <span class="pill rojo">${t.p} pts</span><span class="pill">${t.pub} público</span></div>`).join('') : '<p class="ayuda">Sin votos todavía.</p>'}</div>
+    <div class="adm-caja"><h3>Quién votó por quién</h3>
+      ${Object.entries(porVotante).map(([vid, vs]) => `<div class="voto-adm"><b>${esc(nombreDe(vid))}</b> ${vs[0].es_publico ? '<span class="pill azul">público</span>' : ''}
+        <ul>${vs.sort((a, b) => b.puntos - a.puntos).map(v => `<li>${v.puntos} → ${esc(nombreDe(v.votado_id))}
+          ${v.motivo ? `<div class="mot ${v.oculto ? 'oc' : ''}">“${esc(v.motivo)}” <button class="mini" data-ocultar="${v.id}" data-val="${!v.oculto}">${v.oculto ? 'Mostrar' : 'Ocultar en gala'}</button></div>` : ''}</li>`).join('')}</ul></div>`).join('') || '<p class="ayuda">Sin votos todavía.</p>'}
+    </div>`;
+  $('#ad-sem').onchange = e => { adm.semVotos = +e.target.value; cargarAdmin(); };
+  $$('[data-ocultar]').forEach(b => b.onclick = async () => {
+    try { await q(sb.from('votos').update({ oculto: b.dataset.val === 'true' }).eq('id', b.dataset.ocultar)); cargarAdmin(); } catch (e) { toast(mensajeError(e)); }
+  });
+}
+
+/* ---- Pruebas ---- */
+async function adminPruebas(C) {
+  const c = adm.cfg;
+  const ints = c.semana ? await q(sb.from('intentos').select('*').eq('semana', c.semana).order('puntaje', { ascending: false, nullsFirst: false })) : [];
+  C.innerHTML = `<div class="adm-caja"><h3>Puntajes de la semana ${c.semana}</h3>
+    ${c.prueba ? `<p class="ayuda">${esc(PRUEBAS[c.prueba].nombre)}</p>` : ''}
+    ${ints.map((i, k) => `<div class="adm-fila"><div class="info"><b>${k + 1}. ${esc(nombreDe(i.jugador_id))}</b>
+      <small>${i.terminado ? new Date(i.terminado).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : 'Incompleto'}</small></div>
+      <span class="pill ${k === 0 && i.puntaje !== null ? 'verde' : ''}">${i.puntaje ?? 0}</span></div>`).join('') || '<p class="ayuda">Nadie ha jugado todavía.</p>'}
+    </div>`;
+}
+
+/* ---- Trivia ---- */
+async function adminTrivia(C) {
+  const preguntas = await q(sb.from('trivia').select('*').order('creado', { ascending: false }));
+  const activas = preguntas.filter(p => p.activa).length;
+  C.innerHTML = `<form class="adm-caja" id="ad-tf"><h3>Nueva pregunta</h3>
+      <label class="campo" for="tq">Pregunta</label><input class="in" id="tq" maxlength="200" required>
+      ${[0, 1, 2, 3].map(i => `<div class="radio-op"><input type="radio" name="tc" value="${i}" ${i === 0 ? 'checked' : ''} aria-label="Respuesta correcta ${i + 1}">
+        <input class="in" data-to="${i}" maxlength="80" placeholder="Opción ${i + 1}" required></div>`).join('')}
+      <p class="ayuda">Marca el círculo de la respuesta correcta.</p>
+      <div class="adm-acciones"><button class="btn" type="submit">Guardar pregunta</button></div></form>
+    <div class="adm-caja"><h3>Preguntas (${activas} activas)</h3>
+      <p class="ayuda">Las preguntas activas son las que salen en la próxima trivia. Desactiva las que ya usaste.</p>
+      ${preguntas.map(p => `<div class="adm-fila" style="align-items:flex-start"><div class="info">
+          <b style="white-space:normal">${esc(p.pregunta)}</b>
+          <small>${p.opciones.map((o, i) => i === p.correcta ? `<b style="display:inline;color:var(--ok)">✓ ${esc(o)}</b>` : esc(o)).join(' · ')}</small></div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <button class="mini" data-tact="${p.id}" data-val="${!p.activa}">${p.activa ? '✅ Activa' : 'Activar'}</button>
+            <button class="mini" data-tdel="${p.id}">Borrar</button></div></div>`).join('') || '<p class="ayuda">Aún no hay preguntas.</p>'}
+    </div>`;
+  $('#ad-tf').onsubmit = async e => {
+    e.preventDefault();
+    const fila = {
+      pregunta: $('#tq').value.trim(),
+      opciones: $$('[data-to]').map(i => i.value.trim()),
+      correcta: +$('input[name=tc]:checked').value,
+      activa: true,
+    };
+    try { await q(sb.from('trivia').insert(fila)); toast('Pregunta guardada'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
+  };
+  $$('[data-tact]').forEach(b => b.onclick = async () => { try { await q(sb.from('trivia').update({ activa: b.dataset.val === 'true' }).eq('id', b.dataset.tact)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
+  $$('[data-tdel]').forEach(b => b.onclick = async () => { if (!confirm('¿Borrar esta pregunta?')) return; try { await q(sb.from('trivia').delete().eq('id', b.dataset.tdel)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
+}
+
+/* ---- Habitantes ---- */
+async function adminHabitantes(C) {
+  const c = adm.cfg;
+  const fila = j => `<div class="adm-fila" style="align-items:flex-start">
+      ${j.foto ? `<div class="av" style="width:40px;height:40px"><img src="${j.foto}" alt=""></div>` : avatar(j, 40)}
+      <div class="info"><b>${esc(j.nombre)}</b>
+        <small>${j.rol === 'jugador' ? (j.estado === 'activo' ? 'En la casa' : `Eliminado semana ${j.semana_eliminado}`) : 'Público'}${j.bloqueado_hasta && new Date(j.bloqueado_hasta) > new Date() ? ' · <b style="display:inline;color:var(--sello)">bloqueado</b>' : ''}</small>
+        <div class="adm-acciones" style="margin-top:6px">
+          <button class="mini" data-pin="${j.id}">Nuevo PIN</button>
+          <button class="mini" data-rol="${j.id}" data-val="${j.rol === 'jugador' ? 'espectador' : 'jugador'}">${j.rol === 'jugador' ? 'Pasar a público' : 'Hacer habitante'}</button>
+          ${j.estado === 'eliminado' ? `<button class="mini" data-reac="${j.id}">Regresar a la casa</button>` : ''}
+          ${j.foto ? `<button class="mini" data-sinfoto="${j.id}">Quitar foto</button>` : ''}
+          <button class="mini" data-borrar="${j.id}">Borrar</button>
+        </div></div></div>`;
+  const hab = adm.jug.filter(j => j.rol === 'jugador'), pub = adm.jug.filter(j => j.rol === 'espectador');
+  C.innerHTML = `<div class="adm-caja"><h3>Lugares de habitante</h3>
+      <div style="display:flex;gap:8px"><input class="in" id="ad-cupo" type="number" min="2" max="100" value="${c.cupo}" style="width:100px">
+      <button class="btn chico" id="ad-cupo-g">Guardar</button></div></div>
+    <div class="adm-caja"><h3>Habitantes (${hab.length})</h3>${hab.map(fila).join('') || '<p class="ayuda">Nadie registrado.</p>'}</div>
+    <div class="adm-caja"><h3>Público (${pub.length})</h3>${pub.map(fila).join('') || '<p class="ayuda">Sin público.</p>'}</div>`;
+  $('#ad-cupo-g').onclick = async () => { try { await q(sb.from('config').update({ cupo: +$('#ad-cupo').value }).eq('id', 1)); toast('Guardado'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } };
+  $$('[data-pin]').forEach(b => b.onclick = () => {
+    const pin = prompt('Nuevo PIN de 4 números para ' + nombreDe(b.dataset.pin));
+    if (pin) accion('admin_reset_pin', { p_id: b.dataset.pin, p_pin: pin }, 'PIN cambiado');
+  });
+  $$('[data-rol]').forEach(b => b.onclick = async () => { try { await q(sb.from('jugadores').update({ rol: b.dataset.val }).eq('id', b.dataset.rol)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
+  $$('[data-reac]').forEach(b => b.onclick = () => { if (confirm('¿Regresar a ' + nombreDe(b.dataset.reac) + ' a la casa?')) accion('admin_reactivar', { p_id: b.dataset.reac }, 'Regresó a la casa'); });
+  $$('[data-sinfoto]').forEach(b => b.onclick = async () => { try { await q(sb.from('jugadores').update({ foto: null }).eq('id', b.dataset.sinfoto)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
+  $$('[data-borrar]').forEach(b => b.onclick = async () => {
+    if (!confirm('¿Borrar a ' + nombreDe(b.dataset.borrar) + '? Se borran también sus votos.')) return;
+    try { await q(sb.from('jugadores').delete().eq('id', b.dataset.borrar)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
+  });
+}
+
+/* =====================================================================
+   ARRANQUE
+   ===================================================================== */
+(async function iniciar() {
+  if (!configurado) return mostrar('s-config');
+  pintarFotoRegistro();
+  if (token) await entrarCasa(); else mostrar('s-inicio');
+  setInterval(() => { if (!document.hidden && token && ['s-casa'].includes(pantalla)) refrescar(); }, 7000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && token && pantalla === 's-casa') refrescar(); });
+})();
+</script>
+</body>
+</html>
