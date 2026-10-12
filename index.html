@@ -236,6 +236,15 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--texto);color:#fff;padding:10px 16px;border-radius:999px;z-index:90;font-weight:600;font-size:.92rem;max-width:90vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 
+.campo-dinero{display:flex;align-items:center;gap:6px}
+.campo-dinero span{font-family:Anton,Impact,sans-serif;font-size:1.8rem;color:var(--tinta)}
+.campo-dinero .in{font-size:1.5rem;font-family:"Special Elite",monospace;letter-spacing:.04em}
+.campo-dinero .in.ok{border-color:var(--ok);background:#DFF3E8}
+.campo-dinero .in.no{border-color:var(--sello);background:#FBE0E4}
+.ad-aviso{min-height:1.4em;margin-top:6px;font-weight:700}
+.ad-aviso.bien{color:var(--ok)}
+.ad-aviso.mal{color:var(--sello)}
+
 /* ---------- v3: cabecera compacta con música y sonido ---------- */
 .cabecera{gap:8px}
 .cabecera .logo{width:46px;height:46px}
@@ -527,7 +536,7 @@ const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuari
 const PRUEBAS = {
   trivia:  { nombre: 'Trivia de la oficina',   desc: 'Preguntas sobre la oficina y los compañeros. Tienes 12 segundos por pregunta; contestar rápido da puntos extra.' },
   memoria: { nombre: 'Memoria de expedientes', desc: 'Voltea los expedientes y encuentra los 8 pares. Gana quien termine más rápido y con menos errores.' },
-  adeudo:  { nombre: 'Calcula el adeudo',      desc: 'Tienes 45 segundos para resolver cuentas de cobranza. +100 por acierto, −50 por error.' },
+  adeudo:  { nombre: 'Calcula el adeudo',      desc: 'Tienes 60 segundos para cobrar cuentas de la oficina: mensualidades, pagarés con 10% mensual y clientes que se ponen al corriente. Escribe la cantidad exacta. +100, +150 o +300 según la dificultad; −50 por error.' },
 };
 const ERRORES = {
   SESION_INVALIDA: 'Tu sesión terminó. Entra otra vez con tu nombre y PIN.',
@@ -1501,20 +1510,32 @@ function jugarMemoria(practica = false) {
 }
 
 /* ---- Calcula el adeudo ---- */
+// Pagos que se manejan en la oficina
+const PAGOS = [2000, 2500, 3000, 3500, 4000, 5000];
+const pesos = n => '$' + n.toLocaleString('es-MX');
 function problemaAdeudo() {
   const r = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
-  const tipo = r(0, 3);
-  let texto, ok;
-  if (tipo === 0) { const a = r(10, 90) * 50, b = r(2, 30) * 25; texto = `Adeudo de <b>$${a.toLocaleString('es-MX')}</b> más intereses de <b>$${b.toLocaleString('es-MX')}</b>`; ok = a + b; }
-  else if (tipo === 1) { const a = r(20, 99) * 50, b = r(2, 19) * 50; texto = `Debía <b>$${a.toLocaleString('es-MX')}</b> y abonó <b>$${b.toLocaleString('es-MX')}</b>`; ok = a - b; }
-  else if (tipo === 2) { const p = [10, 20, 25, 50][r(0, 3)], a = r(2, 40) * 100; texto = `Recargo del <b>${p}%</b> sobre <b>$${a.toLocaleString('es-MX')}</b>`; ok = a * p / 100; }
-  else { const m = r(2, 6), a = r(3, 40) * 50; texto = `<b>${m}</b> mensualidades atrasadas de <b>$${a.toLocaleString('es-MX')}</b>`; ok = m * a; }
-  const opciones = new Set([ok]);
-  while (opciones.size < 3) { const d = [50, 100, 150, 250, 500][r(0, 4)] * (Math.random() < .5 ? -1 : 1); if (ok + d > 0) opciones.add(ok + d); }
-  return { texto, ok, opciones: [...opciones].sort(() => Math.random() - .5) };
+  const M = PAGOS[r(0, PAGOS.length - 1)];
+  const dado = Math.random();
+  if (dado < .4) {
+    // Fácil: mensualidades sin intereses
+    const x = r(2, 6);
+    return { nivel: 'Fácil', valor: 100, ok: x * M,
+      texto: `Un cliente debe <b>${x}</b> mensualidades de <b>${pesos(M)}</b>.<br>¿Con cuánto se pone al corriente <strong>sin contar intereses</strong>?` };
+  }
+  if (dado < .75) {
+    // Media: un pagaré con 10% mensual sobre el monto original
+    const n = r(1, 6);
+    return { nivel: 'Pagaré', valor: 150, ok: M + M / 10 * n,
+      texto: `Un cliente tiene un pagaré de <b>${pesos(M)}</b> con <b>${n}</b> ${n === 1 ? 'mes' : 'meses'} de atraso.<br>¿Cuánto tiene que pagar <strong>en total</strong> por ese pagaré?` };
+  }
+  // Difícil: varios pagarés; el más atrasado lleva más meses de interés
+  const n = r(2, 4);
+  return { nivel: 'Difícil', valor: 300, ok: n * M + M / 10 * (n * (n + 1) / 2),
+    texto: `Un cliente debe <b>${n}</b> pagarés de <b>${pesos(M)}</b> y se quiere poner al corriente.<br>¿Cuánto es su <strong>total con todo y el interés</strong>?` };
 }
 function jugarAdeudo(practica = false) {
-  const DUR = 45000;
+  const DUR = 60000;
   let puntaje = 0, bien = 0, mal = 0, fin = false, ultimo = 99;
   const caja = $('#p-caja');
   const t0 = performance.now();
@@ -1540,17 +1561,40 @@ function jugarAdeudo(practica = false) {
   const siguiente = () => {
     if (fin) return;
     const p = problemaAdeudo();
-    caja.innerHTML = `<div class="marcador"><span id="ad-seg">45 s</span><span>${puntaje} pts</span></div>
+    caja.innerHTML = `<div class="marcador"><span id="ad-seg">${Math.ceil((DUR - (performance.now() - t0)) / 1000)} s</span><span>${puntaje} pts</span></div>
       <div class="barra"><i id="ad-barra"></i></div>
-      <div class="cuenta">${p.texto}.<br>¿Cuánto es?</div>
-      <div class="opciones">${p.opciones.map(o => `<button class="opcion" data-v="${o}">$${o.toLocaleString('es-MX')}</button>`).join('')}</div>`;
-    $$('.opcion', caja).forEach(b => b.onclick = async () => {
-      $$('.opcion', caja).forEach(x => x.disabled = true);
-      if (+b.dataset.v === p.ok) { puntaje += 100; bien++; b.classList.add('bien'); SFX.tocar('caja'); }
-      else { puntaje -= 50; mal++; b.classList.add('mal'); SFX.tocar('buzzer'); $$('.opcion', caja).find(x => +x.dataset.v === p.ok)?.classList.add('bien'); }
-      await sleep(+b.dataset.v === p.ok ? 250 : 700);
-      siguiente();
+      <div class="folio" style="margin:0 0 6px"><span>${p.nivel}</span><span>+${p.valor} pts</span></div>
+      <div class="cuenta">${p.texto}</div>
+      <form id="ad-form" autocomplete="off" style="margin-top:14px">
+        <div class="campo-dinero"><span>$</span><input id="ad-resp" class="in" inputmode="numeric" placeholder="Escribe la cantidad" aria-label="Respuesta"></div>
+        <div id="ad-aviso" class="ad-aviso"></div>
+        <button class="btn" type="submit" style="margin-top:10px">Cobrar</button>
+      </form>`;
+    const inp = $('#ad-resp');
+    // solo números, con comas para que se lea fácil
+    inp.addEventListener('input', () => {
+      const d = inp.value.replace(/\D/g, '').slice(0, 7);
+      inp.value = d ? (+d).toLocaleString('es-MX') : '';
     });
+    inp.focus();
+    $('#ad-form').onsubmit = async e => {
+      e.preventDefault();
+      if (fin) return;
+      const v = +inp.value.replace(/\D/g, '');
+      if (!inp.value) { inp.focus(); return; }
+      $$('#ad-form input, #ad-form button').forEach(x => x.disabled = true);
+      const aviso = $('#ad-aviso');
+      if (v === p.ok) {
+        puntaje += p.valor; bien++; SFX.tocar('caja');
+        inp.classList.add('ok'); aviso.textContent = `¡Correcto! +${p.valor}`; aviso.className = 'ad-aviso bien';
+        await sleep(450);
+      } else {
+        puntaje -= 50; mal++; SFX.tocar('buzzer');
+        inp.classList.add('no'); aviso.innerHTML = `Era <b>${pesos(p.ok)}</b> · −50`; aviso.className = 'ad-aviso mal';
+        await sleep(1500);
+      }
+      siguiente();
+    };
   };
   siguiente();
 }
