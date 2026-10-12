@@ -867,12 +867,18 @@ function comprimirFoto(file) {
    INICIO: entrar / registrarse
    ===================================================================== */
 let fotoRegistro = null;
-$$('.pestanas button').forEach(b => b.onclick = () => {
-  $$('.pestanas button').forEach(x => x.setAttribute('aria-selected', x === b));
-  $('#f-entrar').classList.toggle('hidden', b.dataset.tab !== 'entrar');
-  $('#f-registro').classList.toggle('hidden', b.dataset.tab !== 'registro');
-  if (b.dataset.tab === 'registro') cargarInfoPublica();
-});
+function elegirPestana(tab) {
+  $$('.pestanas button').forEach(x => x.setAttribute('aria-selected', x.dataset.tab === tab));
+  $('#f-entrar').classList.toggle('hidden', tab !== 'entrar');
+  $('#f-registro').classList.toggle('hidden', tab !== 'registro');
+  if (tab === 'registro') cargarInfoPublica();
+}
+$$('.pestanas button').forEach(b => b.onclick = () => elegirPestana(b.dataset.tab));
+// Quien nunca ha entrado desde este celular ve primero el registro
+function mostrarInicio() {
+  elegirPestana(store.get('ab_conocido') ? 'entrar' : 'registro');
+  mostrar('s-inicio');
+}
 
 async function cargarInfoPublica() {
   try {
@@ -910,7 +916,7 @@ $('#f-registro').addEventListener('submit', async e => {
   const btn = e.submitter; btn.disabled = true;
   try {
     const r = await rpc('registrar', { p_nombre: $('#r-nombre').value, p_pin: pin, p_foto: fotoRegistro, p_frase: $('#r-frase').value });
-    token = r.token; store.set('ab_token', token);
+    token = r.token; store.set('ab_token', token); store.set('ab_conocido', '1');
     await selloEnviado(r.rol === 'jugador' ? '¡BIENVENIDO!' : 'PÚBLICO');
     await entrarCasa();
   } catch (x) { mostrarError(err, x); }
@@ -923,7 +929,7 @@ $('#f-entrar').addEventListener('submit', async e => {
   const btn = e.submitter; btn.disabled = true;
   try {
     const r = await rpc('entrar', { p_nombre: $('#e-nombre').value, p_pin: $('#e-pin').value });
-    token = r.token; store.set('ab_token', token);
+    token = r.token; store.set('ab_token', token); store.set('ab_conocido', '1');
     await entrarCasa();
   } catch (x) { mostrarError(err, x); }
   btn.disabled = false;
@@ -984,7 +990,7 @@ async function entrarCasa() {
 function cerrarSesion() {
   if (token) rpc('salir', { p_token: token }).catch(() => { });
   token = null; est = null; predSel = null; store.del('ab_token');
-  mostrar('s-inicio');
+  mostrarInicio();
 }
 
 function faseTexto(g) {
@@ -2046,7 +2052,7 @@ async function adminHabitantes(C) {
 (async function iniciar() {
   if (!configurado) return mostrar('s-config');
   pintarFotoRegistro();
-  if (token) await entrarCasa(); else mostrar('s-inicio');
+  if (token) { store.set('ab_conocido', '1'); await entrarCasa(); } else mostrarInicio();
   setInterval(() => { if (!document.hidden && token && ['s-casa'].includes(pantalla)) refrescar(); }, 7000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && token && pantalla === 's-casa') refrescar(); });
 })();
