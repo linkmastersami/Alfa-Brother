@@ -97,15 +97,32 @@ Tú juegas como cualquier otro con tu propio nombre y PIN. Si alguien te ve el c
 
 ---
 
-## 5. Actualizaciones de la base de datos
+## 5. Agenda automática
+
+En el panel → **Juego** → **Agenda de la semana N** pones día y hora para:
+
+1. Abre la casa / empieza la prueba (y qué prueba toca)
+2. Cierra la prueba: se nombra líder al mejor puntaje
+3. Abre la votación
+4. Cierra la votación
+5. Gala: revelación del eliminado
+
+El juego avanza solo a esas horas, cada vez que alguien tiene el juego abierto (revisa cada pocos segundos). Si hay empate y el líder no decide antes de la gala, el programa elige al azar. Con **Repetir cada semana**, después de cada gala la agenda se recorre 7 días sola. Lo que dejes vacío lo haces a mano con los botones de siempre.
+
+Los jugadores ven arriba de la casa cuánto falta para lo siguiente (por ejemplo "La votación cierra en 3 h 20 min").
+
+---
+
+## 6. Actualizaciones de la base de datos
 
 Cuando el juego reciba funciones nuevas que necesiten la base de datos, vuelve a ejecutar **todo** `supabase.sql` en el SQL Editor (si aparece el aviso, elige **Run and enable RLS**). No borra jugadores, votos ni trivias.
 
 Versión 2 (sala de espera): agrega la frase de cada jugador, la predicción secreta y la cuenta regresiva.
+Versión 3 (agenda y el ojo): agrega la agenda automática, la fase de espera, las pistas del ojo y la tabla de chismes.
 
 ---
 
-## 6. La casa en vivo
+## 7. La casa en vivo
 
 Los monitos usan **Supabase Realtime** (presencia y mensajes en vivo); no hace falta configurar nada ni ejecutar SQL. Si la etiqueta **● N en línea** no aparece:
 
@@ -116,7 +133,7 @@ Sin conexión en vivo el juego sigue funcionando: todos los monitos caminan solo
 
 ---
 
-## 7. Problemas comunes
+## 8. Problemas comunes
 
 | Mensaje | Qué hacer |
 |---|---|

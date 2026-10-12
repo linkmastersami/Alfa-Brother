@@ -102,6 +102,28 @@ create table if not exists public.admins (
 alter table public.config    add column if not exists inicio_at timestamptz;
 alter table public.jugadores add column if not exists frase text check (char_length(frase) <= 60);
 
+-- v3: agenda automática de cada semana
+alter table public.config add column if not exists ag_semana     int;
+alter table public.config add column if not exists ag_prueba     text;
+alter table public.config add column if not exists ag_prueba_ini timestamptz;
+alter table public.config add column if not exists ag_prueba_fin timestamptz;
+alter table public.config add column if not exists ag_voto_ini   timestamptz;
+alter table public.config add column if not exists ag_voto_fin   timestamptz;
+alter table public.config add column if not exists ag_gala       timestamptz;
+alter table public.config add column if not exists ag_repetir    boolean not null default true;
+-- nueva fase 'espera': la prueba ya cerró pero la votación todavía no abre
+alter table public.config drop constraint if exists config_fase_check;
+alter table public.config add constraint config_fase_check
+  check (fase in ('registro','prueba','espera','votacion','decision','gala'));
+
+-- v3: chismes que escribe la producción para el ojo de la tele
+create table if not exists public.chismes (
+  id     bigint generated always as identity primary key,
+  texto  text not null check (char_length(texto) between 3 and 160),
+  activo boolean not null default true,
+  creado timestamptz not null default now()
+);
+
 -- Predicción secreta: quién gana y quién sale primero
 create table if not exists public.predicciones (
   jugador_id  uuid primary key references public.jugadores(id) on delete cascade,
@@ -123,7 +145,7 @@ $$;
 do $$
 declare t text;
 begin
-  foreach t in array array['config','jugadores','sesiones','trivia','intentos','votos','historial','admins','predicciones'] loop
+  foreach t in array array['config','jugadores','sesiones','trivia','intentos','votos','historial','admins','predicciones','chismes'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists admin_todo on public.%I', t);
     execute format('create policy admin_todo on public.%I for all to authenticated using (public.es_admin()) with check (public.es_admin())', t);
@@ -266,7 +288,7 @@ $$;
 
 -- Todo lo que la pantalla principal necesita (sin fotos, para que sea ligero)
 create or replace function public.estado(p_token uuid)
-returns jsonb language plpgsql stable security definer set search_path = public as $$
+returns jsonb language plpgsql volatile security definer set search_path = public as $$
 declare
   yo public.jugadores;
   c public.config;
@@ -274,6 +296,7 @@ declare
   v_fin boolean;
 begin
   yo := public._yo(p_token);
+  perform public._avanzar_agenda();
   select * into c from public.config where id = 1;
   select count(*) into v_activos from public.jugadores where rol = 'jugador' and estado = 'activo';
   v_fin := c.semana > 0 and v_activos <= 1 and c.gala_revelada;
@@ -288,6 +311,9 @@ begin
     'primer_eliminado', (select (h.resultados->>'eliminado_id') from public.historial h where h.semana = 1),
     'juego', jsonb_build_object(
       'inicio_at', c.inicio_at, 'fin', v_fin,
+      'agenda', case when c.ag_semana in (c.semana, c.semana + 1) then jsonb_build_object(
+        'semana', c.ag_semana, 'prueba', c.ag_prueba, 'prueba_ini', c.ag_prueba_ini, 'prueba_fin', c.ag_prueba_fin,
+        'voto_ini', c.ag_voto_ini, 'voto_fin', c.ag_voto_fin, 'gala', c.ag_gala) end,
       'semana', c.semana, 'fase', c.fase, 'prueba', c.prueba, 'cupo', c.cupo,
       'lider_id', c.lider_id,
       'gala_revelada', c.gala_revelada,
@@ -495,11 +521,10 @@ end $$;
 --  FUNCIONES DEL ADMINISTRADOR
 -- ---------------------------------------------------------------------
 
-create or replace function public.admin_iniciar_semana(p_prueba text)
+create or replace function public._iniciar_semana(p_prueba text)
 returns void language plpgsql security definer set search_path = public as $$
 declare c public.config;
 begin
-  perform public._solo_admin();
   select * into c from public.config where id = 1 for update;
   if not (c.fase = 'registro' or (c.fase = 'gala' and c.gala_revelada)) then raise exception 'FASE_INCORRECTA'; end if;
   if p_prueba not in ('trivia','memoria','adeudo') then raise exception 'PRUEBA_INVALIDA'; end if;
@@ -511,13 +536,12 @@ begin
 end $$;
 
 -- Cierra la prueba. Sin p_lider elige al mejor puntaje (empate: quien terminó primero).
-create or replace function public.admin_cerrar_prueba(p_lider uuid default null)
+create or replace function public._cerrar_prueba(p_lider uuid default null)
 returns uuid language plpgsql security definer set search_path = public as $$
 declare
   c public.config;
   v_lider uuid := p_lider;
 begin
-  perform public._solo_admin();
   select * into c from public.config where id = 1 for update;
   if c.fase <> 'prueba' then raise exception 'FASE_INCORRECTA'; end if;
   if v_lider is null then
@@ -527,7 +551,11 @@ begin
      order by i.puntaje desc, i.terminado asc
      limit 1;
   end if;
-  update public.config set lider_id = v_lider, fase = 'votacion', actualizado = now() where id = 1;
+  update public.config
+     set lider_id = v_lider,
+         fase = case when c.ag_semana = c.semana and c.ag_voto_ini > now() then 'espera' else 'votacion' end,
+         actualizado = now()
+   where id = 1;
   return v_lider;
 end $$;
 
@@ -540,7 +568,7 @@ end $$;
 
 -- Cierra la votación: el que más puntos tiene sale. El líder se salva.
 -- Si hay empate, decide el líder (o el admin si no hay líder).
-create or replace function public.admin_cerrar_votacion()
+create or replace function public._cerrar_votacion()
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare
   c public.config;
@@ -548,7 +576,6 @@ declare
   v_max int;
   v_emp uuid[];
 begin
-  perform public._solo_admin();
   select * into c from public.config where id = 1 for update;
   if c.fase <> 'votacion' then raise exception 'FASE_INCORRECTA'; end if;
 
@@ -581,7 +608,7 @@ begin
 end $$;
 
 -- Lanza la gala en todos los celulares
-create or replace function public.admin_revelar()
+create or replace function public._revelar()
 returns void language plpgsql security definer set search_path = public as $$
 declare
   c public.config;
@@ -589,7 +616,6 @@ declare
   v_max_lider int;
   v_max_otros int;
 begin
-  perform public._solo_admin();
   select * into c from public.config where id = 1 for update;
   if c.fase <> 'gala' or c.eliminado_id is null or c.gala_revelada then raise exception 'FASE_INCORRECTA'; end if;
 
@@ -612,6 +638,154 @@ begin
 
   update public.jugadores set estado = 'eliminado', semana_eliminado = c.semana where id = c.eliminado_id;
   update public.config set gala_revelada = true, actualizado = now() where id = 1;
+  if c.ag_repetir and c.ag_semana = c.semana then
+    update public.config
+       set ag_semana = ag_semana + 1,
+           ag_prueba_ini = ag_prueba_ini + interval '7 days', ag_prueba_fin = ag_prueba_fin + interval '7 days',
+           ag_voto_ini = ag_voto_ini + interval '7 days', ag_voto_fin = ag_voto_fin + interval '7 days',
+           ag_gala = ag_gala + interval '7 days'
+     where id = 1;
+  end if;
+end $$;
+
+-- Botones del panel: mismas acciones, solo para el admin
+create or replace function public.admin_iniciar_semana(p_prueba text)
+returns void language plpgsql security definer set search_path = public as $$
+begin perform public._solo_admin(); perform public._iniciar_semana(p_prueba); end $$;
+
+create or replace function public.admin_cerrar_prueba(p_lider uuid default null)
+returns uuid language plpgsql security definer set search_path = public as $$
+begin perform public._solo_admin(); return public._cerrar_prueba(p_lider); end $$;
+
+create or replace function public.admin_cerrar_votacion()
+returns jsonb language plpgsql security definer set search_path = public as $$
+begin perform public._solo_admin(); return public._cerrar_votacion(); end $$;
+
+create or replace function public.admin_revelar()
+returns void language plpgsql security definer set search_path = public as $$
+begin perform public._solo_admin(); perform public._revelar(); end $$;
+
+-- Guarda la agenda de una semana (fechas en null = se hace a mano)
+create or replace function public.admin_set_agenda(p jsonb)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  perform public._solo_admin();
+  if p is null then
+    update public.config set ag_semana = null, ag_prueba = null, ag_prueba_ini = null, ag_prueba_fin = null,
+           ag_voto_ini = null, ag_voto_fin = null, ag_gala = null, actualizado = now() where id = 1;
+    return;
+  end if;
+  if coalesce(p->>'prueba', 'memoria') not in ('trivia','memoria','adeudo') then raise exception 'PRUEBA_INVALIDA'; end if;
+  update public.config
+     set ag_semana     = (p->>'semana')::int,
+         ag_prueba     = coalesce(p->>'prueba', 'memoria'),
+         ag_prueba_ini = nullif(p->>'prueba_ini', '')::timestamptz,
+         ag_prueba_fin = nullif(p->>'prueba_fin', '')::timestamptz,
+         ag_voto_ini   = nullif(p->>'voto_ini', '')::timestamptz,
+         ag_voto_fin   = nullif(p->>'voto_fin', '')::timestamptz,
+         ag_gala       = nullif(p->>'gala', '')::timestamptz,
+         ag_repetir    = coalesce((p->>'repetir')::boolean, true),
+         actualizado   = now()
+   where id = 1;
+end $$;
+
+-- El panel también empuja la agenda al abrirse
+create or replace function public.admin_tick()
+returns void language plpgsql security definer set search_path = public as $$
+begin perform public._solo_admin(); perform public._avanzar_agenda(); end $$;
+
+-- El reloj del juego: revisa la agenda y avanza las fases que ya tocan.
+-- Se ejecuta cada vez que un celular pide el estado (cada ~7 segundos).
+create or replace function public._avanzar_agenda()
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  c public.config;
+  vueltas int := 0;
+begin
+  select * into c from public.config where id = 1;
+  -- revisión rápida sin bloquear: ¿hay algo vencido?
+  if not coalesce(c.ag_semana is not null and (
+       (c.ag_semana = c.semana + 1 and (c.fase = 'registro' or (c.fase = 'gala' and c.gala_revelada)) and c.ag_prueba_ini <= now())
+    or (c.ag_semana = c.semana and (
+           (c.fase = 'prueba'   and c.ag_prueba_fin <= now())
+        or (c.fase = 'espera'   and coalesce(c.ag_voto_ini, now()) <= now())
+        or (c.fase = 'votacion' and c.ag_voto_fin <= now())
+        or (c.fase in ('decision', 'gala') and not c.gala_revelada and c.ag_gala <= now())))), false) then
+    return;
+  end if;
+
+  perform 1 from public.config where id = 1 for update;     -- un solo celular a la vez
+  loop
+    vueltas := vueltas + 1;
+    exit when vueltas > 6;
+    select * into c from public.config where id = 1;
+    begin
+      if c.ag_semana = c.semana + 1 and (c.fase = 'registro' or (c.fase = 'gala' and c.gala_revelada))
+         and c.ag_prueba_ini <= now() then
+        begin
+          perform public._iniciar_semana(coalesce(c.ag_prueba, 'memoria'));
+        exception when others then
+          perform public._iniciar_semana('adeudo');            -- p. ej. trivia sin preguntas activas
+        end;
+      elsif c.ag_semana is distinct from c.semana then
+        exit;
+      elsif c.fase = 'prueba' and c.ag_prueba_fin <= now() then
+        perform public._cerrar_prueba(null);
+      elsif c.fase = 'espera' and coalesce(c.ag_voto_ini, now()) <= now() then
+        update public.config set fase = 'votacion', actualizado = now() where id = 1;
+      elsif c.fase = 'votacion' and c.ag_voto_fin <= now() then
+        perform public._cerrar_votacion();
+      elsif c.fase = 'decision' and c.ag_gala <= now() then
+        -- el líder no decidió a tiempo: el programa elige al azar entre los empatados
+        update public.config
+           set eliminado_id = c.empatados[1 + floor(random() * cardinality(c.empatados))::int],
+               fase = 'gala', gala_revelada = false, actualizado = now()
+         where id = 1;
+      elsif c.fase = 'gala' and not c.gala_revelada and c.eliminado_id is not null and c.ag_gala <= now() then
+        perform public._revelar();
+      else
+        exit;
+      end if;
+    exception when others then
+      exit;
+    end;
+  end loop;
+end $$;
+
+-- El ojo de la tele: pistas reales (sin decir nombres) + chismes de la producción
+create or replace function public.ojo(p_token uuid)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare
+  yo public.jugadores;
+  c public.config;
+  v_mios int; v_votaron int; v_total int; v_publico int; v_lider_voto boolean;
+  pistas jsonb := '[]'::jsonb;
+begin
+  yo := public._yo(p_token);
+  select * into c from public.config where id = 1;
+  if c.fase = 'votacion' then
+    select count(distinct votante_id) into v_mios from public.votos
+     where semana = c.semana and votado_id = yo.id and not es_publico;
+    select count(distinct votante_id) into v_votaron from public.votos where semana = c.semana and not es_publico;
+    select count(*) into v_total from public.jugadores where rol = 'jugador';
+    select count(distinct votante_id) into v_publico from public.votos where semana = c.semana and es_publico;
+    v_lider_voto := exists (select 1 from public.votos where semana = c.semana and votante_id = c.lider_id);
+    if yo.rol = 'jugador' and yo.estado = 'activo' then
+      if v_mios >= 4 then pistas := pistas || to_jsonb('Más de tres personas ya votaron por ti. Yo que tú, me cuidaba. 👀'::text);
+      elsif v_mios >= 1 then pistas := pistas || to_jsonb('Tú no lo sabes, pero alguien ya votó por ti.'::text);
+      elsif v_votaron >= 3 then pistas := pistas || to_jsonb('Nadie ha votado por ti… todavía.'::text);
+      end if;
+    end if;
+    if v_votaron > 0 then pistas := pistas || to_jsonb(format('Ya pasaron %s habitantes por el confesionario esta semana.', v_votaron)); end if;
+    if v_total - v_votaron > 0 then pistas := pistas || to_jsonb(format('Todavía faltan %s por votar. ¿Qué estarán esperando?', v_total - v_votaron)); end if;
+    if v_publico > 0 then pistas := pistas || to_jsonb('El público también está votando… y tiene opiniones.'::text); end if;
+    if c.lider_id is not null and c.lider_id <> yo.id then
+      pistas := pistas || to_jsonb(case when v_lider_voto then 'El líder ya entró al confesionario.' else 'El líder todavía no vota. ¿Estará dudando?' end);
+    end if;
+  end if;
+  return jsonb_build_object(
+    'pistas', pistas,
+    'propios', (select coalesce(jsonb_agg(texto), '[]'::jsonb) from public.chismes where activo));
 end $$;
 
 -- Cuenta regresiva de la sala de espera (null la quita)
@@ -627,7 +801,7 @@ create or replace function public.admin_fase(p_fase text)
 returns void language plpgsql security definer set search_path = public as $$
 begin
   perform public._solo_admin();
-  if p_fase not in ('prueba','votacion') then raise exception 'FASE_INVALIDA'; end if;
+  if p_fase not in ('prueba','espera','votacion') then raise exception 'FASE_INVALIDA'; end if;
   update public.config set fase = p_fase, eliminado_id = null, empatados = '{}', gala_revelada = false, actualizado = now() where id = 1;
 end $$;
 
@@ -661,3 +835,10 @@ begin
   update public.config set semana = 0, fase = 'registro', prueba = null, lider_id = null, eliminado_id = null,
          empatados = '{}', gala_revelada = false, actualizado = now() where id = 1;
 end $$;
+
+-- Las funciones internas no se pueden llamar directo desde el celular
+revoke all on function public._iniciar_semana(text)  from public, anon, authenticated;
+revoke all on function public._cerrar_prueba(uuid)   from public, anon, authenticated;
+revoke all on function public._cerrar_votacion()     from public, anon, authenticated;
+revoke all on function public._revelar()             from public, anon, authenticated;
+revoke all on function public._avanzar_agenda()      from public, anon, authenticated;

@@ -249,6 +249,27 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .ad-aviso.bien{color:var(--ok)}
 .ad-aviso.mal{color:var(--sello)}
 
+/* ---------- v6: agenda y el ojo ---------- */
+.proximo{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px;margin-top:14px;background:var(--noche-2);border-radius:12px;padding:10px 14px}
+.proximo span{color:#C9C3EE;font-size:.88rem}
+.proximo b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.5rem;color:var(--luz);line-height:1}
+.proximo small{flex-basis:100%;color:#8E88B5;font-size:.78rem}
+.agenda-grid{display:grid;grid-template-columns:1fr;gap:2px}
+.agenda-grid label{font-size:.85rem;font-weight:600;margin-top:8px}
+.ojo-modal{background:rgba(5,3,15,.88)}
+.ojo-caja{width:100%;max-width:400px;text-align:center}
+.ojo-tele{margin:0 auto;width:220px;height:150px;border-radius:14px;background:#1B1440;border:4px solid var(--luz);display:grid;place-items:center;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(255,213,74,.25)}
+.ojo-tele::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 2px,transparent 2px 4px);pointer-events:none}
+.ojo-grande{width:180px;height:120px}
+.ojo-grande .iris{transform-box:view-box;animation:mirar 7s ease-in-out infinite}
+.ojo-grande .parpado{transform-box:view-box;transform-origin:60px 40px;animation:parpadeo 5s infinite}
+.ojo-globo{position:relative;margin:22px 0 8px;background:#FFFDF6;color:var(--texto);border-radius:16px;padding:16px 18px;font-family:"Special Elite",monospace;font-size:1.12rem;line-height:1.4;min-height:5.4em;text-align:left}
+.ojo-globo::before{content:"";position:absolute;top:-12px;left:50%;margin-left:-12px;border:12px solid transparent;border-top:0;border-bottom-color:#FFFDF6}
+.ojo-globo .cursor{display:inline-block;width:.55em;height:1em;background:var(--texto);vertical-align:-2px;margin-left:2px;animation:rec .9s steps(2) infinite}
+.ojo-nota{color:#8E88B5;font-size:.8rem;margin:0 0 14px}
+.ojo-botones{display:grid;gap:10px}
+.ojo-botones .sec{color:#fff}
+
 /* ---------- v5: confesionario ---------- */
 #s-votar.confesionario{position:relative}
 body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, #1A0710 70%) #1A0710}
@@ -609,6 +630,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
       <button data-at="votos" aria-selected="false">Votos</button>
       <button data-at="pruebas" aria-selected="false">Pruebas</button>
       <button data-at="trivia" aria-selected="false">Trivia</button>
+      <button data-at="ojo" aria-selected="false">Ojo 👁️</button>
       <button data-at="habitantes" aria-selected="false">Habitantes</button>
     </div>
     <div id="a-contenido"></div>
@@ -638,6 +660,28 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
     <div style="display:flex;gap:8px">
       <button class="btn sec" id="t-atras">Atrás</button>
       <button class="btn" id="t-sig">Siguiente</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ EL OJO -->
+<div id="m-ojo" class="modal ojo-modal hidden">
+  <div class="ojo-caja">
+    <div class="ojo-tele">
+      <svg class="ojo-grande" viewBox="0 0 120 80" aria-hidden="true">
+        <defs><clipPath id="ojo-g-clip"><path d="M8 40 Q60 0 112 40 Q60 80 8 40 Z"/></clipPath></defs>
+        <g class="parpado">
+          <path d="M8 40 Q60 0 112 40 Q60 80 8 40 Z" fill="#FFFDF6"/>
+          <g clip-path="url(#ojo-g-clip)"><g class="iris"><circle cx="60" cy="40" r="20" fill="#D7263D"/><circle cx="60" cy="40" r="10" fill="#1B1440"/><circle cx="67" cy="32" r="3.5" fill="#fff" opacity=".85"/></g></g>
+          <path d="M8 40 Q60 0 112 40 Q60 80 8 40 Z" fill="none" stroke="#FFD54A" stroke-width="4"/>
+        </g>
+      </svg>
+    </div>
+    <div class="ojo-globo" aria-live="polite"><span id="ojo-texto"></span><i class="cursor"></i></div>
+    <p class="ojo-nota">Lo que dice el ojo puede ser verdad… o no.</p>
+    <div class="ojo-botones">
+      <button class="btn" id="ojo-otro">Otro chisme 👀</button>
+      <button class="btn sec" id="ojo-cerrar">Cerrar</button>
     </div>
   </div>
 </div>
@@ -828,6 +872,13 @@ const SFX = (() => {
       [262, 330, 392, 523].forEach(f => tono({ f, t: .2, d: 1.4, tipo: 'sawtooth', v: .08, filtro: 1800 }));
       ruido({ t: .2, d: 1.2, v: .12, filtro: 6000, tipo: 'highpass' });
     },
+    // el ojo habla: zumbido grave misterioso
+    ojo() {
+      tono({ f: 98, f2: 82, d: 1.4, tipo: 'sawtooth', v: .07, filtro: 600 });
+      tono({ f: 196, d: 1.2, tipo: 'sine', v: .05 });
+      tono({ f: 1568, t: .15, d: .6, tipo: 'sine', v: .025 });
+    },
+    letra() { tono({ f: 900 + Math.random() * 300, d: .018, tipo: 'square', v: .018 }); },
     // redoble de tambor que crece
     redoble(seg = 3) {
       const c = ctx; redobleBus = c.createGain(); redobleBus.connect(c.destination);
@@ -962,6 +1013,36 @@ function selloEnviado(texto = 'ENVIADO') {
   if (navigator.vibrate) navigator.vibrate(60);
   return new Promise(r => setTimeout(() => { o.remove(); r(); }, 1300));
 }
+
+/* ---------- fechas y cuentas regresivas ---------- */
+const fmtFecha = d => new Date(d).toLocaleString('es-MX', { weekday: 'long', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+function faltaTexto(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000)), d = Math.floor(s / 86400), h = Math.floor(s / 3600) % 24, m = Math.floor(s / 60) % 60;
+  if (d) return `${d} d ${h} h`;
+  if (h) return `${h} h ${m} min`;
+  if (m) return `${m} min ${s % 60} s`;
+  return `${s % 60} s`;
+}
+const aInputLocal = iso => iso ? new Date(new Date(iso).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '';
+// ¿Qué sigue según la agenda?
+function proximoEvento(g) {
+  const a = g.agenda; if (!a) return null;
+  const entreSemanas = g.fase === 'registro' || (g.fase === 'gala' && g.gala_revelada);
+  if (entreSemanas && a.semana === g.semana + 1 && a.prueba_ini) return { t: a.prueba_ini, txt: g.semana === 0 ? 'La casa abre' : `Empieza la semana ${a.semana}` };
+  if (a.semana !== g.semana) return null;
+  const m = { prueba: [a.prueba_fin, 'La prueba cierra'], espera: [a.voto_ini, 'La votación abre'], votacion: [a.voto_fin, 'La votación cierra'],
+              decision: [a.gala, 'La gala empieza'], gala: [g.gala_revelada ? null : a.gala, 'La gala empieza'] }[g.fase];
+  return m && m[0] ? { t: m[0], txt: m[1] } : null;
+}
+let ultimoEmpujon = 0;
+setInterval(() => {
+  $$('[data-hasta]').forEach(el => {
+    const falta = new Date(el.dataset.hasta) - Date.now();
+    $('.js-falta', el).textContent = falta > 0 ? faltaTexto(falta) : '¡Ya!';
+    // al llegar la hora, pide el estado para que el juego avance
+    if (falta <= 0 && token && Date.now() - ultimoEmpujon > 4000) { ultimoEmpujon = Date.now(); refrescar(); }
+  });
+}, 1000);
 
 /* ---------- Supabase ---------- */
 const configurado = !SUPABASE_URL.startsWith('PEGA_') && !SUPABASE_ANON_KEY.startsWith('PEGA_');
@@ -1168,6 +1249,7 @@ function faseTexto(g) {
   if (g.semana === 0) return 'Inscripciones abiertas';
   return {
     prueba: 'Prueba del líder',
+    espera: 'Esperando la votación',
     votacion: 'Votación abierta',
     decision: 'Empate: decide el líder',
     gala: g.gala_revelada ? 'Gala terminada' : 'Gala en preparación',
@@ -1223,6 +1305,12 @@ function pintarAccion() {
     else if (mi_intento) cuerpo = `<p>Tu intento quedó incompleto y cuenta como cero.</p>`;
     else cuerpo = `<p>${esc(p.desc)}</p><p><b>Solo tienes un intento.</b></p><button class="btn" id="a-jugar">Jugar la prueba</button>`;
     h = `<div class="formato amarillo"><div class="folio"><span>Prueba del líder</span><span>Semana ${g.semana}</span></div><h2>${esc(p.nombre)}</h2>${cuerpo}</div>`;
+  } else if (g.fase === 'espera') {
+    h = `<div class="formato rosa"><div class="folio"><span>Votación de eliminación</span><span>Semana ${g.semana}</span></div>
+      <h2>La votación abre pronto</h2>
+      ${lider ? `<p>Líder de la semana: <b>${esc(lider.nombre)}</b> 👑.</p>` : ''}
+      <p>Ya puedes entrar al confesionario a preparar tu voto; lo envías cuando abra.</p>
+      <button class="btn" id="a-votar">Ir al confesionario</button></div>`;
   } else if (g.fase === 'votacion') {
     const voté = mis_votos.length > 0;
     const resumen = voté ? `<ul style="margin:6px 0 10px;padding-left:18px">${mis_votos.map(v => `<li><b>${v.puntos} ${v.puntos === 1 ? 'punto' : 'puntos'}:</b> ${esc(porId(v.id)?.nombre)}</li>`).join('')}</ul>` : '';
@@ -1257,7 +1345,8 @@ function pintarAccion() {
     h += `<p style="margin-top:12px;color:#C9C3EE;font-size:.9rem">Ya no estás en la casa, pero tu voto sigue contando cada semana.</p>`;
   }
 
-  // no repintar la sala si la persona está eligiendo su predicción
+  const prox = g.semana > 0 ? proximoEvento(g) : null;
+  if (prox) h = `<div class="proximo" data-hasta="${prox.t}"><span>${esc(prox.txt)} en</span><b class="js-falta">${faltaTexto(new Date(prox.t) - Date.now())}</b><small>${esc(fmtFecha(prox.t))}</small></div>` + h;
   $('#c-accion').innerHTML = h;
   const extra = $('#c-extra');
   const enFoco = extra.contains(document.activeElement) && document.activeElement.tagName === 'SELECT';
@@ -1292,7 +1381,7 @@ function pintarSalaEspera() {
   const libres = Math.max(0, g.cupo - habitantes.length);
   let h = '';
 
-  if (g.inicio_at) {
+  if (inicioCasa(g)) {
     h += `<div class="formato amarillo"><div class="folio"><span>Aviso de apertura</span><span>Semana 0</span></div>
       <h2 id="sala-titulo">La casa abre en</h2><div class="reloj" id="sala-reloj"></div>
       <p class="ayuda" style="margin-top:10px">${libres ? `Quedan ${libres} ${libres === 1 ? 'silla libre' : 'sillas libres'}. ¡Pásale el link a quien falte!` : 'Ya están los 16 habitantes.'}</p>
@@ -1417,13 +1506,16 @@ $('#cp-copiar').onclick = async () => {
 $('#cp-cerrar').onclick = cerrarCompartir;
 $('#el-cerrar').onclick = () => $('#m-elegir').classList.add('hidden');
 
+const inicioCasa = g => (g.agenda?.semana === 1 && g.agenda.prueba_ini) || g.inicio_at;
 function pintarReloj() {
   const el = $('#sala-reloj');
-  if (!el || !est?.juego.inicio_at) return;
-  const falta = new Date(est.juego.inicio_at) - Date.now();
+  const ini = est && inicioCasa(est.juego);
+  if (!el || !ini) return;
+  const falta = new Date(ini) - Date.now();
   if (falta <= 0) {
     $('#sala-titulo').textContent = '¡Ya es hora!';
-    el.outerHTML = '<p id="sala-reloj">Esperando a que la producción arranque la semana 1…</p>';
+    el.outerHTML = '<p id="sala-reloj">Abriendo la casa…</p>';
+    if (token && Date.now() - ultimoEmpujon > 4000) { ultimoEmpujon = Date.now(); refrescar(); }
     return;
   }
   const s = Math.floor(falta / 1000);
@@ -1697,8 +1789,8 @@ const SALA = (() => {
     caja.classList.toggle('votando', votando);
     pintarBarra();
     $('#sala-ayuda').textContent = soyActor()
-      ? 'Toca el piso para caminar · toca a alguien para ver su ficha · toca la puerta roja para ir al confesionario'
-      : 'Toca a alguien para ver su ficha · toca la puerta roja para ir al confesionario';
+      ? 'Toca el piso para caminar · a alguien para ver su ficha · la puerta roja para votar · la tele para escuchar al ojo'
+      : 'Toca a alguien para ver su ficha · la puerta roja para votar · la tele para escuchar al ojo';
     despertar();
   }
   function pintarBarra() {
@@ -1802,6 +1894,7 @@ const SALA = (() => {
     const rr = caja.getBoundingClientRect();
     const ux = (e.clientX - rr.left) / rr.width * 100, uy = (e.clientY - rr.top) / rr.height * 105;
     if (ux >= 2 && ux <= 21 && uy >= 7 && uy <= 46) { irAlConfesionario(); return; }
+    if (ux >= 35 && ux <= 65 && uy >= 5 && uy <= 28) { irAlOjo(); return; }
     if (!soyActor()) { toast('Solo los habitantes en la casa pueden caminar'); return; }
     const r = caja.getBoundingClientRect();
     const [tx, ty] = limitar((e.clientX - r.left) / r.width * 100, (e.clientY - r.top) / r.height * 105 + 4);
@@ -1814,11 +1907,12 @@ const SALA = (() => {
     yo.llegaT = setTimeout(revisarReto, dur + 80);
   });
   $('#palco-lista').addEventListener('click', e => { const m = e.target.closest('.mono'); if (m) abrirFicha(m.dataset.id); });
-  // camina hasta la puerta del confesionario y al llegar entra
-  function irAPuerta(alLlegar) {
+  // camina hasta un punto (puerta, tele) y al llegar hace algo
+  const irAPuerta = alLlegar => irA(PUERTA[0], PUERTA[1] + 1, '🤫', alLlegar);
+  const irATele = alLlegar => irA(PANTALLA[0], 58, '👀', alLlegar);
+  function irA(tx, ty, emoji, alLlegar) {
     const yo = actores.get(miId);
     if (!yo?.enSala) return alLlegar();
-    const [tx, ty] = [PUERTA[0], PUERTA[1] + 1];
     const dur = Math.max(350, Math.hypot(tx - yo.x, ty - yo.y) * 38);
     yo.ocupado = 0;
     yo.ctrl = { fx: yo.x, fy: yo.y, tx, ty, t0: Date.now(), dur };
@@ -1826,8 +1920,8 @@ const SALA = (() => {
     clearTimeout(yo.llegaT);
     SFX.tocar('swish');
     yo.llegaT = setTimeout(() => {
-      burbuja(miId, '🤫', 1500);
-      mandar({ tipo: 'emo', id: miId, e: '🤫' });
+      burbuja(miId, emoji, 1500);
+      mandar({ tipo: 'emo', id: miId, e: emoji });
       setTimeout(alLlegar, 450);
     }, dur);
   }
@@ -1947,7 +2041,7 @@ const SALA = (() => {
     actores.clear(); programadoK = null;
     pintarVivo();
   }
-  return { sincronizar, conectar, desconectar, miEmoji, enviarEmoji, soyActor, irAPuerta, enVivo: () => vivo, despertar };
+  return { sincronizar, conectar, desconectar, miEmoji, enviarEmoji, soyActor, irAPuerta, irATele, enVivo: () => vivo, despertar };
 })();
 
 /* =====================================================================
@@ -1960,6 +2054,85 @@ let renglonActivo = 0;
 const claveBorrador = () => 'ab_borrador_' + est.yo.id;
 function guardarBorrador() { store.set(claveBorrador(), JSON.stringify(voto)); }
 function leerBorrador() { try { return JSON.parse(store.get(claveBorrador()) || '[]'); } catch { return []; } }
+
+/* =====================================================================
+   EL OJO DE LA TELE: chismes anónimos que dan curiosidad
+   ===================================================================== */
+const CHISMES = [
+  'Yo sé quién se come los dulces que son para los clientes.',
+  'Yo sé quién finge escuchar música para oír las conversaciones de los demás.',
+  'Yo sé quién está viendo Facebook en lugar de trabajar.',
+  'Yo sé quién ignora las llamadas de los clientes.',
+  '¿Sabías que un jugador no se lleva bien con otro?',
+  'Alguien en esta casa ya tiene decidido su voto desde el lunes.',
+  'Yo sé quién dice "ya voy" y nunca va.',
+  'Alguien aquí cambia de pestaña cada vez que pasa el jefe.',
+  'Yo sé quién se lleva las plumas buenas a su casa.',
+  'Alguien ya hizo alianza con otro habitante. Y tú no estás en ella.',
+  'Yo sé quién deja el microondas sucio.',
+  'Hay alguien que finge estar en llamada para que no le hablen.',
+  'Yo sé quién apaga el aire acondicionado sin preguntar.',
+  'Alguien practica la prueba del líder a escondidas.',
+  'Yo sé quién manda stickers en lugar de contestar los mensajes.',
+  'Hay alguien que sonríe mucho… demasiado. Ten cuidado.',
+  'Yo sé quién se termina el café y no prepara más.',
+  'Alguien se sabe todos los chismes de la oficina. Y no soy yo.',
+  'Yo sé quién pone "en junta" para que no lo molesten.',
+  'Hay un habitante que vota distinto de lo que dice.',
+  'Alguien de aquí ya planea cómo llegar a la final.',
+  'Yo sé quién llega tarde y le echa la culpa al tráfico.',
+  '¿Ya te fijaste quién te sonríe… y luego vota por ti?',
+  'Yo sé quién esconde galletas en su cajón.',
+  'Alguien cuenta los minutos para la comida desde las 9 de la mañana.',
+  'Yo sé quién le pone "visto" a los mensajes del grupo y no contesta.',
+  'Hay alguien que se hace el que no sabe usar el sistema para que otro haga su trabajo.',
+  'Yo sé quién tiene una playlist secreta para cuando nadie lo ve.',
+  'Alguien de esta casa ya votó por su mejor amigo de la oficina.',
+  'Yo veo todo. Hasta quién se lleva el engrapador y nunca lo regresa.',
+];
+let ojoDatos = null, ojoCuando = 0, ojoRecientes = [], ojoEscribiendo = null;
+async function elegirChisme() {
+  if (!ojoDatos || Date.now() - ojoCuando > 20000) {
+    try { ojoDatos = await rpc('ojo', { p_token: token }); ojoCuando = Date.now(); } catch { ojoDatos = { pistas: [], propios: [] }; }
+  }
+  const pistas = ojoDatos.pistas || [], propios = ojoDatos.propios || [];
+  let pool;
+  const r = Math.random();
+  if (pistas.length && r < .45) pool = pistas;                 // pistas reales de la votación
+  else if (propios.length && r < .75) pool = propios;          // los que escribió la producción
+  else pool = CHISMES;
+  let libres = pool.filter(x => !ojoRecientes.includes(x));
+  if (!libres.length) libres = [...pistas, ...propios, ...CHISMES].filter(x => !ojoRecientes.includes(x));
+  if (!libres.length) libres = CHISMES;
+  const frase = libres[Math.floor(Math.random() * libres.length)];
+  ojoRecientes = [frase, ...ojoRecientes].slice(0, 8);
+  return frase;
+}
+async function decirChisme() {
+  const el = $('#ojo-texto');
+  clearInterval(ojoEscribiendo);
+  el.textContent = '';
+  $('#ojo-otro').disabled = true;
+  SFX.tocar('ojo');
+  const frase = await elegirChisme();
+  let i = 0;
+  ojoEscribiendo = setInterval(() => {
+    i++;
+    el.textContent = frase.slice(0, i);
+    if (i % 2) SFX.tocar('letra');
+    if (i >= frase.length) { clearInterval(ojoEscribiendo); $('#ojo-otro').disabled = false; }
+  }, 38);
+}
+function abrirOjo() {
+  $('#m-ojo').classList.remove('hidden');
+  decirChisme();
+}
+function irAlOjo() {
+  if (SALA.soyActor() && pantalla === 's-casa') SALA.irATele(abrirOjo);
+  else abrirOjo();
+}
+$('#ojo-otro').onclick = decirChisme;
+$('#ojo-cerrar').onclick = () => { clearInterval(ojoEscribiendo); $('#m-ojo').classList.add('hidden'); };
 
 // Camina al confesionario (si tu monito está en la casa) y entra
 function irAlConfesionario() {
@@ -1991,8 +2164,10 @@ function abrirVotacion() {
   $('#v-error').classList.add('hidden');
   const abierta = g.fase === 'votacion';
   $('#v-candado').classList.toggle('hidden', abierta);
+  const abre = g.agenda?.semana === g.semana && g.agenda.voto_ini && ['prueba', 'espera'].includes(g.fase) ? g.agenda.voto_ini : null;
   $('#v-candado-txt').textContent = g.semana > 0 && ['decision', 'gala'].includes(g.fase)
-    ? 'La votación de esta semana ya cerró' : 'Aún no es día de votación';
+    ? 'La votación de esta semana ya cerró'
+    : abre ? `Aún no es día de votación · abre el ${fmtFecha(abre)}` : 'Aún no es día de votación';
   $('#v-pie').textContent = abierta
     ? 'Los motivos se leen en la gala sin tu nombre. Puedes cambiar tu voto mientras la votación siga abierta.'
     : 'Puedes ir eligiendo y escribiendo tus razones: se guardan en este teléfono y estarán listas cuando abra la votación.';
@@ -2454,11 +2629,12 @@ async function cargarAdmin(silencioso) {
   // no repintar mientras se escribe en un formulario del panel
   if (silencioso && C.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
   try {
+    await sb.rpc('admin_tick').catch?.(() => { });
     [adm.cfg, adm.jug] = await Promise.all([
       q(sb.from('config').select('*').eq('id', 1).single()),
       q(sb.from('jugadores').select('id,nombre,rol,estado,semana_eliminado,fallos,bloqueado_hasta,foto,frase,creado').order('creado')),
     ]);
-    const vista = { juego: adminJuego, votos: adminVotos, pruebas: adminPruebas, trivia: adminTrivia, habitantes: adminHabitantes }[adm.tab];
+    const vista = { juego: adminJuego, votos: adminVotos, pruebas: adminPruebas, trivia: adminTrivia, ojo: adminOjo, habitantes: adminHabitantes }[adm.tab];
     await vista(C);
   } catch (e) { C.innerHTML = `<div class="error">${esc(mensajeError(e))}</div>`; }
 }
@@ -2478,15 +2654,28 @@ async function adminJuego(C) {
 
   const opcionesPrueba = Object.entries(PRUEBAS).map(([k, v]) => `<option value="${k}">${esc(v.nombre)}</option>`).join('');
 
+  // Agenda: aplica a la semana en curso o, entre semanas, a la siguiente
+  const entre = c.fase === 'registro' || (c.fase === 'gala' && c.gala_revelada);
+  const semAg = entre ? c.semana + 1 : c.semana;
+  const ag = c.ag_semana === semAg ? c : {};
+  const campo = (id, txt, val) => `<label for="${id}">${txt}</label><input class="in" type="datetime-local" id="${id}" value="${aInputLocal(val)}">`;
+  h += `<div class="adm-caja"><h3>Agenda de la semana ${semAg}</h3>
+    <p class="ayuda">El juego avanza solo a estas horas. Deja vacío lo que quieras hacer a mano. Si hay empate y el líder no decide antes de la gala, el programa elige al azar.</p>
+    <div class="agenda-grid">
+      ${entre ? `<label for="ag-prueba">Prueba del líder</label><select class="in" id="ag-prueba">${Object.entries(PRUEBAS).map(([k, v]) => `<option value="${k}" ${ag.ag_prueba === k ? 'selected' : ''}>${esc(v.nombre)}</option>`).join('')}</select>` : ''}
+      ${entre ? campo('ag-prueba-ini', semAg === 1 ? 'Abre la casa (empieza la prueba)' : 'Empieza la prueba', ag.ag_prueba_ini) : ''}
+      ${campo('ag-prueba-fin', 'Cierra la prueba (se nombra líder)', ag.ag_prueba_fin)}
+      ${campo('ag-voto-ini', 'Abre la votación', ag.ag_voto_ini)}
+      ${campo('ag-voto-fin', 'Cierra la votación', ag.ag_voto_fin)}
+      ${campo('ag-gala', 'Gala: revelación del eliminado', ag.ag_gala)}
+    </div>
+    <label class="radio-op" style="margin-top:10px"><input type="checkbox" id="ag-repetir" ${c.ag_repetir !== false ? 'checked' : ''} style="width:20px;height:20px;accent-color:var(--ok)"> Repetir cada semana (mismos días y horas)</label>
+    <div class="adm-acciones"><button class="btn chico" id="ag-guardar">Guardar agenda</button>
+    ${c.ag_semana ? '<button class="btn sec chico" id="ag-quitar">Quitar agenda</button>' : ''}</div></div>`;
+
   if (c.semana === 0) {
     const preds = await q(sb.from('predicciones').select('*'));
-    const local = c.inicio_at ? new Date(new Date(c.inicio_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '';
-    h += `<div class="adm-caja"><h3>Cuenta regresiva</h3>
-      <p class="ayuda">Todos ven un reloj en la sala de espera hasta esta fecha. Al llegar a cero no arranca solo: tú inicias la semana 1.</p>
-      <input class="in" type="datetime-local" id="ad-inicio" value="${local}">
-      <div class="adm-acciones"><button class="btn chico" id="ad-inicio-g">Guardar fecha</button>
-      ${c.inicio_at ? '<button class="btn sec chico" id="ad-inicio-q">Quitar reloj</button>' : ''}</div></div>
-    <div class="adm-caja"><h3>Predicciones secretas (${preds.length})</h3>
+    h += `<div class="adm-caja"><h3>Predicciones secretas (${preds.length})</h3>
       ${preds.map(p => `<div class="adm-fila"><div class="info"><b>${esc(nombreDe(p.jugador_id))}</b>
         <small>Gana: ${esc(nombreDe(p.ganador_id))} · Sale primero: ${esc(nombreDe(p.primero_id))}</small></div></div>`).join('') || '<p class="ayuda">Nadie ha hecho su predicción.</p>'}</div>`;
   }
@@ -2505,6 +2694,12 @@ async function adminJuego(C) {
       <label class="campo" for="ad-lider">Líder</label>
       <select class="in" id="ad-lider"><option value="">Automático: mejor puntaje</option>${act.map(j => `<option value="${j.id}">${esc(j.nombre)}</option>`).join('')}</select>
       <div class="adm-acciones"><button class="btn" id="ad-cerrar-prueba">Cerrar prueba y nombrar líder</button></div></div>`;
+  }
+  if (c.fase === 'espera') {
+    h += `<div class="adm-caja"><h3>Esperando la votación</h3>
+      <p>La prueba cerró${c.lider_id ? `; líder: <b>${esc(nombreDe(c.lider_id))}</b>` : ''}. La votación abre ${c.ag_voto_ini ? 'el ' + esc(fmtFecha(c.ag_voto_ini)) : 'cuando tú digas'}.</p>
+      <div class="adm-acciones"><button class="btn" data-fase="votacion">Abrir votación ahora</button>
+      <button class="btn sec chico" data-fase="prueba">Regresar a la prueba</button></div></div>`;
   }
   if (c.fase === 'votacion') {
     const votos = await q(sb.from('votos').select('votante_id,es_publico').eq('semana', c.semana));
@@ -2536,12 +2731,18 @@ async function adminJuego(C) {
   C.innerHTML = h;
 
   $('#ad-iniciar')?.addEventListener('click', () => accion('admin_iniciar_semana', { p_prueba: $('#ad-prueba').value }, 'Semana iniciada'));
-  $('#ad-inicio-g')?.addEventListener('click', () => {
-    const v = $('#ad-inicio').value;
-    if (!v) return toast('Elige fecha y hora');
-    accion('admin_set_inicio', { p_inicio: new Date(v).toISOString() }, 'Reloj guardado');
+  $('#ag-guardar')?.addEventListener('click', () => {
+    const val = id => { const v = $('#' + id)?.value; return v ? new Date(v).toISOString() : null; };
+    const datos = { semana: semAg, prueba: $('#ag-prueba')?.value || c.ag_prueba || c.prueba || 'memoria',
+      prueba_ini: entre ? val('ag-prueba-ini') : c.ag_prueba_ini, prueba_fin: val('ag-prueba-fin'),
+      voto_ini: val('ag-voto-ini'), voto_fin: val('ag-voto-fin'), gala: val('ag-gala'), repetir: $('#ag-repetir').checked };
+    // que las horas vayan en orden
+    const orden = [datos.prueba_ini, datos.prueba_fin, datos.voto_ini, datos.voto_fin, datos.gala].filter(Boolean).map(x => +new Date(x));
+    if (orden.some((t, i) => i && t < orden[i - 1])) return toast('Las horas deben ir en orden: prueba → votación → gala', 4000);
+    if (datos.prueba === 'trivia' && entre) toast('Recuerda tener preguntas de trivia activas', 3500);
+    accion('admin_set_agenda', { p: datos }, 'Agenda guardada');
   });
-  $('#ad-inicio-q')?.addEventListener('click', () => accion('admin_set_inicio', { p_inicio: null }, 'Reloj quitado'));
+  $('#ag-quitar')?.addEventListener('click', () => { if (confirm('¿Quitar la agenda? Todo se hará a mano.')) accion('admin_set_agenda', { p: null }, 'Agenda quitada'); });
   $('#ad-cerrar-prueba')?.addEventListener('click', async () => {
     const id = await accion('admin_cerrar_prueba', { p_lider: $('#ad-lider').value || null });
     toast(id ? 'Líder: ' + nombreDe(id) : 'Prueba cerrada sin líder');
@@ -2631,6 +2832,26 @@ async function adminTrivia(C) {
   };
   $$('[data-tact]').forEach(b => b.onclick = async () => { try { await q(sb.from('trivia').update({ activa: b.dataset.val === 'true' }).eq('id', b.dataset.tact)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
   $$('[data-tdel]').forEach(b => b.onclick = async () => { if (!confirm('¿Borrar esta pregunta?')) return; try { await q(sb.from('trivia').delete().eq('id', b.dataset.tdel)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
+}
+
+/* ---- Ojo: chismes de la producción ---- */
+async function adminOjo(C) {
+  const lista = await q(sb.from('chismes').select('*').order('creado', { ascending: false }));
+  C.innerHTML = `<form class="adm-caja" id="ad-of"><h3>Nuevo chisme</h3>
+      <p class="ayuda">El ojo de la tele los dice al azar, mezclados con pistas reales de la votación y chismes inventados. Mantenlos anónimos: sin nombres.</p>
+      <textarea class="in" id="ad-ot" maxlength="160" required placeholder="Ej. Yo sé quién se lleva las plumas buenas a su casa"></textarea>
+      <div class="adm-acciones"><button class="btn" type="submit">Guardar chisme</button></div></form>
+    <div class="adm-caja"><h3>Chismes (${lista.filter(x => x.activo).length} activos)</h3>
+      ${lista.map(x => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b style="white-space:normal;font-weight:600">${esc(x.texto)}</b></div>
+        <div style="display:flex;flex-direction:column;gap:4px"><button class="mini" data-oact="${x.id}" data-val="${!x.activo}">${x.activo ? '✅ Activo' : 'Activar'}</button>
+        <button class="mini" data-odel="${x.id}">Borrar</button></div></div>`).join('') || '<p class="ayuda">Todavía no escribes chismes. El ojo usa los suyos.</p>'}
+    </div>`;
+  $('#ad-of').onsubmit = async e => {
+    e.preventDefault();
+    try { await q(sb.from('chismes').insert({ texto: $('#ad-ot').value.trim(), activo: true })); toast('Chisme guardado'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
+  };
+  $$('[data-oact]').forEach(b => b.onclick = async () => { try { await q(sb.from('chismes').update({ activo: b.dataset.val === 'true' }).eq('id', b.dataset.oact)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
+  $$('[data-odel]').forEach(b => b.onclick = async () => { if (!confirm('¿Borrar este chisme?')) return; try { await q(sb.from('chismes').delete().eq('id', b.dataset.odel)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
 }
 
 /* ---- Habitantes ---- */
