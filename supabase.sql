@@ -859,3 +859,6 @@ revoke all on function public._cerrar_prueba(uuid)   from public, anon, authenti
 revoke all on function public._cerrar_votacion()     from public, anon, authenticated;
 revoke all on function public._revelar()             from public, anon, authenticated;
 revoke all on function public._avanzar_agenda()      from public, anon, authenticated;
+
+-- Que Supabase reconozca de inmediato las funciones nuevas
+notify pgrst, 'reload schema';
