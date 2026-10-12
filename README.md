@@ -105,7 +105,18 @@ Versión 2 (sala de espera): agrega la frase de cada jugador, la predicción sec
 
 ---
 
-## 6. Problemas comunes
+## 6. La casa en vivo
+
+Los monitos usan **Supabase Realtime** (presencia y mensajes en vivo); no hace falta configurar nada ni ejecutar SQL. Si la etiqueta **● N en línea** no aparece:
+
+- Revisa en Supabase → **Project Settings** → **Realtime** que esté encendido.
+- Si existe la opción **Private channels only** (o "Allow public access" apagado), déjala permitiendo canales públicos.
+
+Sin conexión en vivo el juego sigue funcionando: todos los monitos caminan solos.
+
+---
+
+## 7. Problemas comunes
 
 | Mensaje | Qué hacer |
 |---|---|

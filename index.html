@@ -249,6 +249,75 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .ad-aviso.bien{color:var(--ok)}
 .ad-aviso.mal{color:var(--sello)}
 
+/* ---------- v4: habitación, monitos y fichas ---------- */
+.vista-tog{display:flex;gap:6px;margin:-2px 0 10px}
+.vista-tog button{appearance:none;border:0;border-radius:999px;padding:6px 12px;font-weight:700;font-size:.85rem;background:var(--noche-2);color:#C9C3EE;cursor:pointer}
+.vista-tog button[aria-selected="true"]{background:var(--luz);color:var(--texto)}
+.sala{position:relative;isolation:isolate;width:100%;aspect-ratio:100/105;border-radius:14px;overflow:hidden;background:#3B2E8C;touch-action:manipulation;user-select:none;-webkit-user-select:none;cursor:pointer;box-shadow:inset 0 0 0 3px #1B1440}
+.sala-fondo{position:absolute;inset:0;width:100%;height:100%}
+.sala-actores{position:absolute;inset:0}
+.sala-vivo{position:absolute;top:6px;right:8px;font-size:.72rem;font-weight:700;color:#fff;background:rgba(27,20,64,.75);border-radius:999px;padding:2px 8px;pointer-events:none}
+.sala-vivo:empty{display:none}
+.sala-ayuda{text-align:center;color:#8E88B5;margin:6px 0 0;font-size:.78rem}
+.mono{position:absolute;left:0;top:0;width:calc(var(--u)*11);margin-left:calc(var(--u)*-5.5);display:flex;flex-direction:column;align-items:center;will-change:transform;cursor:pointer}
+.mono::after{content:"";position:absolute;bottom:calc(var(--u)*-.8);width:calc(var(--u)*7);height:calc(var(--u)*1.8);border-radius:50%;background:rgba(10,6,30,.35);z-index:-1}
+.mono-cab{position:relative;width:calc(var(--u)*8.4);height:calc(var(--u)*8.4);border-radius:50%;overflow:hidden;display:grid;place-items:center;font-family:Anton,Impact,sans-serif;color:#fff;font-size:calc(var(--u)*4.4);box-shadow:0 0 0 2px #FFFDF6;flex:none}
+.mono-cab img{width:100%;height:100%;object-fit:cover}
+.mono-corona{position:absolute;top:calc(var(--u)*-3.2);font-size:calc(var(--u)*3.6);z-index:2;pointer-events:none}
+.mono-cuerpo{width:calc(var(--u)*8);height:calc(var(--u)*10.4);margin-top:calc(var(--u)*-.6);overflow:visible}
+.mono-cuerpo line{stroke:#FFFDF6;stroke-width:3.4;stroke-linecap:round}
+.mono-cuerpo g{transform-box:view-box}
+.mono-cuerpo .pi,.mono-cuerpo .pd{transform-origin:20px 25px}
+.mono-cuerpo .bi,.mono-cuerpo .bd{transform-origin:20px 7px}
+.mono.camina .pi{animation:paso .42s ease-in-out infinite alternate}
+.mono.camina .pd{animation:paso .42s ease-in-out infinite alternate-reverse}
+.mono.camina .bi{animation:paso .42s ease-in-out infinite alternate-reverse}
+.mono.camina .bd{animation:paso .42s ease-in-out infinite alternate}
+.mono.camina .mono-cab{animation:rebote .21s ease-in-out infinite alternate}
+.mono.izq .mono-cuerpo{transform:scaleX(-1)}
+.mono.saluda .bd{animation:saludo .25s ease-in-out 6 alternate}
+@keyframes paso{from{transform:rotate(-24deg)}to{transform:rotate(24deg)}}
+@keyframes rebote{from{transform:translateY(0)}to{transform:translateY(calc(var(--u)*-.7))}}
+@keyframes saludo{from{transform:rotate(-120deg)}to{transform:rotate(-160deg)}}
+.mono-nom{position:absolute;top:100%;margin-top:calc(var(--u)*.6);font-size:calc(var(--u)*2.7);font-weight:700;color:#fff;white-space:nowrap;text-shadow:0 1px 2px #1B1440;pointer-events:none;max-width:calc(var(--u)*18);overflow:hidden;text-overflow:ellipsis}
+.mono.yo .mono-cab{box-shadow:0 0 0 2px #FFFDF6,0 0 0 calc(2px + var(--u)*.8) var(--luz)}
+.mono.yo .mono-nom{color:var(--luz)}
+.burbuja{position:absolute;bottom:calc(100% + var(--u)*1.2);left:50%;transform:translateX(-50%) scale(0);transform-origin:50% 100%;background:#FFFDF6;border-radius:calc(var(--u)*3);padding:calc(var(--u)*.6) calc(var(--u)*1.4);font-size:calc(var(--u)*5);line-height:1;box-shadow:0 2px 6px rgba(0,0,0,.35);transition:transform .18s cubic-bezier(.2,1.6,.4,1);pointer-events:none;z-index:3;white-space:nowrap}
+.burbuja::after{content:"";position:absolute;left:50%;bottom:calc(var(--u)*-1);margin-left:calc(var(--u)*-1);border:calc(var(--u)*1) solid transparent;border-top-color:#FFFDF6;border-bottom:0}
+.burbuja.on{transform:translateX(-50%) scale(1)}
+.burbuja.agita{animation:agita .22s ease-in-out infinite alternate}
+@keyframes agita{from{transform:translateX(-50%) rotate(-14deg)}to{transform:translateX(-50%) translateY(calc(var(--u)*-1)) rotate(14deg)}}
+.palco{position:relative;isolation:isolate;margin-top:8px;background:#2A2160;border-radius:12px;padding:8px 10px}
+.palco-t{display:block;font-size:.75rem;font-weight:700;color:#C9C3EE;margin-bottom:4px}
+.palco-lista{display:flex;flex-wrap:wrap;gap:12px 10px;padding-top:14px}
+.palco .mono-corona{display:none}
+.palco .mono{position:relative;margin:0;width:auto;transform:none!important;cursor:pointer;filter:saturate(.5)}
+.palco .mono::after,.palco .mono-cuerpo{display:none}
+.palco .mono-nom{position:static;margin-top:3px}
+.palco .mono-cab{width:34px;height:34px;font-size:17px}
+.palco .burbuja{font-size:20px;border-radius:12px;padding:3px 7px;bottom:calc(100% + 4px)}
+.palco .burbuja::after{border-width:5px;bottom:-5px;margin-left:-5px}
+.emoji-barra{display:flex;gap:4px;overflow-x:auto;margin-top:8px;padding-bottom:2px;scrollbar-width:none}
+.emoji-barra button,.emoji-envio button{appearance:none;border:0;background:var(--noche-2);border-radius:12px;font-size:1.45rem;min-width:44px;height:44px;cursor:pointer;flex:none}
+.emoji-barra button:active,.emoji-envio button:active{transform:scale(.9)}
+.emoji-vuela{position:fixed;left:0;top:0;z-index:96;font-size:2rem;pointer-events:none;transition:transform .8s cubic-bezier(.5,-.3,.5,1.3)}
+.emoji-envio{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.emoji-envio button{background:#fff;box-shadow:inset 0 0 0 2px var(--texto)}
+.ficha{max-width:420px;width:100%;max-height:88dvh;overflow:auto}
+.ficha-cab{display:flex;gap:14px;align-items:center}
+.ficha-cab h2{margin:0}
+.ficha-cab .fr{font-family:"Special Elite",monospace;color:var(--suave);font-size:.88rem}
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}
+.tile{background:var(--noche);color:#fff;border-radius:10px;padding:10px 12px}
+.tile b{display:block;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.8rem;line-height:1;color:var(--luz)}
+.tile small{color:#C9C3EE;font-size:.78rem}
+.barras{display:grid;gap:6px;margin-top:8px}
+.barra-sem{display:grid;grid-template-columns:4.6em 1fr 2.4em;align-items:center;gap:8px;font-size:.85rem}
+.barra-sem i{display:block;height:12px;border-radius:6px;background:var(--sello);min-width:3px}
+.barra-sem span:last-child{text-align:right;font-weight:700}
+.ficha h3{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.15rem;margin:16px 0 4px}
+[data-ficha]{cursor:pointer}
+
 /* ---------- v3: cabecera compacta con música y sonido ---------- */
 .cabecera{gap:8px}
 .cabecera .logo{width:46px;height:46px}
@@ -403,7 +472,52 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
   <div id="c-accion"></div>
 
   <div class="seccion-t"><span>Habitantes</span><small id="c-cuenta"></small></div>
-  <div class="rejilla" id="c-habitantes"></div>
+  <div id="c-sala-box">
+    <div class="sala" id="sala">
+      <svg class="sala-fondo" viewBox="0 0 100 105" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <pattern id="tapiz" width="6" height="46" patternUnits="userSpaceOnUse"><rect width="6" height="46" fill="#2A2160"/><rect width="3" height="46" fill="#2E2468"/></pattern>
+        </defs>
+        <rect width="100" height="46" fill="url(#tapiz)"/>
+        <rect y="44" width="100" height="61" fill="#3B2E8C"/>
+        <g stroke="#33287A" stroke-width=".5"><line x1="0" y1="54" x2="100" y2="54"/><line x1="0" y1="66" x2="100" y2="66"/><line x1="0" y1="80" x2="100" y2="80"/><line x1="0" y1="96" x2="100" y2="96"/></g>
+        <rect y="43" width="100" height="2.4" fill="#1B1440"/>
+        <!-- puerta del confesionario -->
+        <rect x="4" y="13" width="15" height="31" rx="1" fill="#D7263D"/>
+        <rect x="6" y="16" width="11" height="10" rx=".6" fill="#B01E33"/><rect x="6" y="29" width="11" height="12" rx=".6" fill="#B01E33"/>
+        <circle cx="16.2" cy="28" r=".9" fill="#FFD54A"/>
+        <rect x="3" y="8.5" width="17" height="3.4" rx=".6" fill="#1B1440"/>
+        <text x="11.5" y="11.1" text-anchor="middle" font-family="Work Sans,sans-serif" font-weight="700" font-size="2.2" fill="#FFD54A">CONFESIONARIO</text>
+        <!-- pantalla con el ojo -->
+        <rect x="37" y="7" width="26" height="17" rx="1.6" fill="#1B1440" stroke="#FFD54A" stroke-width=".8"/>
+        <path d="M43 15.5 Q50 9.5 57 15.5 Q50 21.5 43 15.5 Z" fill="#FFFDF6"/>
+        <circle cx="50" cy="15.5" r="3.2" fill="#D7263D"/><circle cx="50" cy="15.5" r="1.6" fill="#1B1440"/>
+        <rect x="47" y="24" width="6" height="2" fill="#1B1440"/>
+        <!-- reloj -->
+        <circle cx="80" cy="16" r="5.2" fill="#FFFDF6" stroke="#1B1440" stroke-width=".8"/>
+        <line x1="80" y1="16" x2="80" y2="12.6" stroke="#1B1440" stroke-width=".7" stroke-linecap="round"/><line x1="80" y1="16" x2="82.6" y2="17" stroke="#D7263D" stroke-width=".6" stroke-linecap="round"/>
+        <!-- tapete -->
+        <ellipse cx="50" cy="86" rx="23" ry="8" fill="#F7C6D0" opacity=".18"/>
+        <!-- sillón -->
+        <rect x="6" y="48" width="34" height="8" rx="2" fill="#7A3FB5"/>
+        <rect x="7" y="54" width="32" height="6" rx="1.5" fill="#8E52CC"/>
+        <rect x="4" y="51" width="4.5" height="10" rx="1.5" fill="#6A33A0"/><rect x="37.5" y="51" width="4.5" height="10" rx="1.5" fill="#6A33A0"/>
+        <!-- mesa -->
+        <rect x="62" y="69" width="26" height="3" rx="1" fill="#B5541F"/>
+        <rect x="64" y="72" width="1.6" height="8" fill="#8A3F17"/><rect x="84.4" y="72" width="1.6" height="8" fill="#8A3F17"/>
+        <rect x="70" y="66.5" width="4" height="2.5" rx=".6" fill="#FFFDF6"/><circle cx="80" cy="67.6" r="1.6" fill="#FFD54A"/>
+        <!-- planta -->
+        <path d="M92 50 q-6 -8 -2 -14 M92 50 q4 -9 1 -15 M92 50 q7 -5 5 -12" stroke="#1E8E5A" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <rect x="88.5" y="49" width="7" height="7" rx="1" fill="#B5541F"/>
+      </svg>
+      <div class="sala-actores" id="sala-actores"></div>
+      <div class="sala-vivo" id="sala-vivo" title="Conectados ahora"></div>
+    </div>
+    <div class="palco hidden" id="palco"><span class="palco-t">Palco del jurado</span><div class="palco-lista" id="palco-lista"></div></div>
+    <div class="emoji-barra" id="emoji-barra" aria-label="Ponte un emoji"></div>
+    <p class="ayuda sala-ayuda" id="sala-ayuda">Toca el piso para caminar · toca a alguien para ver su ficha</p>
+  </div>
+  <div class="rejilla hidden" id="c-habitantes"></div>
   <div id="c-extra"></div>
 
   <div id="c-espect-box" class="hidden">
@@ -500,6 +614,11 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
       <button class="btn" id="t-sig">Siguiente</button>
     </div>
   </div>
+</div>
+
+<!-- ============================ FICHA -->
+<div id="m-ficha" class="modal hidden">
+  <div class="formato ficha" id="ficha-caja"></div>
 </div>
 
 <!-- ============================ ELEGIR HABITANTE -->
@@ -985,10 +1104,12 @@ async function entrarCasa() {
   $('#c-accion').innerHTML = '';
   firmaFase = null; conocidos = null;
   await refrescar();
+  SALA.conectar();
   if (!store.get('ab_tuto')) abrirTutorial();
 }
 function cerrarSesion() {
   if (token) rpc('salir', { p_token: token }).catch(() => { });
+  SALA.desconectar();
   token = null; est = null; predSel = null; store.del('ab_token');
   mostrarInicio();
 }
@@ -1010,21 +1131,12 @@ function pintarCasa() {
   const activos = habitantes.filter(j => j.estado === 'activo');
 
   $('#c-yo').innerHTML = `${avatar(yo, 30)}<span>${esc(yo.nombre)}</span>`;
+  $('#c-yo').dataset.ficha = yo.id;
   $('#c-semana').textContent = g.semana === 0 ? 'Semana 0' : 'Semana ' + g.semana;
   $('#c-fase').textContent = faseTexto(g);
   $('#c-cuenta').textContent = g.semana === 0 ? `${habitantes.length} de ${g.cupo}` : `${activos.length} siguen en la casa`;
 
-  $('#c-habitantes').className = g.semana === 0 ? 'sillas' : 'rejilla';
-  if (g.semana === 0) $('#c-habitantes').innerHTML = pintarSillas(habitantes, g.cupo, yo.id);
-  else $('#c-habitantes').innerHTML = habitantes.map(j => {
-    const fuera = j.estado === 'eliminado';
-    return `<div class="hab ${fuera ? 'fuera' : ''}">
-      ${j.id === g.lider_id && !fuera ? '<span class="corona" aria-label="Líder">👑</span>' : ''}
-      ${avatar(j, 58)}
-      ${fuera ? '<span class="marca">COBRADO</span>' : ''}
-      <span class="n">${esc(j.nombre)}</span>
-    </div>`;
-  }).join('') || '<p style="grid-column:1/-1;color:#C9C3EE">Todavía no hay habitantes.</p>';
+  SALA.sincronizar();
 
   $('#c-espect-box').classList.toggle('hidden', !publico.length);
   $('#c-espect-n').textContent = publico.length + (publico.length === 1 ? ' persona' : ' personas');
@@ -1119,33 +1231,11 @@ $('#c-foto').addEventListener('change', async e => {
   catch (x) { toast(mensajeError(x)); }
   e.target.value = '';
 });
-$$('[data-volver]').forEach(b => b.onclick = () => { mostrar('s-casa'); refrescar(); });
+$$('[data-volver]').forEach(b => b.onclick = () => { mostrar('s-casa'); refrescar(); SALA.despertar(); });
 
 /* =====================================================================
    SALA DE ESPERA (semana 0)
    ===================================================================== */
-const SILLA = `<svg viewBox="0 0 62 62" aria-hidden="true">
-  <rect x="12" y="2" width="38" height="34" rx="9" fill="#2A2160"/>
-  <rect x="7" y="34" width="48" height="10" rx="4" fill="#3B2E8C"/>
-  <rect x="11" y="44" width="5" height="16" rx="2" fill="#2A2160"/>
-  <rect x="46" y="44" width="5" height="16" rx="2" fill="#2A2160"/></svg>`;
-
-function pintarSillas(habitantes, cupo, yoId) {
-  const total = Math.max(cupo, habitantes.length);
-  let h = '';
-  for (let i = 0; i < total; i++) {
-    const j = habitantes[i];
-    if (j) {
-      h += `<div class="silla ${j.id === yoId ? 'yo' : ''} ${nuevos.includes(j.id) ? 'nueva' : ''}">
-        <div class="asiento">${SILLA}<div style="position:relative;margin-top:-14px">${avatar(j, 44)}</div></div>
-        <span class="n">${esc(j.nombre)}</span>${j.frase ? `<span class="fr">“${esc(j.frase)}”</span>` : ''}</div>`;
-    } else {
-      h += `<div class="silla vacia"><div class="asiento">${SILLA}</div><span class="n">Libre</span></div>`;
-    }
-  }
-  return h;
-}
-
 function pintarSalaEspera() {
   const { yo, juego: g, jugadores, mi_prediccion } = est;
   const habitantes = jugadores.filter(j => j.rol === 'jugador');
@@ -1356,6 +1446,437 @@ $('#c-frase').onclick = async () => {
 };
 
 /* =====================================================================
+   FICHA DE ESTADÍSTICAS
+   ===================================================================== */
+const EMOJIS = ['👋', '😂', '😱', '😍', '😡', '🤫', '💸', '👏', '🙏', '💀'];
+const galaCache = {};
+async function cargarGalas() {
+  const faltan = (est?.galas || []).filter(s => !galaCache[s]);
+  await Promise.all(faltan.map(s => rpc('gala', { p_token: token, p_semana: s }).then(r => { if (r) galaCache[s] = r; }).catch(() => { })));
+  return (est?.galas || []).map(s => galaCache[s]).filter(Boolean).sort((a, b) => a.semana - b.semana);
+}
+// Las prácticas solo se guardan en este teléfono
+function leerPractica() {
+  try { return JSON.parse(store.get('ab_practica_' + est?.yo.id) || '{}'); } catch { return {}; }
+}
+function guardarPractica(tipo, puntaje) {
+  if (!est) return;
+  const p = leerPractica();
+  const x = p[tipo] || { n: 0, mejor: 0 };
+  x.n++; x.mejor = Math.max(x.mejor, puntaje || 0);
+  p[tipo] = x;
+  store.set('ab_practica_' + est.yo.id, JSON.stringify(p));
+}
+
+async function abrirFicha(id) {
+  const j = porId(id); if (!j) return;
+  const esYo = id === est.yo.id;
+  const caja = $('#ficha-caja');
+  const estado = j.rol === 'espectador' ? 'Público'
+    : j.estado === 'eliminado' ? `Eliminado en la semana ${j.semana_eliminado}` : 'En la casa';
+  const cab = `<div class="folio"><span>${esYo ? 'Mi ficha' : 'Ficha del habitante'}</span><span>${esc(estado)}</span></div>
+    <div class="ficha-cab">${avatar(j, 76)}<div style="min-width:0">
+      <h2>${esc(j.nombre)}${j.id === est.juego.lider_id ? ' 👑' : ''}</h2>
+      ${j.frase ? `<div class="fr">“${esc(j.frase)}”</div>` : ''}</div></div>`;
+  caja.innerHTML = cab + '<p class="ayuda" style="margin-top:12px">Cargando…</p>';
+  $('#m-ficha').classList.remove('hidden');
+
+  const galas = await cargarGalas();
+  const semanas = galas.map(g => ({ s: g.semana, fila: g.tabla.find(t => t.id === id), lider: g.lider_id === id }));
+  const conPuntos = semanas.filter(x => x.fila);
+  const total = conPuntos.reduce((a, x) => a + x.fila.puntos, 0);
+  const lider = semanas.filter(x => x.lider).length + (est.juego.lider_id === id && !est.galas.includes(est.juego.semana) ? 1 : 0);
+  const max = Math.max(1, ...conPuntos.map(x => x.fila.puntos));
+  let h = cab + `<div class="tiles">
+      <div class="tile"><b>${total}</b><small>puntos recibidos</small></div>
+      <div class="tile"><b>${lider}</b><small>${lider === 1 ? 'vez líder' : 'veces líder'}</small></div></div>`;
+  if (j.rol === 'jugador') {
+    h += `<h3>Puntos por semana</h3>` + (conPuntos.length
+      ? `<div class="barras">${conPuntos.map(x => `<div class="barra-sem"><span>Semana ${x.s}</span><i style="width:${x.fila.puntos / max * 100}%"></i><span>${x.fila.puntos}</span></div>`).join('')}</div>`
+      : '<p class="ayuda">Todavía no hay galas. Los puntos se ven después de cada gala.</p>');
+  }
+  if (esYo) {
+    const p = leerPractica();
+    const fila = (t, n) => `<div class="tile"><b>${p[t]?.mejor ?? 0}</b><small>${n} · mejor de ${p[t]?.n ?? 0} ${p[t]?.n === 1 ? 'partida' : 'partidas'}</small></div>`;
+    h += `<h3>Mis prácticas</h3><div class="tiles" style="margin-top:4px">${fila('memoria', 'Memoria')}${fila('adeudo', 'Adeudo')}</div>
+      <p class="ayuda">Solo se guardan en este teléfono.</p>`;
+    // motivos agrupados: el mismo texto se muestra una vez con cuántas veces se lo escribieron
+    const cuenta = new Map();
+    for (const x of conPuntos) for (const m of x.fila.motivos) { const k = m.t.trim(); cuenta.set(k, (cuenta.get(k) || 0) + 1); }
+    const motivos = [...cuenta].sort((a, b) => b[1] - a[1]);
+    if (motivos.length) h += `<h3>Lo que te han escrito</h3><ul class="motivos" style="margin:6px 0 0">${motivos.map(([m, n]) => `<li>“${esc(m)}”${n > 1 ? ` <em>×${n}</em>` : ''}</li>`).join('')}</ul>`;
+    if (SALA.soyActor()) h += `<h3>Ponte un emoji</h3><div class="emoji-envio">${EMOJIS.map(e => `<button data-mio="${e}">${e}</button>`).join('')}</div>`;
+  } else if (j.rol === 'jugador') {
+    h += `<h3>Mándale un emoji</h3>` + (SALA.enVivo()
+      ? `<div class="emoji-envio">${EMOJIS.map(e => `<button data-envia="${e}">${e}</button>`).join('')}</div>`
+      : '<p class="ayuda">Conectando con la casa…</p>');
+  }
+  h += `<button class="btn sec" id="ficha-cerrar" style="margin-top:16px;color:var(--texto)">Cerrar</button>`;
+  caja.innerHTML = h;
+  $('#ficha-cerrar').onclick = cerrarFicha;
+  $$('[data-envia]', caja).forEach(b => b.onclick = () => { cerrarFicha(); SALA.enviarEmoji(id, b.dataset.envia); });
+  $$('[data-mio]', caja).forEach(b => b.onclick = () => { cerrarFicha(); SALA.miEmoji(b.dataset.mio); });
+}
+function cerrarFicha() { $('#m-ficha').classList.add('hidden'); }
+$('#m-ficha').addEventListener('click', e => { if (e.target.id === 'm-ficha') cerrarFicha(); });
+// tocar cualquier foto con data-ficha abre la ficha
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-ficha]');
+  if (el && est && !$('#s-casa').classList.contains('hidden')) abrirFicha(el.dataset.ficha);
+});
+
+/* =====================================================================
+   LA CASA: monitos de palitos + modo en vivo
+   - Coordenadas de la sala: x 0–100, y 0–105 (y = pies).
+   - Quien no está conectado camina solo; su ruta sale de la hora y su id,
+     así todos los celulares ven lo mismo sin mandar nada.
+   - Quien está conectado mueve a su monito y lo manda por Supabase Realtime.
+   ===================================================================== */
+const SALA = (() => {
+  const T = 9000;                         // duración de cada "turno" de los que caminan solos
+  const PUERTA = [12, 56], PANTALLA = [50, 24];
+  const SPOTS = [[14, 64], [30, 64], [46, 76], [56, 86], [44, 96], [62, 95], [76, 92], [91, 86], [10, 92], [26, 82],
+    [52, 62], [90, 68], [76, 63], [30, 98], [68, 80], [86, 99], [18, 75], [38, 87], [60, 71], [8, 80]];
+  const MANOS = ['✊', '✋', '✌️'];
+  const actores = new Map();               // id -> actor
+  let online = new Set(), canal = null, vivo = false, miId = null;
+  let W = 300, H = 315, raf = null, programadoK = null, ultimoEnvio = 0, miCooldown = 0;
+  const caja = $('#sala'), capa = $('#sala-actores');
+
+  // ---------- azar repetible ----------
+  const hash = s => { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+  const azar = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const lerp = (a, b, e) => a + (b - a) * e;
+  const suave = e => e < .5 ? 2 * e * e : 1 - Math.pow(-2 * e + 2, 2) / 2;
+  const limitar = (x, y) => [Math.max(6, Math.min(94, x)), Math.max(56, Math.min(101, y))];
+
+  // ---------- quién camina solo ----------
+  const enCasaIds = () => [...actores.values()].filter(a => a.enSala).map(a => a.id).sort();
+  const parejasCache = new Map();
+  function parejas(k) {
+    const ids = enCasaIds(), clave = k + '|' + ids.join();
+    if (parejasCache.has(clave)) return parejasCache.get(clave);
+    const r = azar(hash('p' + k)), l = [...ids];
+    for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; }
+    const mapa = new Map();
+    for (let i = 0; i + 1 < l.length; i += 2) {
+      const a = l[i], b = l[i + 1];
+      if (azar(hash('q' + k + a + b))() < .55) { mapa.set(a, { otro: b, lado: 0, key: a + b }); mapa.set(b, { otro: a, lado: 1, key: a + b }); }
+    }
+    if (parejasCache.size > 20) parejasCache.clear();
+    parejasCache.set(clave, mapa);
+    return mapa;
+  }
+  const camina = id => !(id === miId && soyActor()) && !(online.has(id) && actores.get(id)?.ctrl);
+  function destino(id, k) {
+    const p = parejas(k).get(id);
+    if (p && camina(p.otro)) {
+      const r = azar(hash('m' + k + p.key)), s = SPOTS[Math.floor(r() * SPOTS.length)];
+      return limitar(s[0] + (p.lado ? 5.5 : -5.5), s[1]);
+    }
+    const r = azar(hash(id + ':' + k)), s = SPOTS[Math.floor(r() * SPOTS.length)];
+    return limitar(s[0] + r() * 6 - 3, s[1] + r() * 4 - 2);
+  }
+  function posSolo(id, t) {
+    const k = Math.floor(t / T), ph = t - k * T;
+    const a = destino(id, k - 1), b = destino(id, k);
+    if (ph < 3500) { const e = suave(ph / 3500); return { x: lerp(a[0], b[0], e), y: lerp(a[1], b[1], e), mueve: Math.hypot(b[0] - a[0], b[1] - a[1]) > 1, izq: b[0] < a[0] }; }
+    // al llegar, si tiene pareja se voltean a verse
+    const p = parejas(k).get(id);
+    return { x: b[0], y: b[1], mueve: false, izq: p && camina(p.otro) ? p.lado === 1 : undefined };
+  }
+
+  // ---------- actores ----------
+  function cabeza(j) {
+    const f = fotos[j.id];
+    return f ? `<img src="${f}" alt="">` : esc(String(j.nombre || '?').trim().charAt(0).toUpperCase());
+  }
+  const CUERPO = `<svg class="mono-cuerpo" viewBox="0 0 40 52" aria-hidden="true">
+    <line x1="20" y1="2" x2="20" y2="25"/>
+    <g class="bi"><line x1="20" y1="7" x2="8" y2="20"/></g><g class="bd"><line x1="20" y1="7" x2="32" y2="20"/></g>
+    <g class="pi"><line x1="20" y1="25" x2="11" y2="49"/></g><g class="pd"><line x1="20" y1="25" x2="29" y2="49"/></g></svg>`;
+  function crearEl(a) {
+    const el = document.createElement('div');
+    el.className = 'mono'; el.dataset.id = a.id;
+    el.innerHTML = `<div class="burbuja"></div><span class="mono-corona hidden">👑</span><div class="mono-cab"></div>${CUERPO}<span class="mono-nom"></span>`;
+    return el;
+  }
+  function pintarActor(a, j) {
+    const el = a.el;
+    const firma = [j.nombre, !!fotos[j.id], j.id === est.juego.lider_id, j.id === miId].join('|');
+    if (a.firma === firma) return;
+    a.firma = firma;
+    $('.mono-cab', el).style.background = colorDe(j.nombre);
+    $('.mono-cab', el).innerHTML = cabeza(j);
+    $('.mono-nom', el).textContent = j.id === miId ? 'Tú' : j.nombre;
+    $('.mono-corona', el).classList.toggle('hidden', j.id !== est.juego.lider_id || j.estado !== 'activo');
+    el.classList.toggle('yo', j.id === miId);
+  }
+
+  function sincronizar() {
+    if (!est) return;
+    miId = est.yo.id;
+    const habitantes = est.jugadores.filter(j => j.rol === 'jugador');
+    const ids = new Set(habitantes.map(j => j.id));
+    for (const [id, a] of actores) if (!ids.has(id)) { a.el.remove(); actores.delete(id); }
+    const ahora = Date.now(), inicial = actores.size === 0;
+    for (const j of habitantes) {
+      const enSala = j.estado === 'activo';
+      let a = actores.get(j.id);
+      if (!a) {
+        a = { id: j.id, el: null, x: PUERTA[0], y: PUERTA[1], modo: null, ctrl: null, blend: null, ocupado: 0, enSala: null };
+        actores.set(j.id, a);
+        // los que llegan después entran por la puerta del confesionario
+        if (!inicial && enSala) a.blend = { x: PUERTA[0], y: PUERTA[1], t0: ahora, dur: 2600 };
+      }
+      if (a.enSala !== enSala) {
+        a.el?.remove();
+        a.el = crearEl(a); a.firma = null;
+        (enSala ? capa : $('#palco-lista')).appendChild(a.el);
+        a.enSala = enSala;
+        if (j.id === miId && enSala && !a.ctrl) {
+          const p = posSolo(j.id, ahora);
+          a.ctrl = { fx: p.x, fy: p.y, tx: p.x, ty: p.y, t0: ahora, dur: 0 };
+        }
+      }
+      pintarActor(a, j);
+    }
+    $('#palco').classList.toggle('hidden', !habitantes.some(j => j.estado === 'eliminado'));
+    pintarBarra();
+    $('#sala-ayuda').textContent = soyActor()
+      ? 'Toca el piso para caminar · toca a alguien para ver su ficha'
+      : 'Toca a alguien para ver su ficha';
+    despertar();
+  }
+  function pintarBarra() {
+    const b = $('#emoji-barra');
+    const puede = actores.has(miId);    // habitantes en la casa o en el palco
+    b.classList.toggle('hidden', !puede);
+    if (puede && !b.childElementCount) {
+      b.innerHTML = EMOJIS.map(e => `<button data-e="${e}" aria-label="Ponerme ${e}">${e}</button>`).join('');
+      $$('button', b).forEach(x => x.onclick = () => miEmoji(x.dataset.e));
+    }
+  }
+  const soyActor = () => !!(est && actores.get(est.yo.id)?.enSala);
+
+  // ---------- burbujas, emojis y piedra, papel o tijera ----------
+  function burbuja(id, texto, ms = 2400, agita = false) {
+    const a = actores.get(id); if (!a?.el) return;
+    const b = $('.burbuja', a.el);
+    clearTimeout(a.bT);
+    b.textContent = texto; b.classList.add('on'); b.classList.toggle('agita', agita);
+    a.bT = setTimeout(() => b.classList.remove('on', 'agita'), ms);
+  }
+  function saludar(id) {
+    const a = actores.get(id); if (!a?.el) return;
+    a.el.classList.remove('saluda'); void a.el.offsetWidth; a.el.classList.add('saluda');
+    setTimeout(() => a.el.classList.remove('saluda'), 1600);
+  }
+  function jugarPPT(aId, bId, ja, jb, retraso = 0) {
+    setTimeout(() => {
+      const A = actores.get(aId), B = actores.get(bId);
+      if (!A?.enSala || !B?.enSala) return;
+      const ahora = Date.now();
+      for (const X of [A, B]) { X.ocupado = ahora + 4300; X.congelado = { x: X.x, y: X.y }; }
+      A.mira = B.x < A.x; B.mira = A.x < B.x;
+      burbuja(aId, '✊', 1150, true); burbuja(bId, '✊', 1150, true);
+      setTimeout(() => { burbuja(aId, MANOS[ja], 1250); burbuja(bId, MANOS[jb], 1250); }, 1150);
+      setTimeout(() => {
+        const d = (ja - jb + 3) % 3;
+        const fa = d === 0 ? '😅' : d === 1 ? '😄' : '😢', fb = d === 0 ? '😅' : d === 2 ? '😄' : '😢';
+        burbuja(aId, fa, 1700); burbuja(bId, fb, 1700);
+        if (aId === miId || bId === miId) {
+          const gane = (aId === miId && d === 1) || (bId === miId && d === 2);
+          SFX.tocar(d === 0 ? 'clic' : gane ? 'caja' : 'buzzer');
+        }
+      }, 2400);
+    }, retraso);
+  }
+  function revisarReto() {
+    const yo = actores.get(miId);
+    if (!yo?.enSala || Date.now() < miCooldown || Date.now() < yo.ocupado) return;
+    let mejor = null, dist = 12;
+    for (const a of actores.values()) {
+      if (a.id === miId || !a.enSala || Date.now() < a.ocupado) continue;
+      const d = Math.hypot(a.x - yo.x, (a.y - yo.y) * 1.4);
+      if (d < dist) { dist = d; mejor = a; }
+    }
+    if (!mejor) return;
+    miCooldown = Date.now() + 7000;
+    const ja = Math.floor(Math.random() * 3), jb = Math.floor(Math.random() * 3);
+    mandar({ tipo: 'ppt', a: miId, b: mejor.id, ja, jb });
+    jugarPPT(miId, mejor.id, ja, jb);
+  }
+  function permitido() {
+    if (Date.now() - ultimoEnvio < 1100) return false;
+    ultimoEnvio = Date.now(); return true;
+  }
+  function miEmoji(e) {
+    if (!actores.has(miId) || !permitido()) return;
+    burbuja(miId, e); saludar(miId);
+    mandar({ tipo: 'emo', id: miId, e });
+  }
+  function enviarEmoji(aId, e) {
+    if (!permitido()) return;
+    volar(miId, aId, e);
+    mandar({ tipo: 'env', de: miId, a: aId, e });
+    toast(`Le mandaste ${e} a ${porId(aId)?.nombre || ''}`);
+  }
+  function puntoDe(id) {
+    const a = actores.get(id);
+    if (a?.el && !$('#c-sala-box').classList.contains('hidden')) {
+      const r = $('.mono-cab', a.el).getBoundingClientRect();
+      if (r.width) return [r.left + r.width / 2, r.top];
+    }
+    const r = caja.getBoundingClientRect();
+    return [r.left + r.width * PANTALLA[0] / 100, r.top + r.height * PANTALLA[1] / 105];
+  }
+  function volar(deId, aId, e) {
+    const [x0, y0] = puntoDe(deId), [x1, y1] = puntoDe(aId);
+    const v = document.createElement('div');
+    v.className = 'emoji-vuela'; v.textContent = e;
+    v.style.transform = `translate(${x0 - 16}px, ${y0 - 20}px)`;
+    document.body.appendChild(v);
+    requestAnimationFrame(() => requestAnimationFrame(() => { v.style.transform = `translate(${x1 - 16}px, ${y1 - 40}px) scale(1.3)`; }));
+    setTimeout(() => { v.remove(); burbuja(aId, e, 2600); }, 820);
+  }
+
+  // ---------- tocar la sala ----------
+  caja.addEventListener('click', e => {
+    const m = e.target.closest('.mono');
+    if (m) { abrirFicha(m.dataset.id); return; }
+    if (!soyActor()) { toast('Solo los habitantes en la casa pueden caminar'); return; }
+    const r = caja.getBoundingClientRect();
+    const [tx, ty] = limitar((e.clientX - r.left) / r.width * 100, (e.clientY - r.top) / r.height * 105 + 4);
+    const yo = actores.get(miId);
+    if (Date.now() < yo.ocupado) return;
+    const dur = Math.max(450, Math.hypot(tx - yo.x, ty - yo.y) * 42);
+    yo.ctrl = { fx: yo.x, fy: yo.y, tx, ty, t0: Date.now(), dur };
+    mandar({ tipo: 'mov', id: miId, fx: yo.x, fy: yo.y, tx, ty, dur });
+    clearTimeout(yo.llegaT);
+    yo.llegaT = setTimeout(revisarReto, dur + 80);
+  });
+  $('#palco-lista').addEventListener('click', e => { const m = e.target.closest('.mono'); if (m) abrirFicha(m.dataset.id); });
+
+  // ---------- cuadro por cuadro ----------
+  function visible() { return !!est && pantalla === 's-casa' && !document.hidden && !galaAbierta; }
+  function despertar() { if (!raf && visible()) raf = requestAnimationFrame(cuadro); }
+  function cuadro() {
+    raf = null;
+    if (!visible()) return;
+    const ahora = Date.now(), k = Math.floor(ahora / T);
+    // partidas entre los que caminan solos: todos los celulares calculan lo mismo
+    if (k !== programadoK) {
+      programadoK = k;
+      const vistos = new Set();
+      for (const [id, p] of parejas(k)) {
+        if (vistos.has(p.key)) continue; vistos.add(p.key);
+        if (!camina(id) || !camina(p.otro)) continue;
+        const [a, b] = [id, p.otro].sort(), r = azar(hash('j' + k + p.key));
+        const espera = k * T + 4200 - ahora;
+        if (espera > -300) jugarPPT(a, b, Math.floor(r() * 3), Math.floor(r() * 3), Math.max(0, espera));
+      }
+    }
+    for (const a of actores.values()) {
+      if (!a.enSala) continue;
+      let p;
+      if (ahora < a.ocupado) p = { x: a.congelado.x, y: a.congelado.y, mueve: false, izq: a.mira };
+      else if (!camina(a.id) && a.ctrl) {
+        const c = a.ctrl, e = c.dur ? Math.min(1, (ahora - c.t0) / c.dur) : 1;
+        p = { x: lerp(c.fx, c.tx, e), y: lerp(c.fy, c.ty, e), mueve: e < 1, izq: c.tx < c.fx };
+      } else p = posSolo(a.id, ahora);
+      // transición suave al cambiar de modo, al terminar un juego o al entrar por la puerta
+      const modo = (ahora < a.ocupado ? 'j' : camina(a.id) ? 's' : 'c');
+      if (a.modo && a.modo !== modo && modo !== 'j' && !a.blend) a.blend = { x: a.x, y: a.y, t0: ahora, dur: 1000 };
+      a.modo = modo;
+      if (a.blend) {
+        const e = Math.min(1, (ahora - a.blend.t0) / a.blend.dur);
+        p = { ...p, x: lerp(a.blend.x, p.x, suave(e)), y: lerp(a.blend.y, p.y, suave(e)), mueve: e < 1 || p.mueve, izq: p.x < a.blend.x };
+        if (e >= 1) a.blend = null;
+      }
+      a.x = p.x; a.y = p.y; a.p = p;
+    }
+    // que no se encimen: se empujan un poco solo al dibujar (igual en todos los celulares)
+    const lista = [...actores.values()].filter(a => a.enSala);
+    for (const a of lista) { a.rx = a.x; a.ry = a.y; }
+    for (let i = 0; i < lista.length; i++) for (let j = i + 1; j < lista.length; j++) {
+      const A = lista[i], B = lista[j];
+      let dx = B.rx - A.rx, dy = (B.ry - A.ry) * 1.6;
+      const d = Math.hypot(dx, dy);
+      if (d >= 7) continue;
+      if (d < .01) { dx = A.id < B.id ? 1 : -1; dy = 0; }
+      const n = Math.hypot(dx, dy), f = (7 - d) / 2;
+      A.rx -= dx / n * f; B.rx += dx / n * f; A.ry -= dy / n * f / 1.6; B.ry += dy / n * f / 1.6;
+    }
+    for (const a of lista) {
+      const [x, y] = limitar(a.rx, a.ry), p = a.p;
+      a.el.style.transform = `translate3d(${(x / 100 * W).toFixed(1)}px, ${(y / 105 * H).toFixed(1)}px, 0) translateY(-100%)`;
+      a.el.style.zIndex = Math.round(y * 10);
+      a.el.classList.toggle('camina', p.mueve);
+      if (p.izq !== undefined) a.el.classList.toggle('izq', p.izq);
+    }
+    raf = requestAnimationFrame(cuadro);
+  }
+  new ResizeObserver(() => {
+    W = caja.clientWidth; H = caja.clientHeight;
+    caja.style.setProperty('--u', (W / 100) + 'px');
+    $('#palco').style.setProperty('--u', (W / 100) + 'px');
+  }).observe(caja);
+  document.addEventListener('visibilitychange', despertar);
+
+  // ---------- en vivo (Supabase Realtime) ----------
+  function mandar(payload) { if (canal && vivo) canal.send({ type: 'broadcast', event: 'm', payload }).catch?.(() => { }); }
+  function miPosicion() {
+    const yo = actores.get(miId);
+    if (yo?.enSala && yo.ctrl) mandar({ tipo: 'pos', id: miId, x: yo.x, y: yo.y });
+  }
+  function recibir({ payload: m }) {
+    if (!m || m.id === miId && m.tipo !== 'env') return;
+    const a = actores.get(m.id);
+    if (m.tipo === 'mov' && a) a.ctrl = { fx: m.fx, fy: m.fy, tx: m.tx, ty: m.ty, t0: Date.now(), dur: m.dur };
+    else if (m.tipo === 'pos' && a) a.ctrl = { fx: m.x, fy: m.y, tx: m.x, ty: m.y, t0: Date.now(), dur: 0 };
+    else if (m.tipo === 'emo') { burbuja(m.id, m.e); saludar(m.id); }
+    else if (m.tipo === 'ppt') jugarPPT(m.a, m.b, m.ja, m.jb);
+    else if (m.tipo === 'env') {
+      volar(m.de, m.a, m.e);
+      if (m.a === miId) {
+        SFX.tocar('swish');
+        if (navigator.vibrate) navigator.vibrate(40);
+        toast(`${porId(m.de)?.nombre || 'Alguien'} te mandó ${m.e}`, 3000);
+      }
+    }
+  }
+  function pintarVivo() {
+    const n = [...online].filter(id => actores.has(id) || porId(id)).length;
+    $('#sala-vivo').textContent = vivo ? `● ${n} en línea` : '';
+  }
+  function conectar() {
+    if (canal || !est || typeof sb?.channel !== 'function') return;
+    miId = est.yo.id;
+    canal = sb.channel('casa-alfa-brother', { config: { broadcast: { self: false }, presence: { key: miId } } });
+    canal.on('broadcast', { event: 'm' }, recibir)
+      .on('presence', { event: 'sync' }, () => {
+        online = new Set(Object.keys(canal.presenceState()));
+        for (const a of actores.values()) if (!online.has(a.id) && a.id !== miId) a.ctrl = null;
+        pintarVivo();
+      })
+      .on('presence', { event: 'join' }, ({ key }) => { if (key !== miId) setTimeout(miPosicion, 300); })
+      .subscribe(async st => {
+        if (st === 'SUBSCRIBED') { vivo = true; await canal.track({ t: Date.now() }); miPosicion(); pintarVivo(); }
+        else if (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT' || st === 'CLOSED') { vivo = false; pintarVivo(); }
+      });
+  }
+  function desconectar() {
+    if (canal) { try { sb.removeChannel(canal); } catch { } }
+    canal = null; vivo = false; online = new Set();
+    for (const a of actores.values()) a.el?.remove();
+    actores.clear(); programadoK = null;
+    pintarVivo();
+  }
+  return { sincronizar, conectar, desconectar, miEmoji, enviarEmoji, soyActor, enVivo: () => vivo, despertar };
+})();
+
+/* =====================================================================
    VOTACIÓN 3-2-1
    ===================================================================== */
 let voto = [];      // [{puntos, id, motivo}]
@@ -1455,8 +1976,9 @@ function abrirPractica(tipo) {
   $('#p-empezar').onclick = () => { tipo === 'memoria' ? jugarMemoria(true) : jugarAdeudo(true); };
   mostrar('s-prueba');
 }
-function finPractica(html, tipo) {
+function finPractica(html, tipo, puntaje = 0) {
   SFX.tocar('caja');
+  guardarPractica(tipo, puntaje);
   $('#p-volver').classList.remove('hidden');
   $('#p-caja').innerHTML = `<div class="folio"><span>Práctica terminada</span><span>No cuenta</span></div>${html}
     <div style="display:grid;gap:10px;margin-top:16px"><button class="btn" id="p-otra">Jugar otra vez</button>
@@ -1546,7 +2068,7 @@ function jugarMemoria(practica = false) {
         const puntaje = Math.max(0, Math.round(1000 - seg * 10 - errores * 20));
         await sleep(500);
         const html = `<h2>¡Expedientes en orden!</h2><p>${seg.toFixed(1)} segundos y ${errores} errores.</p><p>Puntaje: <b class="display" style="font-size:2rem">${puntaje}</b></p>`;
-        if (practica) return finPractica(html, 'memoria');
+        if (practica) return finPractica(html, 'memoria', puntaje);
         try { await enviarPuntaje(puntaje); finPrueba(html); }
         catch (e) { finPrueba(`<h2>No se guardó</h2><p>${esc(mensajeError(e))}</p>`); }
       }
@@ -1592,7 +2114,7 @@ function jugarAdeudo(practica = false) {
     if (fin) return; fin = true; clearInterval(iv);
     puntaje = Math.max(0, puntaje);
     const html = `<h2>¡Se acabó el tiempo!</h2><p>${bien} aciertos y ${mal} errores.</p><p>Puntaje: <b class="display" style="font-size:2rem">${puntaje}</b></p>`;
-    if (practica) return finPractica(html, 'adeudo');
+    if (practica) return finPractica(html, 'adeudo', puntaje);
     caja.innerHTML = '<h2>Guardando…</h2>';
     try { await enviarPuntaje(puntaje); finPrueba(html); }
     catch (e) { finPrueba(`<h2>No se guardó</h2><p>${esc(mensajeError(e))}</p>`); }
@@ -1762,7 +2284,7 @@ async function abrirGala(semana, marcarVista, conTelon = false) {
   E.scrollTop = 0; G.scrollTop = 0;
   $('#g-cerrar').onclick = () => {
     G.classList.add('hidden'); E.style.justifyContent = ''; document.body.style.overflow = '';
-    galaAbierta = false; SFX.pausaParaGala(false); refrescar();
+    galaAbierta = false; SFX.pausaParaGala(false); refrescar(); SALA.despertar();
   };
 }
 
