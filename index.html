@@ -249,6 +249,18 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .ad-aviso.bien{color:var(--ok)}
 .ad-aviso.mal{color:var(--sello)}
 
+/* ---------- v7: bienvenida ---------- */
+.bienvenida{max-width:400px;width:100%;text-align:center;animation:entra-conf .4s ease-out both}
+.bienvenida .logo{margin:-6px auto 4px}
+.bienvenida h2{font-size:1.55rem}
+.bv-hola{margin:0;color:var(--suave);font-weight:600}
+.bv-actual{margin:14px 0 2px;color:var(--suave)}
+.bv-fase{font-size:2.1rem;color:var(--sello);line-height:1.05}
+.bv-semana{margin:4px 0 0;font-family:"Special Elite",monospace;color:var(--suave)}
+.bienvenida .proximo{justify-content:center;text-align:center;margin:12px 0 4px}
+.bienvenida .proximo small{color:#C9C3EE}
+.bienvenida #bv-ok{margin-top:16px}
+
 /* ---------- v6: agenda y el ojo ---------- */
 .proximo{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px;margin-top:14px;background:var(--noche-2);border-radius:12px;padding:10px 14px}
 .proximo span{color:#C9C3EE;font-size:.88rem}
@@ -661,6 +673,20 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
       <button class="btn sec" id="t-atras">Atrás</button>
       <button class="btn" id="t-sig">Siguiente</button>
     </div>
+  </div>
+</div>
+
+<!-- ============================ BIENVENIDA -->
+<div id="m-bienvenida" class="modal hidden">
+  <div class="formato amarillo bienvenida">
+    <svg class="logo js-logo" width="84" height="84" viewBox="0 0 120 120" aria-hidden="true"></svg>
+    <p class="bv-hola" id="bv-hola"></p>
+    <h2>¡Bienvenido a Alfa Brother: Te Vamos a Cobrar!</h2>
+    <p class="bv-actual">Actualmente estamos en la fase de:</p>
+    <div class="bv-fase display" id="bv-fase"></div>
+    <p class="bv-semana" id="bv-semana"></p>
+    <div id="bv-prox"></div>
+    <button class="btn" id="bv-ok">OK</button>
   </div>
 </div>
 
@@ -1216,7 +1242,7 @@ async function refrescar() {
 
   if (pantalla === 's-casa') pintarCasa();
 
-  const libre = !galaAbierta && pantalla === 's-casa' && $('#admin').classList.contains('hidden') && $('#m-tuto').classList.contains('hidden');
+  const libre = !galaAbierta && pantalla === 's-casa' && $('#admin').classList.contains('hidden') && $('#m-tuto').classList.contains('hidden') && $('#m-bienvenida').classList.contains('hidden');
   // anuncio del líder con lluvia de billetes
   if (libre && g.lider_id && ['votacion', 'decision'].includes(g.fase) && !store.get('ab_lider_' + g.semana)) {
     store.set('ab_lider_' + g.semana, '1');
@@ -1236,7 +1262,7 @@ async function entrarCasa() {
   firmaFase = null; conocidos = null;
   await refrescar();
   SALA.conectar();
-  if (!store.get('ab_tuto')) abrirTutorial();
+  mostrarBienvenida();
 }
 function cerrarSesion() {
   if (token) rpc('salir', { p_token: token }).catch(() => { });
@@ -2134,6 +2160,25 @@ function irAlOjo() {
 $('#ojo-otro').onclick = decirChisme;
 $('#ojo-cerrar').onclick = () => { clearInterval(ojoEscribiendo); $('#m-ojo').classList.add('hidden'); };
 
+/* ---------- mensaje de bienvenida al abrir la app ---------- */
+function mostrarBienvenida() {
+  if (!est) return;
+  const g = est.juego, prox = proximoEvento(g);
+  $('#bv-hola').textContent = `Hola, ${est.yo.nombre}`;
+  $('#bv-fase').textContent = g.semana > 0 && g.activos === 1 && g.gala_revelada ? 'Gran final' : faseTexto(g);
+  $('#bv-semana').textContent = g.semana === 0 ? 'Antes de la semana 1' : `Semana ${g.semana}`;
+  $('#bv-prox').innerHTML = prox
+    ? `<div class="proximo" data-hasta="${prox.t}"><span>${esc(prox.txt)} en</span><b class="js-falta">${faltaTexto(new Date(prox.t) - Date.now())}</b><small>${esc(fmtFecha(prox.t))}</small></div>`
+    : '';
+  $('#m-bienvenida').classList.remove('hidden');
+}
+$('#bv-ok').onclick = () => {
+  $('#m-bienvenida').classList.add('hidden');
+  SFX.tocar('dindon');
+  if (!store.get('ab_tuto')) abrirTutorial();
+  else refrescar();          // por si hay una gala esperando
+};
+
 // Camina al confesionario (si tu monito está en la casa) y entra
 function irAlConfesionario() {
   if (SALA.soyActor() && pantalla === 's-casa') SALA.irAPuerta(abrirVotacion);
@@ -2898,7 +2943,13 @@ async function adminHabitantes(C) {
   pintarFotoRegistro();
   if (token) { store.set('ab_conocido', '1'); await entrarCasa(); } else mostrarInicio();
   setInterval(() => { if (!document.hidden && token && ['s-casa'].includes(pantalla)) refrescar(); }, 7000);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && token && pantalla === 's-casa') refrescar(); });
+  let ocultaDesde = 0;
+  document.addEventListener('visibilitychange', async () => {
+    if (document.hidden) { ocultaDesde = Date.now(); return; }
+    if (!token || pantalla !== 's-casa') return;
+    await refrescar();
+    if (ocultaDesde && Date.now() - ocultaDesde > 30 * 60000) mostrarBienvenida();
+  });
 })();
 </script>
 </body>
