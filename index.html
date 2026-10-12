@@ -249,6 +249,17 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .ad-aviso.bien{color:var(--ok)}
 .ad-aviso.mal{color:var(--sello)}
 
+/* ---------- v9: chismes de los jugadores ---------- */
+.ojo-form{text-align:left;background:#FFFDF6;color:var(--texto);border-radius:16px;padding:14px 16px;margin-top:4px}
+.ojo-form label{font-weight:700}
+.ojo-form textarea{margin-top:6px;min-height:84px;font-family:"Special Elite",monospace;font-size:1rem}
+.ojo-form p{font-size:.82rem;color:var(--suave);margin:6px 0 12px}
+.ojo-cuenta{text-align:right;font-size:.75rem;color:var(--suave);margin-top:2px}
+.ojo-form .ojo-botones .sec{color:var(--texto)}
+.pend{border:2px dashed var(--luz);border-radius:12px;padding:10px;margin-top:10px;background:#FFFBEA}
+.pend textarea{min-height:64px;font-size:.95rem}
+.pend .adm-acciones{margin-top:8px}
+
 /* ---------- v8: elegir cómo entrar ---------- */
 #s-inicio{position:relative}
 #s-inicio .btn-sonido.flotante{position:absolute}
@@ -725,10 +736,21 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
     </div>
     <div class="ojo-globo" aria-live="polite"><span id="ojo-texto"></span><i class="cursor"></i></div>
     <p class="ojo-nota">Lo que dice el ojo puede ser verdad… o no.</p>
-    <div class="ojo-botones">
+    <div class="ojo-botones" id="ojo-botones">
       <button class="btn" id="ojo-otro">Otro chisme 👀</button>
+      <button class="btn tinta" id="ojo-contar">Cuéntale un chisme al ojo 🤫</button>
       <button class="btn sec" id="ojo-cerrar">Cerrar</button>
     </div>
+    <form class="ojo-form hidden" id="ojo-form" autocomplete="off">
+      <label for="ojo-nuevo">Tu chisme (anónimo)</label>
+      <textarea class="in" id="ojo-nuevo" maxlength="160" placeholder="Ej. Yo sé quién se come las galletas de la sala de juntas" required></textarea>
+      <div class="ojo-cuenta"><span id="ojo-n">0</span>/160</div>
+      <p>Nadie sabrá que fuiste tú. La producción lo revisa antes de que el ojo lo cuente. Sin nombres, por favor.</p>
+      <div class="ojo-botones">
+        <button class="btn" type="submit">Enviar al ojo</button>
+        <button class="btn sec" type="button" id="ojo-cancelar">Cancelar</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -816,6 +838,8 @@ const ERRORES = {
   SIN_CANDIDATOS: 'No hay candidatos para eliminar.',
   PRUEBA_INVALIDA: 'Prueba no válida.',
   FASE_INVALIDA: 'Fase no válida.',
+  CHISME_INVALIDO: 'El chisme debe tener entre 3 y 160 letras.',
+  BUZON_LLENO: 'El ojo tiene demasiados chismes por revisar. Intenta más tarde.',
   PREDICCIONES_CERRADAS: 'Las predicciones se cerraron cuando empezó el juego.',
   PREDICCION_INVALIDA: 'Solo puedes elegir habitantes.',
 };
@@ -2175,6 +2199,7 @@ async function decirChisme() {
   }, 38);
 }
 function abrirOjo() {
+  modoContar(false);
   $('#m-ojo').classList.remove('hidden');
   decirChisme();
 }
@@ -2183,6 +2208,37 @@ function irAlOjo() {
   else abrirOjo();
 }
 $('#ojo-otro').onclick = decirChisme;
+function modoContar(si) {
+  $('#ojo-form').classList.toggle('hidden', !si);
+  $('#ojo-botones').classList.toggle('hidden', si);
+  $('.ojo-nota').classList.toggle('hidden', si);
+  if (si) {
+    clearInterval(ojoEscribiendo);
+    $('#ojo-texto').textContent = 'Cuéntame… nadie sabrá que fuiste tú. 🤫';
+    $('#ojo-nuevo').value = ''; $('#ojo-n').textContent = '0';
+    setTimeout(() => $('#ojo-nuevo').focus(), 50);
+  }
+}
+$('#ojo-contar').onclick = () => modoContar(true);
+$('#ojo-cancelar').onclick = () => { modoContar(false); decirChisme(); };
+$('#ojo-nuevo').addEventListener('input', e => { $('#ojo-n').textContent = e.target.value.length; });
+$('#ojo-form').onsubmit = async e => {
+  e.preventDefault();
+  const texto = $('#ojo-nuevo').value.trim();
+  if (texto.length < 3) return toast('Escribe un poquito más');
+  const ultimo = +(store.get('ab_ultimo_chisme') || 0);
+  if (Date.now() - ultimo < 60000) return toast('Espera un minuto antes de contar otro chisme');
+  const b = $('#ojo-form button[type=submit]'); b.disabled = true;
+  try {
+    await rpc('proponer_chisme', { p_token: token, p_texto: texto });
+    store.set('ab_ultimo_chisme', String(Date.now()));
+    modoContar(false);
+    clearInterval(ojoEscribiendo);
+    $('#ojo-texto').textContent = 'Mmm… interesante. Lo guardaré… si la producción me deja contarlo. 👁️';
+    SFX.tocar('ojo');
+  } catch (x) { toast(mensajeError(x)); }
+  b.disabled = false;
+};
 $('#ojo-cerrar').onclick = () => { clearInterval(ojoEscribiendo); $('#m-ojo').classList.add('hidden'); };
 
 /* ---------- mensaje de bienvenida al abrir la app ---------- */
@@ -2704,6 +2760,10 @@ async function cargarAdmin(silencioso) {
   if (silencioso && C.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
   try {
     await sb.rpc('admin_tick').catch?.(() => { });
+    sb.from('chismes').select('id').eq('pendiente', true).then(({ data }) => {
+      const n = data?.length || 0;
+      $('[data-at=ojo]').textContent = n ? `Ojo 👁️ (${n})` : 'Ojo 👁️';
+    });
     [adm.cfg, adm.jug] = await Promise.all([
       q(sb.from('config').select('*').eq('id', 1).single()),
       q(sb.from('jugadores').select('id,nombre,rol,estado,semana_eliminado,fallos,bloqueado_hasta,foto,frase,creado').order('creado')),
@@ -2910,21 +2970,41 @@ async function adminTrivia(C) {
 
 /* ---- Ojo: chismes de la producción ---- */
 async function adminOjo(C) {
-  const lista = await q(sb.from('chismes').select('*').order('creado', { ascending: false }));
-  C.innerHTML = `<form class="adm-caja" id="ad-of"><h3>Nuevo chisme</h3>
-      <p class="ayuda">El ojo de la tele los dice al azar, mezclados con pistas reales de la votación y chismes inventados. Mantenlos anónimos: sin nombres.</p>
+  const todos = await q(sb.from('chismes').select('*').order('creado', { ascending: false }));
+  const pend = todos.filter(x => x.pendiente), lista = todos.filter(x => !x.pendiente);
+  C.innerHTML = `<div class="adm-caja"><h3>Por revisar (${pend.length})</h3>
+      <p class="ayuda">Los mandan los jugadores desde la tele. Son anónimos: no se guarda quién los escribió. Edítalos si hace falta (quita nombres) y apruébalos para que el ojo los cuente.</p>
+      ${pend.map(x => `<div class="pend"><textarea class="in" maxlength="160" data-ptxt="${x.id}">${esc(x.texto)}</textarea>
+        <div class="adm-acciones"><button class="btn chico" data-paprobar="${x.id}">Aprobar</button>
+        <button class="btn sec chico" data-pdesc="${x.id}">Descartar</button></div></div>`).join('') || '<p class="ayuda">No hay chismes nuevos.</p>'}
+    </div>
+    <form class="adm-caja" id="ad-of"><h3>Nuevo chisme</h3>
+      <p class="ayuda">El ojo los dice al azar, mezclados con pistas reales de la votación y chismes inventados. Mantenlos anónimos: sin nombres.</p>
       <textarea class="in" id="ad-ot" maxlength="160" required placeholder="Ej. Yo sé quién se lleva las plumas buenas a su casa"></textarea>
       <div class="adm-acciones"><button class="btn" type="submit">Guardar chisme</button></div></form>
     <div class="adm-caja"><h3>Chismes (${lista.filter(x => x.activo).length} activos)</h3>
       ${lista.map(x => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b style="white-space:normal;font-weight:600">${esc(x.texto)}</b></div>
         <div style="display:flex;flex-direction:column;gap:4px"><button class="mini" data-oact="${x.id}" data-val="${!x.activo}">${x.activo ? '✅ Activo' : 'Activar'}</button>
-        <button class="mini" data-odel="${x.id}">Borrar</button></div></div>`).join('') || '<p class="ayuda">Todavía no escribes chismes. El ojo usa los suyos.</p>'}
+        <button class="mini" data-oedit="${x.id}">Editar</button>
+        <button class="mini" data-odel="${x.id}">Borrar</button></div></div>`).join('') || '<p class="ayuda">Todavía no hay chismes aprobados. El ojo usa los suyos.</p>'}
     </div>`;
+  const guardar = async (id, cambios, msg) => { try { await q(sb.from('chismes').update(cambios).eq('id', id)); if (msg) toast(msg); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } };
+  $$('[data-paprobar]').forEach(b => b.onclick = () => {
+    const t = $(`[data-ptxt="${b.dataset.paprobar}"]`).value.trim();
+    if (t.length < 3) return toast('El chisme está vacío');
+    guardar(b.dataset.paprobar, { texto: t, activo: true, pendiente: false }, 'Chisme aprobado');
+  });
+  $$('[data-pdesc]').forEach(b => b.onclick = async () => { if (!confirm('¿Descartar este chisme?')) return; try { await q(sb.from('chismes').delete().eq('id', b.dataset.pdesc)); toast('Descartado'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
   $('#ad-of').onsubmit = async e => {
     e.preventDefault();
     try { await q(sb.from('chismes').insert({ texto: $('#ad-ot').value.trim(), activo: true })); toast('Chisme guardado'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
   };
-  $$('[data-oact]').forEach(b => b.onclick = async () => { try { await q(sb.from('chismes').update({ activo: b.dataset.val === 'true' }).eq('id', b.dataset.oact)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
+  $$('[data-oact]').forEach(b => b.onclick = () => guardar(b.dataset.oact, { activo: b.dataset.val === 'true' }));
+  $$('[data-oedit]').forEach(b => b.onclick = () => {
+    const actual = lista.find(x => String(x.id) === b.dataset.oedit)?.texto || '';
+    const t = prompt('Edita el chisme (máximo 160 letras)', actual);
+    if (t && t.trim().length >= 3) guardar(b.dataset.oedit, { texto: t.trim().slice(0, 160) }, 'Chisme editado');
+  });
   $$('[data-odel]').forEach(b => b.onclick = async () => { if (!confirm('¿Borrar este chisme?')) return; try { await q(sb.from('chismes').delete().eq('id', b.dataset.odel)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
 }
 

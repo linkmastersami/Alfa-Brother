@@ -124,6 +124,10 @@ create table if not exists public.chismes (
   creado timestamptz not null default now()
 );
 
+-- v4: chismes que mandan los jugadores; quedan pendientes hasta que la producción los revise.
+-- No se guarda quién los escribió.
+alter table public.chismes add column if not exists pendiente boolean not null default false;
+
 -- Predicción secreta: quién gana y quién sale primero
 create table if not exists public.predicciones (
   jugador_id  uuid primary key references public.jugadores(id) on delete cascade,
@@ -788,6 +792,17 @@ begin
   return jsonb_build_object(
     'pistas', pistas,
     'propios', (select coalesce(jsonb_agg(texto), '[]'::jsonb) from public.chismes where activo));
+end $$;
+
+-- Un jugador le cuenta un chisme al ojo (anónimo, queda pendiente de revisión)
+create or replace function public.proponer_chisme(p_token uuid, p_texto text)
+returns void language plpgsql security definer set search_path = public as $$
+declare v text := regexp_replace(btrim(coalesce(p_texto, '')), '\s+', ' ', 'g');
+begin
+  perform public._yo(p_token);                       -- solo gente registrada
+  if char_length(v) < 3 or char_length(v) > 160 then raise exception 'CHISME_INVALIDO'; end if;
+  if (select count(*) from public.chismes where pendiente) >= 200 then raise exception 'BUZON_LLENO'; end if;
+  insert into public.chismes (texto, activo, pendiente) values (v, false, true);
 end $$;
 
 -- Cuenta regresiva de la sala de espera (null la quita)
