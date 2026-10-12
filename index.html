@@ -242,6 +242,10 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .campo-dinero .in.ok{border-color:var(--ok);background:#DFF3E8}
 .campo-dinero .in.no{border-color:var(--sello);background:#FBE0E4}
 .ad-aviso{min-height:1.4em;margin-top:6px;font-weight:700}
+.escalera{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:0 0 10px}
+.escalera span{text-align:center;font-size:.75rem;font-weight:700;padding:4px 0;border-radius:6px;background:rgba(27,20,64,.1);color:var(--suave)}
+.escalera span.paso{background:rgba(30,142,90,.2);color:var(--ok)}
+.escalera span.on{background:var(--sello);color:#fff}
 .ad-aviso.bien{color:var(--ok)}
 .ad-aviso.mal{color:var(--sello)}
 
@@ -536,7 +540,7 @@ const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuari
 const PRUEBAS = {
   trivia:  { nombre: 'Trivia de la oficina',   desc: 'Preguntas sobre la oficina y los compañeros. Tienes 12 segundos por pregunta; contestar rápido da puntos extra.' },
   memoria: { nombre: 'Memoria de expedientes', desc: 'Voltea los expedientes y encuentra los 8 pares. Gana quien termine más rápido y con menos errores.' },
-  adeudo:  { nombre: 'Calcula el adeudo',      desc: 'Tienes 60 segundos para cobrar cuentas de la oficina: mensualidades, pagarés con 10% mensual y clientes que se ponen al corriente. Escribe la cantidad exacta. +100, +150 o +300 según la dificultad; −50 por error.' },
+  adeudo:  { nombre: 'Calcula el adeudo',      desc: 'Tienes 2 minutos para cobrar cuentas de la oficina. Empiezas en fácil (mensualidades, +100); si aciertas subes a pagaré (+150) y luego a difícil (+300), donde te quedas hasta que falles. Un error resta 50 y te regresa a fácil.' },
 };
 const ERRORES = {
   SESION_INVALIDA: 'Tu sesión terminó. Entra otra vez con tu nombre y PIN.',
@@ -1513,17 +1517,17 @@ function jugarMemoria(practica = false) {
 // Pagos que se manejan en la oficina
 const PAGOS = [2000, 2500, 3000, 3500, 4000, 5000];
 const pesos = n => '$' + n.toLocaleString('es-MX');
-function problemaAdeudo() {
+// nivel: 0 = fácil, 1 = pagaré, 2 = difícil
+function problemaAdeudo(nivel) {
   const r = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const M = PAGOS[r(0, PAGOS.length - 1)];
-  const dado = Math.random();
-  if (dado < .4) {
+  if (nivel === 0) {
     // Fácil: mensualidades sin intereses
     const x = r(2, 6);
     return { nivel: 'Fácil', valor: 100, ok: x * M,
       texto: `Un cliente debe <b>${x}</b> mensualidades de <b>${pesos(M)}</b>.<br>¿Con cuánto se pone al corriente <strong>sin contar intereses</strong>?` };
   }
-  if (dado < .75) {
+  if (nivel === 1) {
     // Media: un pagaré con 10% mensual sobre el monto original
     const n = r(1, 6);
     return { nivel: 'Pagaré', valor: 150, ok: M + M / 10 * n,
@@ -1535,8 +1539,8 @@ function problemaAdeudo() {
     texto: `Un cliente debe <b>${n}</b> pagarés de <b>${pesos(M)}</b> y se quiere poner al corriente.<br>¿Cuánto es su <strong>total con todo y el interés</strong>?` };
 }
 function jugarAdeudo(practica = false) {
-  const DUR = 60000;
-  let puntaje = 0, bien = 0, mal = 0, fin = false, ultimo = 99;
+  const DUR = 120000;
+  let puntaje = 0, bien = 0, mal = 0, fin = false, ultimo = 99, nivel = 0;
   const caja = $('#p-caja');
   const t0 = performance.now();
   const terminar = async () => {
@@ -1560,10 +1564,11 @@ function jugarAdeudo(practica = false) {
   }, 100);
   const siguiente = () => {
     if (fin) return;
-    const p = problemaAdeudo();
+    const p = problemaAdeudo(nivel);
     caja.innerHTML = `<div class="marcador"><span id="ad-seg">${Math.ceil((DUR - (performance.now() - t0)) / 1000)} s</span><span>${puntaje} pts</span></div>
       <div class="barra"><i id="ad-barra"></i></div>
-      <div class="folio" style="margin:0 0 6px"><span>${p.nivel}</span><span>+${p.valor} pts</span></div>
+      <div class="escalera" aria-label="Nivel ${p.nivel}">${['Fácil', 'Pagaré', 'Difícil'].map((n, i) => `<span class="${i === nivel ? 'on' : i < nivel ? 'paso' : ''}">${n}</span>`).join('')}</div>
+      <div class="folio" style="margin:0 0 6px"><span>Nivel: ${p.nivel}</span><span>+${p.valor} pts</span></div>
       <div class="cuenta">${p.texto}</div>
       <form id="ad-form" autocomplete="off" style="margin-top:14px">
         <div class="campo-dinero"><span>$</span><input id="ad-resp" class="in" inputmode="numeric" placeholder="Escribe la cantidad" aria-label="Respuesta"></div>
@@ -1586,11 +1591,13 @@ function jugarAdeudo(practica = false) {
       const aviso = $('#ad-aviso');
       if (v === p.ok) {
         puntaje += p.valor; bien++; SFX.tocar('caja');
-        inp.classList.add('ok'); aviso.textContent = `¡Correcto! +${p.valor}`; aviso.className = 'ad-aviso bien';
+        const sube = nivel < 2; nivel = Math.min(2, nivel + 1);
+        inp.classList.add('ok'); aviso.textContent = `¡Correcto! +${p.valor}` + (sube ? ' · ¡Subes de nivel!' : ''); aviso.className = 'ad-aviso bien';
         await sleep(450);
       } else {
         puntaje -= 50; mal++; SFX.tocar('buzzer');
-        inp.classList.add('no'); aviso.innerHTML = `Era <b>${pesos(p.ok)}</b> · −50`; aviso.className = 'ad-aviso mal';
+        const baja = nivel > 0; nivel = 0;
+        inp.classList.add('no'); aviso.innerHTML = `Era <b>${pesos(p.ok)}</b> · −50` + (baja ? ' · Regresas a fácil' : ''); aviso.className = 'ad-aviso mal';
         await sleep(1500);
       }
       siguiente();

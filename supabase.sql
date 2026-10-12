@@ -393,7 +393,7 @@ returns int language plpgsql security definer set search_path = public as $$
 declare
   yo public.jugadores;
   c public.config;
-  v int := least(greatest(coalesce(p_puntaje, 0), 0), 5000);
+  v int := least(greatest(coalesce(p_puntaje, 0), 0), 20000);
 begin
   yo := public._yo(p_token);
   select * into c from public.config where id = 1;
