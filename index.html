@@ -229,7 +229,64 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--texto);color:#fff;padding:10px 16px;border-radius:999px;z-index:90;font-weight:600;font-size:.92rem;max-width:90vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 
+/* ---------- v2: sonido, animaciones, sala de espera ---------- */
+.btn-sonido{appearance:none;border:0;background:var(--noche-2);color:#fff;border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;flex:none;display:grid;place-items:center}
+.btn-sonido.flotante{position:fixed;top:calc(12px + env(safe-area-inset-top));left:12px;z-index:5}
+
+/* El ojo vive: parpadea y mira */
+.js-logo .ojo{transform-box:view-box;transform-origin:60px 60px}
+.js-logo .pupila{transform-box:view-box}
+.js-logo.vivo .ojo{animation:parpadeo 6s infinite}
+.js-logo.vivo .pupila{animation:mirar 9s ease-in-out infinite}
+@keyframes parpadeo{0%,46%,50%,96%,100%{transform:scaleY(1)}48%,98%{transform:scaleY(.08)}}
+@keyframes mirar{0%,18%{transform:translate(0,0)}24%,40%{transform:translate(-11px,1px)}46%,62%{transform:translate(10px,-1px)}68%,100%{transform:translate(0,0)}}
+
+/* Lluvia de billetes */
+.billete{position:fixed;top:-60px;z-index:95;pointer-events:none;font-size:2rem;animation:caer linear forwards}
+@keyframes caer{to{transform:translateY(calc(100dvh + 120px)) rotate(var(--giro))}}
+
+/* Sello ENVIADO */
+.sello-overlay{position:fixed;inset:0;z-index:92;display:grid;place-items:center;background:rgba(27,20,64,.45);pointer-events:none}
+.sello-overlay span{border:6px solid var(--sello);color:var(--sello);background:var(--rosa);font-family:Anton,Impact,sans-serif;font-size:3rem;padding:6px 22px;border-radius:12px;
+  transform:rotate(-12deg);animation:golpeChico .4s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes golpeChico{0%{transform:rotate(-12deg) scale(3);opacity:0}100%{transform:rotate(-12deg) scale(1);opacity:1}}
+
+/* El eliminado sale arrastrado */
+.arrastrado{animation:arrastre 1.1s cubic-bezier(.6,0,.9,.4) forwards}
+@keyframes arrastre{0%{transform:none}25%{transform:translateX(-14px) rotate(-3deg)}100%{transform:translateX(130vw) rotate(24deg)}}
+
+/* Tutorial */
+.tuto{max-width:420px;width:100%}
+.tuto .ilus{background:var(--noche);border-radius:12px;display:grid;place-items:center;padding:14px;margin:6px 0 12px}
+.tuto .ilus svg{width:100%;max-width:260px;height:auto}
+.puntos-tuto{display:flex;gap:6px;justify-content:center;margin:10px 0}
+.puntos-tuto i{width:8px;height:8px;border-radius:50%;background:rgba(27,20,64,.25)}
+.puntos-tuto i.on{background:var(--sello);width:22px;border-radius:99px}
+
+/* Entrar a la gala */
+.telon{display:flex;flex-direction:column;align-items:center;gap:18px}
+.telon .btn{max-width:300px}
+
+/* Sala de espera */
+.reloj{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;margin-top:8px}
+.reloj div{background:var(--noche);color:var(--luz);border-radius:10px;padding:8px 0}
+.reloj b{display:block;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:2rem;line-height:1}
+.reloj small{font-size:.72rem;color:#C9C3EE}
+.sillas{display:grid;grid-template-columns:repeat(4,1fr);gap:16px 8px}
+.silla{text-align:center;font-size:.78rem;line-height:1.15;position:relative;min-width:0}
+.silla .asiento{width:62px;height:62px;margin:0 auto 6px;position:relative;display:grid;place-items:center}
+.silla .asiento svg{position:absolute;inset:0;width:100%;height:100%}
+.silla .n{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.silla .fr{display:block;color:#C9C3EE;font-size:.7rem;margin-top:2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.silla.vacia .n{color:#6E68A0;font-weight:500}
+.silla.yo .av{box-shadow:0 0 0 3px var(--luz)}
+.silla.nueva .asiento{animation:llega .6s cubic-bezier(.2,1.6,.4,1)}
+@keyframes llega{0%{transform:scale(.2) translateY(-30px);opacity:0}100%{transform:none;opacity:1}}
+.prediccion select{margin-top:4px}
+.aciertos li{margin:4px 0}
+
 @media (prefers-reduced-motion: reduce){
+  .js-logo.vivo .ojo,.js-logo.vivo .pupila{animation:none}
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
 </style>
@@ -246,6 +303,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 
 <!-- ============================ PANTALLA: INICIO -->
 <section id="s-inicio" class="wrap hidden">
+  <button class="btn-sonido flotante js-sonido" aria-label="Sonido">🔊</button>
   <div style="margin-top:18px"><svg class="logo js-logo" width="132" height="132" viewBox="0 0 120 120" aria-label="Alfa Brother"></svg></div>
   <h1 class="titulo-inicio display">Alfa Brother</h1>
   <p class="lema">¡Te vamos a cobrar!</p>
@@ -270,6 +328,8 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
     <div class="folio"><span>Alta de habitante</span><span id="r-lugares"></span></div>
     <label class="campo" for="r-nombre">Nombre (así te verán los demás)</label>
     <input class="in" id="r-nombre" maxlength="30" required>
+    <label class="campo" for="r-frase">Tu frase o apodo (opcional)</label>
+    <input class="in" id="r-frase" maxlength="60" placeholder="Ej. El que nunca contesta el teléfono">
     <label class="campo" for="r-pin">Crea un PIN de 4 números</label>
     <input class="in pin" id="r-pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required>
     <label class="campo" for="r-pin2">Repite el PIN</label>
@@ -295,6 +355,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
   <header class="cabecera">
     <svg class="logo js-logo" width="52" height="52" viewBox="0 0 120 120" aria-label="Alfa Brother"></svg>
     <div class="t"><h1>Alfa Brother</h1><div>¡Te vamos a cobrar!</div></div>
+    <button class="btn-sonido js-sonido" aria-label="Sonido">🔊</button>
     <div class="yo-chip" id="c-yo"></div>
   </header>
 
@@ -307,6 +368,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 
   <div class="seccion-t"><span>Habitantes</span><small id="c-cuenta"></small></div>
   <div class="rejilla" id="c-habitantes"></div>
+  <div id="c-extra"></div>
 
   <div id="c-espect-box" class="hidden">
     <div class="seccion-t"><span>Público</span><small id="c-espect-n"></small></div>
@@ -318,8 +380,10 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
     <div class="galas" id="c-galas"></div>
   </div>
 
-  <div class="pie">
+  <div class="pie" style="flex-wrap:wrap;gap:4px 16px">
+    <button class="link" id="c-tuto">Cómo se juega</button>
     <button class="link" id="c-cambiar-foto">Cambiar mi foto</button>
+    <button class="link" id="c-frase">Mi frase</button>
     <input id="c-foto" type="file" accept="image/*" class="hidden">
     <button class="link" id="c-salir">Salir</button>
   </div>
@@ -351,6 +415,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 <!-- ============================ GALA -->
 <section id="gala" class="hidden" aria-live="polite">
   <div class="reflector"></div>
+  <button class="btn-sonido flotante js-sonido" aria-label="Sonido">🔊</button>
   <button class="btn sec chico btn-saltar" id="g-saltar">Saltar</button>
   <div class="wrap"><div class="escena" id="g-escena"></div></div>
 </section>
@@ -385,6 +450,19 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
       <button class="btn tinta" type="submit">Continuar</button>
     </div>
   </form>
+</div>
+
+<!-- ============================ TUTORIAL -->
+<div id="m-tuto" class="modal hidden">
+  <div class="formato amarillo tuto">
+    <div class="folio"><span>Cómo se juega</span><span id="t-paso"></span></div>
+    <div id="t-cuerpo"></div>
+    <div class="puntos-tuto" id="t-puntos"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn sec" id="t-atras">Atrás</button>
+      <button class="btn" id="t-sig">Siguiente</button>
+    </div>
+  </div>
 </div>
 
 <div id="toast" class="toast hidden" role="status"></div>
@@ -428,6 +506,8 @@ const ERRORES = {
   SIN_CANDIDATOS: 'No hay candidatos para eliminar.',
   PRUEBA_INVALIDA: 'Prueba no válida.',
   FASE_INVALIDA: 'Fase no válida.',
+  PREDICCIONES_CERRADAS: 'Las predicciones se cerraron cuando empezó el juego.',
+  PREDICCION_INVALIDA: 'Solo puedes elegir habitantes.',
 };
 
 /* ---------- utilidades ---------- */
@@ -457,6 +537,125 @@ function colorDe(nombre) {
   return paleta[h % paleta.length];
 }
 
+/* ---------- Efectos de sonido (sintetizados, sin archivos) ---------- */
+const SFX = (() => {
+  let ctx = null, ruidoBuf = null, redobleBus = null;
+  let mudo = store.get('ab_mudo') === '1';
+  function ac() {
+    if (!ctx) {
+      const C = window.AudioContext || window.webkitAudioContext;
+      if (!C) return null;
+      ctx = new C();
+      ruidoBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+      const d = ruidoBuf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+  // Un tono con envolvente. f2 = barrido de frecuencia.
+  function tono({ f = 440, f2 = null, t = 0, d = .15, tipo = 'sine', v = .2, filtro = null, destino = null }) {
+    const c = ctx, t0 = c.currentTime + t;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = tipo; o.frequency.setValueAtTime(f, t0);
+    if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + d);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(v, t0 + .008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+    let n = o;
+    if (filtro) { const fl = c.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = filtro; o.connect(fl); n = fl; }
+    n.connect(g); g.connect(destino || c.destination);
+    o.start(t0); o.stop(t0 + d + .05);
+  }
+  function ruido({ t = 0, d = .1, v = .3, filtro = 1000, tipo = 'lowpass', q = 1, barrido = null, destino = null }) {
+    const c = ctx, t0 = c.currentTime + t;
+    const s = c.createBufferSource(), fl = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = ruidoBuf; fl.type = tipo; fl.frequency.setValueAtTime(filtro, t0); fl.Q.value = q;
+    if (barrido) fl.frequency.exponentialRampToValueAtTime(barrido, t0 + d);
+    g.gain.setValueAtTime(v, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+    s.connect(fl); fl.connect(g); g.connect(destino || c.destination);
+    s.start(t0, Math.random() * .5); s.stop(t0 + d + .05);
+  }
+  const sonidos = {
+    // tecla de máquina de escribir
+    clic() { ruido({ d: .03, v: .12, filtro: 3500, tipo: 'highpass' }); tono({ f: 1900, d: .025, tipo: 'square', v: .025 }); },
+    // golpe de sello
+    sello() { tono({ f: 160, f2: 40, d: .28, v: .7 }); ruido({ d: .09, v: .45, filtro: 700 }); ruido({ t: .01, d: .05, v: .15, filtro: 2500, tipo: 'bandpass' }); },
+    // caja registradora
+    caja() {
+      ruido({ d: .06, v: .25, filtro: 5000, tipo: 'highpass' });
+      tono({ f: 1568, t: .05, d: .12, tipo: 'triangle', v: .18 });
+      tono({ f: 2093, t: .12, d: .45, tipo: 'triangle', v: .2 });
+      tono({ f: 4186, t: .12, d: .35, v: .05 });
+    },
+    buzzer() { tono({ f: 140, d: .38, tipo: 'sawtooth', v: .14, filtro: 1200 }); tono({ f: 148, d: .38, tipo: 'sawtooth', v: .14, filtro: 1200 }); },
+    tic() { tono({ f: 2600, d: .03, tipo: 'square', v: .05 }); },
+    tac() { tono({ f: 1700, d: .03, tipo: 'square', v: .05 }); },
+    // papel volteándose
+    swish() { ruido({ d: .2, v: .18, filtro: 1500, tipo: 'bandpass', q: .8, barrido: 6000 }); },
+    // aviso de cambio de fase
+    dindon() { tono({ f: 659, d: .7, v: .22, tipo: 'triangle' }); tono({ f: 523, t: .38, d: 1.1, v: .22, tipo: 'triangle' }); },
+    // timbre de puerta (alguien se registró)
+    timbre() { tono({ f: 988, d: .45, v: .18 }); tono({ f: 784, t: .28, d: .8, v: .18 }); },
+    // fanfarria del líder
+    fanfarria() {
+      [[523, 0], [659, .12], [784, .24]].forEach(([f, t]) => { tono({ f, t, d: .14, tipo: 'sawtooth', v: .1, filtro: 2400 }); tono({ f: f * 1.005, t, d: .14, tipo: 'square', v: .04, filtro: 2400 }); });
+      [1047, 1319, 1568].forEach(f => tono({ f: f / 2, t: .38, d: .9, tipo: 'sawtooth', v: .08, filtro: 2200 }));
+    },
+    // ta-dááán del eliminado
+    tadan() {
+      [392, 494, 587].forEach(f => tono({ f, d: .16, tipo: 'sawtooth', v: .08, filtro: 2000 }));
+      [262, 330, 392, 523].forEach(f => tono({ f, t: .2, d: 1.4, tipo: 'sawtooth', v: .08, filtro: 1800 }));
+      ruido({ t: .2, d: 1.2, v: .12, filtro: 6000, tipo: 'highpass' });
+    },
+    // redoble de tambor que crece
+    redoble(seg = 3) {
+      const c = ctx; redobleBus = c.createGain(); redobleBus.connect(c.destination);
+      const paso = .042, n = Math.floor(seg / paso);
+      for (let i = 0; i < n; i++) ruido({ t: i * paso, d: .05, v: .05 + .3 * (i / n), filtro: 1600 + 800 * (i % 2), tipo: 'bandpass', q: 1.2, destino: redobleBus });
+    },
+  };
+  function tocar(nombre, ...a) {
+    if (mudo) return;
+    const c = ac(); if (!c) return;
+    try { sonidos[nombre](...a); } catch (e) { }
+  }
+  function parar() { if (redobleBus) { try { redobleBus.disconnect(); } catch { } redobleBus = null; } }
+  function pintarBotones() { $$('.js-sonido').forEach(b => { b.textContent = mudo ? '🔇' : '🔊'; b.setAttribute('aria-label', mudo ? 'Activar sonido' : 'Silenciar'); }); }
+  function alternar() { mudo = !mudo; store.set('ab_mudo', mudo ? '1' : '0'); pintarBotones(); if (!mudo) tocar('clic'); else parar(); }
+  // los celulares solo permiten sonido después de que la persona toca la pantalla
+  ['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => ac(), { once: true, capture: true }));
+  return { tocar, parar, alternar, pintarBotones };
+})();
+$$('.js-sonido').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); SFX.alternar(); }));
+SFX.pintarBotones();
+// clic en todos los botones principales
+document.addEventListener('click', e => { if (e.target.closest('.btn, .cand, .link, .pestanas button, .adm-tabs button')) SFX.tocar('clic'); }, true);
+
+/* ---------- efectos visuales ---------- */
+function lluviaBilletes(n = 26) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  for (let i = 0; i < n; i++) {
+    const b = document.createElement('div');
+    b.className = 'billete'; b.textContent = Math.random() < .8 ? '💵' : '💰';
+    b.style.left = (Math.random() * 96) + 'vw';
+    b.style.fontSize = (1.4 + Math.random() * 1.4) + 'rem';
+    b.style.setProperty('--giro', (Math.random() * 720 - 360) + 'deg');
+    b.style.animationDuration = (2.2 + Math.random() * 1.8) + 's';
+    b.style.animationDelay = (Math.random() * 1.2) + 's';
+    document.body.appendChild(b);
+    setTimeout(() => b.remove(), 5500);
+  }
+}
+function selloEnviado(texto = 'ENVIADO') {
+  const o = document.createElement('div');
+  o.className = 'sello-overlay'; o.innerHTML = `<span>${esc(texto)}</span>`;
+  document.body.appendChild(o);
+  setTimeout(() => SFX.tocar('sello'), 120);
+  if (navigator.vibrate) navigator.vibrate(60);
+  return new Promise(r => setTimeout(() => { o.remove(); r(); }, 1300));
+}
+
 /* ---------- Supabase ---------- */
 const configurado = !SUPABASE_URL.startsWith('PEGA_') && !SUPABASE_ANON_KEY.startsWith('PEGA_');
 const URL_BASE = SUPABASE_URL.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
@@ -482,14 +681,21 @@ function mostrar(id) {
 }
 
 /* ---------- logo (ojo con signo de pesos) ---------- */
-const LOGO = `
+const ALMENDRA = 'M10 60 Q60 14 110 60 Q60 106 10 60 Z';
+const LOGO = i => `
+  <defs><clipPath id="ojo-clip-${i}"><path d="${ALMENDRA}"/></clipPath></defs>
   <circle cx="60" cy="60" r="57" fill="#FFD54A"/>
-  <path d="M10 60 Q60 14 110 60 Q60 106 10 60 Z" fill="#FFFDF6" stroke="#1B1440" stroke-width="6" stroke-linejoin="round"/>
-  <circle cx="60" cy="60" r="23" fill="#D7263D"/>
-  <circle cx="60" cy="60" r="12" fill="#1B1440"/>
-  <text x="60" y="68" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="22" fill="#FFD54A">$</text>
-  <circle cx="69" cy="50" r="4" fill="#fff" opacity=".85"/>`;
-$$('.js-logo').forEach(svg => svg.innerHTML = LOGO);
+  <g class="ojo">
+    <path d="${ALMENDRA}" fill="#FFFDF6"/>
+    <g clip-path="url(#ojo-clip-${i})"><g class="pupila">
+      <circle cx="60" cy="60" r="23" fill="#D7263D"/>
+      <circle cx="60" cy="60" r="12" fill="#1B1440"/>
+      <text x="60" y="68" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="22" fill="#FFD54A">$</text>
+      <circle cx="69" cy="50" r="4" fill="#fff" opacity=".85"/>
+    </g></g>
+    <path d="${ALMENDRA}" fill="none" stroke="#1B1440" stroke-width="6" stroke-linejoin="round"/>
+  </g>`;
+$$('.js-logo').forEach((svg, i) => { svg.innerHTML = LOGO(i); svg.classList.add('vivo'); });
 
 /* ---------- avatar ---------- */
 function avatar(j, size = 56) {
@@ -563,9 +769,9 @@ $('#f-registro').addEventListener('submit', async e => {
   if (pin !== pin2) return mostrarError(err, 'Los PIN no coinciden.');
   const btn = e.submitter; btn.disabled = true;
   try {
-    const r = await rpc('registrar', { p_nombre: $('#r-nombre').value, p_pin: pin, p_foto: fotoRegistro });
+    const r = await rpc('registrar', { p_nombre: $('#r-nombre').value, p_pin: pin, p_foto: fotoRegistro, p_frase: $('#r-frase').value });
     token = r.token; store.set('ab_token', token);
-    toast(r.rol === 'jugador' ? '¡Bienvenido a la casa!' : 'Entraste como público');
+    await selloEnviado(r.rol === 'jugador' ? '¡BIENVENIDO!' : 'PÚBLICO');
     await entrarCasa();
   } catch (x) { mostrarError(err, x); }
   btn.disabled = false;
@@ -597,16 +803,43 @@ async function refrescar() {
   if (est.fotos_firma !== fotosFirma) {
     try { fotos = await rpc('fotos', { p_token: token }) || {}; fotosFirma = est.fotos_firma; } catch { }
   }
-  if (pantalla === 's-casa') pintarCasa();
   const g = est.juego;
-  if (g.fase === 'gala' && g.gala_revelada && !store.get('ab_gala_' + g.semana) && !galaAbierta && pantalla === 's-casa' && $('#admin').classList.contains('hidden')) {
-    abrirGala(g.semana, true);
+
+  // ¿cambió la fase? → din-don
+  const firma = `${g.semana}|${g.fase}|${g.gala_revelada}`;
+  if (firmaFase && firma !== firmaFase && !(g.fase === 'gala' && g.gala_revelada)) {
+    SFX.tocar('dindon'); toast(faseTexto(g));
+  }
+  firmaFase = firma;
+
+  // ¿llegó alguien nuevo? → timbre
+  const ids = est.jugadores.map(j => j.id);
+  nuevos = conocidos ? ids.filter(id => !conocidos.has(id)) : [];
+  if (nuevos.length && pantalla === 's-casa') SFX.tocar('timbre');
+  conocidos = new Set(ids);
+
+  if (pantalla === 's-casa') pintarCasa();
+
+  const libre = !galaAbierta && pantalla === 's-casa' && $('#admin').classList.contains('hidden') && $('#m-tuto').classList.contains('hidden');
+  // anuncio del líder con lluvia de billetes
+  if (libre && g.lider_id && ['votacion', 'decision'].includes(g.fase) && !store.get('ab_lider_' + g.semana)) {
+    store.set('ab_lider_' + g.semana, '1');
+    const l = porId(g.lider_id);
+    SFX.tocar('fanfarria'); lluviaBilletes();
+    toast(`👑 ${l?.nombre || 'Alguien'} es el líder de la semana`, 4000);
+  }
+  // la gala se abre sola, con telón para activar el sonido
+  if (libre && g.fase === 'gala' && g.gala_revelada && !store.get('ab_gala_' + g.semana)) {
+    abrirGala(g.semana, true, true);
   }
 }
+let firmaFase = null, conocidos = null, nuevos = [];
 async function entrarCasa() {
   mostrar('s-casa');
   $('#c-accion').innerHTML = '';
+  firmaFase = null; conocidos = null;
   await refrescar();
+  if (!store.get('ab_tuto')) abrirTutorial();
 }
 function cerrarSesion() {
   if (token) rpc('salir', { p_token: token }).catch(() => { });
@@ -635,7 +868,9 @@ function pintarCasa() {
   $('#c-fase').textContent = faseTexto(g);
   $('#c-cuenta').textContent = g.semana === 0 ? `${habitantes.length} de ${g.cupo}` : `${activos.length} siguen en la casa`;
 
-  $('#c-habitantes').innerHTML = habitantes.map(j => {
+  $('#c-habitantes').className = g.semana === 0 ? 'sillas' : 'rejilla';
+  if (g.semana === 0) $('#c-habitantes').innerHTML = pintarSillas(habitantes, g.cupo, yo.id);
+  else $('#c-habitantes').innerHTML = habitantes.map(j => {
     const fuera = j.estado === 'eliminado';
     return `<div class="hab ${fuera ? 'fuera' : ''}">
       ${j.id === g.lider_id && !fuera ? '<span class="corona" aria-label="Líder">👑</span>' : ''}
@@ -669,13 +904,9 @@ function pintarAccion() {
       <div class="folio"><span>Liquidación final</span><span>Pagado</span></div>
       <div style="display:flex;justify-content:center;margin:8px 0">${avatar(gan, 96)}</div>
       <h2>${esc(gan.nombre)} gana Alfa Brother</h2>
-      <p>Fue el único al que nadie le pudo cobrar.</p></div>`;
+      <p>Fue el único al que nadie le pudo cobrar.</p></div>` + pintarAciertos(gan);
   } else if (g.semana === 0) {
-    h = `<div class="formato">
-      <div class="folio"><span>Aviso</span><span>Semana 0</span></div>
-      <h2>La casa abre pronto</h2>
-      <p>Se están registrando los habitantes. Cuando empiece la semana 1 aquí verás la prueba del líder.</p>
-      ${yo.rol === 'espectador' ? '<p><span class="sello">PÚBLICO</span></p>' : ''}</div>`;
+    h = pintarSalaEspera();
   } else if (g.fase === 'prueba') {
     const p = PRUEBAS[g.prueba];
     let cuerpo;
@@ -718,7 +949,12 @@ function pintarAccion() {
     h += `<p style="margin-top:12px;color:#C9C3EE;font-size:.9rem">Ya no estás en la casa, pero tu voto sigue contando cada semana.</p>`;
   }
 
+  // no repintar la sala si la persona está eligiendo su predicción
   $('#c-accion').innerHTML = h;
+  const extra = $('#c-extra');
+  const enFoco = extra.contains(document.activeElement) && document.activeElement.tagName === 'SELECT';
+  if (!enFoco) extra.innerHTML = g.semana === 0 ? `<div style="height:8px"></div>` + pintarExtrasSala() : '';
+  conectarSalaEspera();
   $('#a-jugar')?.addEventListener('click', abrirPrueba);
   $('#a-votar')?.addEventListener('click', abrirVotacion);
   $$('[data-decide]').forEach(b => b.onclick = async () => {
@@ -738,6 +974,170 @@ $('#c-foto').addEventListener('change', async e => {
   e.target.value = '';
 });
 $$('[data-volver]').forEach(b => b.onclick = () => { mostrar('s-casa'); refrescar(); });
+
+/* =====================================================================
+   SALA DE ESPERA (semana 0)
+   ===================================================================== */
+const SILLA = `<svg viewBox="0 0 62 62" aria-hidden="true">
+  <rect x="12" y="2" width="38" height="34" rx="9" fill="#2A2160"/>
+  <rect x="7" y="34" width="48" height="10" rx="4" fill="#3B2E8C"/>
+  <rect x="11" y="44" width="5" height="16" rx="2" fill="#2A2160"/>
+  <rect x="46" y="44" width="5" height="16" rx="2" fill="#2A2160"/></svg>`;
+
+function pintarSillas(habitantes, cupo, yoId) {
+  const total = Math.max(cupo, habitantes.length);
+  let h = '';
+  for (let i = 0; i < total; i++) {
+    const j = habitantes[i];
+    if (j) {
+      h += `<div class="silla ${j.id === yoId ? 'yo' : ''} ${nuevos.includes(j.id) ? 'nueva' : ''}">
+        <div class="asiento">${SILLA}<div style="position:relative;margin-top:-14px">${avatar(j, 44)}</div></div>
+        <span class="n">${esc(j.nombre)}</span>${j.frase ? `<span class="fr">“${esc(j.frase)}”</span>` : ''}</div>`;
+    } else {
+      h += `<div class="silla vacia"><div class="asiento">${SILLA}</div><span class="n">Libre</span></div>`;
+    }
+  }
+  return h;
+}
+
+function pintarSalaEspera() {
+  const { yo, juego: g, jugadores, mi_prediccion } = est;
+  const habitantes = jugadores.filter(j => j.rol === 'jugador');
+  const libres = Math.max(0, g.cupo - habitantes.length);
+  let h = '';
+
+  if (g.inicio_at) {
+    h += `<div class="formato amarillo"><div class="folio"><span>Aviso de apertura</span><span>Semana 0</span></div>
+      <h2 id="sala-titulo">La casa abre en</h2><div class="reloj" id="sala-reloj"></div>
+      <p class="ayuda" style="margin-top:10px">${libres ? `Quedan ${libres} ${libres === 1 ? 'silla libre' : 'sillas libres'}.` : 'Ya están los 16 habitantes.'}</p></div>`;
+  } else {
+    h += `<div class="formato"><div class="folio"><span>Aviso</span><span>Semana 0</span></div>
+      <h2>La casa abre pronto</h2>
+      <p>${libres ? `Quedan ${libres} ${libres === 1 ? 'silla libre' : 'sillas libres'}. ¡Pásale el link a quien falte!` : 'Ya están los 16 habitantes. Falta que la producción dé el arranque.'}</p>
+      ${yo.rol === 'espectador' ? '<p><span class="sello">PÚBLICO</span></p>' : ''}</div>`;
+  }
+
+  return h;
+}
+
+// Debajo de las sillas: predicción y práctica
+function pintarExtrasSala() {
+  const { jugadores, mi_prediccion } = est;
+  const habitantes = jugadores.filter(j => j.rol === 'jugador');
+  let h = '';
+  const opts = sel => `<option value="">Elige a alguien</option>` +
+    habitantes.map(j => `<option value="${j.id}" ${j.id === sel ? 'selected' : ''}>${esc(j.nombre)}</option>`).join('');
+  h += `<div class="formato rosa prediccion"><div class="folio"><span>Predicción secreta</span><span>${mi_prediccion ? 'Guardada' : 'Pendiente'}</span></div>
+    <h2>¿Quién crees que…?</h2>
+    <p>Nadie la verá hasta el final del juego. Ahí se revela quién le atinó.</p>
+    <label class="campo" for="pred-ganador">…gana Alfa Brother</label>
+    <select class="in" id="pred-ganador">${opts(mi_prediccion?.ganador_id)}</select>
+    <label class="campo" for="pred-primero">…sale primero</label>
+    <select class="in" id="pred-primero">${opts(mi_prediccion?.primero_id)}</select>
+    <div style="margin-top:14px"><button class="btn" id="pred-guardar">${mi_prediccion ? 'Cambiar mi predicción' : 'Guardar predicción'}</button></div>
+    <p class="ayuda" style="margin-top:8px">Puedes cambiarla hasta que empiece la semana 1.</p></div>`;
+
+  h += `<div class="formato amarillo"><div class="folio"><span>Calienta motores</span><span>No cuenta</span></div>
+    <h2>Modo práctica</h2>
+    <p>Entrena las pruebas del líder mientras llegan los demás.</p>
+    <div style="display:grid;gap:10px;margin-top:12px">
+      <button class="btn tinta" data-practica="memoria">Practicar memoria de expedientes</button>
+      <button class="btn tinta" data-practica="adeudo">Practicar calcula el adeudo</button>
+    </div></div>`;
+  return h;
+}
+
+function conectarSalaEspera() {
+  const b = $('#pred-guardar');
+  if (b) b.onclick = async () => {
+    b.disabled = true;
+    try {
+      await rpc('predecir', { p_token: token, p_ganador: $('#pred-ganador').value || null, p_primero: $('#pred-primero').value || null });
+      await selloEnviado('GUARDADA');
+      refrescar();
+    } catch (e) { toast(mensajeError(e)); b.disabled = false; }
+  };
+  $$('[data-practica]').forEach(x => x.onclick = () => abrirPractica(x.dataset.practica));
+  pintarReloj();
+}
+
+function pintarReloj() {
+  const el = $('#sala-reloj');
+  if (!el || !est?.juego.inicio_at) return;
+  const falta = new Date(est.juego.inicio_at) - Date.now();
+  if (falta <= 0) {
+    $('#sala-titulo').textContent = '¡Ya es hora!';
+    el.outerHTML = '<p id="sala-reloj">Esperando a que la producción arranque la semana 1…</p>';
+    return;
+  }
+  const s = Math.floor(falta / 1000);
+  const partes = [[Math.floor(s / 86400), 'días'], [Math.floor(s / 3600) % 24, 'horas'], [Math.floor(s / 60) % 60, 'min'], [s % 60, 'seg']];
+  el.innerHTML = partes.map(([n, l]) => `<div><b>${String(n).padStart(2, '0')}</b><small>${l}</small></div>`).join('');
+}
+setInterval(pintarReloj, 1000);
+
+// Al final del juego: quién le atinó a su predicción
+function pintarAciertos(gan) {
+  if (!est.predicciones) return '';
+  const nombre = id => esc(porId(id)?.nombre || '?');
+  const alGanador = est.predicciones.filter(p => p.ganador_id === gan.id);
+  const alPrimero = est.primer_eliminado ? est.predicciones.filter(p => p.primero_id === est.primer_eliminado) : [];
+  const lista = arr => arr.length ? `<ul class="aciertos" style="padding-left:18px">${arr.map(p => `<li>${nombre(p.id)}</li>`).join('')}</ul>` : '<p class="ayuda">Nadie le atinó.</p>';
+  return `<div class="formato rosa"><div class="folio"><span>Predicciones reveladas</span><span>${est.predicciones.length} en total</span></div>
+    <h2>¿Quién le atinó?</h2>
+    <p><b>Dijeron que ganaría ${esc(gan.nombre)}:</b></p>${lista(alGanador)}
+    ${est.primer_eliminado ? `<p><b>Dijeron que ${nombre(est.primer_eliminado)} saldría primero:</b></p>${lista(alPrimero)}` : ''}</div>`;
+}
+
+/* =====================================================================
+   TUTORIAL ILUSTRADO
+   ===================================================================== */
+const TUTO = [
+  { t: 'Regístrate y toma tu silla', p: 'Pon tu nombre, un PIN de 4 números y, si quieres, tu foto y una frase. Los primeros 16 son habitantes de la casa; los demás entran como público.',
+    svg: `<svg viewBox="0 0 260 150"><rect x="20" y="10" width="70" height="128" rx="12" fill="#FFFDF6"/><rect x="28" y="24" width="54" height="94" rx="4" fill="#2A2160"/>
+      <circle cx="55" cy="48" r="13" fill="#FFD54A"/><text x="55" y="54" text-anchor="middle" font-family="Anton,Impact" font-size="15" fill="#1B1440">$</text>
+      <g fill="#FFD54A">${[0, 1, 2, 3].map(i => `<circle cx="${38 + i * 11}" cy="82" r="4"/>`).join('')}</g>
+      <rect x="36" y="96" width="38" height="12" rx="6" fill="#D7263D"/>
+      ${[0, 1, 2].map(i => `<g transform="translate(${112 + i * 48},48)"><rect x="4" y="0" width="30" height="28" rx="7" fill="#3B2E8C"/><rect x="0" y="26" width="38" height="8" rx="3" fill="#4A3AA8"/><rect x="3" y="34" width="4" height="14" fill="#3B2E8C"/><rect x="31" y="34" width="4" height="14" fill="#3B2E8C"/>
+        ${i < 2 ? `<circle cx="19" cy="12" r="11" fill="${['#D7263D', '#2337A8'][i]}"/>` : ''}</g>`).join('')}
+      <text x="185" y="122" text-anchor="middle" font-family="Work Sans,sans-serif" font-size="12" fill="#C9C3EE">16 sillas</text></svg>` },
+  { t: 'Gana la prueba y sé el líder', p: 'Cada semana hay una prueba: trivia de la oficina, memoria de expedientes o calcula el adeudo. Solo tienes un intento. El mejor puntaje es el líder 👑 y queda protegido.',
+    svg: `<svg viewBox="0 0 260 150"><path d="M60 100 L48 50 L78 72 L100 40 L122 72 L152 50 L140 100 Z" fill="#FFD54A" stroke="#1B1440" stroke-width="4" stroke-linejoin="round"/>
+      <circle cx="100" cy="40" r="7" fill="#D7263D"/><circle cx="48" cy="50" r="6" fill="#D7263D"/><circle cx="152" cy="50" r="6" fill="#D7263D"/>
+      <rect x="56" y="100" width="88" height="14" rx="4" fill="#FFD54A" stroke="#1B1440" stroke-width="4"/>
+      <circle cx="205" cy="80" r="34" fill="#FFFDF6" stroke="#FBE9A6" stroke-width="6"/><rect x="198" y="36" width="14" height="10" rx="3" fill="#FBE9A6"/>
+      <path d="M205 80 L205 58" stroke="#D7263D" stroke-width="5" stroke-linecap="round"/><path d="M205 80 L222 88" stroke="#1B1440" stroke-width="4" stroke-linecap="round"/></svg>` },
+  { t: 'Vota con 3, 2 y 1 puntos', p: 'Reparte tus puntos entre tres habitantes y, si quieres, escribe por qué. Votan todos, incluso los eliminados. El público también vota, pero su voto no decide.',
+    svg: `<svg viewBox="0 0 260 150"><rect x="40" y="8" width="180" height="134" rx="8" fill="#F7C6D0"/>
+      ${[3, 2, 1].map((n, i) => `<g transform="translate(56,${24 + i * 38})"><rect width="148" height="30" rx="8" fill="#FFFDF6" stroke="#1B1440" stroke-width="2" stroke-dasharray="${i === 0 ? '0' : '5 4'}"/>
+        <text x="16" y="23" text-anchor="middle" font-family="Anton,Impact" font-size="22" fill="#D7263D">${n}</text>
+        <circle cx="48" cy="15" r="10" fill="${['#7A3FB5', '#0F7C8C', '#B5541F'][i]}"/><rect x="66" y="10" width="${60 - i * 12}" height="10" rx="5" fill="#C9C3EE"/></g>`).join('')}</svg>` },
+  { t: 'La gala: ¡te vamos a cobrar!', p: 'Sale quien junte más puntos. Si es el líder, se salva y sale el siguiente; si hay empate, decide el líder. En la gala se ven los puntos y los motivos, pero nunca quién votó por quién.',
+    svg: `<svg viewBox="0 0 260 150"><circle cx="130" cy="72" r="46" fill="#7A3FB5"/><text x="130" y="90" text-anchor="middle" font-family="Anton,Impact" font-size="50" fill="#fff">?</text>
+      <g transform="rotate(-14 130 82)"><rect x="34" y="66" width="192" height="36" rx="7" fill="#FFFDF6" stroke="#D7263D" stroke-width="5"/>
+      <text x="130" y="93" text-anchor="middle" font-family="Anton,Impact" font-size="22" fill="#D7263D">¡TE VAMOS A COBRAR!</text></g></svg>` },
+];
+let pasoTuto = 0;
+function abrirTutorial() { pasoTuto = 0; pintarTutorial(); $('#m-tuto').classList.remove('hidden'); }
+function pintarTutorial() {
+  const s = TUTO[pasoTuto];
+  $('#t-paso').textContent = `${pasoTuto + 1} de ${TUTO.length}`;
+  $('#t-cuerpo').innerHTML = `<div class="ilus">${s.svg}</div><h2>${esc(s.t)}</h2><p>${esc(s.p)}</p>`;
+  $('#t-puntos').innerHTML = TUTO.map((_, i) => `<i class="${i === pasoTuto ? 'on' : ''}"></i>`).join('');
+  $('#t-atras').classList.toggle('hidden', pasoTuto === 0);
+  $('#t-sig').textContent = pasoTuto === TUTO.length - 1 ? '¡Entendido!' : 'Siguiente';
+}
+$('#t-atras').onclick = () => { pasoTuto = Math.max(0, pasoTuto - 1); SFX.tocar('swish'); pintarTutorial(); };
+$('#t-sig').onclick = () => {
+  if (pasoTuto < TUTO.length - 1) { pasoTuto++; SFX.tocar('swish'); pintarTutorial(); return; }
+  store.set('ab_tuto', '1'); $('#m-tuto').classList.add('hidden'); refrescar();
+};
+$('#c-tuto').onclick = abrirTutorial;
+$('#c-frase').onclick = async () => {
+  const f = prompt('Tu frase o apodo (máximo 60 letras). Déjalo vacío para quitarla.', est?.yo.frase || '');
+  if (f === null) return;
+  try { await rpc('cambiar_frase', { p_token: token, p_frase: f }); toast('Frase guardada'); refrescar(); } catch (e) { toast(mensajeError(e)); }
+};
 
 /* =====================================================================
    VOTACIÓN 3-2-1
@@ -801,7 +1201,7 @@ $('#v-enviar').onclick = async () => {
   const btn = $('#v-enviar'); btn.disabled = true;
   try {
     await rpc('votar', { p_token: token, p_votos: voto.map(v => ({ id: v.id, puntos: v.puntos, motivo: v.motivo.trim() })) });
-    toast('Voto enviado');
+    await selloEnviado('ENVIADO');
     mostrar('s-casa'); refrescar();
   } catch (e) { mostrarError($('#v-error'), e); btn.disabled = false; }
 };
@@ -829,7 +1229,27 @@ function abrirPrueba() {
   };
   mostrar('s-prueba');
 }
+function abrirPractica(tipo) {
+  const p = PRUEBAS[tipo];
+  $('#p-volver').classList.remove('hidden');
+  $('#p-caja').innerHTML = `<div class="folio"><span>Modo práctica</span><span>No cuenta</span></div>
+    <h2>${esc(p.nombre)}</h2><p>${esc(p.desc)}</p>
+    <p>Esto es solo para entrenar: puedes jugar las veces que quieras.</p>
+    <div style="margin-top:16px"><button class="btn" id="p-empezar">Empezar práctica</button></div>`;
+  $('#p-empezar').onclick = () => { tipo === 'memoria' ? jugarMemoria(true) : jugarAdeudo(true); };
+  mostrar('s-prueba');
+}
+function finPractica(html, tipo) {
+  SFX.tocar('caja');
+  $('#p-volver').classList.remove('hidden');
+  $('#p-caja').innerHTML = `<div class="folio"><span>Práctica terminada</span><span>No cuenta</span></div>${html}
+    <div style="display:grid;gap:10px;margin-top:16px"><button class="btn" id="p-otra">Jugar otra vez</button>
+    <button class="btn sec" style="color:var(--texto)" data-volver-fin>Regresar a la casa</button></div>`;
+  $('#p-otra').onclick = () => abrirPractica(tipo);
+  $('[data-volver-fin]').onclick = () => { mostrar('s-casa'); refrescar(); };
+}
 function finPrueba(html) {
+  SFX.tocar('caja');
   $('#p-volver').classList.remove('hidden');
   $('#p-caja').innerHTML = `<div class="folio"><span>Prueba terminada</span><span>Semana ${est.juego.semana}</span></div>${html}
     <div style="margin-top:16px"><button class="btn" data-volver-fin>Regresar a la casa</button></div>`;
@@ -855,10 +1275,14 @@ async function jugarTrivia(preguntas) {
         <div class="pregunta">${esc(q.pregunta)}</div>
         <div class="opciones">${q.opciones.map((o, k) => `<button class="opcion" data-op="${k}">${esc(o)}</button>`).join('')}</div>`;
       const t0 = performance.now();
+      let ultimo = 99;
       const iv = setInterval(() => {
         const ms = performance.now() - t0;
+        const seg = Math.max(0, Math.ceil((LIM - ms) / 1000));
         $('#t-barra').style.width = Math.max(0, 100 - ms / LIM * 100) + '%';
-        $('#t-seg').textContent = Math.max(0, Math.ceil((LIM - ms) / 1000));
+        $('#t-seg').textContent = seg;
+        if (seg <= 3 && seg > 0 && seg !== ultimo) SFX.tocar(seg % 2 ? 'tic' : 'tac');
+        ultimo = seg;
         if (ms >= LIM) { clearInterval(iv); resolve({ id: q.id, opcion: -1, ms: LIM }); }
       }, 100);
       $$('.opcion', caja).forEach(b => b.onclick = () => {
@@ -879,7 +1303,7 @@ async function jugarTrivia(preguntas) {
 }
 
 /* ---- Memoria de expedientes ---- */
-function jugarMemoria() {
+function jugarMemoria(practica = false) {
   const iconos = ['📁', '💰', '📞', '🧾', '💳', '🏦', '📄', '⏰'];
   const mazo = [...iconos, ...iconos].map((ic, i) => ({ ic, k: i })).sort(() => Math.random() - .5);
   let abiertas = [], pares = 0, errores = 0, bloqueo = false;
@@ -888,23 +1312,30 @@ function jugarMemoria() {
   caja.innerHTML = `<div class="marcador"><span id="m-t">0 s</span><span id="m-e">0 errores</span></div>
     <div class="cartas">${mazo.map((c, i) => `<button class="carta" data-i="${i}" aria-label="Expediente ${i + 1}">
       <span class="cara atras">EXP</span><span class="cara frente">${c.ic}</span></button>`).join('')}</div>`;
-  const iv = setInterval(() => { $('#m-t').textContent = Math.floor((performance.now() - t0) / 1000) + ' s'; }, 250);
+  const iv = setInterval(() => {
+    if (pantalla !== 's-prueba' || !$('#m-t')) return clearInterval(iv);   // salió de la práctica
+    $('#m-t').textContent = Math.floor((performance.now() - t0) / 1000) + ' s';
+  }, 250);
   $$('.carta', caja).forEach(b => b.onclick = async () => {
     if (bloqueo || b.classList.contains('vuelta')) return;
-    b.classList.add('vuelta'); abiertas.push(b);
+    b.classList.add('vuelta'); abiertas.push(b); SFX.tocar('swish');
     if (abiertas.length < 2) return;
     const [a, c] = abiertas; abiertas = [];
     if (mazo[a.dataset.i].ic === mazo[c.dataset.i].ic) {
       a.classList.add('par'); c.classList.add('par'); pares++;
+      if (pares < iconos.length) setTimeout(() => SFX.tocar('caja'), 150);
       if (pares === iconos.length) {
         clearInterval(iv);
         const seg = (performance.now() - t0) / 1000;
         const puntaje = Math.max(0, Math.round(1000 - seg * 10 - errores * 20));
         await sleep(500);
-        try { await enviarPuntaje(puntaje); finPrueba(`<h2>¡Expedientes en orden!</h2><p>${seg.toFixed(1)} segundos y ${errores} errores.</p><p>Puntaje: <b class="display" style="font-size:2rem">${puntaje}</b></p>`); }
+        const html = `<h2>¡Expedientes en orden!</h2><p>${seg.toFixed(1)} segundos y ${errores} errores.</p><p>Puntaje: <b class="display" style="font-size:2rem">${puntaje}</b></p>`;
+        if (practica) return finPractica(html, 'memoria');
+        try { await enviarPuntaje(puntaje); finPrueba(html); }
         catch (e) { finPrueba(`<h2>No se guardó</h2><p>${esc(mensajeError(e))}</p>`); }
       }
     } else {
+      setTimeout(() => SFX.tocar('buzzer'), 150);
       errores++; $('#m-e').textContent = errores + (errores === 1 ? ' error' : ' errores');
       bloqueo = true; await sleep(700); a.classList.remove('vuelta'); c.classList.remove('vuelta'); bloqueo = false;
     }
@@ -924,22 +1355,28 @@ function problemaAdeudo() {
   while (opciones.size < 3) { const d = [50, 100, 150, 250, 500][r(0, 4)] * (Math.random() < .5 ? -1 : 1); if (ok + d > 0) opciones.add(ok + d); }
   return { texto, ok, opciones: [...opciones].sort(() => Math.random() - .5) };
 }
-function jugarAdeudo() {
+function jugarAdeudo(practica = false) {
   const DUR = 45000;
-  let puntaje = 0, bien = 0, mal = 0, fin = false;
+  let puntaje = 0, bien = 0, mal = 0, fin = false, ultimo = 99;
   const caja = $('#p-caja');
   const t0 = performance.now();
   const terminar = async () => {
     if (fin) return; fin = true; clearInterval(iv);
     puntaje = Math.max(0, puntaje);
+    const html = `<h2>¡Se acabó el tiempo!</h2><p>${bien} aciertos y ${mal} errores.</p><p>Puntaje: <b class="display" style="font-size:2rem">${puntaje}</b></p>`;
+    if (practica) return finPractica(html, 'adeudo');
     caja.innerHTML = '<h2>Guardando…</h2>';
-    try { await enviarPuntaje(puntaje); finPrueba(`<h2>¡Se acabó el tiempo!</h2><p>${bien} aciertos y ${mal} errores.</p><p>Puntaje: <b class="display" style="font-size:2rem">${puntaje}</b></p>`); }
+    try { await enviarPuntaje(puntaje); finPrueba(html); }
     catch (e) { finPrueba(`<h2>No se guardó</h2><p>${esc(mensajeError(e))}</p>`); }
   };
   const iv = setInterval(() => {
+    if (practica && pantalla !== 's-prueba') { fin = true; return clearInterval(iv); }   // salió de la práctica
     const ms = performance.now() - t0;
+    const seg = Math.max(0, Math.ceil((DUR - ms) / 1000));
     const b = $('#ad-barra'); if (b) b.style.width = Math.max(0, 100 - ms / DUR * 100) + '%';
-    const s = $('#ad-seg'); if (s) s.textContent = Math.max(0, Math.ceil((DUR - ms) / 1000)) + ' s';
+    const s = $('#ad-seg'); if (s) s.textContent = seg + ' s';
+    if (seg <= 3 && seg > 0 && seg !== ultimo) SFX.tocar(seg % 2 ? 'tic' : 'tac');
+    ultimo = seg;
     if (ms >= DUR) terminar();
   }, 100);
   const siguiente = () => {
@@ -951,8 +1388,8 @@ function jugarAdeudo() {
       <div class="opciones">${p.opciones.map(o => `<button class="opcion" data-v="${o}">$${o.toLocaleString('es-MX')}</button>`).join('')}</div>`;
     $$('.opcion', caja).forEach(b => b.onclick = async () => {
       $$('.opcion', caja).forEach(x => x.disabled = true);
-      if (+b.dataset.v === p.ok) { puntaje += 100; bien++; b.classList.add('bien'); }
-      else { puntaje -= 50; mal++; b.classList.add('mal'); $$('.opcion', caja).find(x => +x.dataset.v === p.ok)?.classList.add('bien'); }
+      if (+b.dataset.v === p.ok) { puntaje += 100; bien++; b.classList.add('bien'); SFX.tocar('caja'); }
+      else { puntaje -= 50; mal++; b.classList.add('mal'); SFX.tocar('buzzer'); $$('.opcion', caja).find(x => +x.dataset.v === p.ok)?.classList.add('bien'); }
       await sleep(+b.dataset.v === p.ok ? 250 : 700);
       siguiente();
     });
@@ -968,7 +1405,7 @@ async function esperar(ms) {
   const fin = performance.now() + ms;
   while (performance.now() < fin) { if (saltarGala) throw 'saltar'; await sleep(50); }
 }
-async function abrirGala(semana, marcarVista) {
+async function abrirGala(semana, marcarVista, conTelon = false) {
   let r;
   try { r = await rpc('gala', { p_token: token, p_semana: semana }); } catch (e) { toast(mensajeError(e)); return; }
   if (!r) return;
@@ -976,12 +1413,27 @@ async function abrirGala(semana, marcarVista) {
   galaAbierta = true; saltarGala = false;
   const G = $('#gala'), E = $('#g-escena');
   G.classList.remove('hidden'); document.body.style.overflow = 'hidden';
-  $('#g-saltar').classList.remove('hidden');
-  $('#g-saltar').onclick = () => { saltarGala = true; };
+  E.style.justifyContent = '';
   const tabla = r.tabla;
   const elim = tabla.find(t => t.id === r.eliminado_id) || { id: r.eliminado_id, nombre: r.eliminado, puntos: 0 };
   const persona = id => porId(id) || tabla.find(t => t.id === id) || { id, nombre: '?' };
+
+  // Telón: un toque para que el celular permita el sonido
+  if (conTelon) {
+    $('#g-saltar').classList.add('hidden');
+    await new Promise(res => {
+      E.innerHTML = `<div class="telon"><svg class="logo js-logo vivo" width="110" height="110" viewBox="0 0 120 120">${LOGO('g')}</svg>
+        <p class="typed" style="color:#C9C3EE;margin:0">Semana ${r.semana}</p>
+        <h1 class="display gala-titulo">¡Empieza la gala!</h1>
+        <p style="margin:0;color:#C9C3EE">Sube el volumen 🔊</p>
+        <button class="btn" id="g-entrar">Entrar a la gala</button></div>`;
+      $('#g-entrar').onclick = res;
+    });
+  }
+  $('#g-saltar').classList.remove('hidden');
+  $('#g-saltar').onclick = () => { saltarGala = true; SFX.parar(); };
   try {
+    SFX.tocar('dindon');
     E.innerHTML = `<p class="typed" style="color:#C9C3EE;margin:0">Semana ${r.semana}</p>
       <h1 class="display gala-titulo">Gala de eliminación</h1>
       <p class="lema" style="font-size:1.4rem">¡Te vamos a cobrar!</p>`;
@@ -992,6 +1444,7 @@ async function abrirGala(semana, marcarVista) {
         <div style="font-size:2rem">👑</div>${avatar(persona(r.lider_id), 120)}
         <h2 class="display" style="font-size:2.2rem">${esc(r.lider)}</h2>
         <p>${r.lider_salvado ? 'Recibió muchos votos… pero el liderazgo lo protege.' : 'Está protegido esta semana.'}</p>`;
+      SFX.tocar('fanfarria'); lluviaBilletes(18);
       await esperar(3200);
     }
 
@@ -1006,8 +1459,9 @@ async function abrirGala(semana, marcarVista) {
       cont.appendChild(fila);
       const P = $('.p', fila);
       const pasos = Math.min(t.puntos, 12);
-      for (let k = 1; k <= pasos; k++) { P.textContent = Math.round(t.puntos * k / pasos); await esperar(45); }
+      for (let k = 1; k <= pasos; k++) { P.textContent = Math.round(t.puntos * k / pasos); if (k % 2) SFX.tocar('tic'); await esperar(45); }
       P.textContent = t.puntos;
+      SFX.tocar('clic');
       fila.classList.add('salvo');
       fila.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       await esperar(orden.length > 10 ? 380 : 650);
@@ -1016,14 +1470,22 @@ async function abrirGala(semana, marcarVista) {
 
     E.innerHTML = `${r.desempate ? '<p style="color:#C9C3EE">Hubo empate y el líder tuvo que decidir.</p>' : ''}
       <p class="display suspenso">El habitante que deja la casa es<span class="puntos-suspenso"></span></p>`;
+    SFX.tocar('redoble', 3.5);
     await esperar(3500);
 
-    E.innerHTML = `<div class="revelado">${avatar(persona(elim.id), 170)}<div class="sello-grande">¡TE VAMOS A COBRAR!</div></div>
+    E.innerHTML = `<div id="g-salida" style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <div class="revelado">${avatar(persona(elim.id), 170)}<div class="sello-grande">¡TE VAMOS A COBRAR!</div></div>
       <h2 class="display" style="font-size:2.6rem;margin-top:10px">${esc(elim.nombre)}</h2>
-      <p style="margin:0">${elim.puntos} puntos en contra</p>`;
+      <p style="margin:0">${elim.puntos} puntos en contra</p></div>`;
+    SFX.tocar('sello'); setTimeout(() => SFX.tocar('tadan'), 180);
     if (navigator.vibrate) navigator.vibrate([80, 40, 160]);
-    await esperar(4200);
+    await esperar(3600);
+    // sale de la casa arrastrado
+    $('#g-salida')?.classList.add('arrastrado');
+    SFX.tocar('swish');
+    await esperar(1200);
   } catch (e) { if (e !== 'saltar') console.error(e); }
+  SFX.parar();
 
   // tabla completa
   $('#g-saltar').classList.add('hidden');
@@ -1116,7 +1578,7 @@ async function cargarAdmin(silencioso) {
   try {
     [adm.cfg, adm.jug] = await Promise.all([
       q(sb.from('config').select('*').eq('id', 1).single()),
-      q(sb.from('jugadores').select('id,nombre,rol,estado,semana_eliminado,fallos,bloqueado_hasta,foto,creado').order('creado')),
+      q(sb.from('jugadores').select('id,nombre,rol,estado,semana_eliminado,fallos,bloqueado_hasta,foto,frase,creado').order('creado')),
     ]);
     const vista = { juego: adminJuego, votos: adminVotos, pruebas: adminPruebas, trivia: adminTrivia, habitantes: adminHabitantes }[adm.tab];
     await vista(C);
@@ -1138,6 +1600,18 @@ async function adminJuego(C) {
 
   const opcionesPrueba = Object.entries(PRUEBAS).map(([k, v]) => `<option value="${k}">${esc(v.nombre)}</option>`).join('');
 
+  if (c.semana === 0) {
+    const preds = await q(sb.from('predicciones').select('*'));
+    const local = c.inicio_at ? new Date(new Date(c.inicio_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '';
+    h += `<div class="adm-caja"><h3>Cuenta regresiva</h3>
+      <p class="ayuda">Todos ven un reloj en la sala de espera hasta esta fecha. Al llegar a cero no arranca solo: tú inicias la semana 1.</p>
+      <input class="in" type="datetime-local" id="ad-inicio" value="${local}">
+      <div class="adm-acciones"><button class="btn chico" id="ad-inicio-g">Guardar fecha</button>
+      ${c.inicio_at ? '<button class="btn sec chico" id="ad-inicio-q">Quitar reloj</button>' : ''}</div></div>
+    <div class="adm-caja"><h3>Predicciones secretas (${preds.length})</h3>
+      ${preds.map(p => `<div class="adm-fila"><div class="info"><b>${esc(nombreDe(p.jugador_id))}</b>
+        <small>Gana: ${esc(nombreDe(p.ganador_id))} · Sale primero: ${esc(nombreDe(p.primero_id))}</small></div></div>`).join('') || '<p class="ayuda">Nadie ha hecho su predicción.</p>'}</div>`;
+  }
   if (c.fase === 'registro' || (c.fase === 'gala' && c.gala_revelada)) {
     h += `<div class="adm-caja"><h3>Iniciar semana ${c.semana + 1}</h3>
       ${c.semana === 0 ? `<p class="ayuda">Al iniciar la semana 1 se cierran los lugares de habitante: quien se registre después entra como público.</p>` : ''}
@@ -1184,6 +1658,12 @@ async function adminJuego(C) {
   C.innerHTML = h;
 
   $('#ad-iniciar')?.addEventListener('click', () => accion('admin_iniciar_semana', { p_prueba: $('#ad-prueba').value }, 'Semana iniciada'));
+  $('#ad-inicio-g')?.addEventListener('click', () => {
+    const v = $('#ad-inicio').value;
+    if (!v) return toast('Elige fecha y hora');
+    accion('admin_set_inicio', { p_inicio: new Date(v).toISOString() }, 'Reloj guardado');
+  });
+  $('#ad-inicio-q')?.addEventListener('click', () => accion('admin_set_inicio', { p_inicio: null }, 'Reloj quitado'));
   $('#ad-cerrar-prueba')?.addEventListener('click', async () => {
     const id = await accion('admin_cerrar_prueba', { p_lider: $('#ad-lider').value || null });
     toast(id ? 'Líder: ' + nombreDe(id) : 'Prueba cerrada sin líder');
@@ -1281,6 +1761,7 @@ async function adminHabitantes(C) {
   const fila = j => `<div class="adm-fila" style="align-items:flex-start">
       ${j.foto ? `<div class="av" style="width:40px;height:40px"><img src="${j.foto}" alt=""></div>` : avatar(j, 40)}
       <div class="info"><b>${esc(j.nombre)}</b>
+        ${j.frase ? `<small style="display:block;font-style:italic">“${esc(j.frase)}” <button class="mini" data-sinfrase="${j.id}">Quitar frase</button></small>` : ''}
         <small>${j.rol === 'jugador' ? (j.estado === 'activo' ? 'En la casa' : `Eliminado semana ${j.semana_eliminado}`) : 'Público'}${j.bloqueado_hasta && new Date(j.bloqueado_hasta) > new Date() ? ' · <b style="display:inline;color:var(--sello)">bloqueado</b>' : ''}</small>
         <div class="adm-acciones" style="margin-top:6px">
           <button class="mini" data-pin="${j.id}">Nuevo PIN</button>
@@ -1302,6 +1783,7 @@ async function adminHabitantes(C) {
   });
   $$('[data-rol]').forEach(b => b.onclick = async () => { try { await q(sb.from('jugadores').update({ rol: b.dataset.val }).eq('id', b.dataset.rol)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
   $$('[data-reac]').forEach(b => b.onclick = () => { if (confirm('¿Regresar a ' + nombreDe(b.dataset.reac) + ' a la casa?')) accion('admin_reactivar', { p_id: b.dataset.reac }, 'Regresó a la casa'); });
+  $$('[data-sinfrase]').forEach(b => b.onclick = async () => { try { await q(sb.from('jugadores').update({ frase: null }).eq('id', b.dataset.sinfrase)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
   $$('[data-sinfoto]').forEach(b => b.onclick = async () => { try { await q(sb.from('jugadores').update({ foto: null }).eq('id', b.dataset.sinfoto)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
   $$('[data-borrar]').forEach(b => b.onclick = async () => {
     if (!confirm('¿Borrar a ' + nombreDe(b.dataset.borrar) + '? Se borran también sus votos.')) return;
