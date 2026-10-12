@@ -249,6 +249,23 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .ad-aviso.bien{color:var(--ok)}
 .ad-aviso.mal{color:var(--sello)}
 
+/* ---------- v5: confesionario ---------- */
+#s-votar.confesionario{position:relative}
+body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, #1A0710 70%) #1A0710}
+.conf-top{display:flex;justify-content:space-between;align-items:center}
+.rec{display:flex;align-items:center;gap:6px;font-family:"Special Elite",monospace;font-size:.85rem;color:#FF6B7F}
+.rec i{width:10px;height:10px;border-radius:50%;background:#FF2E4C;animation:rec 1.2s steps(2) infinite}
+@keyframes rec{50%{opacity:0}}
+.conf-cab{display:flex;align-items:center;gap:14px;margin:14px 0 4px}
+.conf-cab h1{font-size:2.4rem;color:#FFD54A;line-height:1}
+.conf-cab p{margin:4px 0 0;color:#E9B4BE;font-size:.9rem}
+.confesionario .formato{animation:entra-conf .5s ease-out both}
+@keyframes entra-conf{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.candado{margin-top:16px;background:var(--noche);color:var(--luz);border-radius:10px;padding:10px 12px;font-weight:700;text-align:center}
+.puerta-aviso{position:absolute;left:11.5%;top:5%;transform:translateX(-50%);background:var(--luz);color:var(--texto);font-weight:800;font-size:.75rem;padding:2px 8px;border-radius:999px;pointer-events:none;animation:latido 1s ease-in-out infinite;z-index:2}
+@keyframes latido{50%{transform:translateX(-50%) scale(1.15)}}
+.sala.votando .sala-fondo .puerta{filter:drop-shadow(0 0 2px #FFD54A)}
+
 /* ---------- v4: habitación, monitos y fichas ---------- */
 .vista-tog{display:flex;gap:6px;margin:-2px 0 10px}
 .vista-tog button{appearance:none;border:0;border-radius:999px;padding:6px 12px;font-weight:700;font-size:.85rem;background:var(--noche-2);color:#C9C3EE;cursor:pointer}
@@ -512,6 +529,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
       </svg>
       <div class="sala-actores" id="sala-actores"></div>
       <div class="sala-vivo" id="sala-vivo" title="Conectados ahora"></div>
+      <div class="puerta-aviso hidden" id="puerta-aviso">¡Vota!</div>
     </div>
     <div class="palco hidden" id="palco"><span class="palco-t">Palco del jurado</span><div class="palco-lista" id="palco-lista"></div></div>
     <div class="emoji-barra" id="emoji-barra" aria-label="Ponte un emoji"></div>
@@ -540,9 +558,16 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
   </div>
 </section>
 
-<!-- ============================ PANTALLA: VOTAR -->
-<section id="s-votar" class="wrap hidden">
-  <button class="link" data-volver>← Regresar a la casa</button>
+<!-- ============================ PANTALLA: CONFESIONARIO (votar) -->
+<section id="s-votar" class="wrap hidden confesionario">
+  <div class="conf-top">
+    <button class="link" data-volver>← Salir del confesionario</button>
+    <span class="rec"><i></i>REC</span>
+  </div>
+  <div class="conf-cab">
+    <svg class="logo js-logo" width="64" height="64" viewBox="0 0 120 120" aria-hidden="true"></svg>
+    <div><h1 class="display">Confesionario</h1><p>Aquí nadie te ve. Solo el ojo.</p></div>
+  </div>
   <div class="formato rosa">
     <div class="folio"><span>Formato de cobro</span><span id="v-folio"></span></div>
     <h2>¿A quién le cobramos esta semana?</h2>
@@ -552,8 +577,9 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
     <div class="seccion-t" style="color:var(--texto);margin-top:20px"><span>Habitantes</span><small style="color:var(--suave)">Toca a alguien para ponerlo en el renglón marcado</small></div>
     <div class="candidatos" id="v-candidatos"></div>
     <div class="error hidden" id="v-error"></div>
-    <div style="margin-top:18px"><button class="btn" id="v-enviar" disabled>Enviar mi voto</button></div>
-    <p class="ayuda" style="margin-top:10px">Los motivos se leen en la gala sin tu nombre. Puedes cambiar tu voto mientras la votación siga abierta.</p>
+    <div class="candado hidden" id="v-candado">🔒 <span id="v-candado-txt">Aún no es día de votación</span></div>
+    <div style="margin-top:12px"><button class="btn" id="v-enviar" disabled>Enviar mi voto</button></div>
+    <p class="ayuda" style="margin-top:10px" id="v-pie"></p>
   </div>
 </section>
 
@@ -844,13 +870,35 @@ const SFX = (() => {
     if (s === 6 || s === 14) A.notas.forEach(f => tono({ f, t, d: .13, tipo: 'square', v: .028, filtro: 1500, destino: d }));
     if (vuelta % 2 === 1 && MELODIA[compas][s]) tono({ f: MELODIA[compas][s], t, d: .32, tipo: 'triangle', v: .09, destino: d });
   }
+  /* ----- Música del confesionario: tensión en La menor, 70 bpm -----
+     Zumbido grave, latido de corazón, tic de reloj y un trémolo agudo
+     que se vuelve disonante en el último compás. */
+  let pista = 'casa';
+  const SEMI_T = 60 / 70 / 4;
+  function pasoTension(i, t) {
+    const compas = Math.floor(i / 16) % 4, s = i % 16, d = musBus;
+    if (s === 0) {                                                                       // zumbido
+      tono({ f: 55, t, d: SEMI_T * 16 + .2, tipo: 'sawtooth', v: .13, filtro: 260, destino: d });
+      tono({ f: compas === 3 ? 58.27 : 82.41, t, d: SEMI_T * 16 + .2, tipo: 'sawtooth', v: .07, filtro: 320, destino: d });
+    }
+    if (s % 8 === 0) tono({ f: 72, f2: 38, t, d: .2, v: .62, destino: d });            // latido
+    if (s % 8 === 2) tono({ f: 66, f2: 36, t, d: .16, v: .38, destino: d });
+    if (s % 4 === 0) ruido({ t, d: .025, v: .045, filtro: 6500, tipo: 'highpass', destino: d });   // reloj
+    if (s % 2 === 0 && compas >= 1) tono({ f: compas === 3 ? 622.25 : 659.25, t, d: .11, tipo: 'triangle', v: .022 + compas * .006, destino: d });
+  }
   function bucle() {
-    const c = ctx;
+    const c = ctx, semi = pista === 'tension' ? SEMI_T : SEMI;
     while (sigT < c.currentTime + .2) {
-      programarPaso(paso, Math.max(0, sigT - c.currentTime));
-      sigT += SEMI; paso++;
+      (pista === 'tension' ? pasoTension : programarPaso)(paso, Math.max(0, sigT - c.currentTime));
+      sigT += semi; paso++;
       if (paso % 64 === 0) vuelta++;
     }
+  }
+  function ambiente(p) {
+    if (p === pista) return;
+    pista = p;
+    if (musTimer) { const antes = pausaGala; pausaGala = true; actualizarMusica(); pausaGala = antes; }
+    actualizarMusica();
   }
   function actualizarMusica() {
     const debe = musicaOn && !mudo && !pausaGala && desbloqueado && !document.hidden;
@@ -883,7 +931,7 @@ const SFX = (() => {
   // los celulares solo permiten sonido después de que la persona toca la pantalla
   ['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => { ac(); desbloqueado = true; actualizarMusica(); }, { once: true, capture: true }));
   document.addEventListener('visibilitychange', actualizarMusica);
-  return { tocar, parar, alternar, alternarMusica, pausaParaGala, pintarBotones };
+  return { tocar, parar, alternar, alternarMusica, pausaParaGala, ambiente, pintarBotones };
 })();
 $$('.js-sonido').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); SFX.alternar(); }));
 $$('.js-musica').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); SFX.alternarMusica(); }));
@@ -937,6 +985,8 @@ let galaAbierta = false;
 function mostrar(id) {
   ['s-config', 's-inicio', 's-casa', 's-votar', 's-prueba'].forEach(s => $('#' + s).classList.toggle('hidden', s !== id));
   pantalla = id; window.scrollTo(0, 0);
+  document.body.classList.toggle('en-confesionario', id === 's-votar');
+  SFX.ambiente(id === 's-votar' ? 'tension' : 'casa');
 }
 
 /* ---------- logo (ojo con signo de pesos) ---------- */
@@ -1214,7 +1264,7 @@ function pintarAccion() {
   if (!enFoco) extra.innerHTML = g.semana === 0 ? `<div style="height:8px"></div>` + pintarExtrasSala() : '';
   conectarSalaEspera();
   $('#a-jugar')?.addEventListener('click', abrirPrueba);
-  $('#a-votar')?.addEventListener('click', abrirVotacion);
+  $('#a-votar')?.addEventListener('click', irAlConfesionario);
   $$('[data-decide]').forEach(b => b.onclick = async () => {
     const j = porId(b.dataset.decide);
     if (!confirm(`¿Seguro que sale ${j.nombre}?`)) return;
@@ -1642,10 +1692,13 @@ const SALA = (() => {
       pintarActor(a, j);
     }
     $('#palco').classList.toggle('hidden', !habitantes.some(j => j.estado === 'eliminado'));
+    const votando = est.juego.fase === 'votacion';
+    $('#puerta-aviso').classList.toggle('hidden', !votando);
+    caja.classList.toggle('votando', votando);
     pintarBarra();
     $('#sala-ayuda').textContent = soyActor()
-      ? 'Toca el piso para caminar · toca a alguien para ver su ficha'
-      : 'Toca a alguien para ver su ficha';
+      ? 'Toca el piso para caminar · toca a alguien para ver su ficha · toca la puerta roja para ir al confesionario'
+      : 'Toca a alguien para ver su ficha · toca la puerta roja para ir al confesionario';
     despertar();
   }
   function pintarBarra() {
@@ -1745,6 +1798,10 @@ const SALA = (() => {
   caja.addEventListener('click', e => {
     const m = e.target.closest('.mono');
     if (m) { abrirFicha(m.dataset.id); return; }
+    // ¿tocó la puerta del confesionario?
+    const rr = caja.getBoundingClientRect();
+    const ux = (e.clientX - rr.left) / rr.width * 100, uy = (e.clientY - rr.top) / rr.height * 105;
+    if (ux >= 2 && ux <= 21 && uy >= 7 && uy <= 46) { irAlConfesionario(); return; }
     if (!soyActor()) { toast('Solo los habitantes en la casa pueden caminar'); return; }
     const r = caja.getBoundingClientRect();
     const [tx, ty] = limitar((e.clientX - r.left) / r.width * 100, (e.clientY - r.top) / r.height * 105 + 4);
@@ -1757,6 +1814,23 @@ const SALA = (() => {
     yo.llegaT = setTimeout(revisarReto, dur + 80);
   });
   $('#palco-lista').addEventListener('click', e => { const m = e.target.closest('.mono'); if (m) abrirFicha(m.dataset.id); });
+  // camina hasta la puerta del confesionario y al llegar entra
+  function irAPuerta(alLlegar) {
+    const yo = actores.get(miId);
+    if (!yo?.enSala) return alLlegar();
+    const [tx, ty] = [PUERTA[0], PUERTA[1] + 1];
+    const dur = Math.max(350, Math.hypot(tx - yo.x, ty - yo.y) * 38);
+    yo.ocupado = 0;
+    yo.ctrl = { fx: yo.x, fy: yo.y, tx, ty, t0: Date.now(), dur };
+    mandar({ tipo: 'mov', id: miId, fx: yo.x, fy: yo.y, tx, ty, dur });
+    clearTimeout(yo.llegaT);
+    SFX.tocar('swish');
+    yo.llegaT = setTimeout(() => {
+      burbuja(miId, '🤫', 1500);
+      mandar({ tipo: 'emo', id: miId, e: '🤫' });
+      setTimeout(alLlegar, 450);
+    }, dur);
+  }
 
   // ---------- cuadro por cuadro ----------
   function visible() { return !!est && pantalla === 's-casa' && !document.hidden && !galaAbierta; }
@@ -1873,7 +1947,7 @@ const SALA = (() => {
     actores.clear(); programadoK = null;
     pintarVivo();
   }
-  return { sincronizar, conectar, desconectar, miEmoji, enviarEmoji, soyActor, enVivo: () => vivo, despertar };
+  return { sincronizar, conectar, desconectar, miEmoji, enviarEmoji, soyActor, irAPuerta, enVivo: () => vivo, despertar };
 })();
 
 /* =====================================================================
@@ -1882,21 +1956,46 @@ const SALA = (() => {
 let voto = [];      // [{puntos, id, motivo}]
 let renglonActivo = 0;
 
+// Borrador del voto: se guarda en este teléfono hasta que se pueda enviar
+const claveBorrador = () => 'ab_borrador_' + est.yo.id;
+function guardarBorrador() { store.set(claveBorrador(), JSON.stringify(voto)); }
+function leerBorrador() { try { return JSON.parse(store.get(claveBorrador()) || '[]'); } catch { return []; } }
+
+// Camina al confesionario (si tu monito está en la casa) y entra
+function irAlConfesionario() {
+  if (SALA.soyActor() && pantalla === 's-casa') SALA.irAPuerta(abrirVotacion);
+  else abrirVotacion();
+}
+
 function abrirVotacion() {
   const { yo, juego: g, jugadores, mis_votos } = est;
   const candidatos = jugadores.filter(j => j.rol === 'jugador' && j.estado === 'activo' && j.id !== yo.id);
+  const validos = new Set(candidatos.map(j => j.id));
   const n = Math.min(3, candidatos.length);
+  const borrador = mis_votos.length ? [] : leerBorrador();
   voto = [3, 2, 1].slice(0, n).map(p => {
-    const prev = mis_votos.find(v => v.puntos === p);
-    return { puntos: p, id: prev?.id || null, motivo: prev?.motivo || '' };
+    const prev = mis_votos.find(v => v.puntos === p) || borrador.find(v => v.puntos === p);
+    return { puntos: p, id: prev?.id && validos.has(prev.id) ? prev.id : null, motivo: prev?.motivo || '' };
   });
+  // no repetir a la misma persona si el borrador quedó viejo
+  const vistos = new Set();
+  for (const v of voto) { if (v.id && vistos.has(v.id)) v.id = null; if (v.id) vistos.add(v.id); }
   renglonActivo = Math.max(0, voto.findIndex(v => !v.id));
-  $('#v-folio').textContent = 'Semana ' + g.semana;
-  $('#v-instr').textContent = n === 3
-    ? 'Da 3 puntos a quien más quieres que salga, 2 al segundo y 1 al tercero. Si quieres, escribe por qué.'
-    : `Quedan pocos habitantes: reparte ${voto.map(v => v.puntos).join(' y ')} puntos.`;
+  $('#v-folio').textContent = 'Semana ' + Math.max(1, g.semana);
+  $('#v-instr').textContent = n === 0
+    ? 'Todavía no hay habitantes por quién votar.'
+    : n === 3
+      ? 'Da 3 puntos a quien más quieres que salga, 2 al segundo y 1 al tercero. Si quieres, escribe por qué.'
+      : `Quedan pocos habitantes: reparte ${voto.map(v => v.puntos).join(' y ')} puntos.`;
   $('#v-publico').classList.toggle('hidden', yo.rol !== 'espectador');
   $('#v-error').classList.add('hidden');
+  const abierta = g.fase === 'votacion';
+  $('#v-candado').classList.toggle('hidden', abierta);
+  $('#v-candado-txt').textContent = g.semana > 0 && ['decision', 'gala'].includes(g.fase)
+    ? 'La votación de esta semana ya cerró' : 'Aún no es día de votación';
+  $('#v-pie').textContent = abierta
+    ? 'Los motivos se leen en la gala sin tu nombre. Puedes cambiar tu voto mientras la votación siga abierta.'
+    : 'Puedes ir eligiendo y escribiendo tus razones: se guardan en este teléfono y estarán listas cuando abra la votación.';
   pintarVoto();
   mostrar('s-votar');
 }
@@ -1922,7 +2021,7 @@ function pintarVoto() {
     renglonActivo = +r.dataset.r; pintarVoto();
   }));
   $$('[data-quitar]').forEach(b => b.onclick = () => { voto[+b.dataset.quitar].id = null; renglonActivo = +b.dataset.quitar; pintarVoto(); });
-  $$('[data-mot]').forEach(t => t.oninput = () => { voto[+t.dataset.mot].motivo = t.value; });
+  $$('[data-mot]').forEach(t => t.oninput = () => { voto[+t.dataset.mot].motivo = t.value; guardarBorrador(); });
   $$('[data-cand]').forEach(b => b.onclick = () => {
     const id = b.dataset.cand;
     const ya = voto.findIndex(v => v.id === id);
@@ -1932,12 +2031,14 @@ function pintarVoto() {
     if (libre >= 0) renglonActivo = libre;
     pintarVoto();
   });
-  $('#v-enviar').disabled = voto.some(v => !v.id);
+  $('#v-enviar').disabled = !voto.length || voto.some(v => !v.id) || est.juego.fase !== 'votacion';
+  guardarBorrador();
 }
 $('#v-enviar').onclick = async () => {
   const btn = $('#v-enviar'); btn.disabled = true;
   try {
     await rpc('votar', { p_token: token, p_votos: voto.map(v => ({ id: v.id, puntos: v.puntos, motivo: v.motivo.trim() })) });
+    store.del(claveBorrador());
     await selloEnviado('ENVIADO');
     mostrar('s-casa'); refrescar();
   } catch (e) { mostrarError($('#v-error'), e); btn.disabled = false; }
