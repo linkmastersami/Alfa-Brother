@@ -569,8 +569,8 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
     <div><h1 class="display">Confesionario</h1><p>Aquí nadie te ve. Solo el ojo.</p></div>
   </div>
   <div class="formato rosa">
-    <div class="folio"><span>Formato de cobro</span><span id="v-folio"></span></div>
-    <h2>¿A quién le cobramos esta semana?</h2>
+    <div class="folio"><span>Votación de eliminación</span><span id="v-folio"></span></div>
+    <h2>¿A quién eliminamos esta semana?</h2>
     <p id="v-instr" style="font-size:.95rem"></p>
     <div id="v-publico" class="aviso hidden">Votas como público: tu voto aparece en la tabla de la gala, pero no decide quién sale.</div>
     <div id="v-renglones"></div>
@@ -1209,10 +1209,10 @@ function pintarAccion() {
   if (g.semana > 0 && g.activos === 1 && g.fase === 'gala' && g.gala_revelada) {
     const gan = est.jugadores.find(j => j.rol === 'jugador' && j.estado === 'activo');
     h = `<div class="formato amarillo" style="text-align:center">
-      <div class="folio"><span>Liquidación final</span><span>Pagado</span></div>
+      <div class="folio"><span>Gran final</span><span>Ganador</span></div>
       <div style="display:flex;justify-content:center;margin:8px 0">${avatar(gan, 96)}</div>
       <h2>${esc(gan.nombre)} gana Alfa Brother</h2>
-      <p>Fue el único al que nadie le pudo cobrar.</p></div>` + pintarAciertos(gan);
+      <p>Nadie lo pudo eliminar.</p></div>` + pintarAciertos(gan);
   } else if (g.semana === 0) {
     h = pintarSalaEspera();
   } else if (g.fase === 'prueba') {
@@ -1226,7 +1226,7 @@ function pintarAccion() {
   } else if (g.fase === 'votacion') {
     const voté = mis_votos.length > 0;
     const resumen = voté ? `<ul style="margin:6px 0 10px;padding-left:18px">${mis_votos.map(v => `<li><b>${v.puntos} ${v.puntos === 1 ? 'punto' : 'puntos'}:</b> ${esc(porId(v.id)?.nombre)}</li>`).join('')}</ul>` : '';
-    h = `<div class="formato rosa"><div class="folio"><span>Formato de cobro</span><span>Semana ${g.semana}</span></div>
+    h = `<div class="formato rosa"><div class="folio"><span>Votación de eliminación</span><span>Semana ${g.semana}</span></div>
       <h2>${voté ? 'Tu voto está registrado' : 'Es hora de votar'}</h2>
       ${lider ? `<p>Líder de la semana: <b>${esc(lider.nombre)}</b> 👑. Si queda con más puntos, se salva.</p>` : ''}
       ${voté ? resumen : '<p>Reparte 3, 2 y 1 puntos entre tres habitantes. Quien junte más puntos sale de la casa.</p>'}
@@ -1236,7 +1236,7 @@ function pintarAccion() {
     const emp = g.empatados.map(porId).filter(Boolean);
     if (yo.id === g.lider_id) {
       h = `<div class="formato rosa"><div class="folio"><span>Empate</span><span>Solo para el líder</span></div>
-        <h2>Tú decides quién sale</h2><p>Estos habitantes quedaron empatados. Elige a quién se le cobra:</p>
+        <h2>Tú decides quién sale</h2><p>Estos habitantes quedaron empatados. Elige a quién eliminamos:</p>
         <div style="display:grid;gap:10px;margin-top:10px">${emp.map(j => `<button class="btn sec" data-decide="${j.id}" style="display:flex;align-items:center;gap:10px;justify-content:flex-start">${avatar(j, 36)} ${esc(j.nombre)}</button>`).join('')}</div></div>`;
     } else {
       h = `<div class="formato rosa"><div class="folio"><span>Empate</span><span>Semana ${g.semana}</span></div>
@@ -1468,10 +1468,10 @@ const TUTO = [
       ${[3, 2, 1].map((n, i) => `<g transform="translate(56,${24 + i * 38})"><rect width="148" height="30" rx="8" fill="#FFFDF6" stroke="#1B1440" stroke-width="2" stroke-dasharray="${i === 0 ? '0' : '5 4'}"/>
         <text x="16" y="23" text-anchor="middle" font-family="Anton,Impact" font-size="22" fill="#D7263D">${n}</text>
         <circle cx="48" cy="15" r="10" fill="${['#7A3FB5', '#0F7C8C', '#B5541F'][i]}"/><rect x="66" y="10" width="${60 - i * 12}" height="10" rx="5" fill="#C9C3EE"/></g>`).join('')}</svg>` },
-  { t: 'La gala: ¡te vamos a cobrar!', p: 'Sale quien junte más puntos. Si es el líder, se salva y sale el siguiente; si hay empate, decide el líder. En la gala se ven los puntos y los motivos, pero nunca quién votó por quién.',
+  { t: 'La gala de eliminación', p: 'Sale quien junte más puntos. Si es el líder, se salva y sale el siguiente; si hay empate, decide el líder. En la gala se ven los puntos y los motivos, pero nunca quién votó por quién.',
     svg: `<svg viewBox="0 0 260 150"><circle cx="130" cy="72" r="46" fill="#7A3FB5"/><text x="130" y="90" text-anchor="middle" font-family="Anton,Impact" font-size="50" fill="#fff">?</text>
       <g transform="rotate(-14 130 82)"><rect x="34" y="66" width="192" height="36" rx="7" fill="#FFFDF6" stroke="#D7263D" stroke-width="5"/>
-      <text x="130" y="93" text-anchor="middle" font-family="Anton,Impact" font-size="22" fill="#D7263D">¡TE VAMOS A COBRAR!</text></g></svg>` },
+      <text x="130" y="93" text-anchor="middle" font-family="Anton,Impact" font-size="22" fill="#D7263D">¡ELIMINADO!</text></g></svg>` },
 ];
 let pasoTuto = 0;
 function abrirTutorial() { pasoTuto = 0; pintarTutorial(); $('#m-tuto').classList.remove('hidden'); }
@@ -2352,7 +2352,7 @@ async function abrirGala(semana, marcarVista, conTelon = false) {
     await esperar(3500);
 
     E.innerHTML = `<div id="g-salida" style="display:flex;flex-direction:column;align-items:center;gap:6px">
-      <div class="revelado">${avatar(persona(elim.id), 170)}<div class="sello-grande">¡TE VAMOS A COBRAR!</div></div>
+      <div class="revelado">${avatar(persona(elim.id), 170)}<div class="sello-grande">¡ELIMINADO!</div></div>
       <h2 class="display" style="font-size:2.6rem;margin-top:10px">${esc(elim.nombre)}</h2>
       <p style="margin:0">${elim.puntos} puntos en contra</p></div>`;
     SFX.tocar('sello'); setTimeout(() => SFX.tocar('tadan'), 180);
@@ -2369,7 +2369,7 @@ async function abrirGala(semana, marcarVista, conTelon = false) {
   $('#g-saltar').classList.add('hidden');
   const ordenFinal = [...tabla].sort((a, b) => b.puntos - a.puntos || b.publico - a.publico);
   E.style.justifyContent = 'flex-start';
-  E.innerHTML = `<h2 class="display" style="font-size:2rem;color:var(--luz);margin-top:8px">Semana ${r.semana}: tabla de cobro</h2>
+  E.innerHTML = `<h2 class="display" style="font-size:2rem;color:var(--luz);margin-top:8px">Semana ${r.semana}: resultados</h2>
     <p style="margin:0;color:#C9C3EE">Salió <b style="color:#fff">${esc(r.eliminado)}</b>${r.lider ? ` · Líder: <b style="color:#fff">${esc(r.lider)}</b>` : ''}</p>
     <div class="formato tabla-final" style="text-align:left">
       <div class="folio"><span>Habitante</span><span>Puntos · Público</span></div>
