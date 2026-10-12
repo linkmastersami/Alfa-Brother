@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B1440">
 <title>Alfa Brother: Te Vamos a Cobrar</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="iconos/icono-192.png">
+<link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Alfa Brother">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700&family=Special+Elite&display=swap" rel="stylesheet">
@@ -34,7 +41,7 @@ body{min-height:100dvh;background:
 button,input,textarea,select{font:inherit}
 img{display:block}
 .hidden{display:none!important}
-.wrap{max-width:480px;margin:0 auto;padding:16px 16px calc(32px + env(safe-area-inset-bottom))}
+.wrap{max-width:480px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom))}
 h1,h2,h3{margin:0;font-weight:400}
 .display{font-family:Anton,Impact,sans-serif;letter-spacing:.01em;line-height:1}
 .typed{font-family:"Special Elite","Courier New",monospace}
@@ -229,6 +236,14 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--texto);color:#fff;padding:10px 16px;border-radius:999px;z-index:90;font-weight:600;font-size:.92rem;max-width:90vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 
+/* ---------- v3: cabecera compacta con música y sonido ---------- */
+.cabecera{gap:8px}
+.cabecera .logo{width:46px;height:46px}
+.cabecera .t h1{font-size:1.3rem;white-space:nowrap}
+.cabecera .t div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.8rem}
+.cabecera .btn-sonido{width:34px;height:34px;font-size:1rem}
+@media (max-width:420px){ .yo-chip span{display:none} .yo-chip{padding:3px} }
+
 /* ---------- v2: sonido, animaciones, sala de espera ---------- */
 .btn-sonido{appearance:none;border:0;background:var(--noche-2);color:#fff;border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;flex:none;display:grid;place-items:center}
 .btn-sonido.flotante{position:fixed;top:calc(12px + env(safe-area-inset-top));left:12px;z-index:5}
@@ -304,6 +319,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 <!-- ============================ PANTALLA: INICIO -->
 <section id="s-inicio" class="wrap hidden">
   <button class="btn-sonido flotante js-sonido" aria-label="Sonido">🔊</button>
+  <button class="btn-sonido flotante js-musica" aria-label="Música" style="left:58px">🎵</button>
   <div style="margin-top:18px"><svg class="logo js-logo" width="132" height="132" viewBox="0 0 120 120" aria-label="Alfa Brother"></svg></div>
   <h1 class="titulo-inicio display">Alfa Brother</h1>
   <p class="lema">¡Te vamos a cobrar!</p>
@@ -348,6 +364,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
     <div style="margin-top:16px"><button class="btn" type="submit">Registrarme</button></div>
     <p class="ayuda" style="margin-top:10px">Guarda tu PIN: lo necesitas para entrar desde otro celular.</p>
   </form>
+  <div style="text-align:center;margin-top:16px"><button class="link hidden js-instalar" style="color:#C9C3EE">📲 Instalar el juego en mi celular</button></div>
 </section>
 
 <!-- ============================ PANTALLA: LA CASA -->
@@ -355,6 +372,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
   <header class="cabecera">
     <svg class="logo js-logo" width="52" height="52" viewBox="0 0 120 120" aria-label="Alfa Brother"></svg>
     <div class="t"><h1>Alfa Brother</h1><div>¡Te vamos a cobrar!</div></div>
+    <button class="btn-sonido js-musica" aria-label="Música">🎵</button>
     <button class="btn-sonido js-sonido" aria-label="Sonido">🔊</button>
     <div class="yo-chip" id="c-yo"></div>
   </header>
@@ -381,6 +399,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
   </div>
 
   <div class="pie" style="flex-wrap:wrap;gap:4px 16px">
+    <button class="link hidden js-instalar" id="c-instalar">📲 Instalar el juego</button>
     <button class="link" id="c-tuto">Cómo se juega</button>
     <button class="link" id="c-cambiar-foto">Cambiar mi foto</button>
     <button class="link" id="c-frase">Mi frase</button>
@@ -462,6 +481,34 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
       <button class="btn sec" id="t-atras">Atrás</button>
       <button class="btn" id="t-sig">Siguiente</button>
     </div>
+  </div>
+</div>
+
+<!-- ============================ COMPARTIR (respaldo) -->
+<div id="m-compartir" class="modal hidden">
+  <div class="formato">
+    <h2>Compartir el link</h2>
+    <p>Mándalo a quien falte por registrarse.</p>
+    <div style="display:grid;gap:10px;margin-top:12px">
+      <button class="btn" id="cp-whats" style="background:#1E8E5A;box-shadow:0 3px 0 #0F5C38">Enviar por WhatsApp</button>
+      <button class="btn tinta" id="cp-copiar">Copiar el link</button>
+      <button class="btn sec" id="cp-cerrar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ INSTALAR EN IPHONE -->
+<div id="m-ios" class="modal hidden">
+  <div class="formato amarillo">
+    <div class="folio"><span>Instalar el juego</span><span>iPhone</span></div>
+    <h2>Agrégalo a tu inicio</h2>
+    <ol style="padding-left:20px;line-height:1.6">
+      <li>Abre este link en <b>Safari</b>.</li>
+      <li>Toca el botón <b>Compartir</b> <span aria-hidden="true">(el cuadrito con flecha ⬆️)</span>.</li>
+      <li>Elige <b>Agregar a pantalla de inicio</b>.</li>
+      <li>Toca <b>Agregar</b>. ¡Listo! Ábrelo desde el ícono del ojo.</li>
+    </ol>
+    <button class="btn" id="ios-ok" style="margin-top:8px">Entendido</button>
   </div>
 </div>
 
@@ -621,13 +668,78 @@ const SFX = (() => {
     try { sonidos[nombre](...a); } catch (e) { }
   }
   function parar() { if (redobleBus) { try { redobleBus.disconnect(); } catch { } redobleBus = null; } }
-  function pintarBotones() { $$('.js-sonido').forEach(b => { b.textContent = mudo ? '🔇' : '🔊'; b.setAttribute('aria-label', mudo ? 'Activar sonido' : 'Silenciar'); }); }
-  function alternar() { mudo = !mudo; store.set('ab_mudo', mudo ? '1' : '0'); pintarBotones(); if (!mudo) tocar('clic'); else parar(); }
+
+  /* ----- Música de fondo: groove de reality en La menor, 100 bpm -----
+     4 compases (La m – Fa – Do – Sol). Se programa unas décimas de segundo
+     por adelantado para que no se trabe. */
+  let musicaOn = store.get('ab_musica') !== '0';
+  let pausaGala = false, musBus = null, musTimer = null, paso = 0, vuelta = 0, sigT = 0, desbloqueado = false;
+  const SEMI = 60 / 100 / 4;                       // duración de un dieciseisavo
+  const ACORDES = [
+    { bajo: 110.00, notas: [220.00, 261.63, 329.63] },   // La m
+    { bajo: 87.31,  notas: [174.61, 220.00, 261.63] },   // Fa
+    { bajo: 65.41,  notas: [196.00, 261.63, 329.63] },   // Do
+    { bajo: 98.00,  notas: [196.00, 246.94, 293.66] },   // Sol
+  ];
+  const MELODIA = {                                // [compás][paso] = frecuencia
+    0: { 0: 659, 3: 659, 6: 587, 8: 523, 12: 587 },
+    1: { 0: 523, 3: 523, 6: 494, 8: 440 },
+    2: { 0: 523, 3: 523, 6: 587, 8: 659, 12: 784 },
+    3: { 0: 587, 4: 494, 8: 587, 12: 494 },
+  };
+  const BAJO = { 0: 1, 3: 1, 6: 2, 8: 1, 11: 1, 14: 2 };   // 1 = raíz, 2 = octava
+  function programarPaso(i, t) {
+    const compas = Math.floor(i / 16) % 4, s = i % 16, A = ACORDES[compas], d = musBus;
+    if (s === 0 || s === 8) tono({ f: 130, f2: 42, t, d: .2, v: .55, destino: d });                       // bombo
+    if (s === 4 || s === 12) ruido({ t, d: .12, v: .2, filtro: 1900, tipo: 'bandpass', q: .9, destino: d });  // palmada
+    if (s % 2 === 0) ruido({ t, d: .03, v: s % 4 === 2 ? .07 : .04, filtro: 7500, tipo: 'highpass', destino: d }); // hi-hat
+    if (BAJO[s]) tono({ f: A.bajo * BAJO[s], t, d: SEMI * 1.6, tipo: 'triangle', v: .32, destino: d });
+    if (s === 6 || s === 14) A.notas.forEach(f => tono({ f, t, d: .13, tipo: 'square', v: .028, filtro: 1500, destino: d }));
+    if (vuelta % 2 === 1 && MELODIA[compas][s]) tono({ f: MELODIA[compas][s], t, d: .32, tipo: 'triangle', v: .09, destino: d });
+  }
+  function bucle() {
+    const c = ctx;
+    while (sigT < c.currentTime + .2) {
+      programarPaso(paso, Math.max(0, sigT - c.currentTime));
+      sigT += SEMI; paso++;
+      if (paso % 64 === 0) vuelta++;
+    }
+  }
+  function actualizarMusica() {
+    const debe = musicaOn && !mudo && !pausaGala && desbloqueado && !document.hidden;
+    if (debe && !musTimer) {
+      const c = ac(); if (!c) return;
+      musBus = c.createGain(); musBus.gain.value = 0.0001; musBus.connect(c.destination);
+      musBus.gain.exponentialRampToValueAtTime(.45, c.currentTime + 1.5);       // entra suave
+      sigT = c.currentTime + .05; paso = 0; vuelta = 0;
+      musTimer = setInterval(bucle, 40);
+    } else if (!debe && musTimer) {
+      clearInterval(musTimer); musTimer = null;
+      const b = musBus, c = ctx;
+      try { b.gain.cancelScheduledValues(c.currentTime); b.gain.setValueAtTime(b.gain.value, c.currentTime); b.gain.exponentialRampToValueAtTime(.0001, c.currentTime + .4); } catch { }
+      setTimeout(() => { try { b.disconnect(); } catch { } }, 600);
+    }
+  }
+  function pausaParaGala(si) { pausaGala = si; actualizarMusica(); }
+
+  function pintarBotones() {
+    $$('.js-sonido').forEach(b => { b.textContent = mudo ? '🔇' : '🔊'; b.setAttribute('aria-label', mudo ? 'Activar sonido' : 'Silenciar todo'); });
+    $$('.js-musica').forEach(b => { b.style.opacity = musicaOn && !mudo ? 1 : .4; b.setAttribute('aria-label', musicaOn ? 'Apagar música' : 'Prender música'); b.title = musicaOn ? 'Apagar música' : 'Prender música'; });
+  }
+  function alternar() { mudo = !mudo; store.set('ab_mudo', mudo ? '1' : '0'); pintarBotones(); if (!mudo) tocar('clic'); else parar(); actualizarMusica(); }
+  function alternarMusica() {
+    if (mudo) { mudo = false; store.set('ab_mudo', '0'); musicaOn = true; }
+    else musicaOn = !musicaOn;
+    store.set('ab_musica', musicaOn ? '1' : '0'); pintarBotones(); actualizarMusica();
+    toast(musicaOn ? '🎵 Música encendida' : 'Música apagada');
+  }
   // los celulares solo permiten sonido después de que la persona toca la pantalla
-  ['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => ac(), { once: true, capture: true }));
-  return { tocar, parar, alternar, pintarBotones };
+  ['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => { ac(); desbloqueado = true; actualizarMusica(); }, { once: true, capture: true }));
+  document.addEventListener('visibilitychange', actualizarMusica);
+  return { tocar, parar, alternar, alternarMusica, pausaParaGala, pintarBotones };
 })();
 $$('.js-sonido').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); SFX.alternar(); }));
+$$('.js-musica').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); SFX.alternarMusica(); }));
 SFX.pintarBotones();
 // clic en todos los botones principales
 document.addEventListener('click', e => { if (e.target.closest('.btn, .cand, .link, .pestanas button, .adm-tabs button')) SFX.tocar('clic'); }, true);
@@ -1009,11 +1121,13 @@ function pintarSalaEspera() {
   if (g.inicio_at) {
     h += `<div class="formato amarillo"><div class="folio"><span>Aviso de apertura</span><span>Semana 0</span></div>
       <h2 id="sala-titulo">La casa abre en</h2><div class="reloj" id="sala-reloj"></div>
-      <p class="ayuda" style="margin-top:10px">${libres ? `Quedan ${libres} ${libres === 1 ? 'silla libre' : 'sillas libres'}.` : 'Ya están los 16 habitantes.'}</p></div>`;
+      <p class="ayuda" style="margin-top:10px">${libres ? `Quedan ${libres} ${libres === 1 ? 'silla libre' : 'sillas libres'}. ¡Pásale el link a quien falte!` : 'Ya están los 16 habitantes.'}</p>
+      ${libres ? '<button class="btn tinta" data-compartir style="margin-top:6px">📲 Compartir el link</button>' : ''}</div>`;
   } else {
     h += `<div class="formato"><div class="folio"><span>Aviso</span><span>Semana 0</span></div>
       <h2>La casa abre pronto</h2>
       <p>${libres ? `Quedan ${libres} ${libres === 1 ? 'silla libre' : 'sillas libres'}. ¡Pásale el link a quien falte!` : 'Ya están los 16 habitantes. Falta que la producción dé el arranque.'}</p>
+      ${libres ? '<button class="btn tinta" data-compartir style="margin-top:6px">📲 Compartir el link</button>' : ''}
       ${yo.rol === 'espectador' ? '<p><span class="sello">PÚBLICO</span></p>' : ''}</div>`;
   }
 
@@ -1058,8 +1172,52 @@ function conectarSalaEspera() {
     } catch (e) { toast(mensajeError(e)); b.disabled = false; }
   };
   $$('[data-practica]').forEach(x => x.onclick = () => abrirPractica(x.dataset.practica));
+  $$('[data-compartir]').forEach(x => x.onclick = compartirJuego);
   pintarReloj();
 }
+
+/* ---------- instalar como app ---------- */
+let promptInstalar = null;
+const yaInstalado = () => matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches || navigator.standalone === true;
+const esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function pintarInstalar() { $$('.js-instalar').forEach(b => b.classList.toggle('hidden', yaInstalado())); }
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); promptInstalar = e; pintarInstalar(); });
+window.addEventListener('appinstalled', () => { promptInstalar = null; toast('¡Listo! Búscalo en tu pantalla de inicio'); pintarInstalar(); });
+$$('.js-instalar').forEach(b => b.onclick = async () => {
+  if (promptInstalar) {
+    promptInstalar.prompt();
+    const r = await promptInstalar.userChoice.catch(() => null);
+    promptInstalar = null;
+    if (r?.outcome === 'accepted') SFX.tocar('caja');
+  } else if (esIOS) {
+    $('#m-ios').classList.remove('hidden');
+  } else {
+    toast('Abre el menú ⋮ del navegador y elige "Instalar app" o "Agregar a pantalla de inicio"', 5000);
+  }
+});
+$('#ios-ok').onclick = () => $('#m-ios').classList.add('hidden');
+pintarInstalar();
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { });
+
+/* ---------- compartir el link ---------- */
+const LINK_JUEGO = location.origin + location.pathname.replace(/index\.html$/, '');
+const TEXTO_INVITACION = '👁️💵 ¡Entra a Alfa Brother: Te Vamos a Cobrar! El reality de la oficina. Regístrate y toma tu silla antes de que se llenen:';
+async function compartirJuego() {
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Alfa Brother', text: TEXTO_INVITACION, url: LINK_JUEGO }); return; }
+    catch (e) { if (e.name === 'AbortError') return; }
+  }
+  // Respaldo: WhatsApp o copiar
+  $('#m-compartir').classList.remove('hidden');
+}
+function cerrarCompartir() { $('#m-compartir').classList.add('hidden'); }
+$('#cp-whats').onclick = () => { window.open('https://wa.me/?text=' + encodeURIComponent(TEXTO_INVITACION + ' ' + LINK_JUEGO), '_blank'); cerrarCompartir(); };
+$('#cp-copiar').onclick = async () => {
+  try { await navigator.clipboard.writeText(LINK_JUEGO); toast('Link copiado'); }
+  catch { prompt('Copia el link:', LINK_JUEGO); }
+  cerrarCompartir();
+};
+$('#cp-cerrar').onclick = cerrarCompartir;
 
 function pintarReloj() {
   const el = $('#sala-reloj');
@@ -1411,6 +1569,7 @@ async function abrirGala(semana, marcarVista, conTelon = false) {
   if (!r) return;
   if (marcarVista) store.set('ab_gala_' + semana, '1');
   galaAbierta = true; saltarGala = false;
+  SFX.pausaParaGala(true);
   const G = $('#gala'), E = $('#g-escena');
   G.classList.remove('hidden'); document.body.style.overflow = 'hidden';
   E.style.justifyContent = '';
@@ -1507,7 +1666,7 @@ async function abrirGala(semana, marcarVista, conTelon = false) {
   E.scrollTop = 0; G.scrollTop = 0;
   $('#g-cerrar').onclick = () => {
     G.classList.add('hidden'); E.style.justifyContent = ''; document.body.style.overflow = '';
-    galaAbierta = false; refrescar();
+    galaAbierta = false; SFX.pausaParaGala(false); refrescar();
   };
 }
 
