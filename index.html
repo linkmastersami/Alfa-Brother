@@ -444,16 +444,16 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .mm-cuerpo g{transform-box:view-box;transition:transform .2s}
 .mm .pi,.mm .pd{transform-origin:20px 25px}
 .mm .bi,.mm .bd{transform-origin:20px 7px}
-.mm-sombrero{position:absolute;top:calc(var(--u)*1.2);left:50%;transform:translateX(-50%);font-size:calc(var(--u)*4.4);z-index:2;line-height:1}
-.mm-lentes{position:absolute;top:calc(var(--u)*6.6);left:50%;transform:translateX(-50%);font-size:calc(var(--u)*4.2);z-index:2;line-height:1}
-.mm-mano{position:absolute;top:calc(var(--u)*16.2);left:calc(50% + var(--u)*1.6);font-size:calc(var(--u)*3.6);z-index:2;line-height:1;transition:transform .2s}
+.mm-sombrero{position:absolute;top:calc(var(--u)*.4);left:50%;transform:translateX(-50%);font-size:calc(var(--u)*5.6);z-index:2;line-height:1}
+.mm-lentes{position:absolute;top:calc(var(--u)*5.3);left:50%;transform:translateX(-50%);font-size:calc(var(--u)*6.6);z-index:2;line-height:1}
+.mm-mano{position:absolute;top:calc(var(--u)*15.8);left:calc(50% + var(--u)*1.4);font-size:calc(var(--u)*4.4);z-index:2;line-height:1;transition:transform .2s}
 .mm-nom{font-size:.72rem;font-weight:700;margin-top:2px;max-width:calc(var(--u)*15);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--nom,#fff)}
 .mm-burbuja{position:absolute;top:0;right:-4%;transform:scale(0);transform-origin:0 100%;background:#FFFDF6;border-radius:999px;padding:1px 5px;font-size:calc(var(--t)*.46);line-height:1.25;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .18s cubic-bezier(.2,1.6,.4,1);z-index:3;white-space:nowrap}
 .mm-burbuja.on{transform:scale(1)}
 .formato .mm,.adm-caja .mm{--linea-def:#1B1440;--aro:#1B1440;--nom:var(--texto)}
 .mm.festeja{animation:mm-salto .38s ease-in-out 3}
-.mm.festeja .bi{transform:rotate(100deg)}
-.mm.festeja .bd{transform:rotate(-100deg)}
+.mm.festeja .bi{transform:rotate(62deg)}
+.mm.festeja .bd{transform:rotate(-62deg)}
 .mm.triste .mm-cab{transform:translateY(calc(var(--u)*.8)) rotate(-10deg)}
 .mm.triste .bi{transform:rotate(-38deg)}
 .mm.triste .bd{transform:rotate(38deg)}
@@ -471,16 +471,15 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 /* estilo en los monitos de la sala */
 .mono-sombrero,.mono-lentes,.mono-mano{position:absolute;z-index:2;pointer-events:none;line-height:1}
 .mono-sombrero:empty,.mono-lentes:empty,.mono-mano:empty{display:none}
-.mono-sombrero{top:calc(var(--u)*-2.6);font-size:calc(var(--u)*4.4)}
-.mono-lentes{top:calc(var(--u)*2.2);font-size:calc(var(--u)*4.2)}
-.mono-mano{top:calc(var(--u)*10.4);left:calc(50% + var(--u)*1.6);font-size:calc(var(--u)*3.6)}
+.mono-sombrero{top:calc(var(--u)*-3.6);font-size:calc(var(--u)*5.6)}
+.mono-lentes{top:calc(var(--u)*.9);font-size:calc(var(--u)*6.6)}
+.mono-mano{top:calc(var(--u)*10);left:calc(50% + var(--u)*1.4);font-size:calc(var(--u)*4.4)}
 .mono.izq .mono-mano{left:auto;right:calc(50% + var(--u)*1.6)}
-.mono.con-sombrero .mono-corona{top:calc(var(--u)*-6.4)}
-.mono-cuerpo line{stroke:var(--linea,#FFFDF6)}
+.mono.con-sombrero .mono-corona{top:calc(var(--u)*-7.6)}
 .palco .mono-sombrero,.palco .mono-lentes,.palco .mono-mano{display:none}
 .mono-corona{position:absolute;top:calc(var(--u)*-3.2);font-size:calc(var(--u)*3.6);z-index:2;pointer-events:none}
 .mono-cuerpo{width:calc(var(--u)*8);height:calc(var(--u)*10.4);margin-top:calc(var(--u)*-.6);overflow:visible}
-.mono-cuerpo line{stroke:#FFFDF6;stroke-width:3.4;stroke-linecap:round}
+.mono-cuerpo line{stroke:var(--linea,#FFFDF6);stroke-width:3.4;stroke-linecap:round}
 .mono-cuerpo g{transform-box:view-box}
 .mono-cuerpo .pi,.mono-cuerpo .pd{transform-origin:20px 25px}
 .mono-cuerpo .bi,.mono-cuerpo .bd{transform-origin:20px 7px}
