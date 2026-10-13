@@ -1,8 +1,8 @@
 // Service worker de Alfa Brother.
 // Siempre intenta traer la versión más nueva de internet; la copia guardada
 // solo se usa si no hay conexión. Así las actualizaciones llegan de inmediato.
-const CACHE = 'alfa-brother-v3';
-const BASICOS = ['./', './index.html', './manifest.webmanifest', './iconos/icono-192.png'];
+const CACHE = 'alfa-brother-v4';
+const BASICOS = ['./', './index.html', './supabase.js?v=2.117.2', './manifest.webmanifest', './iconos/icono-192.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(BASICOS)).catch(() => {}));
