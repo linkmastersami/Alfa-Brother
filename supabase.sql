@@ -260,6 +260,14 @@ create table if not exists public.push_produccion (
   creado   timestamptz not null default now()
 );
 
+-- v12: avisos de la producción guardados (botón de notificaciones en la casa)
+create table if not exists public.anuncios (
+  id     bigint generated always as identity primary key,
+  titulo text not null check (char_length(titulo) between 2 and 60),
+  cuerpo text check (char_length(cuerpo) <= 160),
+  creado timestamptz not null default now()
+);
+
 -- Predicción secreta: quién gana y quién sale primero
 create table if not exists public.predicciones (
   jugador_id  uuid primary key references public.jugadores(id) on delete cascade,
@@ -282,7 +290,7 @@ do $$
 declare t text;
 begin
   foreach t in array array['config','jugadores','sesiones','trivia','intentos','votos','historial','admins','predicciones','chismes','push_subs','push_ajustes',
-                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda','push_produccion'] loop
+                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda','push_produccion','anuncios'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists admin_todo on public.%I', t);
     execute format('create policy admin_todo on public.%I for all to authenticated using (public.es_admin()) with check (public.es_admin())', t);
@@ -1268,6 +1276,7 @@ begin
   if char_length(btrim(coalesce(p_titulo, ''))) < 2 or char_length(p_titulo) > 60 or char_length(coalesce(p_cuerpo, '')) > 160 then
     raise exception 'AVISO_INVALIDO';
   end if;
+  insert into public.anuncios (titulo, cuerpo) values (btrim(p_titulo), nullif(btrim(coalesce(p_cuerpo, '')), ''));
   perform public._avisar(btrim(p_titulo), btrim(coalesce(p_cuerpo, '')));
   return (select count(*) from public.push_subs);
 end $$;
@@ -1764,6 +1773,8 @@ begin
           'resultado', case when e.liquidada then e.resultado end) order by e.cierra), '[]'::jsonb)
         from public.encuestas e where e.abre <= now() and e.cierra > now() - interval '24 hours'),
     'proxima_encuesta', (select min(abre) from public.encuestas where abre > now()),
+    'anuncios', (select coalesce(jsonb_agg(jsonb_build_object('id', a.id, 'titulo', a.titulo, 'cuerpo', a.cuerpo, 'creado', a.creado) order by a.id desc), '[]'::jsonb)
+        from (select * from public.anuncios order by id desc limit 30) a),
     'misiones', (select coalesce(jsonb_agg(jsonb_build_object('n', m.n, 'texto', m.texto, 'objetivo_id', m.objetivo_id, 'codigo', m.codigo,
           'cumplida', m.cumplida is not null) order by m.n), '[]'::jsonb)
         from public.misiones m where m.semana = c.semana and m.jugador_id = p_yo),

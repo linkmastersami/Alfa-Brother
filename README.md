@@ -147,12 +147,13 @@ Versión 8 (avisos de producción): avisos solo para ti de votos, chismes, regis
 Versión 9 (misiones): 5 misiones por semana para todos los habitantes, en la casa o eliminados.
 Versión 10 (tienda): precios nuevos, más artículos, mascotas y efectos.
 Versión 11: saldo inicial de $2,000, bono diario de $200 y práctica del día de $100.
+Versión 12: los avisos de la producción se guardan en el botón 🔔 de la casa.
 
 ---
 
 ## 7. Avisos al celular
 
-El juego manda notificaciones cuando empieza la prueba, se nombra líder, abre la votación, hay empate (solo al líder), empieza la gala y hay ganador. Una hora antes de que cierre la votación le recuerda a quien no ha votado. Desde el panel (**Juego** → **Avisos al celular**) también puedes mandar un aviso a todos.
+El juego manda notificaciones cuando empieza la prueba, se nombra líder, abre la votación, hay empate (solo al líder), empieza la gala y hay ganador. Una hora antes de que cierre la votación le recuerda a quien no ha votado. Desde el panel (**Juego** → **Avisos al celular**) también puedes mandar un aviso a todos. Ese aviso también se guarda en el botón 🔔 de la casa, y el último sale arriba de **Habitantes** hasta que cada quien toque **Aceptar**. Desde el mismo lugar puedes borrar avisos viejos.
 
 Se configura una sola vez:
 

@@ -470,6 +470,19 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 @keyframes mascota{from{transform:translateY(0)}to{transform:translateY(calc(var(--u)*-1.2))}}
 .mono.arcoiris .mono-cuerpo,.mm.arcoiris .mm-cuerpo{animation:arcoiris 2.4s linear infinite}
 @keyframes arcoiris{to{filter:hue-rotate(360deg)}}
+.chip-eco .badge{display:inline-block;min-width:18px;height:18px;border-radius:9px;background:#D7263D;color:#fff;font-size:.72rem;line-height:18px;text-align:center;padding:0 5px;margin-left:4px;vertical-align:middle}
+.anuncio{position:relative;background:#FFD54A;color:var(--texto);border-radius:14px;padding:12px 14px;margin-top:14px;box-shadow:0 4px 0 #C9A21F;animation:entra-conf .4s ease-out both}
+.anuncio .et{font-size:.75rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;opacity:.7}
+.anuncio h3{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.3rem;margin:2px 0}
+.anuncio p{margin:2px 0 0;font-size:.95rem}
+.anuncio small{display:block;margin-top:4px;opacity:.7;font-size:.78rem}
+.anuncio .btn{margin-top:10px}
+.noti{border-top:1px dashed #D9D2B8;padding:10px 0}
+.noti:first-of-type{border-top:0}
+.noti b{display:block;font-size:1rem}
+.noti p{margin:2px 0;font-size:.92rem}
+.noti small{color:var(--suave);font-size:.78rem}
+.noti.nueva b::after{content:" • nuevo";color:#D7263D;font-size:.75rem;font-weight:800}
 /* monito reutilizable */
 .mm{--u:calc(var(--t)/8.4);position:relative;display:inline-flex;flex-direction:column;align-items:center;width:calc(var(--u)*13);padding-top:calc(var(--u)*4.4);flex:none}
 .mm-cab{position:relative;z-index:1;width:var(--t);height:var(--t);border-radius:50%;overflow:hidden;display:grid;place-items:center;font-family:Anton,Impact,sans-serif;color:#fff;font-size:calc(var(--t)*.5);box-shadow:0 0 0 2px var(--aro,#FFFDF6);flex:none;transition:transform .25s}
@@ -728,11 +741,13 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
   <div class="barra-eco">
     <button class="chip-eco dinero" id="c-billetes">💵 <b>$0</b></button>
     <button class="chip-eco" id="c-tienda">🛍️ Tienda</button>
+    <button class="chip-eco" id="c-notis" aria-label="Notificaciones">🔔<span class="badge hidden" id="c-notis-n"></span></button>
     <button class="chip-eco hidden" id="c-mision-chip">🕵️ Mi misión</button>
   </div>
   <div id="c-accion"></div>
   <div id="c-avisos" class="hidden"></div>
 
+  <div id="c-anuncio"></div>
   <div class="seccion-t"><span>Habitantes</span><small id="c-cuenta"></small></div>
   <div id="c-sala-box">
     <div class="sala" id="sala">
@@ -948,6 +963,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 </div>
 
 <!-- ============================ BILLETES, APUESTAS, MISIONES Y TIENDA -->
+<div id="m-notis" class="modal hidden"><div class="formato" id="no-caja"></div></div>
 <div id="m-billetes" class="modal hidden"><div class="formato amarillo" id="bi-caja"></div></div>
 <div id="m-apuesta" class="modal hidden"><div class="formato amarillo" id="ap-caja"></div></div>
 <div id="m-tienda" class="modal hidden"><div class="formato" id="ti-caja"></div></div>
@@ -1533,7 +1549,7 @@ function cerrarSesion() {
   if (token) { const t = token; AVISOS.olvidar(t).finally(() => rpc('salir', { p_token: t }).catch(() => { })); }
   SALA.desconectar();
   token = null; est = null; predSel = null; store.del('ab_token');
-  saldoVisto = null; pagosVistos = null; misionCumplidaVista = null; misionVisible = false;
+  saldoVisto = null; pagosVistos = null; misionCumplidaVista = null; misionVisible = false; anuncioAvisado = null;
   mostrarInicio();
 }
 
@@ -2696,7 +2712,40 @@ function revisarEconomia() {
   store.set('ab_pagos_' + est.yo.id, JSON.stringify([...vistos].slice(-60)));
 }
 
+/* ---------- avisos de la producción guardados ---------- */
+const claveAnuncio = () => 'ab_anuncio_' + est.yo.id;
+const anuncioVisto = () => +(store.get(claveAnuncio()) || 0);
+const fechaCorta = t => new Date(t).toLocaleString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+let anuncioAvisado = null;
+function pintarAnuncios() {
+  const lista = est.anuncios || [], visto = anuncioVisto();
+  const nuevos = lista.filter(a => a.id > visto).length;
+  $('#c-notis-n').textContent = nuevos; $('#c-notis-n').classList.toggle('hidden', !nuevos);
+  const ult = lista[0];
+  // si llega uno nuevo con el juego abierto, suena
+  if (ult && anuncioAvisado !== null && ult.id > anuncioAvisado && ult.id > visto) { SFX.tocar('timbre'); toast(ult.titulo, 3500); }
+  anuncioAvisado = ult ? ult.id : 0;
+  $('#c-anuncio').innerHTML = ult && ult.id > visto ? `<div class="anuncio"><div class="et">📢 Aviso de la producción</div>
+      <h3>${esc(ult.titulo)}</h3>${ult.cuerpo ? `<p>${esc(ult.cuerpo)}</p>` : ''}<small>${esc(fechaCorta(ult.creado))}</small>
+      <button class="btn chico" id="an-ok">Aceptar</button></div>` : '';
+  $('#an-ok')?.addEventListener('click', () => { store.set(claveAnuncio(), String(ult.id)); SFX.tocar('clic'); pintarAnuncios(); });
+}
+function abrirNotis() {
+  const lista = est.anuncios || [], visto = anuncioVisto();
+  $('#no-caja').innerHTML = `<div class="folio"><span>Notificaciones</span><span>${lista.length} ${lista.length === 1 ? 'aviso' : 'avisos'}</span></div>
+    <h2>Avisos de la producción</h2>
+    ${lista.map(a => `<div class="noti ${a.id > visto ? 'nueva' : ''}"><b>${esc(a.titulo)}</b>${a.cuerpo ? `<p>${esc(a.cuerpo)}</p>` : ''}<small>${esc(fechaCorta(a.creado))}</small></div>`).join('')
+      || '<p class="ayuda">Todavía no hay avisos. Aquí se guardan los que mande la producción.</p>'}
+    <button class="btn sec" id="no-cerrar" style="margin-top:14px">Cerrar</button>`;
+  $('#no-cerrar').onclick = () => $('#m-notis').classList.add('hidden');
+  $('#m-notis').classList.remove('hidden');
+  if (lista[0]) store.set(claveAnuncio(), String(lista[0].id));     // ya los vio todos
+  pintarAnuncios();
+}
+$('#c-notis').onclick = abrirNotis;
+
 function pintarEconomia() {
+  pintarAnuncios();
   $('#c-billetes').innerHTML = `💵 <b>${fmt$(est.billetes)}</b>`;
   const mias = est.misiones || [], hechas = mias.filter(x => x.cumplida).length;
   $('#c-mision-chip').classList.toggle('hidden', !mias.length);
@@ -3909,6 +3958,7 @@ async function adminJuego(C) {
   const [subs, aj, prod, miEndpoint] = await Promise.all([q(sb.from('push_subs').select('jugador_id')), q(sb.from('push_ajustes').select('vapid_publica')),
     q(sb.from('push_produccion').select('endpoint')).catch(() => []), AVISOS.endpoint()]);
   const soyProd = miEndpoint && prod.some(x => x.endpoint === miEndpoint);
+  const anunc = await q(sb.from('anuncios').select('*').order('id', { ascending: false })).catch(() => []);
   const conAvisos = new Set(subs.map(x => x.jugador_id)).size;
   h += `<div class="adm-caja"><h3>Avisos al celular</h3>
     ${aj[0]?.vapid_publica
@@ -3922,9 +3972,12 @@ async function adminJuego(C) {
         : '<button class="btn chico" id="av-prod-si">Recibirlos en este celular</button>'}
     </div>
     <label class="campo" for="av-titulo">Mandar un aviso a todos</label>
+    <p class="ayuda" style="margin:0 0 6px">Además del aviso al celular, se guarda en el botón 🔔 de la casa y el último sale arriba de "Habitantes" hasta que cada quien toque Aceptar.</p>
     <input class="in" id="av-titulo" maxlength="60" placeholder="Título, p. ej. 📢 Mañana es la gala">
     <textarea class="in" id="av-cuerpo" maxlength="160" rows="2" placeholder="Mensaje (opcional)" style="margin-top:8px"></textarea>
-    <div class="adm-acciones"><button class="btn chico" id="av-mandar">Mandar aviso</button></div></div>`;
+    <div class="adm-acciones"><button class="btn chico" id="av-mandar">Mandar aviso</button></div>
+    ${anunc.length ? `<h3 style="margin-top:14px;font-size:1rem">Avisos enviados</h3>${anunc.map(a => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b style="white-space:normal">${esc(a.titulo)}</b>
+      <small style="white-space:normal">${esc(a.cuerpo || '')}${a.cuerpo ? ' · ' : ''}${esc(fechaCorta(a.creado))}</small></div><button class="mini" data-anun-del="${a.id}">Borrar</button></div>`).join('')}` : ''}</div>`;
   h += `<div class="adm-caja"><h3>Reiniciar</h3><p class="ayuda">Borra votos, pruebas y galas, y regresa a la semana 0. Los jugadores registrados se quedan.</p>
     <div class="adm-acciones"><button class="btn sec chico" id="ad-reiniciar">Reiniciar juego</button></div></div>`;
   C.innerHTML = h;
@@ -3957,12 +4010,16 @@ async function adminJuego(C) {
   $('#ad-revelar')?.addEventListener('click', () => { if (confirm('¿Revelar la gala en todos los celulares?')) accion('admin_revelar', {}, '¡Gala revelada!'); });
   $('#av-prod-si')?.addEventListener('click', () => accion('admin_push_produccion', { p_endpoint: miEndpoint, p_activar: true }, '🎬 Listo: aquí te llegarán los avisos de producción'));
   $('#av-prod-no')?.addEventListener('click', () => accion('admin_push_produccion', { p_endpoint: miEndpoint, p_activar: false }, 'Ya no recibirás avisos de producción aquí'));
+  $$('[data-anun-del]').forEach(b => b.onclick = async () => {
+    if (!confirm('¿Borrar este aviso? Ya no se verá en la casa.')) return;
+    try { await q(sb.from('anuncios').delete().eq('id', b.dataset.anunDel)); toast('Aviso borrado'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
+  });
   $('#av-mandar')?.addEventListener('click', async () => {
     const t = $('#av-titulo').value.trim(), c = $('#av-cuerpo').value.trim();
     if (t.length < 2) return toast('Escribe un título');
     if (!confirm(`¿Mandar "${t}" a todos los celulares con avisos?`)) return;
     const n = await accion('admin_aviso', { p_titulo: t, p_cuerpo: c });
-    if (n !== undefined) toast(n ? `Aviso enviado a ${n} ${n === 1 ? 'celular' : 'celulares'}` : 'Nadie tiene los avisos activados todavía', 3500);
+    if (n !== undefined) { toast(n ? `Aviso enviado a ${n} ${n === 1 ? 'celular' : 'celulares'} y guardado en la casa` : 'Aviso guardado en la casa (nadie tiene avisos al celular activados)', 3500); $('#av-titulo').value = ''; $('#av-cuerpo').value = ''; }
   });
   $('#ad-reiniciar')?.addEventListener('click', () => {
     if (prompt('Escribe REINICIAR para borrar votos, pruebas y galas') === 'REINICIAR') accion('admin_reiniciar_juego', {}, 'Juego reiniciado');
