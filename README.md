@@ -90,6 +90,7 @@ Todos (habitantes, eliminados y público) empiezan con **$2,000 Billetes Alfa** 
 - **Encuesta del día:** la producción la programa; todos votan en secreto y pueden apostar qué opción gana.
 - **Misiones secretas:** para todos los habitantes, sigan en la casa o estén eliminados (el público no participa). Al empezar cada semana cada habitante recibe 5 misiones, cada una sobre otro habitante distinto (por ejemplo, *Haz que Karla diga "pagaré"*). Todos ven en la casa cuántas lleva cada quien. Cuando la cumples, le enseñas tu código QR a esa persona y ella lo escanea desde su juego (**📷 Escanear código de misión**); solo el objetivo puede confirmarla.
 - **Récords de la casa:** los mejores puntajes de las prácticas de memoria y adeudo.
+- **Chat de la casa:** botón flotante 💬 abajo a la derecha, solo para habitantes (en la casa y eliminados; el público no lo ve). Escribe **@** para etiquetar a alguien: le llega un aviso. Desde **Extras** puedes leer y borrar mensajes.
 - **Tienda del monito:** sombreros, lentes, color del cuerpo (hasta arcoíris), algo en la mano, mascotas que caminan contigo y efectos que flotan alrededor. Precios de $400 a $8,000. Se ve en la casa, en los minijuegos y en la votación.
 
 ---
@@ -148,6 +149,7 @@ Versión 9 (misiones): 5 misiones por semana para todos los habitantes, en la ca
 Versión 10 (tienda): precios nuevos, más artículos, mascotas y efectos.
 Versión 11: saldo inicial de $2,000, bono diario de $200 y práctica del día de $100.
 Versión 12: los avisos de la producción se guardan en el botón 🔔 de la casa.
+Versión 13: chat de la casa para los habitantes, con menciones.
 
 ---
 

@@ -483,6 +483,34 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .noti p{margin:2px 0;font-size:.92rem}
 .noti small{color:var(--suave);font-size:.78rem}
 .noti.nueva b::after{content:" • nuevo";color:#D7263D;font-size:.75rem;font-weight:800}
+.chat-flota{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:55;width:58px;height:58px;border-radius:50%;border:0;background:#FFD54A;font-size:1.7rem;box-shadow:0 6px 16px rgba(0,0,0,.45);cursor:pointer;display:grid;place-items:center}
+.chat-flota .badge{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;border-radius:11px;background:#D7263D;color:#fff;font-size:.78rem;font-weight:800;line-height:22px;padding:0 6px}
+.chat-flota .badge.menc{background:#2337A8}
+#m-chat.modal{padding:0;place-items:stretch;overflow:hidden;background:rgba(10,6,30,.9)}
+.chat-caja{display:flex;flex-direction:column;height:100%;width:100%;max-width:560px;margin:0 auto;background:#1B1440;color:#fff}
+.chat-cab{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:#2A2160;border-bottom:1px solid #4A3AA8}
+.chat-cab b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.3rem;display:block}
+.chat-cab small{color:#A9A3D6;font-size:.78rem}
+.chat-lista{flex:1;overflow-y:auto;padding:10px 12px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.chat-vacio{text-align:center;color:#A9A3D6;margin-top:30%}
+.cm{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
+.cm.seguido{margin-top:3px}
+.cm-av{width:28px;flex:none}
+.cm-b{max-width:78%;background:#2A2160;border-radius:14px 14px 14px 4px;padding:7px 10px}
+.cm-b b{display:block;font-size:.8rem;color:var(--luz)}
+.cm-b b em{font-style:normal;color:#A9A3D6;font-weight:500}
+.cm-b p{margin:2px 0 0;font-size:.95rem;line-height:1.35;word-wrap:break-word;overflow-wrap:anywhere}
+.cm-b small{display:block;text-align:right;color:#8E88B5;font-size:.68rem;margin-top:2px}
+.cm.mio{justify-content:flex-end}
+.cm.mio .cm-b{background:#3F55D6;border-radius:14px 14px 4px 14px}
+.cm.menc .cm-b{box-shadow:0 0 0 2px var(--luz)}
+.arroba{color:#9FD3FF;font-weight:700}
+.arroba.yo{color:#1B1440;background:var(--luz);border-radius:4px;padding:0 3px}
+.chat-sug{display:flex;gap:6px;overflow-x:auto;padding:8px 10px;background:#2A2160;border-top:1px solid #4A3AA8;scrollbar-width:none}
+.chat-sug button{flex:none;display:flex;align-items:center;gap:6px;border:0;border-radius:999px;background:#fff;color:var(--texto);font-weight:700;padding:3px 10px 3px 3px;cursor:pointer}
+.chat-barra{display:flex;gap:8px;align-items:flex-end;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:#2A2160;border-top:1px solid #4A3AA8}
+.chat-barra textarea{flex:1;resize:none;border:0;border-radius:18px;padding:10px 14px;font:inherit;font-size:16px;line-height:1.3;max-height:110px;background:#fff;color:var(--texto)}
+.chat-barra .btn{width:46px;height:44px;padding:0;font-size:1.2rem;border-radius:50%}
 /* monito reutilizable */
 .mm{--u:calc(var(--t)/8.4);position:relative;display:inline-flex;flex-direction:column;align-items:center;width:calc(var(--u)*13);padding-top:calc(var(--u)*4.4);flex:none}
 .mm-cab{position:relative;z-index:1;width:var(--t);height:var(--t);border-radius:50%;overflow:hidden;display:grid;place-items:center;font-family:Anton,Impact,sans-serif;color:#fff;font-size:calc(var(--t)*.5);box-shadow:0 0 0 2px var(--aro,#FFFDF6);flex:none;transition:transform .25s}
@@ -962,6 +990,20 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
   <div class="formato ficha" id="ficha-caja"></div>
 </div>
 
+<!-- ============================ CHAT DE LA CASA -->
+<button class="chat-flota hidden" id="chat-btn" aria-label="Chat de la casa">💬<span class="badge hidden" id="chat-n"></span></button>
+<div id="m-chat" class="modal hidden">
+  <div class="chat-caja">
+    <div class="chat-cab"><div><b>💬 Chat de la casa</b><small>Solo habitantes · el público no lo ve</small></div><button class="cerrar-x" id="chat-cerrar" aria-label="Cerrar">×</button></div>
+    <div class="chat-lista" id="chat-lista"></div>
+    <div class="chat-sug hidden" id="chat-sug"></div>
+    <form class="chat-barra" id="chat-form" autocomplete="off">
+      <textarea id="chat-in" rows="1" maxlength="300" placeholder="Escribe… usa @ para etiquetar" enterkeyhint="send"></textarea>
+      <button class="btn chico" type="submit" aria-label="Enviar">➤</button>
+    </form>
+  </div>
+</div>
+
 <!-- ============================ BILLETES, APUESTAS, MISIONES Y TIENDA -->
 <div id="m-notis" class="modal hidden"><div class="formato" id="no-caja"></div></div>
 <div id="m-billetes" class="modal hidden"><div class="formato amarillo" id="bi-caja"></div></div>
@@ -1054,6 +1096,9 @@ const ERRORES = {
   APUESTA_MAXIMA: 'La apuesta máxima es de $5,000.',
   APUESTAS_CERRADAS: 'Las apuestas ya cerraron.',
   OPCION_INVALIDA: 'Esa opción no es válida.',
+  SOLO_HABITANTES: 'El chat es solo para los habitantes.',
+  MENSAJE_INVALIDO: 'El mensaje debe tener de 1 a 300 letras.',
+  CHAT_RAPIDO: 'Más despacio 😅',
   ES_LIDER: 'El líder no puede salir esta semana: elige a otra persona.',
   ENCUESTA_CERRADA: 'La encuesta ya cerró.',
   CODIGO_INVALIDO: 'Ese código no existe. Revisa que esté bien escrito.',
@@ -1365,6 +1410,7 @@ let galaAbierta = false;
 function mostrar(id) {
   ['s-config', 's-inicio', 's-casa', 's-votar', 's-prueba'].forEach(s => $('#' + s).classList.toggle('hidden', s !== id));
   pantalla = id; window.scrollTo(0, 0);
+  try { CHAT.boton(); } catch { }
   document.body.classList.toggle('en-confesionario', id === 's-votar');
   SFX.ambiente(id === 's-votar' ? 'tension' : 'casa');
 }
@@ -1550,6 +1596,7 @@ function cerrarSesion() {
   SALA.desconectar();
   token = null; est = null; predSel = null; store.del('ab_token');
   saldoVisto = null; pagosVistos = null; misionCumplidaVista = null; misionVisible = false; anuncioAvisado = null;
+  CHAT.reiniciar(); CHAT.cerrar(); $('#chat-btn').classList.add('hidden');
   mostrarInicio();
 }
 
@@ -2550,6 +2597,7 @@ const SALA = (() => {
     else if (m.tipo === 'auto' && a) a.ctrl = null;      // volvió a pasear solo
     else if (m.tipo === 'emo') { burbuja(m.id, m.e); saludar(m.id); }
     else if (m.tipo === 'ppt') jugarPPT(m.a, m.b, m.ja, m.jb);
+    else if (m.tipo === 'chat') CHAT.cargar();
     else if (m.tipo === 'reto') {
       const B = actores.get(m.b), A = actores.get(m.a);
       if (B?.enSala) congelar(B, m.x, m.y, Date.now() + Math.min(m.dur || 0, 15000), A ? A.x < m.x : undefined);
@@ -2595,7 +2643,8 @@ const SALA = (() => {
     actores.clear(); programadoK = null;
     pintarVivo();
   }
-  return { sincronizar, conectar, desconectar, miEmoji, enviarEmoji, retar, puedeRetar, soyActor, irAPuerta, irATele, enVivo: () => vivo, despertar };
+  const avisarChat = () => mandar({ tipo: 'chat' });
+  return { sincronizar, conectar, desconectar, miEmoji, enviarEmoji, retar, puedeRetar, soyActor, avisarChat, irAPuerta, irATele, enVivo: () => vivo, despertar };
 })();
 
 /* =====================================================================
@@ -2686,7 +2735,7 @@ function revisarEconomia() {
     flotar(chip, (d > 0 ? '+' : '−') + fmt$(Math.abs(d)), d < 0);
   }
   saldoVisto = est.billetes;
-  if (est.bono) { setTimeout(() => { toast(`💵 +${fmt$(est.bono)} por entrar hoy`, 3200); SFX.tocar('caja'); lluviaBilletes(10); }, 900); }
+  if (est.bono) { const bono = est.bono; setTimeout(() => { toast(`💵 +${fmt$(bono)} por entrar hoy`, 3200); SFX.tocar('caja'); lluviaBilletes(10); }, 900); }
   // misión cumplida (la confirmó la otra persona)
   const mias = est.misiones || [], hechas = mias.filter(x => x.cumplida).length;
   const clave = est.juego.semana + ':' + hechas;
@@ -2746,6 +2795,7 @@ $('#c-notis').onclick = abrirNotis;
 
 function pintarEconomia() {
   pintarAnuncios();
+  CHAT.revisar();
   $('#c-billetes').innerHTML = `💵 <b>${fmt$(est.billetes)}</b>`;
   const mias = est.misiones || [], hechas = mias.filter(x => x.cumplida).length;
   $('#c-mision-chip').classList.toggle('hidden', !mias.length);
@@ -3121,6 +3171,148 @@ function pintarTienda() {
 $('#c-billetes').onclick = abrirBilletes;
 $('#c-tienda').onclick = abrirTienda;
 $('#c-mision-chip').onclick = () => { misionVisible = true; pintarEconomia(); $('#tarjeta-mision')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+
+/* =====================================================================
+   CHAT DE LA CASA (solo habitantes)
+   ===================================================================== */
+const CHAT = (() => {
+  let msgs = [], ultimo = 0, abierto = false, cargando = false, poll = null, primera = true;
+  const puede = () => !!est && est.yo.rol === 'jugador';
+  const claveLeido = () => 'ab_chat_' + est.yo.id;
+  const leido = () => +(store.get(claveLeido()) || 0);
+  const habitantes = () => (est?.jugadores || []).filter(j => j.rol === 'jugador');
+  const sinAcentos = t => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const hora = t => new Date(t).toLocaleString('es-MX', { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+
+  function boton() {
+    const ver = puede() && pantalla === 's-casa' && $('#admin').classList.contains('hidden') && !galaAbierta;
+    $('#chat-btn').classList.toggle('hidden', !ver);
+    if (!puede()) return;
+    const yo = est.yo.id, l = leido();
+    const nuevos = msgs.filter(m => m.id > l && m.de !== yo);
+    const meMencionan = nuevos.some(m => m.menciones.includes(yo));
+    const b = $('#chat-n');
+    b.textContent = meMencionan ? '@' : nuevos.length > 9 ? '9+' : nuevos.length;
+    b.classList.toggle('hidden', !nuevos.length);
+    b.classList.toggle('menc', meMencionan);
+  }
+  async function cargar() {
+    if (!puede() || cargando) return;
+    cargando = true;
+    try {
+      const nuevos = await rpc('chat_leer', { p_token: token, p_desde: ultimo });
+      if (nuevos?.length) {
+        msgs = msgs.concat(nuevos).slice(-150);
+        ultimo = msgs[msgs.length - 1].id;
+        const yo = est.yo.id;
+        if (!primera && !abierto) {
+          const m = nuevos.find(x => x.menciones.includes(yo) && x.de !== yo);
+          if (m) { SFX.tocar('timbre'); toast(`💬 ${porId(m.de)?.nombre || 'Alguien'} te mencionó en el chat`, 3500); }
+          else if (nuevos.some(x => x.de !== yo)) SFX.tocar('clic');
+        }
+        if (abierto) { pintar(); store.set(claveLeido(), String(ultimo)); }
+      }
+      primera = false;
+    } catch { }
+    cargando = false;
+    boton();
+  }
+  // en cada estado: ¿hay mensajes nuevos?
+  function revisar() {
+    if (!puede()) { boton(); return; }
+    if ((est.chat_ultimo || 0) > ultimo || primera) cargar(); else boton();
+  }
+  function textoConMenciones(m) {
+    let t = esc(m.texto);
+    for (const id of m.menciones) {
+      const j = porId(id); if (!j) continue;
+      const n = esc('@' + j.nombre);
+      t = t.split(n).join(`<span class="arroba ${id === est.yo.id ? 'yo' : ''}">${n}</span>`);
+    }
+    return t.replace(/\n/g, '<br>');
+  }
+  function pintar() {
+    const lista = $('#chat-lista'), abajo = lista.scrollHeight - lista.scrollTop - lista.clientHeight < 80;
+    const yo = est.yo.id;
+    lista.innerHTML = msgs.length ? msgs.map((m, i) => {
+      const j = porId(m.de) || { id: m.de, nombre: '?' }, mio = m.de === yo, seguido = i && msgs[i - 1].de === m.de;
+      return `<div class="cm ${mio ? 'mio' : ''} ${m.menciones.includes(yo) ? 'menc' : ''} ${seguido ? 'seguido' : ''}">
+        ${mio ? '' : `<div class="cm-av">${seguido ? '' : avatar(j, 28)}</div>`}
+        <div class="cm-b">${!mio && !seguido ? `<b>${esc(j.nombre)}${j.estado === 'eliminado' ? ' <em>(eliminado)</em>' : ''}</b>` : ''}
+        <p>${textoConMenciones(m)}</p><small>${esc(hora(m.creado))}</small></div></div>`;
+    }).join('') : '<p class="chat-vacio">Todavía no hay mensajes. ¡Rompe el hielo! 👋<br>Escribe <b>@</b> para etiquetar a alguien.</p>';
+    if (abajo || primeraVez) { lista.scrollTop = lista.scrollHeight; primeraVez = false; }
+  }
+  let primeraVez = true;
+  function abrir() {
+    if (!puede()) return;
+    abierto = true; primeraVez = true;
+    $('#m-chat').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    pintar();
+    if (ultimo) store.set(claveLeido(), String(ultimo));
+    boton();
+    cargar();
+    clearInterval(poll); poll = setInterval(cargar, 3000);
+  }
+  function cerrar() {
+    abierto = false; clearInterval(poll);
+    $('#m-chat').classList.add('hidden'); $('#chat-sug').classList.add('hidden');
+    document.body.style.overflow = '';
+    if (ultimo) store.set(claveLeido(), String(ultimo));
+    boton();
+  }
+  // @menciones: sugerencias mientras escribes
+  function tokenArroba() {
+    const ta = $('#chat-in'), antes = ta.value.slice(0, ta.selectionStart);
+    const m = antes.match(/(^|\s)@([^\s@]{0,20})$/);
+    return m ? { q: m[2], ini: antes.length - m[2].length - 1 } : null;
+  }
+  function sugerir() {
+    const t = tokenArroba(), caja = $('#chat-sug');
+    if (!t) { caja.classList.add('hidden'); return; }
+    const q = sinAcentos(t.q);
+    const ops = habitantes().filter(j => j.id !== est.yo.id && sinAcentos(j.nombre).includes(q))
+      .sort((a, b) => sinAcentos(b.nombre).startsWith(q) - sinAcentos(a.nombre).startsWith(q) || a.nombre.localeCompare(b.nombre)).slice(0, 8);
+    if (!ops.length) { caja.classList.add('hidden'); return; }
+    caja.innerHTML = ops.map(j => `<button type="button" data-arroba="${j.id}">${avatar(j, 24)}<span>${esc(j.nombre)}</span></button>`).join('');
+    caja.classList.remove('hidden');
+    $$('[data-arroba]', caja).forEach(b => b.onpointerdown = e => {
+      e.preventDefault();                       // que no se cierre el teclado
+      const j = porId(b.dataset.arroba), ta = $('#chat-in'), t2 = tokenArroba(); if (!j || !t2) return;
+      const fin = ta.selectionStart;
+      ta.value = ta.value.slice(0, t2.ini) + '@' + j.nombre + ' ' + ta.value.slice(fin);
+      const pos = t2.ini + j.nombre.length + 2;
+      ta.setSelectionRange(pos, pos); ta.focus();
+      caja.classList.add('hidden'); crecer();
+    });
+  }
+  function crecer() { const ta = $('#chat-in'); ta.style.height = 'auto'; ta.style.height = Math.min(110, ta.scrollHeight) + 'px'; }
+  async function enviar(e) {
+    e?.preventDefault();
+    const ta = $('#chat-in'), txt = ta.value.trim();
+    if (!txt) return;
+    const menciones = habitantes().filter(j => txt.includes('@' + j.nombre)).map(j => j.id);
+    const btn = $('#chat-form button'); btn.disabled = true;
+    try {
+      await rpc('chat_enviar', { p_token: token, p_texto: txt, p_menciones: menciones });
+      ta.value = ''; crecer(); $('#chat-sug').classList.add('hidden');
+      await cargar();
+      $('#chat-lista').scrollTop = $('#chat-lista').scrollHeight;
+      SALA.avisarChat();
+    } catch (x) { toast(mensajeError(x)); }
+    btn.disabled = false; ta.focus();
+  }
+  function reiniciar() { msgs = []; ultimo = 0; primera = true; abierto = false; clearInterval(poll); }
+  $('#chat-btn').onclick = abrir;
+  $('#chat-cerrar').onclick = cerrar;
+  $('#chat-form').onsubmit = enviar;
+  $('#chat-in').addEventListener('input', () => { sugerir(); crecer(); });
+  $('#chat-in').addEventListener('click', sugerir);
+  $('#chat-in').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !matchMedia('(pointer:coarse)').matches) enviar(e); });
+  $('#chat-in').addEventListener('focus', () => setTimeout(() => { $('#chat-lista').scrollTop = $('#chat-lista').scrollHeight; }, 300));
+  return { revisar, cargar, boton, reiniciar, cerrar };
+})();
 
 /* =====================================================================
    VOTACIÓN 3-2-1
@@ -3638,7 +3830,7 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
   try { r = await rpc('gala', { p_token: token, p_semana: semana }); } catch (e) { toast(mensajeError(e)); return; }
   if (!r) return;
   if (marcarVista) store.set('ab_gala_' + semana, '1');
-  galaAbierta = true; saltarGala = false;
+  galaAbierta = true; saltarGala = false; CHAT.boton();
   SFX.pausaParaGala(true);
   const G = $('#gala'), E = $('#g-escena');
   G.classList.remove('hidden'); document.body.style.overflow = 'hidden';
@@ -3767,7 +3959,7 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
   E.scrollTop = 0; G.scrollTop = 0;
   $('#g-cerrar').onclick = () => {
     G.classList.add('hidden'); E.style.justifyContent = ''; document.body.style.overflow = '';
-    galaAbierta = false; SFX.pausaParaGala(false); refrescar(); SALA.despertar();
+    galaAbierta = false; SFX.pausaParaGala(false); refrescar(); SALA.despertar(); CHAT.boton();
   };
 }
 
@@ -3806,13 +3998,14 @@ const nombreDe = id => adm.jug.find(j => j.id === id)?.nombre || '—';
 function abrirAdmin() {
   $('#admin').classList.remove('hidden'); document.body.style.overflow = 'hidden';
   $$('.emoji-vuela, .flota').forEach(x => x.remove());      // nada de la casa flotando sobre el panel
+  CHAT.boton();
   cargarAdmin();
   clearInterval(adm.timer);
   adm.timer = setInterval(() => { if (['juego', 'votos', 'pruebas'].includes(adm.tab) && !document.hidden) cargarAdmin(true); }, 6000);
 }
 function cerrarAdmin() {
   $('#admin').classList.add('hidden'); document.body.style.overflow = '';
-  clearInterval(adm.timer); refrescar(); SALA.despertar();
+  clearInterval(adm.timer); refrescar(); SALA.despertar(); CHAT.boton();
 }
 $('#a-cerrar').onclick = cerrarAdmin;
 $('#a-logout').onclick = async () => { await sb.auth.signOut(); cerrarAdmin(); };
@@ -4150,6 +4343,7 @@ async function adminExtras(C) {
     q(sb.from('misiones').select('*').eq('semana', c.semana)),
     q(sb.from('misiones_banco').select('*').order('id')),
   ]);
+  const chatMsgs = await q(sb.from('chat').select('*').order('id', { ascending: false })).then(x => x.slice(0, 40)).catch(() => []);
   const ahora = Date.now();
   const estadoEnc = e => +new Date(e.abre) > ahora ? `Programada: abre ${fmtFecha(e.abre)}` : +new Date(e.cierra) > ahora ? `Abierta hasta ${fmtFecha(e.cierra)}` : 'Cerrada';
   const ricos = [...adm.jug].sort((a, b) => (b.billetes ?? 0) - (a.billetes ?? 0));
@@ -4188,6 +4382,10 @@ async function adminExtras(C) {
       ${banco.map(b => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b style="white-space:normal;font-weight:600;${b.activa ? '' : 'opacity:.5'}">${esc(b.texto)}</b></div>
         <div style="display:flex;flex-direction:column;gap:4px"><button class="mini" type="button" data-mb-act="${b.id}" data-val="${!b.activa}">${b.activa ? '✅ Activa' : 'Activar'}</button>
         <button class="mini" type="button" data-mb-edit="${b.id}">Editar</button><button class="mini" type="button" data-mb-del="${b.id}">Borrar</button></div></div>`).join('')}</form>
+    <div class="adm-caja"><h3>Chat de la casa</h3>
+      <p class="ayuda">Lo ven solo los habitantes. Aquí puedes leer los últimos mensajes y borrar alguno ofensivo.</p>
+      ${chatMsgs.map(m => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>${esc(nombreDe(m.jugador_id))}</b>
+        <small style="white-space:normal">${esc(m.texto)} · ${esc(fechaCorta(m.creado))}</small></div><button class="mini" data-chat-del="${m.id}">Borrar</button></div>`).join('') || '<p class="ayuda">Todavía no hay mensajes.</p>'}</div>
     <div class="adm-caja"><h3>Billetes Alfa</h3>
       <p class="ayuda">Puedes dar premios o quitar billetes (por ejemplo, a quien gane un reto en la oficina).</p>
       ${ricos.map(j => `<div class="adm-fila"><div class="info"><b>${esc(j.nombre)}</b><small>${j.rol === 'espectador' ? 'Público' : j.estado === 'eliminado' ? 'Eliminado' : 'En la casa'}</small></div>
@@ -4237,6 +4435,10 @@ async function adminExtras(C) {
     guardarMb(() => q(sb.from('misiones_banco').update({ texto: t.trim() }).eq('id', actual.id)), 'Misión actualizada');
   });
   $$('[data-mb-del]').forEach(b => b.onclick = () => { if (confirm('¿Borrar esta misión del banco?')) guardarMb(() => q(sb.from('misiones_banco').delete().eq('id', b.dataset.mbDel)), 'Borrada'); });
+  $$('[data-chat-del]').forEach(b => b.onclick = async () => {
+    if (!confirm('¿Borrar este mensaje del chat?')) return;
+    try { await q(sb.from('chat').delete().eq('id', b.dataset.chatDel)); toast('Mensaje borrado'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
+  });
   $$('[data-bill]').forEach(b => b.onclick = async () => {
     const m = prompt(`¿Cuántos billetes para ${nombreDe(b.dataset.bill)}? (usa un número negativo para quitar)`, '100');
     if (m === null || !+m) return;

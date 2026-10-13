@@ -268,6 +268,15 @@ create table if not exists public.anuncios (
   creado timestamptz not null default now()
 );
 
+-- v13: chat de la casa (solo habitantes)
+create table if not exists public.chat (
+  id         bigint generated always as identity primary key,
+  jugador_id uuid not null references public.jugadores(id) on delete cascade,
+  texto      text not null check (char_length(texto) between 1 and 300),
+  menciones  uuid[] not null default '{}',
+  creado     timestamptz not null default now()
+);
+
 -- Predicción secreta: quién gana y quién sale primero
 create table if not exists public.predicciones (
   jugador_id  uuid primary key references public.jugadores(id) on delete cascade,
@@ -290,7 +299,7 @@ do $$
 declare t text;
 begin
   foreach t in array array['config','jugadores','sesiones','trivia','intentos','votos','historial','admins','predicciones','chismes','push_subs','push_ajustes',
-                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda','push_produccion','anuncios'] loop
+                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda','push_produccion','anuncios','chat'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists admin_todo on public.%I', t);
     execute format('create policy admin_todo on public.%I for all to authenticated using (public.es_admin()) with check (public.es_admin())', t);
@@ -1282,6 +1291,45 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------
+--  CHAT DE LA CASA (solo habitantes: en la casa y eliminados; el público no)
+-- ---------------------------------------------------------------------
+create or replace function public.chat_leer(p_token uuid, p_desde bigint default 0)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare yo public.jugadores;
+begin
+  yo := public._yo(p_token);
+  if yo.rol <> 'jugador' then raise exception 'SOLO_HABITANTES'; end if;
+  return (select coalesce(jsonb_agg(jsonb_build_object('id', m.id, 'de', m.jugador_id, 'texto', m.texto,
+            'menciones', to_jsonb(m.menciones), 'creado', m.creado) order by m.id), '[]'::jsonb)
+            from (select * from public.chat where id > coalesce(p_desde, 0) order by id desc limit 80) m);
+end $$;
+
+drop function if exists public.chat_enviar(uuid, text, uuid[]);
+create or replace function public.chat_enviar(p_token uuid, p_texto text, p_menciones jsonb default '[]'::jsonb)
+returns bigint language plpgsql security definer set search_path = public as $$
+declare
+  yo public.jugadores;
+  v text := btrim(regexp_replace(coalesce(p_texto, ''), '[\r\n]{3,}', E'\n\n', 'g'));
+  v_men uuid[];
+  v_id bigint;
+begin
+  yo := public._yo(p_token);
+  if yo.rol <> 'jugador' then raise exception 'SOLO_HABITANTES'; end if;
+  if char_length(v) < 1 or char_length(v) > 300 then raise exception 'MENSAJE_INVALIDO'; end if;
+  if exists (select 1 from public.chat where jugador_id = yo.id and creado > now() - interval '1 second') then
+    raise exception 'CHAT_RAPIDO';
+  end if;
+  -- solo se puede mencionar a habitantes, y no a uno mismo
+  select coalesce(array_agg(distinct j.id), '{}') into v_men from public.jugadores j
+   where j.id::text in (select jsonb_array_elements_text(coalesce(p_menciones, '[]'::jsonb))) and j.rol = 'jugador' and j.id <> yo.id;
+  insert into public.chat (jugador_id, texto, menciones) values (yo.id, v, v_men) returning id into v_id;
+  if cardinality(v_men) > 0 then
+    perform public._avisar(format('💬 %s te mencionó en el chat', yo.nombre), left(v, 120), v_men);
+  end if;
+  return v_id;
+end $$;
+
+-- ---------------------------------------------------------------------
 --  BILLETES ALFA
 -- ---------------------------------------------------------------------
 
@@ -1773,6 +1821,7 @@ begin
           'resultado', case when e.liquidada then e.resultado end) order by e.cierra), '[]'::jsonb)
         from public.encuestas e where e.abre <= now() and e.cierra > now() - interval '24 hours'),
     'proxima_encuesta', (select min(abre) from public.encuestas where abre > now()),
+    'chat_ultimo', case when yo.rol = 'jugador' then (select max(id) from public.chat) end,
     'anuncios', (select coalesce(jsonb_agg(jsonb_build_object('id', a.id, 'titulo', a.titulo, 'cuerpo', a.cuerpo, 'creado', a.creado) order by a.id desc), '[]'::jsonb)
         from (select * from public.anuncios order by id desc limit 30) a),
     'misiones', (select coalesce(jsonb_agg(jsonb_build_object('n', m.n, 'texto', m.texto, 'objetivo_id', m.objetivo_id, 'codigo', m.codigo,
