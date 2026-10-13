@@ -74,6 +74,24 @@ Comparte ese link en el grupo de la oficina.
 - **Gala:** se ve el conteo de puntos de cada uno, el eliminado con el sello y los motivos de forma anónima.
 - **Gran final:** cuando quedan 3 (o menos) en la casa ya no hay prueba ni líder: se abre la votación directo. Quien junte **menos** puntos gana; el que sigue queda en segundo y el más votado en tercero. Si hay empate, comparten el lugar (puede haber dos primeros o dos segundos lugares).
 
+### Billetes Alfa y actividades
+
+Todos (habitantes, eliminados y público) empiezan con **$1,000 Billetes Alfa** (no son dinero de verdad). Se ganan así:
+
+| Cómo | Billetes |
+|---|---|
+| Entrar al juego cada día | $100 |
+| Primera práctica del día de cada juego | $50 |
+| Romper un récord de la casa | $200 (una vez al día por juego) |
+| Cumplir la misión secreta | $300, y $50 para quien la confirma |
+| Atinarle a una apuesta | tu parte del pozo |
+
+- **Apuestas:** mientras está la prueba se apuesta quién será el líder; hasta que cierra la votación, quién sale. Lo apostado se junta en un pozo y se reparte entre los que atinaron según cuánto puso cada uno. Si nadie atina, se devuelve todo. En la gran final no hay apuestas de líder ni de eliminado. El líder siempre se decide solo entre quienes siguen en la casa.
+- **Encuesta del día:** la producción la programa; todos votan en secreto y pueden apostar qué opción gana.
+- **Misión secreta:** al empezar cada semana cada quien recibe una misión distinta sobre otra persona (por ejemplo, *Haz que Karla diga "pagaré"*). Todos son objetivo de exactamente una persona. Cuando la cumples, le enseñas tu código QR a esa persona y ella lo escanea desde su juego (**📷 Escanear código de misión**); solo el objetivo puede confirmarla.
+- **Récords de la casa:** los mejores puntajes de las prácticas de memoria y adeudo.
+- **Tienda del monito:** sombreros, lentes, color del cuerpo y algo en la mano. Se ve en la casa, en los minijuegos y en la votación.
+
 ---
 
 ## 4. Tu panel de producción
@@ -93,6 +111,7 @@ Otras pestañas:
 - **Pruebas:** puntajes de la semana.
 - **Trivia:** escribe preguntas con 4 opciones y marca la correcta. Solo salen las **activas**; desactiva las que ya usaste.
 - **Habitantes:** cambiar PIN olvidado, pasar a público, regresar a alguien a la casa, quitar foto o borrar.
+- **Extras 💵:** programar la encuesta del día, ver las misiones de la semana (quién ya cumplió), repartirlas de nuevo, editar el banco de misiones (usa `{nombre}` donde va la persona objetivo) y dar o quitar billetes.
 
 Tú juegas como cualquier otro con tu propio nombre y PIN. Si alguien te ve el celular, cierra el panel con **Cerrar**.
 
@@ -123,6 +142,7 @@ Versión 3 (agenda y el ojo): agrega la agenda automática, la fase de espera, l
 Versión 4 (chismes del público): los jugadores pueden mandarle chismes al ojo.
 Versión 5 (gran final): cuando queda un solo habitante el juego se detiene y la agenda se apaga sola, para que no empiece otra semana.
 Versión 6 (podio y avisos): gran final con 3 sin prueba ni líder, podio por votos, avisos al celular y reloj automático de la agenda.
+Versión 7 (Billetes Alfa): billetes, apuestas, encuesta del día, misiones secretas, récords de la casa y tienda del monito.
 
 ---
 
@@ -164,4 +184,5 @@ Sin conexión en vivo el juego sigue funcionando: todos los monitos caminan solo
 | "Activa al menos una pregunta de trivia" | Ve a **Trivia** y activa preguntas antes de iniciar una semana de trivia. |
 | "Los avisos todavía no están listos" | Falta publicar la función `avisos` o apagar **Verify JWT** (ver sección 7). |
 | Activé los avisos pero no llega ninguno | Revisa en **Database** → **Extensions** que **pg_net** esté encendido y vuelve a ejecutar `supabase.sql`. En **Edge Functions** → `avisos` → **Logs** se ven los errores. |
-| Quiero empezar de cero | **Juego** → **Reiniciar juego** (escribe REINICIAR). Los registrados se quedan. |
+| Quiero empezar de cero | **Juego** → **Reiniciar juego** (escribe REINICIAR). Los registrados se quedan; todos regresan a $1,000 billetes y conservan lo que compraron en la tienda. |
+| La cámara no abre para escanear la misión | El navegador necesita permiso de cámara. Si no lo da, se puede escribir el código de 6 letras. |

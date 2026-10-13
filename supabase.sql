@@ -149,6 +149,94 @@ create table if not exists public.push_ajustes (
   funcion_url   text
 );
 
+-- v7: Billetes Alfa, apuestas, encuesta del día, misiones secretas, récords y tienda
+alter table public.jugadores add column if not exists billetes    int    not null default 1000;
+alter table public.jugadores add column if not exists ultimo_bono date;
+alter table public.jugadores add column if not exists estilo      jsonb  not null default '{}'::jsonb;
+alter table public.jugadores add column if not exists compras     text[] not null default '{}';
+
+-- Cada entrada o salida de billetes
+create table if not exists public.movimientos (
+  id         bigint generated always as identity primary key,
+  jugador_id uuid not null references public.jugadores(id) on delete cascade,
+  monto      int  not null,
+  concepto   text not null,
+  creado     timestamptz not null default now()
+);
+create index if not exists movimientos_jugador on public.movimientos (jugador_id, creado desc);
+
+-- Apuestas con pozo compartido: líder y eliminado de la semana, y encuestas
+create table if not exists public.apuestas (
+  id         bigint generated always as identity primary key,
+  tipo       text   not null check (tipo in ('lider','eliminado','encuesta')),
+  ref        bigint not null,                 -- semana o id de la encuesta
+  jugador_id uuid   not null references public.jugadores(id) on delete cascade,
+  opcion     text   not null,                 -- id del jugador o número de opción
+  monto      int    not null check (monto > 0),
+  pago       int,                             -- null = todavía no se decide
+  creado     timestamptz not null default now(),
+  unique (tipo, ref, jugador_id)
+);
+
+-- Encuesta del día (la producción la programa)
+create table if not exists public.encuestas (
+  id        bigint generated always as identity primary key,
+  pregunta  text  not null check (char_length(pregunta) between 3 and 140),
+  opciones  jsonb not null,                   -- [{"t": "texto", "id": jugador o null}]
+  abre      timestamptz not null default now(),
+  cierra    timestamptz not null,
+  resultado jsonb,                            -- {"conteo": [..], "ganadores": [..]}
+  avisada   boolean not null default false,
+  liquidada boolean not null default false,
+  creado    timestamptz not null default now(),
+  check (cierra > abre)
+);
+create table if not exists public.encuesta_votos (
+  encuesta_id bigint not null references public.encuestas(id) on delete cascade,
+  jugador_id  uuid   not null references public.jugadores(id) on delete cascade,
+  opcion      int    not null,
+  primary key (encuesta_id, jugador_id)
+);
+
+-- Misiones secretas: el banco de ideas ({nombre} = la persona objetivo) y las repartidas
+create table if not exists public.misiones_banco (
+  id     bigint generated always as identity primary key,
+  texto  text not null unique check (char_length(texto) between 5 and 160),
+  activa boolean not null default true,
+  creado timestamptz not null default now()
+);
+create table if not exists public.misiones (
+  id          bigint generated always as identity primary key,
+  semana      int  not null,
+  jugador_id  uuid not null references public.jugadores(id) on delete cascade,
+  objetivo_id uuid not null references public.jugadores(id) on delete cascade,
+  texto       text not null,
+  codigo      text not null unique,
+  cumplida    timestamptz,
+  unique (semana, jugador_id)
+);
+
+-- Récords de las prácticas
+create table if not exists public.practicas (
+  jugador_id    uuid not null references public.jugadores(id) on delete cascade,
+  juego         text not null check (juego in ('memoria','adeudo')),
+  mejor         int  not null default 0,
+  partidas      int  not null default 0,
+  ultimo_premio date,
+  ultimo_record date,
+  primary key (jugador_id, juego)
+);
+
+-- Tienda para personalizar el monito
+create table if not exists public.tienda (
+  id     text primary key,
+  tipo   text not null check (tipo in ('sombrero','lentes','color','mano')),
+  nombre text not null,
+  icono  text not null,                       -- emoji o color
+  precio int  not null check (precio >= 0),
+  orden  int  not null default 0
+);
+
 -- Predicción secreta: quién gana y quién sale primero
 create table if not exists public.predicciones (
   jugador_id  uuid primary key references public.jugadores(id) on delete cascade,
@@ -170,7 +258,8 @@ $$;
 do $$
 declare t text;
 begin
-  foreach t in array array['config','jugadores','sesiones','trivia','intentos','votos','historial','admins','predicciones','chismes','push_subs','push_ajustes'] loop
+  foreach t in array array['config','jugadores','sesiones','trivia','intentos','votos','historial','admins','predicciones','chismes','push_subs','push_ajustes',
+                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists admin_todo on public.%I', t);
     execute format('create policy admin_todo on public.%I for all to authenticated using (public.es_admin()) with check (public.es_admin())', t);
@@ -321,10 +410,17 @@ declare
   c public.config;
   v_activos int;
   v_fin boolean;
+  v_bono int;
 begin
   yo := public._yo(p_token);
   perform public._avanzar_agenda();
   perform public._recordatorios();
+  perform public._encuestas();
+  -- bono por entrar cada día
+  if yo.ultimo_bono is distinct from public._hoy() then
+    update public.jugadores set ultimo_bono = public._hoy() where id = yo.id and ultimo_bono is distinct from public._hoy();
+    if found then perform public._mover(yo.id, 100, 'Bono por entrar hoy'); v_bono := 100; end if;
+  end if;
   select * into c from public.config where id = 1;
   select count(*) into v_activos from public.jugadores where rol = 'jugador' and estado = 'activo';
   v_fin := c.terminado or (c.semana > 0 and v_activos <= 1 and c.gala_revelada);
@@ -351,7 +447,9 @@ begin
       'activos', v_activos),
     'jugadores', (select coalesce(jsonb_agg(jsonb_build_object(
         'id', j.id, 'nombre', j.nombre, 'rol', j.rol, 'estado', j.estado, 'frase', j.frase,
-        'semana_eliminado', j.semana_eliminado, 'foto', j.foto is not null)
+        'semana_eliminado', j.semana_eliminado, 'foto', j.foto is not null,
+        'estilo', (select jsonb_object_agg(t.tipo, t.icono) from public.tienda t
+                    where t.id in (select value from jsonb_each_text(j.estilo))))
         order by j.rol, j.estado, j.nombre), '[]'::jsonb) from public.jugadores j),
     'fotos_firma', (select count(*) filter (where foto is not null) || '-' || count(*) from public.jugadores),
     'mis_votos', (select coalesce(jsonb_agg(jsonb_build_object('id', v.votado_id, 'puntos', v.puntos, 'motivo', v.motivo)
@@ -360,7 +458,7 @@ begin
     'mi_intento', (select jsonb_build_object('puntaje', i.puntaje, 'terminado', i.terminado is not null)
         from public.intentos i where i.semana = c.semana and i.jugador_id = yo.id),
     'galas', (select coalesce(jsonb_agg(h.semana order by h.semana desc), '[]'::jsonb) from public.historial h)
-  );
+  ) || public._economia(yo.id, v_bono);
 end $$;
 
 create or replace function public.fotos(p_token uuid)
@@ -577,6 +675,9 @@ begin
          es_final = v_final, lider_id = null, eliminado_id = null,
          empatados = '{}', gala_revelada = false, actualizado = now()
    where id = 1;
+  -- misiones secretas de la semana nueva
+  begin perform public._repartir_misiones(c.semana + 1, false);
+  exception when others then null; end;
 end $$;
 
 -- Cierra la prueba. Sin p_lider elige al mejor puntaje (empate: quien terminó primero).
@@ -600,6 +701,8 @@ begin
          fase = case when c.ag_semana = c.semana and c.ag_voto_ini > now() then 'espera' else 'votacion' end,
          actualizado = now()
    where id = 1;
+  perform public._liquidar('lider', c.semana, case when v_lider is null then '{}'::text[] else array[v_lider::text] end,
+                           format('líder de la semana %s', c.semana));
   return v_lider;
 end $$;
 
@@ -706,6 +809,7 @@ begin
 
   update public.jugadores set estado = 'eliminado', semana_eliminado = c.semana where id = c.eliminado_id;
   update public.config set gala_revelada = true, actualizado = now() where id = 1;
+  perform public._liquidar('eliminado', c.semana, array[c.eliminado_id::text], format('eliminado de la semana %s', c.semana));
   if (select count(*) from public.jugadores where rol = 'jugador' and estado = 'activo') <= 1 then
     -- fue la gran final: se apaga la agenda para que no empiece otra semana
     update public.config set ag_semana = null, ag_prueba_ini = null, ag_prueba_fin = null,
@@ -916,6 +1020,13 @@ begin
   delete from public.historial where true;
   delete from public.predicciones where true;
   update public.jugadores set estado = 'activo', semana_eliminado = null where true;
+  -- temporada nueva: todos regresan a $1,000 (lo que compraron en la tienda se queda)
+  delete from public.apuestas where true;
+  delete from public.movimientos where true;
+  delete from public.misiones where true;
+  delete from public.practicas where true;
+  delete from public.encuestas where liquidada;
+  update public.jugadores set billetes = 1000, ultimo_bono = null where true;
   update public.config set semana = 0, fase = 'registro', prueba = null, lider_id = null, eliminado_id = null,
          empatados = '{}', gala_revelada = false, es_final = false, terminado = false, aviso_voto = null, actualizado = now() where id = 1;
 end $$;
@@ -1025,6 +1136,7 @@ returns void language plpgsql security definer set search_path = public as $$
 begin
   perform public._avanzar_agenda();
   perform public._recordatorios();
+  perform public._encuestas();
 end $$;
 
 do $$ begin
@@ -1090,6 +1202,448 @@ begin
   return (select count(*) from public.push_subs);
 end $$;
 
+-- ---------------------------------------------------------------------
+--  BILLETES ALFA
+-- ---------------------------------------------------------------------
+
+create or replace function public._hoy()
+returns date language sql stable as $$ select (now() at time zone 'America/Mexico_City')::date $$;
+
+-- Mueve billetes y deja el registro. Nadie puede quedar en negativo.
+create or replace function public._mover(p_jugador uuid, p_monto int, p_concepto text)
+returns int language plpgsql security definer set search_path = public as $$
+declare v int;
+begin
+  if coalesce(p_monto, 0) = 0 then return (select billetes from public.jugadores where id = p_jugador); end if;
+  update public.jugadores set billetes = billetes + p_monto
+   where id = p_jugador and billetes + p_monto >= 0 returning billetes into v;
+  if not found then raise exception 'SIN_BILLETES'; end if;
+  insert into public.movimientos (jugador_id, monto, concepto) values (p_jugador, p_monto, left(p_concepto, 120));
+  return v;
+end $$;
+
+-- Reparte un pozo: lo apostado se divide entre los que atinaron según cuánto puso cada uno.
+-- Si nadie atinó, se devuelve todo.
+create or replace function public._liquidar(p_tipo text, p_ref bigint, p_ganadores text[], p_titulo text)
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  v_total bigint;
+  v_win bigint;
+  v int;
+  a public.apuestas;
+begin
+  select coalesce(sum(monto), 0), coalesce(sum(monto) filter (where opcion = any (coalesce(p_ganadores, '{}'))), 0)
+    into v_total, v_win
+    from public.apuestas where tipo = p_tipo and ref = p_ref and pago is null;
+  if v_total = 0 then return; end if;
+  for a in select * from public.apuestas where tipo = p_tipo and ref = p_ref and pago is null for update loop
+    if v_win = 0 then
+      update public.apuestas set pago = a.monto where id = a.id;
+      perform public._mover(a.jugador_id, a.monto, 'Nadie le atinó (' || p_titulo || '): te devolvemos tu apuesta');
+    elsif a.opcion = any (p_ganadores) then
+      v := floor(a.monto::numeric * v_total / v_win);
+      update public.apuestas set pago = v where id = a.id;
+      perform public._mover(a.jugador_id, v, '¡Ganaste la apuesta: ' || p_titulo || '!');
+    else
+      update public.apuestas set pago = 0 where id = a.id;
+    end if;
+  end loop;
+end $$;
+
+-- Apostar (o cambiar la apuesta; monto 0 la quita)
+create or replace function public.apostar(p_token uuid, p_tipo text, p_opcion text, p_monto int, p_ref bigint default null)
+returns int language plpgsql security definer set search_path = public as $$
+declare
+  yo public.jugadores;
+  c public.config;
+  e public.encuestas;
+  v_ref bigint;
+  v_prev public.apuestas;
+  v_titulo text;
+begin
+  yo := public._yo(p_token);
+  select * into c from public.config where id = 1;
+  if p_monto is null or p_monto < 0 or (p_monto > 0 and p_monto < 10) then raise exception 'APUESTA_MINIMA'; end if;
+  if p_monto > 5000 then raise exception 'APUESTA_MAXIMA'; end if;
+
+  if p_tipo = 'lider' then
+    if c.fase <> 'prueba' or c.es_final then raise exception 'APUESTAS_CERRADAS'; end if;
+    v_ref := c.semana; v_titulo := format('líder de la semana %s', c.semana);
+    if p_monto > 0 and not exists (select 1 from public.jugadores where id::text = p_opcion and rol = 'jugador' and estado = 'activo') then
+      raise exception 'OPCION_INVALIDA';
+    end if;
+  elsif p_tipo = 'eliminado' then
+    if c.semana = 0 or c.es_final or c.fase not in ('prueba', 'espera', 'votacion') then raise exception 'APUESTAS_CERRADAS'; end if;
+    v_ref := c.semana; v_titulo := format('eliminado de la semana %s', c.semana);
+    if p_monto > 0 and not exists (select 1 from public.jugadores where id::text = p_opcion and rol = 'jugador' and estado = 'activo') then
+      raise exception 'OPCION_INVALIDA';
+    end if;
+    if p_monto > 0 and p_opcion = c.lider_id::text then raise exception 'ES_LIDER'; end if;
+  elsif p_tipo = 'encuesta' then
+    select * into e from public.encuestas where id = p_ref;
+    if not found or e.abre > now() or e.cierra <= now() then raise exception 'APUESTAS_CERRADAS'; end if;
+    v_ref := e.id; v_titulo := format('encuesta "%s"', left(e.pregunta, 60));
+    if p_monto > 0 and (p_opcion !~ '^[0-9]+$' or p_opcion::int >= jsonb_array_length(e.opciones)) then raise exception 'OPCION_INVALIDA'; end if;
+  else
+    raise exception 'OPCION_INVALIDA';
+  end if;
+
+  select * into v_prev from public.apuestas where tipo = p_tipo and ref = v_ref and jugador_id = yo.id for update;
+  if found then
+    if v_prev.pago is not null then raise exception 'APUESTAS_CERRADAS'; end if;
+    delete from public.apuestas where id = v_prev.id;
+    perform public._mover(yo.id, v_prev.monto, 'Quitaste tu apuesta: ' || v_titulo);
+  end if;
+  if p_monto > 0 then
+    perform public._mover(yo.id, -p_monto, 'Apuesta: ' || v_titulo);
+    insert into public.apuestas (tipo, ref, jugador_id, opcion, monto) values (p_tipo, v_ref, yo.id, p_opcion, p_monto);
+  end if;
+  return (select billetes from public.jugadores where id = yo.id);
+end $$;
+
+-- Mis últimos movimientos
+create or replace function public.mis_billetes(p_token uuid)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare yo public.jugadores;
+begin
+  yo := public._yo(p_token);
+  return jsonb_build_object('billetes', yo.billetes, 'movimientos',
+    (select coalesce(jsonb_agg(jsonb_build_object('monto', m.monto, 'concepto', m.concepto, 'creado', m.creado) order by m.creado desc, m.id desc), '[]'::jsonb)
+       from (select * from public.movimientos where jugador_id = yo.id order by creado desc, id desc limit 40) m),
+    'ranking', (select coalesce(jsonb_agg(jsonb_build_object('id', j.id, 'nombre', j.nombre, 'billetes', j.billetes) order by j.billetes desc, j.nombre), '[]'::jsonb)
+       from public.jugadores j));
+end $$;
+
+-- La producción da o quita billetes (premios especiales)
+create or replace function public.admin_billetes(p_id uuid, p_monto int, p_concepto text)
+returns int language plpgsql security definer set search_path = public as $$
+begin
+  perform public._solo_admin();
+  return public._mover(p_id, p_monto, coalesce(nullif(btrim(p_concepto), ''), 'Premio de la producción'));
+end $$;
+
+-- ---------------------------------------------------------------------
+--  ENCUESTA DEL DÍA
+-- ---------------------------------------------------------------------
+
+-- Abre y cierra encuestas según su hora (lo llama el reloj y cada celular)
+create or replace function public._encuestas()
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  e public.encuestas;
+  v_conteo jsonb;
+  v_max int;
+  v_gan text[];
+  v_txt text;
+begin
+  if not exists (select 1 from public.encuestas
+                  where (not avisada and abre <= now()) or (not liquidada and cierra <= now())) then
+    return;
+  end if;
+  for e in select * from public.encuestas where not avisada and abre <= now() and cierra > now() for update skip locked loop
+    update public.encuestas set avisada = true where id = e.id;
+    perform public._avisar('📊 Encuesta del día', e.pregunta || ' Vota y apuesta antes de que cierre.');
+  end loop;
+  for e in select * from public.encuestas where not liquidada and cierra <= now() for update skip locked loop
+    select coalesce(jsonb_agg(n order by i), '[]'::jsonb), coalesce(max(n), 0),
+           array_agg(i::text order by i) filter (where n > 0 and n = (select max(n2) from (
+             select (select count(*) from public.encuesta_votos v where v.encuesta_id = e.id and v.opcion = i2)::int n2
+               from generate_series(0, jsonb_array_length(e.opciones) - 1) i2) z))
+      into v_conteo, v_max, v_gan
+      from (select i, (select count(*) from public.encuesta_votos v where v.encuesta_id = e.id and v.opcion = i)::int n
+              from generate_series(0, jsonb_array_length(e.opciones) - 1) i) t;
+    update public.encuestas set liquidada = true, avisada = true,
+           resultado = jsonb_build_object('conteo', v_conteo, 'ganadores', to_jsonb(coalesce(v_gan, '{}'::text[])))
+     where id = e.id;
+    perform public._liquidar('encuesta', e.id, coalesce(v_gan, '{}'::text[]), format('encuesta "%s"', left(e.pregunta, 60)));
+    select string_agg(e.opciones->(g::int)->>'t', ' y ') into v_txt from unnest(coalesce(v_gan, '{}'::text[])) g;
+    perform public._avisar('📊 Resultado de la encuesta',
+      case when v_txt is null then e.pregunta || ' Nadie votó.' else e.pregunta || ' Ganó: ' || v_txt end);
+  end loop;
+end $$;
+
+create or replace function public.votar_encuesta(p_token uuid, p_id bigint, p_opcion int)
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  yo public.jugadores;
+  e public.encuestas;
+begin
+  yo := public._yo(p_token);
+  select * into e from public.encuestas where id = p_id;
+  if not found or e.abre > now() or e.cierra <= now() then raise exception 'ENCUESTA_CERRADA'; end if;
+  if p_opcion is null or p_opcion < 0 or p_opcion >= jsonb_array_length(e.opciones) then raise exception 'OPCION_INVALIDA'; end if;
+  insert into public.encuesta_votos (encuesta_id, jugador_id, opcion) values (p_id, yo.id, p_opcion)
+  on conflict (encuesta_id, jugador_id) do update set opcion = excluded.opcion;
+end $$;
+
+-- Borrar una encuesta devuelve lo apostado
+create or replace function public.admin_borrar_encuesta(p_id bigint)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  perform public._solo_admin();
+  perform public._liquidar('encuesta', p_id, '{}'::text[], 'encuesta cancelada');
+  delete from public.apuestas where tipo = 'encuesta' and ref = p_id;
+  delete from public.encuestas where id = p_id;
+end $$;
+
+-- ---------------------------------------------------------------------
+--  MISIONES SECRETAS
+-- ---------------------------------------------------------------------
+
+create or replace function public._codigo()
+returns text language sql volatile as $$
+  select string_agg(substr('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 1 + floor(random() * 32)::int, 1), '') from generate_series(1, 6)
+$$;
+
+-- Cada quien recibe una misión distinta; todos son objetivo de exactamente una persona.
+create or replace function public._repartir_misiones(p_semana int, p_reemplazar boolean)
+returns int language plpgsql security definer set search_path = public as $$
+declare
+  v_ids uuid[];
+  v_txt text[];
+  n int;
+  i int;
+  v_obj uuid;
+begin
+  if p_semana < 1 then return 0; end if;
+  if p_reemplazar then delete from public.misiones where semana = p_semana and cumplida is null; end if;
+  select array_agg(j.id order by random()) into v_ids from public.jugadores j
+   where not exists (select 1 from public.misiones m where m.semana = p_semana and m.jugador_id = j.id);
+  n := coalesce(array_length(v_ids, 1), 0);
+  if n < 2 then return 0; end if;
+  select array_agg(texto order by random()) into v_txt from public.misiones_banco where activa;
+  if v_txt is null then return 0; end if;
+  for i in 1..n loop
+    v_obj := v_ids[1 + i % n];
+    insert into public.misiones (semana, jugador_id, objetivo_id, texto, codigo)
+    values (p_semana, v_ids[i], v_obj,
+            replace(v_txt[1 + (i - 1) % array_length(v_txt, 1)], '{nombre}', (select nombre from public.jugadores where id = v_obj)),
+            public._codigo());
+  end loop;
+  return n;
+end $$;
+
+-- El objetivo escanea el código de quien cumplió la misión
+create or replace function public.confirmar_mision(p_token uuid, p_codigo text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  yo public.jugadores;
+  m public.misiones;
+begin
+  yo := public._yo(p_token);
+  select * into m from public.misiones where codigo = upper(btrim(coalesce(p_codigo, ''))) for update;
+  if not found then raise exception 'CODIGO_INVALIDO'; end if;
+  if m.jugador_id = yo.id then raise exception 'ES_TU_CODIGO'; end if;
+  if m.objetivo_id <> yo.id then raise exception 'NO_ERES_OBJETIVO'; end if;
+  if m.cumplida is not null then raise exception 'MISION_YA_CUMPLIDA'; end if;
+  if m.semana <> (select semana from public.config where id = 1) then raise exception 'MISION_VENCIDA'; end if;
+  update public.misiones set cumplida = now() where id = m.id;
+  perform public._mover(m.jugador_id, 300, 'Misión secreta cumplida');
+  perform public._mover(yo.id, 50, 'Ayudaste a cumplir una misión secreta');
+  perform public._avisar('🕵️ ¡Misión cumplida!', format('%s confirmó tu misión. Ganaste $300.', yo.nombre), array[m.jugador_id]);
+  return jsonb_build_object('texto', m.texto, 'de', (select nombre from public.jugadores where id = m.jugador_id));
+end $$;
+
+create or replace function public.admin_repartir_misiones()
+returns int language plpgsql security definer set search_path = public as $$
+begin
+  perform public._solo_admin();
+  return public._repartir_misiones((select semana from public.config where id = 1), true);
+end $$;
+
+-- Banco inicial de misiones (solo se agregan las que falten)
+insert into public.misiones_banco (texto) values
+  ('Haz que {nombre} diga la palabra "pagaré".'),
+  ('Consigue que {nombre} te preste una pluma.'),
+  ('Haz que {nombre} se ría de un chiste tuyo.'),
+  ('Logra que {nombre} te dé los buenos días primero.'),
+  ('Haz que {nombre} diga "Alfa Brother".'),
+  ('Consigue que {nombre} te choque la mano.'),
+  ('Haz que {nombre} te cuente qué desayunó hoy.'),
+  ('Logra que {nombre} diga "te vamos a cobrar".'),
+  ('Consigue que {nombre} te recomiende una serie o una película.'),
+  ('Haz que {nombre} te diga cuál es su canción favorita.'),
+  ('Logra que {nombre} diga la palabra "moroso".'),
+  ('Haz que {nombre} se tome una selfie contigo.'),
+  ('Consigue que {nombre} te convide algo de comer, aunque sea un dulce.'),
+  ('Haz que {nombre} diga "¡qué calor!".'),
+  ('Logra que {nombre} te pregunte la hora.'),
+  ('Haz que {nombre} diga "ya mero es quincena".'),
+  ('Consigue que {nombre} cante un pedacito de una canción.'),
+  ('Haz que {nombre} te cuente un apodo que tenía de niño.'),
+  ('Logra que {nombre} use la palabra "intereses" en una frase.'),
+  ('Haz que {nombre} diga "mañana te pago".'),
+  ('Logra que {nombre} te diga cuál es su comida favorita.'),
+  ('Haz que {nombre} diga "¿y la ruta de hoy?".'),
+  ('Consigue que {nombre} te dé un consejo.'),
+  ('Haz que {nombre} diga tu nombre completo.'),
+  ('Haz que {nombre} diga "estoy en junta".'),
+  ('Consigue que {nombre} te cuente un chiste.'),
+  ('Haz que {nombre} diga "el cliente no contesta".'),
+  ('Logra que {nombre} te diga a dónde se iría de vacaciones.'),
+  ('Haz que {nombre} diga "Big Brother".'),
+  ('Consigue que {nombre} te pida un favor.'),
+  ('Logra que {nombre} te haga un cumplido.'),
+  ('Haz que {nombre} adivine tu color favorito.'),
+  ('Consigue que {nombre} diga "¡no manches!".'),
+  ('Haz que {nombre} te ofrezca café o agua.'),
+  ('Logra que {nombre} diga "ahorita" en una frase.'),
+  ('Haz que {nombre} te pregunte cómo va tu semana.'),
+  ('Consigue que {nombre} te diga qué superpoder le gustaría tener.'),
+  ('Haz que {nombre} diga "¡ya llegó el cobrador!".'),
+  ('Logra que {nombre} te enseñe a hacer algo que sabe hacer.'),
+  ('Haz que {nombre} diga la palabra "liquidar".')
+on conflict (texto) do nothing;
+
+-- ---------------------------------------------------------------------
+--  RÉCORDS DE LA CASA
+-- ---------------------------------------------------------------------
+
+create or replace function public.guardar_practica(p_token uuid, p_juego text, p_puntaje int)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  yo public.jugadores;
+  v int;
+  v_rec int;
+  p public.practicas;
+  v_premio int := 0;
+  v_record boolean := false;
+begin
+  yo := public._yo(p_token);
+  if p_juego not in ('memoria', 'adeudo') then raise exception 'JUEGO_INVALIDO'; end if;
+  v := least(greatest(coalesce(p_puntaje, 0), 0), case p_juego when 'memoria' then 1000 else 20000 end);
+  select coalesce(max(mejor), 0) into v_rec from public.practicas where juego = p_juego;
+  insert into public.practicas (jugador_id, juego) values (yo.id, p_juego) on conflict do nothing;
+  select * into p from public.practicas where jugador_id = yo.id and juego = p_juego for update;
+  if p.ultimo_premio is distinct from public._hoy() then
+    perform public._mover(yo.id, 50, 'Práctica del día'); v_premio := 50;
+  end if;
+  if v > v_rec and v > 0 then
+    v_record := true;
+    if p.ultimo_record is distinct from public._hoy() then
+      perform public._mover(yo.id, 200, 'Nuevo récord de la casa'); v_premio := v_premio + 200;
+    end if;
+  end if;
+  update public.practicas
+     set mejor = greatest(mejor, v), partidas = partidas + 1, ultimo_premio = public._hoy(),
+         ultimo_record = case when v_record then public._hoy() else ultimo_record end
+   where jugador_id = yo.id and juego = p_juego;
+  return jsonb_build_object('mejor', greatest(p.mejor, v), 'record', v_record, 'premio', v_premio);
+end $$;
+
+-- ---------------------------------------------------------------------
+--  TIENDA DEL MONITO
+-- ---------------------------------------------------------------------
+
+insert into public.tienda (id, tipo, nombre, icono, precio, orden) values
+  ('gorra',      'sombrero', 'Gorra',              '🧢', 200, 1),
+  ('moño',       'sombrero', 'Moño',               '🎀', 150, 2),
+  ('flor',       'sombrero', 'Flor',               '🌸', 150, 3),
+  ('casco',      'sombrero', 'Casco',              '⛑️', 250, 4),
+  ('pamela',     'sombrero', 'Sombrero',           '👒', 300, 5),
+  ('birrete',    'sombrero', 'Birrete',            '🎓', 350, 6),
+  ('copa',       'sombrero', 'Sombrero de copa',   '🎩', 450, 7),
+  ('lentes',     'lentes',   'Lentes',             '👓', 200, 1),
+  ('goggles',    'lentes',   'Goggles',            '🥽', 300, 2),
+  ('oscuros',    'lentes',   'Lentes oscuros',     '🕶️', 350, 3),
+  ('rojo',       'color',    'Rojo',               '#FF4D5E', 150, 1),
+  ('azul',       'color',    'Azul',               '#4D8DFF', 150, 2),
+  ('verde',      'color',    'Verde',              '#2ED198', 150, 3),
+  ('rosa',       'color',    'Rosa',               '#FF6FB5', 150, 4),
+  ('morado',     'color',    'Morado',             '#A974FF', 150, 5),
+  ('dorado',     'color',    'Dorado',             '#FFC93C', 600, 6),
+  ('cafe',       'mano',     'Café',               '☕', 150, 1),
+  ('portapapel', 'mano',     'Portapapeles',       '📋', 150, 2),
+  ('cel',        'mano',     'Celular',            '📱', 200, 3),
+  ('taco',       'mano',     'Taco',               '🌮', 200, 4),
+  ('maletin',    'mano',     'Maletín',            '💼', 250, 5),
+  ('fajo',       'mano',     'Fajo de billetes',   '💵', 300, 6),
+  ('micro',      'mano',     'Micrófono',          '🎤', 300, 7)
+on conflict (id) do update set tipo = excluded.tipo, nombre = excluded.nombre, icono = excluded.icono,
+                               precio = excluded.precio, orden = excluded.orden;
+
+create or replace function public.tienda_lista()
+returns jsonb language sql stable security definer set search_path = public as $$
+  select coalesce(jsonb_agg(jsonb_build_object('id', id, 'tipo', tipo, 'nombre', nombre, 'icono', icono, 'precio', precio)
+                  order by tipo, orden), '[]'::jsonb) from public.tienda;
+$$;
+
+create or replace function public.comprar(p_token uuid, p_item text)
+returns int language plpgsql security definer set search_path = public as $$
+declare
+  yo public.jugadores;
+  t public.tienda;
+begin
+  yo := public._yo(p_token);
+  select * into t from public.tienda where id = p_item;
+  if not found then raise exception 'OPCION_INVALIDA'; end if;
+  if p_item = any (yo.compras) then raise exception 'YA_LO_TIENES'; end if;
+  perform public._mover(yo.id, -t.precio, 'Tienda: ' || t.nombre);
+  update public.jugadores set compras = array_append(compras, p_item), estilo = estilo || jsonb_build_object(t.tipo, t.id)
+   where id = yo.id;
+  return (select billetes from public.jugadores where id = yo.id);
+end $$;
+
+create or replace function public.equipar(p_token uuid, p_tipo text, p_item text)
+returns void language plpgsql security definer set search_path = public as $$
+declare yo public.jugadores;
+begin
+  yo := public._yo(p_token);
+  if p_item is null then
+    update public.jugadores set estilo = estilo - p_tipo where id = yo.id;
+    return;
+  end if;
+  if not (p_item = any (yo.compras)) or not exists (select 1 from public.tienda where id = p_item and tipo = p_tipo) then
+    raise exception 'OPCION_INVALIDA';
+  end if;
+  update public.jugadores set estilo = estilo || jsonb_build_object(p_tipo, p_item) where id = yo.id;
+end $$;
+
+-- ---------------------------------------------------------------------
+--  Lo que el celular necesita de la economía (se suma a estado())
+-- ---------------------------------------------------------------------
+create or replace function public._economia(p_yo uuid, p_bono int)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare
+  c public.config;
+  yo public.jugadores;
+begin
+  select * into c from public.config where id = 1;
+  select * into yo from public.jugadores where id = p_yo;
+  return jsonb_build_object(
+    'billetes', yo.billetes,
+    'bono', p_bono,
+    'compras', to_jsonb(yo.compras),
+    'mi_estilo', yo.estilo,
+    'mis_apuestas', (select coalesce(jsonb_agg(jsonb_build_object('tipo', a.tipo, 'ref', a.ref, 'opcion', a.opcion, 'monto', a.monto, 'pago', a.pago)), '[]'::jsonb)
+        from public.apuestas a where a.jugador_id = p_yo
+         and ((a.tipo in ('lider', 'eliminado') and a.ref = c.semana)
+           or (a.tipo = 'encuesta' and a.ref in (select id from public.encuestas where cierra > now() - interval '24 hours')))),
+    'pozos', jsonb_build_object(
+        'lider', (select coalesce(sum(monto), 0) from public.apuestas where tipo = 'lider' and ref = c.semana),
+        'eliminado', (select coalesce(sum(monto), 0) from public.apuestas where tipo = 'eliminado' and ref = c.semana),
+        'apostadores_lider', (select count(*) from public.apuestas where tipo = 'lider' and ref = c.semana),
+        'apostadores_eliminado', (select count(*) from public.apuestas where tipo = 'eliminado' and ref = c.semana)),
+    'encuestas', (select coalesce(jsonb_agg(jsonb_build_object(
+          'id', e.id, 'pregunta', e.pregunta, 'opciones', e.opciones, 'abre', e.abre, 'cierra', e.cierra,
+          'abierta', e.abre <= now() and e.cierra > now(),
+          'votos', (select count(*) from public.encuesta_votos v where v.encuesta_id = e.id),
+          'mi_voto', (select v.opcion from public.encuesta_votos v where v.encuesta_id = e.id and v.jugador_id = p_yo),
+          'pozo', (select coalesce(sum(monto), 0) from public.apuestas a where a.tipo = 'encuesta' and a.ref = e.id),
+          'resultado', case when e.liquidada then e.resultado end) order by e.cierra), '[]'::jsonb)
+        from public.encuestas e where e.abre <= now() and e.cierra > now() - interval '24 hours'),
+    'proxima_encuesta', (select min(abre) from public.encuestas where abre > now()),
+    'mision', (select jsonb_build_object('texto', m.texto, 'objetivo_id', m.objetivo_id, 'codigo', m.codigo, 'cumplida', m.cumplida is not null)
+        from public.misiones m where m.semana = c.semana and m.jugador_id = p_yo),
+    'misiones_cumplidas', (select count(*) from public.misiones where semana = c.semana and cumplida is not null),
+    'records', (select coalesce(jsonb_agg(jsonb_build_object('juego', r.juego, 'id', r.jugador_id, 'mejor', r.mejor) order by r.juego, r.mejor desc), '[]'::jsonb)
+        from (select p.*, row_number() over (partition by p.juego order by p.mejor desc, p.jugador_id) as n
+                from public.practicas p where p.mejor > 0) r where r.n <= 3),
+    'practicas', (select coalesce(jsonb_agg(jsonb_build_object('id', p.jugador_id, 'juego', p.juego, 'mejor', p.mejor, 'partidas', p.partidas)), '[]'::jsonb)
+        from public.practicas p)
+  );
+end $$;
+
 -- Las funciones internas no se pueden llamar directo desde el celular
 revoke all on function public._iniciar_semana(text)  from public, anon, authenticated;
 revoke all on function public._cerrar_prueba(uuid)   from public, anon, authenticated;
@@ -1099,6 +1653,11 @@ revoke all on function public._avanzar_agenda()      from public, anon, authenti
 revoke all on function public._avisar(text, text, uuid[]) from public, anon, authenticated;
 revoke all on function public._recordatorios()       from public, anon, authenticated;
 revoke all on function public._reloj()               from public, anon, authenticated;
+revoke all on function public._mover(uuid, int, text) from public, anon, authenticated;
+revoke all on function public._liquidar(text, bigint, text[], text) from public, anon, authenticated;
+revoke all on function public._encuestas()           from public, anon, authenticated;
+revoke all on function public._repartir_misiones(int, boolean) from public, anon, authenticated;
+revoke all on function public._economia(uuid, int)   from public, anon, authenticated;
 
 -- Que Supabase reconozca de inmediato las funciones nuevas
 notify pgrst, 'reload schema';

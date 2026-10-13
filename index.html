@@ -364,6 +364,115 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .avisos-card>div{flex:1;min-width:0}
 .avisos-card small{display:block;color:#C9C3EE;font-size:.82rem;margin-top:2px}
 .cerrar-x{background:none;border:0;color:#C9C3EE;font-size:1.5rem;line-height:1;cursor:pointer;padding:4px}
+/* ---------- v7: billetes, juegos y monitos con estilo ---------- */
+.barra-eco{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chip-eco{appearance:none;border:0;border-radius:999px;background:#2A2160;color:#fff;font-weight:700;padding:7px 12px;font-size:.88rem;cursor:pointer;white-space:nowrap;box-shadow:inset 0 0 0 1px #4A3AA8}
+.chip-eco.dinero{background:#1E8E5A;box-shadow:none}
+.chip-eco.sube{animation:pulso .7s}
+.chip-eco .punto{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--luz);margin-left:4px;vertical-align:middle}
+@keyframes pulso{40%{transform:scale(1.18)}}
+.flota{position:fixed;z-index:90;font-weight:800;color:#2ED198;font-size:1.1rem;pointer-events:none;animation:flota 1.4s ease-out forwards;text-shadow:0 1px 3px #000}
+.flota.menos{color:#FF6B7A}
+@keyframes flota{to{transform:translateY(-46px);opacity:0}}
+.juego-card{background:#2A2160;border:1px solid #4A3AA8;border-radius:14px;padding:12px 14px;margin-top:12px;color:#fff}
+.juego-card h3{font-family:Anton,Impact,sans-serif;font-size:1.15rem;margin:0 0 4px;display:flex;justify-content:space-between;gap:8px;align-items:baseline;font-weight:400}
+.juego-card h3 small{font-family:"Work Sans",sans-serif;font-size:.78rem;color:#C9C3EE;font-weight:600;white-space:nowrap}
+.juego-card p{margin:4px 0;color:#E4E0FF;font-size:.92rem}
+.juego-card .ayuda{color:#A9A3D6}
+.juego-card .fila-btn{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.juego-card .btn.sec{color:#fff;box-shadow:inset 0 0 0 2px #6E5FD0}
+.ap-linea{display:flex;align-items:center;gap:10px;margin-top:8px;background:#1B1440;border-radius:10px;padding:8px 10px;font-size:.9rem}
+.ap-linea b{color:var(--luz)}
+.ap-linea .btn{margin-left:auto}
+.enc-op{display:flex;align-items:center;gap:10px;width:100%;appearance:none;border:2px solid #4A3AA8;background:#1B1440;color:#fff;border-radius:12px;padding:8px 10px;margin-top:6px;font-weight:600;font-size:.95rem;text-align:left;cursor:pointer}
+.enc-op.mio{border-color:var(--luz);background:#3B2E8C}
+.enc-op .chk{margin-left:auto;color:var(--luz)}
+.enc-res{display:grid;grid-template-columns:minmax(0,1fr) 2fr auto;gap:8px;align-items:center;margin-top:6px;font-size:.9rem}
+.enc-res span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.enc-res i{display:block;height:10px;border-radius:5px;background:#6E5FD0;min-width:3px}
+.enc-res.gana{font-weight:800;color:var(--luz)}
+.enc-res.gana i{background:var(--luz)}
+.mision-txt{background:#FFFDF6;color:var(--texto);border-radius:10px;padding:10px 12px;font-weight:600;margin-top:8px;font-size:.98rem}
+.revelar{appearance:none;border:2px dashed #6E5FD0;background:#1B1440;color:#C9C3EE;border-radius:10px;padding:14px;width:100%;font-weight:700;cursor:pointer;margin-top:8px;font-size:.95rem}
+.record-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.record-cols>div>b{display:block;font-size:.85rem;color:var(--luz);margin-bottom:4px}
+.record-cols .r{display:flex;justify-content:space-between;gap:6px;font-size:.88rem;padding:2px 0}
+.record-cols .r span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.record-cols .r.yo{color:var(--luz)}
+.ap-ops{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:6px;margin-top:10px}
+.ap-op{appearance:none;border:2px solid transparent;background:rgba(255,255,255,.55);border-radius:12px;padding:4px 2px 6px;cursor:pointer;display:flex;justify-content:center}
+.ap-op.sel{border-color:var(--tinta);background:#fff}
+.chips-monto{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chips-monto button{appearance:none;border:2px solid var(--texto);background:#fff;border-radius:999px;padding:5px 11px;font-weight:700;cursor:pointer}
+.qr-caja{display:grid;place-items:center;background:#fff;border-radius:12px;padding:12px;margin:12px auto 6px;width:max-content;max-width:100%}
+.qr-caja svg,.qr-caja img{width:220px;height:220px;display:block}
+.codigo-grande{font-family:"Special Elite",monospace;font-size:2rem;letter-spacing:.25em;text-align:center;margin:6px 0}
+.esc-video{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;background:#000;display:block;margin-top:10px}
+.mov{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px dashed #D9D2B8;font-size:.9rem}
+.mov b{white-space:nowrap}
+.mov b.mas{color:var(--ok)}
+.mov b.menos{color:#C21D33}
+.mov small{display:block;color:var(--suave);font-size:.75rem}
+.rank{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:.92rem}
+.rank .n{width:22px;text-align:right;color:var(--suave);font-weight:700}
+.rank .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tienda-prev{display:flex;justify-content:center;background:#3B2E8C;border-radius:12px;padding:8px 0 10px;margin-top:8px}
+.tienda-prev .mm-nom{color:#fff}
+.ti-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:6px}
+.ti{appearance:none;border:2px solid #D9D2B8;background:#fff;border-radius:12px;padding:8px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.8rem;font-weight:600;color:var(--texto)}
+.ti .ico{font-size:1.8rem;line-height:1.1}
+.ti .muestra{width:26px;height:26px;border-radius:50%;margin:3px 0;box-shadow:0 0 0 2px var(--texto)}
+.ti small{color:var(--suave);font-weight:700}
+.ti.tengo small{color:var(--tinta)}
+.ti.usando{border-color:var(--ok);background:#E7F6EE}
+.ti.usando small{color:var(--ok)}
+.gradas{display:flex;justify-content:center;gap:0;margin:2px -8px;overflow:hidden;min-height:70px}
+.gradas.abajo{margin-top:8px}
+.cand .mm{margin:0 auto}
+.renglon .quien .mm{margin:-6px -4px -2px}
+/* monito reutilizable */
+.mm{--u:calc(var(--t)/8.4);position:relative;display:inline-flex;flex-direction:column;align-items:center;width:calc(var(--u)*13);padding-top:calc(var(--u)*4.4);flex:none}
+.mm-cab{position:relative;z-index:1;width:var(--t);height:var(--t);border-radius:50%;overflow:hidden;display:grid;place-items:center;font-family:Anton,Impact,sans-serif;color:#fff;font-size:calc(var(--t)*.5);box-shadow:0 0 0 2px var(--aro,#FFFDF6);flex:none;transition:transform .25s}
+.mm-cab img{width:100%;height:100%;object-fit:cover}
+.mm-cuerpo{width:calc(var(--u)*8);height:calc(var(--u)*10.4);margin-top:calc(var(--u)*-.6);overflow:visible}
+.mm-cuerpo line{stroke:var(--linea,var(--linea-def,#FFFDF6));stroke-width:3.4;stroke-linecap:round}
+.mm-cuerpo g{transform-box:view-box;transition:transform .2s}
+.mm .pi,.mm .pd{transform-origin:20px 25px}
+.mm .bi,.mm .bd{transform-origin:20px 7px}
+.mm-sombrero{position:absolute;top:calc(var(--u)*1.2);left:50%;transform:translateX(-50%);font-size:calc(var(--u)*4.4);z-index:2;line-height:1}
+.mm-lentes{position:absolute;top:calc(var(--u)*6.6);left:50%;transform:translateX(-50%);font-size:calc(var(--u)*4.2);z-index:2;line-height:1}
+.mm-mano{position:absolute;top:calc(var(--u)*16.2);left:calc(50% + var(--u)*1.6);font-size:calc(var(--u)*3.6);z-index:2;line-height:1;transition:transform .2s}
+.mm-nom{font-size:.72rem;font-weight:700;margin-top:2px;max-width:calc(var(--u)*15);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--nom,#fff)}
+.mm-burbuja{position:absolute;top:0;right:-4%;transform:scale(0);transform-origin:0 100%;background:#FFFDF6;border-radius:999px;padding:1px 5px;font-size:calc(var(--t)*.46);line-height:1.25;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .18s cubic-bezier(.2,1.6,.4,1);z-index:3;white-space:nowrap}
+.mm-burbuja.on{transform:scale(1)}
+.formato .mm,.adm-caja .mm{--linea-def:#1B1440;--aro:#1B1440;--nom:var(--texto)}
+.mm.festeja{animation:mm-salto .38s ease-in-out 3}
+.mm.festeja .bi{transform:rotate(100deg)}
+.mm.festeja .bd{transform:rotate(-100deg)}
+.mm.triste .mm-cab{transform:translateY(calc(var(--u)*.8)) rotate(-10deg)}
+.mm.triste .bi{transform:rotate(-38deg)}
+.mm.triste .bd{transform:rotate(38deg)}
+.mm.triste{filter:saturate(.55)}
+.mm.susto{animation:mm-tiembla .14s linear infinite}
+.mm.susto .bi{transform:rotate(70deg)}
+.mm.susto .bd{transform:rotate(-70deg)}
+.mm.aplaude .bi{animation:mm-ap-i .22s ease-in-out infinite alternate}
+.mm.aplaude .bd{animation:mm-ap-d .22s ease-in-out infinite alternate}
+.mm.mira .mm-cab{transform:rotate(8deg)}
+@keyframes mm-salto{50%{transform:translateY(calc(var(--u)*-3))}}
+@keyframes mm-tiembla{25%{transform:translateX(-1.5px)}75%{transform:translateX(1.5px)}}
+@keyframes mm-ap-i{from{transform:rotate(-20deg)}to{transform:rotate(-55deg)}}
+@keyframes mm-ap-d{from{transform:rotate(20deg)}to{transform:rotate(55deg)}}
+/* estilo en los monitos de la sala */
+.mono-sombrero,.mono-lentes,.mono-mano{position:absolute;z-index:2;pointer-events:none;line-height:1}
+.mono-sombrero:empty,.mono-lentes:empty,.mono-mano:empty{display:none}
+.mono-sombrero{top:calc(var(--u)*-2.6);font-size:calc(var(--u)*4.4)}
+.mono-lentes{top:calc(var(--u)*2.2);font-size:calc(var(--u)*4.2)}
+.mono-mano{top:calc(var(--u)*10.4);left:calc(50% + var(--u)*1.6);font-size:calc(var(--u)*3.6)}
+.mono.izq .mono-mano{left:auto;right:calc(50% + var(--u)*1.6)}
+.mono.con-sombrero .mono-corona{top:calc(var(--u)*-6.4)}
+.mono-cuerpo line{stroke:var(--linea,#FFFDF6)}
+.palco .mono-sombrero,.palco .mono-lentes,.palco .mono-mano{display:none}
 .mono-corona{position:absolute;top:calc(var(--u)*-3.2);font-size:calc(var(--u)*3.6);z-index:2;pointer-events:none}
 .mono-cuerpo{width:calc(var(--u)*8);height:calc(var(--u)*10.4);margin-top:calc(var(--u)*-.6);overflow:visible}
 .mono-cuerpo line{stroke:#FFFDF6;stroke-width:3.4;stroke-linecap:round}
@@ -577,6 +686,11 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
     <small id="c-fase"></small>
   </div>
 
+  <div class="barra-eco">
+    <button class="chip-eco dinero" id="c-billetes">💵 <b>$0</b></button>
+    <button class="chip-eco" id="c-tienda">🛍️ Tienda</button>
+    <button class="chip-eco hidden" id="c-mision-chip">🕵️ Mi misión</button>
+  </div>
   <div id="c-accion"></div>
   <div id="c-avisos" class="hidden"></div>
 
@@ -628,6 +742,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
     <p class="ayuda sala-ayuda" id="sala-ayuda">Toca el piso para caminar · toca a alguien para ver su ficha</p>
   </div>
   <div class="rejilla hidden" id="c-habitantes"></div>
+  <div id="c-juegos"></div>
   <div id="c-extra"></div>
 
   <div id="c-espect-box" class="hidden">
@@ -703,6 +818,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
       <button data-at="pruebas" aria-selected="false">Pruebas</button>
       <button data-at="trivia" aria-selected="false">Trivia</button>
       <button data-at="ojo" aria-selected="false">Ojo 👁️</button>
+      <button data-at="extras" aria-selected="false">Extras 💵</button>
       <button data-at="habitantes" aria-selected="false">Habitantes</button>
     </div>
     <div id="a-contenido"></div>
@@ -788,6 +904,13 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
   <div class="formato ficha" id="ficha-caja"></div>
 </div>
 
+<!-- ============================ BILLETES, APUESTAS, MISIONES Y TIENDA -->
+<div id="m-billetes" class="modal hidden"><div class="formato amarillo" id="bi-caja"></div></div>
+<div id="m-apuesta" class="modal hidden"><div class="formato amarillo" id="ap-caja"></div></div>
+<div id="m-tienda" class="modal hidden"><div class="formato" id="ti-caja"></div></div>
+<div id="m-qr" class="modal hidden"><div class="formato" id="qr-caja-modal"></div></div>
+<div id="m-escaner" class="modal hidden"><div class="formato" id="esc-caja"></div></div>
+
 <!-- ============================ ELEGIR HABITANTE -->
 <div id="m-elegir" class="modal hidden">
   <div class="formato rosa" style="max-height:88dvh;overflow:auto">
@@ -866,6 +989,20 @@ const ERRORES = {
   SIN_TRIVIAS: 'Activa al menos una pregunta de trivia antes de iniciar la semana.',
   JUEGO_TERMINADO: 'El juego ya terminó: solo queda un habitante. Para empezar otro, usa Reiniciar juego.',
   SIN_CANDIDATOS: 'No hay candidatos para eliminar.',
+  SIN_BILLETES: 'No te alcanzan los billetes.',
+  APUESTA_MINIMA: 'La apuesta mínima es de $10.',
+  APUESTA_MAXIMA: 'La apuesta máxima es de $5,000.',
+  APUESTAS_CERRADAS: 'Las apuestas ya cerraron.',
+  OPCION_INVALIDA: 'Esa opción no es válida.',
+  ES_LIDER: 'El líder no puede salir esta semana: elige a otra persona.',
+  ENCUESTA_CERRADA: 'La encuesta ya cerró.',
+  CODIGO_INVALIDO: 'Ese código no existe. Revisa que esté bien escrito.',
+  ES_TU_CODIGO: 'Ese es tu propio código: lo tiene que escanear la otra persona.',
+  NO_ERES_OBJETIVO: 'Esa misión no era sobre ti. Solo la persona de la misión puede confirmarla.',
+  MISION_YA_CUMPLIDA: 'Esa misión ya estaba cumplida.',
+  MISION_VENCIDA: 'Esa misión era de una semana pasada.',
+  YA_LO_TIENES: 'Ya lo tienes.',
+  JUEGO_INVALIDO: 'Juego no válido.',
   SUSCRIPCION_INVALIDA: 'Este navegador no dio una suscripción válida para avisos.',
   AVISO_INVALIDO: 'Escribe un título de 2 a 60 letras y un mensaje de máximo 160.',
   PRUEBA_INVALIDA: 'Prueba no válida.',
@@ -1318,6 +1455,7 @@ async function refrescar() {
   if (nuevos.length && pantalla === 's-casa') SFX.tocar('timbre');
   conocidos = new Set(ids);
 
+  revisarEconomia();
   if (pantalla === 's-casa') pintarCasa();
 
   const libre = !galaAbierta && pantalla === 's-casa' && $('#admin').classList.contains('hidden') && $('#m-tuto').classList.contains('hidden') && $('#m-bienvenida').classList.contains('hidden');
@@ -1351,6 +1489,7 @@ function cerrarSesion() {
   if (token) { const t = token; AVISOS.olvidar(t).finally(() => rpc('salir', { p_token: t }).catch(() => { })); }
   SALA.desconectar();
   token = null; est = null; predSel = null; store.del('ab_token');
+  saldoVisto = null; pagosVistos = null; misionCumplidaVista = null; misionVisible = false;
   mostrarInicio();
 }
 
@@ -1390,6 +1529,7 @@ function pintarCasa() {
   $$('[data-gala]').forEach(b => b.onclick = () => abrirGala(+b.dataset.gala, false));
 
   pintarAccion();
+  pintarEconomia();
 }
 
 function pintarAccion() {
@@ -1549,13 +1689,6 @@ function pintarExtrasSala() {
     <div style="margin-top:14px"><button class="btn" id="pred-guardar" ${predSel.ganador && predSel.primero ? '' : 'disabled'}>${mi_prediccion ? 'Cambiar mi predicción' : 'Guardar predicción'}</button></div>
     <p class="ayuda" style="margin-top:8px">Puedes cambiarla hasta que empiece la semana 1.</p></div>`;
 
-  h += `<div class="formato amarillo"><div class="folio"><span>Calienta motores</span><span>No cuenta</span></div>
-    <h2>Modo práctica</h2>
-    <p>Entrena las pruebas del líder mientras llegan los demás.</p>
-    <div style="display:grid;gap:10px;margin-top:12px">
-      <button class="btn tinta" data-practica="memoria">Practicar memoria de expedientes</button>
-      <button class="btn tinta" data-practica="adeudo">Practicar calcula el adeudo</button>
-    </div></div>`;
   return h;
 }
 
@@ -1874,11 +2007,13 @@ async function abrirFicha(id) {
       ? `<div class="barras">${conPuntos.map(x => `<div class="barra-sem"><span>Semana ${x.s}</span><i style="width:${x.fila.puntos / max * 100}%"></i><span>${x.fila.puntos}</span></div>`).join('')}</div>`
       : '<p class="ayuda">Todavía no hay galas. Los puntos se ven después de cada gala.</p>');
   }
+  {
+    const pr = t => (est.practicas || []).find(x => x.id === id && x.juego === t);
+    const fila = (t, n) => { const x = pr(t); return `<div class="tile"><b>${x?.mejor ?? 0}</b><small>${n} · mejor de ${x?.partidas ?? 0} ${x?.partidas === 1 ? 'partida' : 'partidas'}</small></div>`; };
+    h += `<h3>${esYo ? 'Mis prácticas' : 'Prácticas'}</h3><div class="tiles" style="margin-top:4px">${fila('memoria', 'Memoria')}${fila('adeudo', 'Adeudo')}</div>`;
+  }
   if (esYo) {
-    const p = leerPractica();
-    const fila = (t, n) => `<div class="tile"><b>${p[t]?.mejor ?? 0}</b><small>${n} · mejor de ${p[t]?.n ?? 0} ${p[t]?.n === 1 ? 'partida' : 'partidas'}</small></div>`;
-    h += `<h3>Mis prácticas</h3><div class="tiles" style="margin-top:4px">${fila('memoria', 'Memoria')}${fila('adeudo', 'Adeudo')}</div>
-      <p class="ayuda">Solo se guardan en este teléfono.</p>`;
+    h += `<button class="btn tinta" id="ficha-tienda" style="margin-top:14px">🛍️ Personalizar mi monito</button>`;
     // motivos agrupados: el mismo texto se muestra una vez con cuántas veces se lo escribieron
     const cuenta = new Map();
     for (const x of conPuntos) for (const m of x.fila.motivos) { const k = m.t.trim(); cuenta.set(k, (cuenta.get(k) || 0) + 1); }
@@ -1897,6 +2032,7 @@ async function abrirFicha(id) {
   $('#ficha-cerrar').onclick = cerrarFicha;
   $$('[data-envia]', caja).forEach(b => b.onclick = () => { cerrarFicha(); SALA.enviarEmoji(id, b.dataset.envia); });
   const reto = $('#ficha-reto'); if (reto) reto.onclick = () => { cerrarFicha(); SALA.retar(id); };
+  const ft = $('#ficha-tienda'); if (ft) ft.onclick = () => { cerrarFicha(); abrirTienda(); };
   $$('[data-mio]', caja).forEach(b => b.onclick = () => { cerrarFicha(); SALA.miEmoji(b.dataset.mio); });
 }
 function cerrarFicha() { $('#m-ficha').classList.add('hidden'); }
@@ -1910,6 +2046,8 @@ document.addEventListener('click', e => {
   toqueFondo = null;
   if (m.id === 'm-bienvenida') return $('#bv-ok').click();      // cerrar la bienvenida = OK
   if (m.id === 'm-ojo') return $('#ojo-cerrar').click();
+  if (m.id === 'm-escaner') return cerrarEscaner();
+  if (m.id === 'm-qr') return cerrarQR();
   if (m.id === 'm-tuto') { store.set('ab_tuto', '1'); }          // ya lo vio
   m.classList.add('hidden');
 });
@@ -1992,13 +2130,14 @@ const SALA = (() => {
   function crearEl(a) {
     const el = document.createElement('div');
     el.className = 'mono'; el.dataset.id = a.id;
-    el.innerHTML = `<div class="burbuja"></div><span class="mono-corona hidden">👑</span><div class="mono-cab"></div>${CUERPO}<span class="mono-nom"></span>`;
+    el.innerHTML = `<div class="burbuja"></div><span class="mono-corona hidden">👑</span><span class="mono-sombrero"></span><div class="mono-cab"></div><span class="mono-lentes"></span>${CUERPO}<span class="mono-mano"></span><span class="mono-nom"></span>`;
     return el;
   }
   function pintarActor(a, j) {
     const el = a.el;
     const medalla = est.juego.fin ? MEDALLA[est.podio?.find(x => x.id === j.id)?.lugar] : null;
-    const firma = [j.nombre, !!fotos[j.id], j.id === est.juego.lider_id, j.id === miId, medalla].join('|');
+    const e = j.estilo || {};
+    const firma = [j.nombre, !!fotos[j.id], j.id === est.juego.lider_id, j.id === miId, medalla, JSON.stringify(e)].join('|');
     if (a.firma === firma) return;
     a.firma = firma;
     $('.mono-cab', el).style.background = colorDe(j.nombre);
@@ -2007,6 +2146,11 @@ const SALA = (() => {
     $('.mono-corona', el).textContent = medalla || '👑';
     $('.mono-corona', el).classList.toggle('hidden', !medalla && (j.id !== est.juego.lider_id || j.estado !== 'activo'));
     el.classList.toggle('yo', j.id === miId);
+    $('.mono-sombrero', el).textContent = e.sombrero || '';
+    $('.mono-lentes', el).textContent = e.lentes || '';
+    $('.mono-mano', el).textContent = e.mano || '';
+    el.classList.toggle('con-sombrero', !!e.sombrero);
+    if (e.color) el.style.setProperty('--linea', e.color); else el.style.removeProperty('--linea');
   }
 
   function sincronizar() {
@@ -2344,6 +2488,473 @@ const SALA = (() => {
 })();
 
 /* =====================================================================
+   MONITO REUTILIZABLE (minijuegos, votación, apuestas, tienda)
+   ===================================================================== */
+const CUERPO_MM = `<svg class="mm-cuerpo" viewBox="0 0 40 52" aria-hidden="true"><line x1="20" y1="2" x2="20" y2="25"/>
+  <g class="bi"><line x1="20" y1="7" x2="8" y2="20"/></g><g class="bd"><line x1="20" y1="7" x2="32" y2="20"/></g>
+  <g class="pi"><line x1="20" y1="25" x2="11" y2="49"/></g><g class="pd"><line x1="20" y1="25" x2="29" y2="49"/></g></svg>`;
+function monito(j, { cara = '', tam = 48, nombre = true, clase = '', estilo = null } = {}) {
+  const e = estilo || porId(j.id)?.estilo || j.estilo || {};
+  const f = fotos[j.id];
+  const ini = esc(String(j.nombre || '?').trim().charAt(0).toUpperCase());
+  return `<div class="mm ${clase}" data-mm="${j.id}" style="--t:${tam}px;${e.color ? `--linea:${e.color};` : ''}">
+    <span class="mm-burbuja ${cara ? 'on' : ''}">${cara}</span>
+    ${e.sombrero ? `<span class="mm-sombrero">${e.sombrero}</span>` : ''}
+    <div class="mm-cab" style="background:${colorDe(j.nombre)}">${f ? `<img src="${f}" alt="">` : ini}</div>
+    ${e.lentes ? `<span class="mm-lentes">${e.lentes}</span>` : ''}
+    ${CUERPO_MM}
+    ${e.mano ? `<span class="mm-mano">${e.mano}</span>` : ''}
+    ${nombre ? `<span class="mm-nom">${esc(j.id === est?.yo.id ? 'Tú' : j.nombre)}</span>` : ''}
+  </div>`;
+}
+// Cambia la cara y la pose de uno o varios monitos. Después de "ms" regresa a "despues".
+function expresar(els, cara, pose = '', ms = 1400, despues = null) {
+  for (const el of [].concat(els).filter(Boolean)) {
+    const b = $('.mm-burbuja', el);
+    const poner = c => { b.textContent = c || ''; b.classList.toggle('on', !!c); };
+    if (cara !== null) poner(typeof cara === 'function' ? cara(el) : cara);
+    el.classList.remove('festeja', 'triste', 'susto', 'aplaude', 'mira');
+    void el.offsetWidth;
+    if (pose) el.classList.add(pose);
+    clearTimeout(el._t);
+    if (ms) el._t = setTimeout(() => {
+      el.classList.remove(pose);
+      if (despues !== null) poner(typeof despues === 'function' ? despues(el) : despues);
+    }, ms);
+  }
+}
+const azarDe = arr => arr[Math.floor(Math.random() * arr.length)];
+// Público de monitos alrededor de los minijuegos
+function gradas(n = 8) {
+  const otros = (est?.jugadores || []).filter(j => j.id !== est.yo.id).sort(() => Math.random() - .5).slice(0, n);
+  const mitad = Math.ceil(otros.length / 2);
+  const fila = (arr, cl) => `<div class="gradas ${cl}">${arr.map(j => monito(j, { tam: 30, cara: azarDe(['🤔', '👀', '🙂', '😬']) })).join('')}</div>`;
+  return { arriba: fila(otros.slice(0, mitad), 'arriba'), abajo: fila(otros.slice(mitad), 'abajo') };
+}
+const CARAS = {
+  bien: ['🎉', '😄', '👏', '🥳', '🤩', '🙌'], mal: ['😢', '😩', '🤦', '😬', '😞', '🙈'],
+  nervios: ['😬', '😰', '🙏', '😱', '🫣'], fin: ['🎉', '👏', '🥳', '🤩'], calma: ['🙂', '👀', '🤔', '😎'],
+};
+function animarGradas(caja, tipo) {
+  const pose = { bien: 'festeja', mal: 'triste', nervios: 'susto', fin: 'aplaude' }[tipo];
+  $$('.gradas .mm', caja).forEach((el, i) => setTimeout(() =>
+    expresar(el, azarDe(CARAS[tipo]), tipo === 'fin' && i % 2 ? 'festeja' : pose, tipo === 'fin' ? 2600 : tipo === 'nervios' ? 800 : 1300,
+      tipo === 'fin' ? '👏' : azarDe(CARAS.calma)), Math.random() * 220));
+}
+// fila de monitos aplaudiendo para las pantallas finales
+function gradaFiesta(n = 6) {
+  const otros = (est?.jugadores || []).filter(j => j.id !== est.yo.id).sort(() => Math.random() - .5).slice(0, n);
+  return `<div class="gradas">${otros.map((j, i) => monito(j, { tam: 30, cara: azarDe(CARAS.fin), clase: i % 2 ? 'aplaude' : 'festeja' })).join('')}</div>`;
+}
+
+/* =====================================================================
+   BILLETES ALFA: saldo, apuestas, encuesta, misión, récords y tienda
+   ===================================================================== */
+let saldoVisto = null, misionVisible = false, pagosVistos = null, misionCumplidaVista = null;
+const fmt$ = n => '$' + Number(n || 0).toLocaleString('es-MX');
+
+function flotar(el, texto, menos = false) {
+  const r = el.getBoundingClientRect();
+  const f = document.createElement('div');
+  f.className = 'flota' + (menos ? ' menos' : '');
+  f.textContent = texto;
+  f.style.left = (r.left + r.width / 2 - 20) + 'px'; f.style.top = (r.top - 6) + 'px';
+  document.body.appendChild(f);
+  setTimeout(() => f.remove(), 1500);
+}
+
+// avisos que llegan con el estado: bono, misión cumplida, apuestas cobradas
+function revisarEconomia() {
+  const chip = $('#c-billetes');
+  if (saldoVisto !== null && est.billetes !== saldoVisto && pantalla === 's-casa') {
+    const d = est.billetes - saldoVisto;
+    chip.classList.remove('sube'); void chip.offsetWidth; chip.classList.add('sube');
+    flotar(chip, (d > 0 ? '+' : '−') + fmt$(Math.abs(d)), d < 0);
+  }
+  saldoVisto = est.billetes;
+  if (est.bono) { setTimeout(() => { toast(`💵 +${fmt$(est.bono)} por entrar hoy`, 3200); SFX.tocar('caja'); lluviaBilletes(10); }, 900); }
+  // misión cumplida (la confirmó la otra persona)
+  const m = est.mision;
+  const clave = m ? est.juego.semana + ':' + m.cumplida : null;
+  if (misionCumplidaVista && m?.cumplida && misionCumplidaVista !== clave) {
+    cerrarQR(true);
+    SFX.tocar('fanfarria'); lluviaBilletes(24);
+    toast('🕵️ ¡Misión cumplida! Ganaste $300', 4000);
+  }
+  misionCumplidaVista = clave;
+  // apuestas que ya se pagaron
+  const pagadas = (est.mis_apuestas || []).filter(a => a.pago !== null);
+  const vistos = pagosVistos || new Set(JSON.parse(store.get('ab_pagos_' + est.yo.id) || '[]'));
+  const nuevas = pagadas.filter(a => !vistos.has(a.tipo + a.ref));
+  if (pagosVistos || store.get('ab_pagos_' + est.yo.id)) for (const a of nuevas) {
+    const que = a.tipo === 'lider' ? 'la apuesta del líder' : a.tipo === 'eliminado' ? 'la apuesta del eliminado' : 'la apuesta de la encuesta';
+    if (a.pago > a.monto) { toast(`🎉 ¡Ganaste ${que}! Te llevas ${fmt$(a.pago)}`, 4000); SFX.tocar('fanfarria'); lluviaBilletes(20); }
+    else if (a.pago === a.monto) toast(`↩️ Nadie ganó ${que}: te devolvimos ${fmt$(a.monto)}`, 3500);
+    else if (a.pago === 0) toast(`😢 Perdiste ${que} (${fmt$(a.monto)})`, 3500);
+  }
+  for (const a of pagadas) vistos.add(a.tipo + a.ref);
+  pagosVistos = vistos;
+  store.set('ab_pagos_' + est.yo.id, JSON.stringify([...vistos].slice(-60)));
+}
+
+function pintarEconomia() {
+  $('#c-billetes').innerHTML = `💵 <b>${fmt$(est.billetes)}</b>`;
+  const m = est.mision;
+  $('#c-mision-chip').classList.toggle('hidden', !m);
+  $('#c-mision-chip').innerHTML = m ? (m.cumplida ? '🕵️ Misión ✅' : '🕵️ Mi misión<span class="punto"></span>') : '';
+  const g = est.juego;
+  let h = tarjetaApuestas(g);
+  const abiertas = (est.encuestas || []).filter(e => e.abierta);
+  h += (est.encuestas || []).map(tarjetaEncuesta).join('');
+  if (est.proxima_encuesta && !abiertas.length) h += `<div class="juego-card"><h3>📊 Encuesta del día <small>${esc(fmtFecha(est.proxima_encuesta))}</small></h3>
+    <p class="ayuda">La próxima encuesta abre pronto. Podrás votar y apostar por el resultado.</p></div>`;
+  h += tarjetaMision(g);
+  h += tarjetaRecords();
+  $('#c-juegos').innerHTML = h;
+  // botones
+  $$('#c-juegos [data-apostar]').forEach(b => b.onclick = () => abrirApuesta(b.dataset.apostar, b.dataset.ref ? +b.dataset.ref : null));
+  $$('#c-juegos [data-votar-enc]').forEach(b => b.onclick = async () => {
+    try { await rpc('votar_encuesta', { p_token: token, p_id: +b.dataset.votarEnc, p_opcion: +b.dataset.op }); SFX.tocar('clic'); toast('Voto guardado (es anónimo)'); refrescar(); }
+    catch (e) { toast(mensajeError(e)); }
+  });
+  $('#c-juegos [data-revelar]')?.addEventListener('click', () => { misionVisible = true; SFX.tocar('swish'); pintarEconomia(); });
+  $('#c-juegos [data-ocultar]')?.addEventListener('click', () => { misionVisible = false; pintarEconomia(); });
+  $('#c-juegos [data-cumpli]')?.addEventListener('click', abrirQR);
+  $('#c-juegos [data-escanear]')?.addEventListener('click', abrirEscaner);
+  $$('#c-juegos [data-practicar]').forEach(b => b.onclick = () => abrirPractica(b.dataset.practicar));
+}
+
+/* ---------- apuestas ---------- */
+const AP_TXT = {
+  lider: { t: '💰 ¿Quién será el líder?', q: 'el líder de la semana' },
+  eliminado: { t: '💀 ¿Quién sale esta semana?', q: 'el eliminado de la semana' },
+};
+function apuestasAbiertas(g) {
+  const t = [];
+  if (g.semana > 0 && !g.es_final && !g.fin && g.fase === 'prueba') t.push('lider');
+  if (g.semana > 0 && !g.es_final && !g.fin && ['prueba', 'espera', 'votacion'].includes(g.fase)) t.push('eliminado');
+  return t;
+}
+function tarjetaApuestas(g) {
+  const abiertas = apuestasAbiertas(g);
+  const mias = (est.mis_apuestas || []).filter(a => a.tipo !== 'encuesta' && a.ref === g.semana);
+  if (!abiertas.length && !mias.length) return '';
+  let h = `<div class="juego-card"><h3>💰 Apuestas de la semana ${g.semana} <small>Saldo ${fmt$(est.billetes)}</small></h3>`;
+  for (const t of ['lider', 'eliminado']) {
+    const a = mias.find(x => x.tipo === t), abierta = abiertas.includes(t);
+    if (!a && !abierta) continue;
+    const pozo = est.pozos?.[t] || 0, n = est.pozos?.['apostadores_' + t] || 0;
+    const quien = a && porId(a.opcion);
+    let estado;
+    if (a && a.pago !== null) estado = a.pago > a.monto ? `🎉 Ganaste <b>${fmt$(a.pago)}</b>` : a.pago === a.monto ? `↩️ Te devolvimos ${fmt$(a.monto)}` : `😢 Perdiste ${fmt$(a.monto)}`;
+    h += `<div class="ap-linea">${quien ? monito(quien, { tam: 26, nombre: false }) : '<span style="font-size:1.5rem">' + (t === 'lider' ? '👑' : '💀') + '</span>'}
+      <div style="min-width:0"><div style="font-weight:700">${AP_TXT[t].t}</div>
+      <small style="color:#C9C3EE">${a ? `Apostaste <b>${fmt$(a.monto)}</b> a ${esc(quien?.nombre || '?')}${estado ? ' · ' + estado : ''}` : `Pozo: ${fmt$(pozo)} · ${n} ${n === 1 ? 'apuesta' : 'apuestas'}`}</small></div>
+      ${abierta ? `<button class="btn chico" data-apostar="${t}">${a ? 'Cambiar' : 'Apostar'}</button>` : ''}</div>`;
+  }
+  h += `<p class="ayuda" style="margin-top:8px">Pozo compartido: lo apostado se reparte entre los que atinan, según cuánto puso cada uno. Si nadie atina, se devuelve.</p></div>`;
+  return h;
+}
+let apSel = null;
+function abrirApuesta(tipo, ref = null) {
+  const g = est.juego;
+  let titulo, opciones, previa, pozo;
+  if (tipo === 'encuesta') {
+    const e = est.encuestas.find(x => x.id === ref); if (!e) return;
+    titulo = e.pregunta; pozo = e.pozo;
+    opciones = e.opciones.map((o, i) => ({ v: String(i), t: o.t, j: o.id && porId(o.id) }));
+    previa = est.mis_apuestas.find(a => a.tipo === 'encuesta' && a.ref === ref);
+  } else {
+    titulo = AP_TXT[tipo].t; pozo = est.pozos?.[tipo] || 0;
+    opciones = est.jugadores.filter(j => j.rol === 'jugador' && j.estado === 'activo' && !(tipo === 'eliminado' && j.id === g.lider_id))
+      .map(j => ({ v: j.id, t: j.nombre, j }));
+    previa = est.mis_apuestas.find(a => a.tipo === tipo && a.ref === g.semana);
+  }
+  apSel = { tipo, ref, opcion: previa?.opcion || null, monto: previa?.monto || 100 };
+  const disponible = est.billetes + (previa?.monto || 0);
+  const pintar = () => {
+    $('#ap-caja').innerHTML = `<div class="folio"><span>Apuesta</span><span>Tienes ${fmt$(disponible)}</span></div>
+      <h2>${esc(titulo)}</h2>
+      <p style="margin:4px 0 0">En el pozo hay <b>${fmt$(pozo)}</b>. Si atinas, te llevas tu parte de todo lo apostado.</p>
+      <div class="ap-ops">${opciones.map(o => `<button class="ap-op ${apSel.opcion === o.v ? 'sel' : ''}" data-v="${esc(o.v)}">
+        ${o.j ? monito(o.j, { tam: 28, cara: apSel.opcion === o.v ? '🤞' : '' }) : `<span style="padding:10px 6px;font-weight:700">${esc(o.t)}</span>`}</button>`).join('')}</div>
+      <label class="campo" for="ap-monto" style="display:block;margin-top:12px;font-weight:600">¿Cuánto apuestas?</label>
+      <input class="in" id="ap-monto" type="number" inputmode="numeric" min="10" step="10" value="${apSel.monto}">
+      <div class="chips-monto">${[50, 100, 200, 500].map(n => `<button data-m="${n}">${fmt$(n)}</button>`).join('')}<button data-m="${Math.min(5000, disponible)}">Todo</button></div>
+      <div class="error hidden" id="ap-error"></div>
+      <div style="display:grid;gap:8px;margin-top:14px">
+        <button class="btn" id="ap-ok">Apostar</button>
+        ${previa ? '<button class="btn sec chico" id="ap-quitar" style="justify-self:center">Quitar mi apuesta</button>' : ''}
+        <button class="link" id="ap-cancelar" style="justify-self:center">Cancelar</button></div>`;
+    $$('#ap-caja .ap-op').forEach(b => b.onclick = () => { apSel.opcion = b.dataset.v; apSel.monto = +$('#ap-monto').value || apSel.monto; SFX.tocar('clic'); pintar(); });
+    $$('#ap-caja [data-m]').forEach(b => b.onclick = () => { $('#ap-monto').value = b.dataset.m; });
+    $('#ap-cancelar').onclick = () => $('#m-apuesta').classList.add('hidden');
+    const mandar = async monto => {
+      try {
+        await rpc('apostar', { p_token: token, p_tipo: tipo, p_opcion: apSel.opcion || '', p_monto: monto, p_ref: ref });
+        $('#m-apuesta').classList.add('hidden');
+        const o = opciones.find(x => x.v === apSel.opcion);
+        if (monto) { SFX.tocar('caja'); toast(`🤞 Apostaste ${fmt$(monto)} a ${o?.t || ''}`); } else toast('Quitaste tu apuesta');
+        refrescar();
+      } catch (e) { mostrarError($('#ap-error'), e); }
+    };
+    $('#ap-ok').onclick = () => {
+      const monto = Math.floor(+$('#ap-monto').value || 0);
+      if (!apSel.opcion) return mostrarError($('#ap-error'), new Error('Elige por quién apuestas'));
+      if (monto < 10) return mostrarError($('#ap-error'), new Error('APUESTA_MINIMA'));
+      if (monto > disponible) return mostrarError($('#ap-error'), new Error('SIN_BILLETES'));
+      mandar(monto);
+    };
+    $('#ap-quitar')?.addEventListener('click', () => mandar(0));
+  };
+  pintar();
+  $('#m-apuesta').classList.remove('hidden');
+}
+
+/* ---------- encuesta del día ---------- */
+function tarjetaEncuesta(e) {
+  const mia = (est.mis_apuestas || []).find(a => a.tipo === 'encuesta' && a.ref === e.id);
+  const opTxt = i => e.opciones[i]?.t || '?';
+  let h = `<div class="juego-card"><h3>📊 Encuesta del día <small>${e.abierta ? `${e.votos} ${e.votos === 1 ? 'voto' : 'votos'}` : 'Cerrada'}</small></h3>
+    <p style="font-weight:700;font-size:1.02rem;color:#fff">${esc(e.pregunta)}</p>`;
+  if (e.abierta) {
+    h += e.opciones.map((o, i) => {
+      const j = o.id && porId(o.id);
+      return `<button class="enc-op ${e.mi_voto === i ? 'mio' : ''}" data-votar-enc="${e.id}" data-op="${i}">
+        ${j ? avatar(j, 28) : ''}<span>${esc(o.t)}</span>${e.mi_voto === i ? '<span class="chk">✔ Tu voto</span>' : ''}</button>`;
+    }).join('');
+    h += `<div class="proximo" data-hasta="${e.cierra}" style="margin-top:10px"><span>Cierra en</span><b class="js-falta">${faltaTexto(new Date(e.cierra) - Date.now())}</b><small>El voto es anónimo</small></div>`;
+    h += `<div class="ap-linea"><span style="font-size:1.4rem">💰</span><div style="min-width:0"><div style="font-weight:700">¿Qué opción va a ganar?</div>
+      <small style="color:#C9C3EE">${mia ? `Apostaste <b>${fmt$(mia.monto)}</b> a “${esc(opTxt(+mia.opcion))}”` : `Pozo: ${fmt$(e.pozo)}`}</small></div>
+      <button class="btn chico" data-apostar="encuesta" data-ref="${e.id}">${mia ? 'Cambiar' : 'Apostar'}</button></div>`;
+  } else if (e.resultado) {
+    const c = e.resultado.conteo, tot = c.reduce((a, b) => a + b, 0), max = Math.max(1, ...c), gan = e.resultado.ganadores.map(Number);
+    h += c.map((n, i) => `<div class="enc-res ${gan.includes(i) ? 'gana' : ''}"><span>${gan.includes(i) ? '🏆 ' : ''}${esc(opTxt(i))}</span>
+      <i style="width:${n / max * 100}%"></i><span>${n}</span></div>`).join('');
+    h += `<p class="ayuda" style="margin-top:6px">${tot} ${tot === 1 ? 'voto' : 'votos'}${e.mi_voto !== null && e.mi_voto !== undefined ? ` · Tú votaste por “${esc(opTxt(e.mi_voto))}”` : ''}</p>`;
+    if (mia) h += `<div class="ap-linea">💰 <span>Apostaste ${fmt$(mia.monto)} a “${esc(opTxt(+mia.opcion))}”: ${mia.pago > mia.monto ? `🎉 ganaste <b>${fmt$(mia.pago)}</b>` : mia.pago === mia.monto ? '↩️ te lo devolvimos' : '😢 perdiste'}</span></div>`;
+  }
+  return h + '</div>';
+}
+
+/* ---------- misión secreta ---------- */
+function tarjetaMision(g) {
+  if (g.semana === 0 || g.fin) return '';
+  const m = est.mision;
+  const obj = m && porId(m.objetivo_id);
+  let h = `<div class="juego-card" id="tarjeta-mision"><h3>🕵️ Misión secreta <small>${est.misiones_cumplidas} cumplidas esta semana</small></h3>`;
+  if (!m) h += `<p class="ayuda">Esta semana no te tocó misión. La próxima semana recibes una.</p>`;
+  else if (m.cumplida) h += `<p>✅ <b>¡Misión cumplida!</b> Ganaste $300. La próxima semana te llega otra.</p>`;
+  else if (!misionVisible) h += `<button class="revelar" data-revelar>👀 Toca para ver tu misión (que nadie vea tu pantalla)</button>`;
+  else h += `<div class="mision-txt">${esc(m.texto)}</div>
+      <p class="ayuda" style="margin-top:6px">Cuando la cumplas, enséñale tu código a <b>${esc(obj?.nombre || 'esa persona')}</b> para que lo escanee desde su juego. Ganas $300 y ${esc(obj?.nombre || 'él o ella')} $50.</p>
+      <div class="fila-btn"><button class="btn chico" data-cumpli>✅ ¡Ya la cumplí!</button><button class="btn sec chico" data-ocultar>Ocultar</button></div>`;
+  h += `<div class="fila-btn" style="margin-top:10px"><button class="btn sec chico" data-escanear>📷 Escanear código de misión</button></div>
+    <p class="ayuda">¿Alguien cumplió su misión contigo? Escanea su código para confirmarlo y ganas $50.</p></div>`;
+  return h;
+}
+const LIB_QR = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';
+const LIB_JSQR = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+const cargadas = {};
+function cargarScript(url) {
+  return cargadas[url] ||= new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = url; s.onload = res; s.onerror = () => { delete cargadas[url]; rej(new Error('Sin conexión')); };
+    document.head.appendChild(s);
+  });
+}
+let qrPoll = null;
+async function abrirQR() {
+  const m = est.mision; if (!m) return;
+  const obj = porId(m.objetivo_id);
+  $('#qr-caja-modal').innerHTML = `<div class="folio"><span>Misión secreta</span><span>Semana ${est.juego.semana}</span></div>
+    <h2>¡Enséñale esto a ${esc(obj?.nombre || 'tu objetivo')}!</h2>
+    <p style="margin:4px 0 0">Que abra su juego, toque <b>📷 Escanear código de misión</b> y apunte a tu pantalla.</p>
+    <div class="qr-caja" id="qr-img"><p class="ayuda">Generando código…</p></div>
+    <div class="codigo-grande">${esc(m.codigo)}</div>
+    <p class="ayuda" style="text-align:center">Si no puede escanear, que escriba este código.</p>
+    <button class="btn sec" id="qr-cerrar" style="margin-top:12px">Cerrar</button>`;
+  $('#qr-cerrar').onclick = () => cerrarQR();
+  $('#m-qr').classList.remove('hidden');
+  try {
+    await cargarScript(LIB_QR);
+    const qr = qrcode(0, 'M'); qr.addData(LINK_JUEGO + '?mision=' + m.codigo); qr.make();
+    $('#qr-img').innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true });
+  } catch { $('#qr-img').innerHTML = '<p class="ayuda">No se pudo dibujar el QR. Usa el código de abajo.</p>'; }
+  clearInterval(qrPoll);
+  qrPoll = setInterval(() => { if ($('#m-qr').classList.contains('hidden')) return clearInterval(qrPoll); refrescar(); }, 3500);
+}
+function cerrarQR(cumplida = false) {
+  clearInterval(qrPoll);
+  if ($('#m-qr').classList.contains('hidden')) return;
+  if (cumplida) {
+    $('#qr-caja-modal').innerHTML = `<div style="text-align:center;padding:10px 0"><div style="font-size:3rem">🕵️✅</div><h2>¡Misión cumplida!</h2><p>Ganaste <b>$300</b>.</p>
+      <button class="btn" id="qr-ok" style="margin-top:12px">¡Bien!</button></div>`;
+    $('#qr-ok').onclick = () => $('#m-qr').classList.add('hidden');
+  } else $('#m-qr').classList.add('hidden');
+}
+let camara = null, escaneoRaf = null;
+async function abrirEscaner(codigoInicial = '') {
+  $('#esc-caja').innerHTML = `<div class="folio"><span>Misión secreta</span><span>Confirmar</span></div>
+    <h2>Escanea su código</h2>
+    <p style="margin:4px 0 0">Si alguien te dice que cumplió su misión contigo, apunta la cámara al código de su celular.</p>
+    <video class="esc-video" id="esc-video" playsinline muted></video>
+    <p class="ayuda" id="esc-estado" style="text-align:center">Abriendo la cámara…</p>
+    <label class="campo" for="esc-codigo" style="display:block;margin-top:8px;font-weight:600">O escribe el código</label>
+    <input class="in" id="esc-codigo" maxlength="6" autocomplete="off" autocapitalize="characters" style="text-transform:uppercase;letter-spacing:.2em;font-family:'Special Elite',monospace" value="${esc(codigoInicial)}">
+    <div class="error hidden" id="esc-error"></div>
+    <div style="display:grid;gap:8px;margin-top:12px"><button class="btn" id="esc-ok">Confirmar</button><button class="link" id="esc-cerrar" style="justify-self:center">Cerrar</button></div>`;
+  $('#esc-cerrar').onclick = cerrarEscaner;
+  $('#esc-ok').onclick = () => confirmarCodigo($('#esc-codigo').value);
+  $('#m-escaner').classList.remove('hidden');
+  if (codigoInicial) { $('#esc-video').classList.add('hidden'); $('#esc-estado').textContent = ''; return; }
+  try {
+    camara = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    const v = $('#esc-video'); v.srcObject = camara; await v.play();
+    $('#esc-estado').textContent = 'Apunta al código QR';
+    let detector = null;
+    if ('BarcodeDetector' in window) { try { detector = new BarcodeDetector({ formats: ['qr_code'] }); } catch { } }
+    if (!detector) await cargarScript(LIB_JSQR);
+    const cv = document.createElement('canvas'), cx = cv.getContext('2d', { willReadFrequently: true });
+    let ocupado = false;
+    const paso = async () => {
+      if (!camara) return;
+      if (!ocupado && v.readyState >= 2) {
+        ocupado = true;
+        let texto = null;
+        try {
+          if (detector) { const r = await detector.detect(v); texto = r[0]?.rawValue || null; }
+          else {
+            cv.width = v.videoWidth; cv.height = v.videoHeight; cx.drawImage(v, 0, 0);
+            texto = jsQR(cx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height)?.data || null;
+          }
+        } catch { }
+        ocupado = false;
+        if (texto) { const c = (texto.match(/mision=([A-Za-z0-9]{6})/) || [null, texto])[1]; if (/^[A-Za-z0-9]{6}$/.test(c)) { SFX.tocar('clic'); return confirmarCodigo(c); } }
+      }
+      escaneoRaf = requestAnimationFrame(paso);
+    };
+    paso();
+  } catch {
+    $('#esc-video').classList.add('hidden');
+    $('#esc-estado').textContent = 'No se pudo abrir la cámara. Escribe el código.';
+  }
+}
+function apagarCamara() {
+  cancelAnimationFrame(escaneoRaf);
+  if (camara) { camara.getTracks().forEach(t => t.stop()); camara = null; }
+}
+function cerrarEscaner() { apagarCamara(); $('#m-escaner').classList.add('hidden'); }
+async function confirmarCodigo(c) {
+  c = String(c || '').trim().toUpperCase();
+  if (c.length !== 6) return mostrarError($('#esc-error'), new Error('El código tiene 6 letras y números'));
+  apagarCamara();
+  try {
+    const r = await rpc('confirmar_mision', { p_token: token, p_codigo: c });
+    const quien = est.jugadores.find(j => j.nombre === r.de) || { id: '', nombre: r.de };
+    $('#esc-caja').innerHTML = `<div style="text-align:center"><div class="folio"><span>Misión secreta</span><span>Confirmada</span></div>
+      <div style="display:flex;justify-content:center;margin-top:6px" id="esc-mono">${monito(quien, { tam: 70, cara: '🎉', clase: 'festeja' })}</div>
+      <h2>¡Confirmado!</h2><p>La misión de <b>${esc(r.de)}</b> era:</p><div class="mision-txt" style="text-align:left">${esc(r.texto)}</div>
+      <p>Ganaste <b>$50</b> por ayudar 🕵️</p><button class="btn" id="esc-fin" style="margin-top:10px">¡Va!</button></div>`;
+    $('#esc-fin').onclick = () => $('#m-escaner').classList.add('hidden');
+    SFX.tocar('fanfarria'); lluviaBilletes(14);
+    refrescar();
+  } catch (e) {
+    $('#m-escaner').classList.contains('hidden') || mostrarError($('#esc-error'), e);
+    $('#esc-video')?.classList.add('hidden');
+  }
+}
+
+/* ---------- récords de la casa ---------- */
+function tarjetaRecords() {
+  const col = (juego, nombre) => {
+    const top = (est.records || []).filter(r => r.juego === juego);
+    const mio = (est.practicas || []).find(p => p.id === est.yo.id && p.juego === juego);
+    return `<div><b>${nombre}</b>${top.map((r, i) => `<div class="r ${r.id === est.yo.id ? 'yo' : ''}"><span>${['🥇', '🥈', '🥉'][i]} ${esc(porId(r.id)?.nombre || '?')}</span><span>${r.mejor}</span></div>`).join('')
+      || '<div class="r"><span class="ayuda">Nadie todavía</span></div>'}
+      <div class="r" style="margin-top:4px;color:#C9C3EE"><span>Tu mejor</span><span>${mio?.mejor ?? 0}</span></div></div>`;
+  };
+  return `<div class="juego-card"><h3>🏆 Récords de la casa <small>Prácticas</small></h3>
+    <div class="record-cols">${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}</div>
+    <div class="fila-btn"><button class="btn chico" data-practicar="memoria">Practicar memoria</button><button class="btn chico" data-practicar="adeudo">Practicar adeudo</button></div>
+    <p class="ayuda" style="margin-top:6px">La primera práctica de cada día paga $50 y romper un récord de la casa, $200.</p></div>`;
+}
+
+/* ---------- mis billetes ---------- */
+async function abrirBilletes() {
+  $('#bi-caja').innerHTML = `<div class="folio"><span>Billetes Alfa</span><span>💵</span></div><h2>${fmt$(est.billetes)}</h2><p class="ayuda">Cargando…</p>`;
+  $('#m-billetes').classList.remove('hidden');
+  let d;
+  try { d = await rpc('mis_billetes', { p_token: token }); } catch (e) { toast(mensajeError(e)); return; }
+  const fecha = t => new Date(t).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+  $('#bi-caja').innerHTML = `<div class="folio"><span>Billetes Alfa</span><span>No son de verdad 😉</span></div>
+    <h2 class="display" style="font-size:2.6rem;margin:2px 0">${fmt$(d.billetes)}</h2>
+    <h3 style="margin-top:12px">Cómo ganar más</h3>
+    <ul style="margin:4px 0 0;padding-left:18px;font-size:.92rem">
+      <li>Entrar al juego cada día: <b>$100</b></li>
+      <li>Primera práctica del día de cada juego: <b>$50</b></li>
+      <li>Romper un récord de la casa: <b>$200</b></li>
+      <li>Cumplir tu misión secreta: <b>$300</b> (y $50 a quien te ayude)</li>
+      <li>Atinarle a las apuestas del líder, del eliminado y de la encuesta</li></ul>
+    <button class="btn tinta" id="bi-tienda" style="margin-top:12px">🛍️ Ir a la tienda del monito</button>
+    <h3 style="margin-top:16px">Los más ricos de la casa</h3>
+    ${d.ranking.slice(0, 10).map((r, i) => `<div class="rank"><span class="n">${i + 1}</span>${avatar(porId(r.id) || r, 26)}<span class="nm">${esc(r.nombre)}${r.id === est.yo.id ? ' (tú)' : ''}</span><b>${fmt$(r.billetes)}</b></div>`).join('')}
+    <h3 style="margin-top:16px">Mis movimientos</h3>
+    ${d.movimientos.map(m => `<div class="mov"><span>${esc(m.concepto)}<small>${fecha(m.creado)}</small></span><b class="${m.monto > 0 ? 'mas' : 'menos'}">${m.monto > 0 ? '+' : '−'}${fmt$(Math.abs(m.monto))}</b></div>`).join('') || '<p class="ayuda">Todavía no hay movimientos.</p>'}
+    <button class="btn sec" id="bi-cerrar" style="margin-top:14px">Cerrar</button>`;
+  $('#bi-cerrar').onclick = () => $('#m-billetes').classList.add('hidden');
+  $('#bi-tienda').onclick = () => { $('#m-billetes').classList.add('hidden'); abrirTienda(); };
+}
+
+/* ---------- tienda del monito ---------- */
+let catalogo = null;
+const TIPOS_TIENDA = [['sombrero', 'Sombreros'], ['lentes', 'Lentes'], ['color', 'Color del cuerpo'], ['mano', 'En la mano']];
+async function abrirTienda() {
+  $('#ti-caja').innerHTML = `<div class="folio"><span>Tienda del monito</span><span>${fmt$(est.billetes)}</span></div><p class="ayuda">Cargando…</p>`;
+  $('#m-tienda').classList.remove('hidden');
+  try { catalogo ||= await rpc('tienda_lista'); } catch (e) { toast(mensajeError(e)); return; }
+  pintarTienda();
+}
+function pintarTienda() {
+  const mio = est.mi_estilo || {}, compras = new Set(est.compras || []);
+  const icono = id => catalogo.find(x => x.id === id)?.icono;
+  const prev = Object.fromEntries(Object.entries(mio).map(([t, id]) => [t, icono(id)]));
+  const yo = porId(est.yo.id) || est.yo;
+  $('#ti-caja').innerHTML = `<div class="folio"><span>Tienda del monito</span><span>Tienes ${fmt$(est.billetes)}</span></div>
+    <div class="tienda-prev">${monito(yo, { tam: 70, estilo: prev, cara: '😎', clase: 'festeja' })}</div>
+    ${TIPOS_TIENDA.map(([t, nombre]) => `<h3 style="margin-top:14px">${nombre}${mio[t] ? ` <button class="mini" data-quitar-t="${t}" style="float:right">Quitar</button>` : ''}</h3>
+      <div class="ti-grid">${catalogo.filter(x => x.tipo === t).map(x => {
+        const tengo = compras.has(x.id), usando = mio[t] === x.id;
+        return `<button class="ti ${tengo ? 'tengo' : ''} ${usando ? 'usando' : ''}" data-item="${x.id}">
+          ${t === 'color' ? `<span class="muestra" style="background:${x.icono}"></span>` : `<span class="ico">${x.icono}</span>`}
+          <span>${esc(x.nombre)}</span><small>${usando ? 'Usando ✓' : tengo ? 'Usar' : fmt$(x.precio)}</small></button>`;
+      }).join('')}</div>`).join('')}
+    <button class="btn sec" id="ti-cerrar" style="margin-top:16px">Cerrar</button>`;
+  $('#ti-cerrar').onclick = () => $('#m-tienda').classList.add('hidden');
+  $$('#ti-caja [data-quitar-t]').forEach(b => b.onclick = async () => {
+    try { await rpc('equipar', { p_token: token, p_tipo: b.dataset.quitarT, p_item: null }); await refrescar(); pintarTienda(); } catch (e) { toast(mensajeError(e)); }
+  });
+  $$('#ti-caja [data-item]').forEach(b => b.onclick = async () => {
+    const x = catalogo.find(i => i.id === b.dataset.item);
+    try {
+      if (!compras.has(x.id)) {
+        if (est.billetes < x.precio) return toast(`Te faltan ${fmt$(x.precio - est.billetes)} para ${x.nombre}`);
+        if (!confirm(`¿Comprar ${x.nombre} por ${fmt$(x.precio)}?`)) return;
+        await rpc('comprar', { p_token: token, p_item: x.id });
+        SFX.tocar('caja'); toast(`🛍️ ¡Compraste ${x.nombre}!`);
+      } else if (mio[x.tipo] === x.id) {
+        await rpc('equipar', { p_token: token, p_tipo: x.tipo, p_item: null });
+      } else {
+        await rpc('equipar', { p_token: token, p_tipo: x.tipo, p_item: x.id }); SFX.tocar('clic');
+      }
+      await refrescar(); pintarTienda();
+    } catch (e) { toast(mensajeError(e)); }
+  });
+}
+$('#c-billetes').onclick = abrirBilletes;
+$('#c-tienda').onclick = abrirTienda;
+$('#c-mision-chip').onclick = () => { misionVisible = true; pintarEconomia(); $('#tarjeta-mision')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+
+/* =====================================================================
    VOTACIÓN 3-2-1
    ===================================================================== */
 let voto = [];      // [{puntos, id, motivo}]
@@ -2539,9 +3150,12 @@ function abrirVotacion() {
   $('#v-pie').textContent = abierta
     ? 'Los motivos se leen en la gala sin tu nombre. Puedes cambiar tu voto mientras la votación siga abierta.'
     : 'Puedes ir eligiendo y escribiendo tus razones: se guardan en este teléfono y estarán listas cuando abra la votación.';
+  votoPrevio = null;
   pintarVoto();
   mostrar('s-votar');
+  setTimeout(() => expresar($$('#v-candidatos .mm'), null, 'susto', 900, null), 350);
 }
+let votoPrevio = null;
 function pintarVoto() {
   const { yo, juego: g, jugadores } = est;
   const candidatos = jugadores.filter(j => j.rol === 'jugador' && j.estado === 'activo' && j.id !== yo.id);
@@ -2549,16 +3163,26 @@ function pintarVoto() {
     const j = v.id && porId(v.id);
     return `<div class="renglon ${i === renglonActivo ? 'activo' : ''}" data-r="${i}">
       <div class="pts">${v.puntos}<small>${v.puntos === 1 ? 'punto' : 'puntos'}</small></div>
-      <div class="quien">${j ? avatar(j, 34) + `<span>${esc(j.nombre)}</span>` : '<span style="color:var(--suave);font-weight:500">Elige a alguien</span>'}</div>
+      <div class="quien">${j ? monito(j, { tam: 26, cara: '😢', clase: 'triste', nombre: false }) + `<span>${esc(j.nombre)}</span>` : '<span style="color:var(--suave);font-weight:500">Elige a alguien</span>'}</div>
       ${j ? `<button class="quitar" data-quitar="${i}" aria-label="Quitar">×</button>` : '<span></span>'}
       <textarea class="in" data-mot="${i}" maxlength="200" placeholder="¿Por qué? (opcional)">${esc(v.motivo)}</textarea>
     </div>`;
   }).join('');
-  $('#v-candidatos').innerHTML = candidatos.map(j => {
-    const asignado = voto.find(v => v.id === j.id);
-    return `<button class="cand ${j.id === g.lider_id ? 'lider' : ''}" data-cand="${j.id}">
-      ${asignado ? `<span class="ficha">${asignado.puntos}</span>` : ''}${avatar(j, 52)}<span class="n">${esc(j.nombre)}</span></button>`;
-  }).join('');
+  // los elegidos se van a su renglón; los demás pasan del susto al alivio
+  const elegidos = voto.filter(v => v.id).length, todos = voto.length && elegidos === voto.length;
+  const cara = id => { const h = [...id].reduce((a, ch) => a + ch.charCodeAt(0), 0) % 4;
+    return (todos ? ['😄', '🥳', '😎', '🤭'] : elegidos ? ['😅', '😌', '😮‍💨', '🙂'] : ['😨', '😟', '😰', '😬'])[h]; };
+  const libres = candidatos.filter(j => !voto.some(v => v.id === j.id));
+  $('#v-candidatos').innerHTML = libres.map(j => `<button class="cand ${j.id === g.lider_id ? 'lider' : ''}" data-cand="${j.id}">
+      ${monito(j, { tam: 40, cara: cara(j.id) })}</button>`).join('')
+    || '<p class="ayuda" style="grid-column:1/-1;text-align:center">Ya elegiste a todos. Toca un renglón y su × para cambiar.</p>';
+  if (votoPrevio !== null && elegidos > votoPrevio) {
+    expresar($$('#v-candidatos .mm'), el => cara(el.dataset.mm), 'festeja', 900, el => cara(el.dataset.mm));
+    SFX.tocar('swish');
+  } else if (votoPrevio !== null && elegidos < votoPrevio) {
+    expresar($$('#v-candidatos .mm'), '😱', 'susto', 700, el => cara(el.dataset.mm));
+  }
+  votoPrevio = elegidos;
   $$('.renglon').forEach(r => r.addEventListener('click', e => {
     if (e.target.closest('textarea,.quitar')) return;
     renglonActivo = +r.dataset.r; pintarVoto();
@@ -2620,11 +3244,17 @@ function abrirPractica(tipo) {
   $('#p-empezar').onclick = () => { tipo === 'memoria' ? jugarMemoria(true) : jugarAdeudo(true); };
   mostrar('s-prueba');
 }
-function finPractica(html, tipo, puntaje = 0) {
+async function finPractica(html, tipo, puntaje = 0) {
   SFX.tocar('caja');
   guardarPractica(tipo, puntaje);
+  let extra = '';
+  try {
+    const r = await rpc('guardar_practica', { p_token: token, p_juego: tipo, p_puntaje: puntaje });
+    if (r.record) { extra += `<p style="font-weight:800">🏆 ¡Nuevo récord de la casa!${r.premio >= 200 ? ' +$200' : ''}</p>`; lluviaBilletes(20); SFX.tocar('fanfarria'); }
+    if (r.premio % 200 === 50) extra += `<p>💵 +$50 por tu primera práctica de hoy</p>`;
+  } catch { }
   $('#p-volver').classList.remove('hidden');
-  $('#p-caja').innerHTML = `<div class="folio"><span>Práctica terminada</span><span>No cuenta</span></div>${html}
+  $('#p-caja').innerHTML = `<div class="folio"><span>Práctica terminada</span><span>No cuenta</span></div>${gradaFiesta()}${html}${extra}
     <div style="display:grid;gap:10px;margin-top:16px"><button class="btn" id="p-otra">Jugar otra vez</button>
     <button class="btn sec" style="color:var(--texto)" data-volver-fin>Regresar a la casa</button></div>`;
   $('#p-otra').onclick = () => abrirPractica(tipo);
@@ -2633,7 +3263,7 @@ function finPractica(html, tipo, puntaje = 0) {
 function finPrueba(html) {
   SFX.tocar('caja');
   $('#p-volver').classList.remove('hidden');
-  $('#p-caja').innerHTML = `<div class="folio"><span>Prueba terminada</span><span>Semana ${est.juego.semana}</span></div>${html}
+  $('#p-caja').innerHTML = `<div class="folio"><span>Prueba terminada</span><span>Semana ${est.juego.semana}</span></div>${html.includes('No se guardó') || html.includes('gradas') ? '' : gradaFiesta()}${html}
     <div style="margin-top:16px"><button class="btn" data-volver-fin>Regresar a la casa</button></div>`;
   $('[data-volver-fin]').onclick = () => { mostrar('s-casa'); refrescar(); };
 }
@@ -2649,10 +3279,13 @@ async function jugarTrivia(preguntas) {
   const caja = $('#p-caja');
   const respuestas = [];
   const LIM = 12000;
+  const G = gradas();
+  caja.innerHTML = G.arriba + '<div id="tv-zona"></div>' + G.abajo;
+  const zona = $('#tv-zona');
   for (let i = 0; i < preguntas.length; i++) {
     const q = preguntas[i];
     const r = await new Promise(resolve => {
-      caja.innerHTML = `<div class="marcador"><span>Pregunta ${i + 1} de ${preguntas.length}</span><span id="t-seg">12</span></div>
+      zona.innerHTML = `<div class="marcador"><span>Pregunta ${i + 1} de ${preguntas.length}</span><span id="t-seg">12</span></div>
         <div class="barra"><i id="t-barra" style="width:100%"></i></div>
         <div class="pregunta">${esc(q.pregunta)}</div>
         <div class="opciones">${q.opciones.map((o, k) => `<button class="opcion" data-op="${k}">${esc(o)}</button>`).join('')}</div>`;
@@ -2663,12 +3296,13 @@ async function jugarTrivia(preguntas) {
         const seg = Math.max(0, Math.ceil((LIM - ms) / 1000));
         $('#t-barra').style.width = Math.max(0, 100 - ms / LIM * 100) + '%';
         $('#t-seg').textContent = seg;
-        if (seg <= 3 && seg > 0 && seg !== ultimo) SFX.tocar(seg % 2 ? 'tic' : 'tac');
+        if (seg <= 3 && seg > 0 && seg !== ultimo) { SFX.tocar(seg % 2 ? 'tic' : 'tac'); if (seg === 3) animarGradas(caja, 'nervios'); }
         ultimo = seg;
-        if (ms >= LIM) { clearInterval(iv); resolve({ id: q.id, opcion: -1, ms: LIM }); }
+        if (ms >= LIM) { clearInterval(iv); animarGradas(caja, 'mal'); resolve({ id: q.id, opcion: -1, ms: LIM }); }
       }, 100);
       $$('.opcion', caja).forEach(b => b.onclick = () => {
         clearInterval(iv);
+        animarGradas(caja, 'nervios');
         $$('.opcion', caja).forEach(x => x.disabled = true);
         b.style.outline = '4px solid var(--tinta)';
         resolve({ id: q.id, opcion: +b.dataset.op, ms: Math.round(performance.now() - t0) });
@@ -2680,7 +3314,7 @@ async function jugarTrivia(preguntas) {
   caja.innerHTML = '<h2>Calificando…</h2>';
   try {
     const res = await rpc('enviar_trivia', { p_token: token, p_respuestas: respuestas });
-    finPrueba(`<h2>${res.bien} de ${res.total} correctas</h2><p>Puntaje: <b class="display" style="font-size:2rem">${res.puntaje}</b></p>`);
+    finPrueba((res.bien * 2 >= res.total ? '' : '<div class="gradas">' + (est.jugadores.filter(j => j.id !== est.yo.id).slice(0, 5).map(j => monito(j, { tam: 30, cara: '😬', clase: 'triste' })).join('')) + '</div>') + `<h2>${res.bien} de ${res.total} correctas</h2><p>Puntaje: <b class="display" style="font-size:2rem">${res.puntaje}</b></p>`);
   } catch (e) { finPrueba(`<h2>No se guardó</h2><p>${esc(mensajeError(e))}</p>`); }
 }
 
@@ -2691,9 +3325,10 @@ function jugarMemoria(practica = false) {
   let abiertas = [], pares = 0, errores = 0, bloqueo = false;
   const t0 = performance.now();
   const caja = $('#p-caja');
+  const G = gradas();
   caja.innerHTML = `<div class="marcador"><span id="m-t">0 s</span><span id="m-e">0 errores</span></div>
-    <div class="cartas">${mazo.map((c, i) => `<button class="carta" data-i="${i}" aria-label="Expediente ${i + 1}">
-      <span class="cara atras">EXP</span><span class="cara frente">${c.ic}</span></button>`).join('')}</div>`;
+    ${G.arriba}<div class="cartas">${mazo.map((c, i) => `<button class="carta" data-i="${i}" aria-label="Expediente ${i + 1}">
+      <span class="cara atras">EXP</span><span class="cara frente">${c.ic}</span></button>`).join('')}</div>${G.abajo}`;
   const iv = setInterval(() => {
     if (pantalla !== 's-prueba' || !$('#m-t')) return clearInterval(iv);   // salió de la práctica
     $('#m-t').textContent = Math.floor((performance.now() - t0) / 1000) + ' s';
@@ -2705,12 +3340,13 @@ function jugarMemoria(practica = false) {
     const [a, c] = abiertas; abiertas = [];
     if (mazo[a.dataset.i].ic === mazo[c.dataset.i].ic) {
       a.classList.add('par'); c.classList.add('par'); pares++;
+      animarGradas(caja, pares === iconos.length ? 'fin' : 'bien');
       if (pares < iconos.length) setTimeout(() => SFX.tocar('caja'), 150);
       if (pares === iconos.length) {
         clearInterval(iv);
         const seg = (performance.now() - t0) / 1000;
         const puntaje = Math.max(0, Math.round(1000 - seg * 10 - errores * 20));
-        await sleep(500);
+        await sleep(1400);
         const html = `<h2>¡Expedientes en orden!</h2><p>${seg.toFixed(1)} segundos y ${errores} errores.</p><p>Puntaje: <b class="display" style="font-size:2rem">${puntaje}</b></p>`;
         if (practica) return finPractica(html, 'memoria', puntaje);
         try { await enviarPuntaje(puntaje); finPrueba(html); }
@@ -2718,6 +3354,7 @@ function jugarMemoria(practica = false) {
       }
     } else {
       setTimeout(() => SFX.tocar('buzzer'), 150);
+      animarGradas(caja, 'mal');
       errores++; $('#m-e').textContent = errores + (errores === 1 ? ' error' : ' errores');
       bloqueo = true; await sleep(700); a.classList.remove('vuelta'); c.classList.remove('vuelta'); bloqueo = false;
     }
@@ -2753,6 +3390,9 @@ function jugarAdeudo(practica = false) {
   const DUR = 120000;
   let puntaje = 0, bien = 0, mal = 0, fin = false, ultimo = 99, nivel = 0;
   const caja = $('#p-caja');
+  const G = gradas();
+  caja.innerHTML = G.arriba + '<div id="ad-zona"></div>' + G.abajo;
+  const zona = $('#ad-zona');
   const t0 = performance.now();
   const terminar = async () => {
     if (fin) return; fin = true; clearInterval(iv);
@@ -2769,14 +3409,14 @@ function jugarAdeudo(practica = false) {
     const seg = Math.max(0, Math.ceil((DUR - ms) / 1000));
     const b = $('#ad-barra'); if (b) b.style.width = Math.max(0, 100 - ms / DUR * 100) + '%';
     const s = $('#ad-seg'); if (s) s.textContent = seg + ' s';
-    if (seg <= 3 && seg > 0 && seg !== ultimo) SFX.tocar(seg % 2 ? 'tic' : 'tac');
+    if (seg <= 3 && seg > 0 && seg !== ultimo) { SFX.tocar(seg % 2 ? 'tic' : 'tac'); animarGradas(caja, 'nervios'); }
     ultimo = seg;
     if (ms >= DUR) terminar();
   }, 100);
   const siguiente = () => {
     if (fin) return;
     const p = problemaAdeudo(nivel);
-    caja.innerHTML = `<div class="marcador"><span id="ad-seg">${Math.ceil((DUR - (performance.now() - t0)) / 1000)} s</span><span>${puntaje} pts</span></div>
+    zona.innerHTML = `<div class="marcador"><span id="ad-seg">${Math.ceil((DUR - (performance.now() - t0)) / 1000)} s</span><span>${puntaje} pts</span></div>
       <div class="barra"><i id="ad-barra"></i></div>
       <div class="escalera" aria-label="Nivel ${p.nivel}">${['Fácil', 'Pagaré', 'Difícil'].map((n, i) => `<span class="${i === nivel ? 'on' : i < nivel ? 'paso' : ''}">${n}</span>`).join('')}</div>
       <div class="folio" style="margin:0 0 6px"><span>Nivel: ${p.nivel}</span><span>+${p.valor} pts</span></div>
@@ -2801,12 +3441,12 @@ function jugarAdeudo(practica = false) {
       $$('#ad-form input, #ad-form button').forEach(x => x.disabled = true);
       const aviso = $('#ad-aviso');
       if (v === p.ok) {
-        puntaje += p.valor; bien++; SFX.tocar('caja');
+        puntaje += p.valor; bien++; SFX.tocar('caja'); animarGradas(caja, 'bien');
         const sube = nivel < 2; nivel = Math.min(2, nivel + 1);
         inp.classList.add('ok'); aviso.textContent = `¡Correcto! +${p.valor}` + (sube ? ' · ¡Subes de nivel!' : ''); aviso.className = 'ad-aviso bien';
         await sleep(450);
       } else {
-        puntaje -= 50; mal++; SFX.tocar('buzzer');
+        puntaje -= 50; mal++; SFX.tocar('buzzer'); animarGradas(caja, 'mal');
         const baja = nivel > 0; nivel = 0;
         inp.classList.add('no'); aviso.innerHTML = `Era <b>${pesos(p.ok)}</b> · −50` + (baja ? ' · Regresas a fácil' : ''); aviso.className = 'ad-aviso mal';
         await sleep(1500);
@@ -3035,9 +3675,9 @@ async function cargarAdmin(silencioso) {
     });
     [adm.cfg, adm.jug] = await Promise.all([
       q(sb.from('config').select('*').eq('id', 1).single()),
-      q(sb.from('jugadores').select('id,nombre,rol,estado,semana_eliminado,fallos,bloqueado_hasta,foto,frase,creado').order('creado')),
+      q(sb.from('jugadores').select('id,nombre,rol,estado,semana_eliminado,fallos,bloqueado_hasta,foto,frase,creado,billetes').order('creado')),
     ]);
-    const vista = { juego: adminJuego, votos: adminVotos, pruebas: adminPruebas, trivia: adminTrivia, ojo: adminOjo, habitantes: adminHabitantes }[adm.tab];
+    const vista = { juego: adminJuego, votos: adminVotos, pruebas: adminPruebas, trivia: adminTrivia, ojo: adminOjo, extras: adminExtras, habitantes: adminHabitantes }[adm.tab];
     await vista(C);
   } catch (e) { C.innerHTML = `<div class="error">${esc(mensajeError(e))}</div>`; }
 }
@@ -3312,6 +3952,103 @@ async function adminOjo(C) {
 }
 
 /* ---- Habitantes ---- */
+/* ---- Extras: encuestas, misiones y billetes ---- */
+async function adminExtras(C) {
+  const c = adm.cfg;
+  const [encs, votosEnc, apEnc, mis, banco] = await Promise.all([
+    q(sb.from('encuestas').select('*').order('abre', { ascending: false })).then(x => x.slice(0, 15)),
+    q(sb.from('encuesta_votos').select('encuesta_id')),
+    q(sb.from('apuestas').select('ref,monto').eq('tipo', 'encuesta')),
+    q(sb.from('misiones').select('*').eq('semana', c.semana)),
+    q(sb.from('misiones_banco').select('*').order('id')),
+  ]);
+  const ahora = Date.now();
+  const estadoEnc = e => +new Date(e.abre) > ahora ? `Programada: abre ${fmtFecha(e.abre)}` : +new Date(e.cierra) > ahora ? `Abierta hasta ${fmtFecha(e.cierra)}` : 'Cerrada';
+  const ricos = [...adm.jug].sort((a, b) => (b.billetes ?? 0) - (a.billetes ?? 0));
+  C.innerHTML = `<form class="adm-caja" id="en-form"><h3>Encuesta del día</h3>
+      <p class="ayuda">Sale en la casa a la hora que pongas (y llega aviso al celular). Todos votan en secreto y pueden apostar qué opción gana.</p>
+      <label class="campo" for="en-preg">Pregunta</label>
+      <input class="in" id="en-preg" maxlength="140" required placeholder="¿Quién es más probable que llegue tarde mañana?">
+      <label class="campo" for="en-tipo">Opciones</label>
+      <select class="in" id="en-tipo"><option value="casa">Los habitantes que siguen en la casa</option><option value="todos">Todos los registrados</option><option value="propias">Escribir mis propias opciones</option></select>
+      <textarea class="in hidden" id="en-ops" rows="4" placeholder="Una opción por renglón (de 2 a 8)" style="margin-top:8px"></textarea>
+      <div class="agenda-grid" style="margin-top:8px">
+        <label for="en-abre">Abre</label><input class="in" type="datetime-local" id="en-abre" value="${aInputLocal(new Date().toISOString())}">
+        <label for="en-dura">Dura</label><select class="in" id="en-dura"><option value="60">1 hora</option><option value="120">2 horas</option><option value="240" selected>4 horas</option><option value="480">8 horas</option><option value="1440">24 horas</option></select>
+      </div>
+      <div class="adm-acciones"><button class="btn" type="submit">Programar encuesta</button></div></form>
+    <div class="adm-caja"><h3>Encuestas</h3>
+      ${encs.map(e => {
+        const nv = votosEnc.filter(v => v.encuesta_id === e.id).length, pozo = apEnc.filter(a => a.ref === e.id).reduce((s, a) => s + a.monto, 0);
+        const res = e.resultado ? e.resultado.conteo.map((n, i) => `${e.resultado.ganadores.includes(String(i)) ? '🏆 ' : ''}${esc(e.opciones[i]?.t)}: ${n}`).join(' · ') : '';
+        return `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b style="white-space:normal">${esc(e.pregunta)}</b>
+          <small>${esc(estadoEnc(e))} · ${nv} votos · pozo ${fmt$(pozo)}</small>${res ? `<small style="white-space:normal">${res}</small>` : ''}</div>
+          <button class="mini" data-enc-borrar="${e.id}">Borrar</button></div>`;
+      }).join('') || '<p class="ayuda">Todavía no hay encuestas.</p>'}</div>
+    <div class="adm-caja"><h3>Misiones de la semana ${c.semana}</h3>
+      <p class="ayuda">Cada quien tiene una misión distinta y todos son objetivo de alguien. Se cumplen cuando el objetivo escanea el código de quien la cumplió.</p>
+      ${mis.map(m => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>${esc(nombreDe(m.jugador_id))}</b>
+        <small style="white-space:normal">${esc(m.texto)}</small></div><span>${m.cumplida ? '✅' : '⏳'}</span></div>`).join('') || '<p class="ayuda">Las misiones se reparten solas al empezar cada semana.</p>'}
+      <div class="adm-acciones"><button class="btn sec chico" id="mis-repartir" ${c.semana ? '' : 'disabled'}>Repartir de nuevo (las no cumplidas)</button></div></div>
+    <form class="adm-caja" id="mb-form"><h3>Banco de misiones (${banco.filter(b => b.activa).length} activas)</h3>
+      <p class="ayuda">Escribe <b>{nombre}</b> donde va la persona objetivo. Ej. Haz que {nombre} diga "pagaré".</p>
+      <input class="in" id="mb-txt" maxlength="160" placeholder='Haz que {nombre} te cuente un chisme'>
+      <div class="adm-acciones"><button class="btn chico" type="submit">Agregar misión</button></div>
+      ${banco.map(b => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b style="white-space:normal;font-weight:600;${b.activa ? '' : 'opacity:.5'}">${esc(b.texto)}</b></div>
+        <div style="display:flex;flex-direction:column;gap:4px"><button class="mini" type="button" data-mb-act="${b.id}" data-val="${!b.activa}">${b.activa ? '✅ Activa' : 'Activar'}</button>
+        <button class="mini" type="button" data-mb-edit="${b.id}">Editar</button><button class="mini" type="button" data-mb-del="${b.id}">Borrar</button></div></div>`).join('')}</form>
+    <div class="adm-caja"><h3>Billetes Alfa</h3>
+      <p class="ayuda">Puedes dar premios o quitar billetes (por ejemplo, a quien gane un reto en la oficina).</p>
+      ${ricos.map(j => `<div class="adm-fila"><div class="info"><b>${esc(j.nombre)}</b><small>${j.rol === 'espectador' ? 'Público' : j.estado === 'eliminado' ? 'Eliminado' : 'En la casa'}</small></div>
+        <b>${fmt$(j.billetes ?? 0)}</b><button class="mini" data-bill="${j.id}">± Ajustar</button></div>`).join('')}</div>`;
+
+  $('#en-tipo').onchange = e => $('#en-ops').classList.toggle('hidden', e.target.value !== 'propias');
+  $('#en-form').onsubmit = async e => {
+    e.preventDefault();
+    const preg = $('#en-preg').value.trim(), tipo = $('#en-tipo').value;
+    let ops;
+    if (tipo === 'propias') ops = $('#en-ops').value.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 8).map(t => ({ t }));
+    else ops = adm.jug.filter(j => tipo === 'todos' || (j.rol === 'jugador' && j.estado === 'activo')).map(j => ({ t: j.nombre, id: j.id }));
+    if (preg.length < 3) return toast('Escribe la pregunta');
+    if (ops.length < 2) return toast('Se necesitan al menos 2 opciones');
+    const abre = $('#en-abre').value ? new Date($('#en-abre').value) : new Date();
+    const cierra = new Date(+abre + $('#en-dura').value * 60000);
+    try {
+      await q(sb.from('encuestas').insert({ pregunta: preg, opciones: ops, abre: abre.toISOString(), cierra: cierra.toISOString() }));
+      toast(+abre <= Date.now() + 60000 ? '📊 Encuesta publicada' : '📊 Encuesta programada para ' + fmtFecha(abre)); cargarAdmin();
+    } catch (x) { toast(mensajeError(x)); }
+  };
+  $$('[data-enc-borrar]').forEach(b => b.onclick = () => { if (confirm('¿Borrar esta encuesta? Si alguien apostó, se le devuelve.')) accion('admin_borrar_encuesta', { p_id: +b.dataset.encBorrar }, 'Encuesta borrada'); });
+  $('#mis-repartir').onclick = async () => {
+    if (!confirm('¿Repartir de nuevo las misiones que no se han cumplido? Cada quien recibirá una misión distinta.')) return;
+    const n = await accion('admin_repartir_misiones', {});
+    if (n !== undefined) toast(`${n} misiones repartidas`);
+  };
+  const guardarMb = async (fn, msg) => { try { await fn(); if (msg) toast(msg); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } };
+  $('#mb-form').onsubmit = e => {
+    e.preventDefault();
+    const t = $('#mb-txt').value.trim();
+    if (!t.includes('{nombre}')) return toast('Incluye {nombre} donde va la persona objetivo', 4000);
+    guardarMb(() => q(sb.from('misiones_banco').insert({ texto: t })), 'Misión agregada');
+  };
+  $$('[data-mb-act]').forEach(b => b.onclick = () => guardarMb(() => q(sb.from('misiones_banco').update({ activa: b.dataset.val === 'true' }).eq('id', b.dataset.mbAct))));
+  $$('[data-mb-edit]').forEach(b => b.onclick = () => {
+    const actual = banco.find(x => String(x.id) === b.dataset.mbEdit);
+    const t = prompt('Edita la misión ({nombre} = la persona objetivo):', actual.texto);
+    if (t === null) return;
+    if (!t.includes('{nombre}')) return toast('Incluye {nombre} donde va la persona objetivo', 4000);
+    guardarMb(() => q(sb.from('misiones_banco').update({ texto: t.trim() }).eq('id', actual.id)), 'Misión actualizada');
+  });
+  $$('[data-mb-del]').forEach(b => b.onclick = () => { if (confirm('¿Borrar esta misión del banco?')) guardarMb(() => q(sb.from('misiones_banco').delete().eq('id', b.dataset.mbDel)), 'Borrada'); });
+  $$('[data-bill]').forEach(b => b.onclick = async () => {
+    const m = prompt(`¿Cuántos billetes para ${nombreDe(b.dataset.bill)}? (usa un número negativo para quitar)`, '100');
+    if (m === null || !+m) return;
+    const motivo = prompt('¿Por qué? (se le muestra en sus movimientos)', 'Premio de la producción');
+    if (motivo === null) return;
+    accion('admin_billetes', { p_id: b.dataset.bill, p_monto: Math.round(+m), p_concepto: motivo }, 'Billetes actualizados');
+  });
+}
+
 async function adminHabitantes(C) {
   const c = adm.cfg;
   const fila = j => `<div class="adm-fila" style="align-items:flex-start">
@@ -3353,7 +4090,12 @@ async function adminHabitantes(C) {
 (async function iniciar() {
   if (!configurado) return mostrar('s-config');
   pintarFotoRegistro();
-  if (token) { store.set('ab_conocido', '1'); await entrarCasa(); } else mostrarInicio();
+  const codigoMision = new URLSearchParams(location.search).get('mision');
+  if (codigoMision) history.replaceState(null, '', location.pathname);
+  if (token) {
+    store.set('ab_conocido', '1'); await entrarCasa();
+    if (codigoMision) { $('#m-bienvenida').classList.add('hidden'); abrirEscaner(codigoMision.toUpperCase().slice(0, 6)); }
+  } else { mostrarInicio(); if (codigoMision) toast('Entra con tu nombre y PIN y vuelve a escanear el código', 5000); }
   setInterval(() => { if (!document.hidden && token && ['s-casa'].includes(pantalla)) refrescar(); }, 7000);
   let ocultaDesde = 0;
   document.addEventListener('visibilitychange', async () => {
