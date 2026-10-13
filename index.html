@@ -351,6 +351,14 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .mono::after{content:"";position:absolute;bottom:calc(var(--u)*-.8);width:calc(var(--u)*7);height:calc(var(--u)*1.8);border-radius:50%;background:rgba(10,6,30,.35);z-index:-1}
 .mono-cab{position:relative;width:calc(var(--u)*8.4);height:calc(var(--u)*8.4);border-radius:50%;overflow:hidden;display:grid;place-items:center;font-family:Anton,Impact,sans-serif;color:#fff;font-size:calc(var(--u)*4.4);box-shadow:0 0 0 2px #FFFDF6;flex:none}
 .mono-cab img{width:100%;height:100%;object-fit:cover}
+.podio{display:grid;gap:10px;margin-top:10px}
+.podio .lugar{display:flex;align-items:center;gap:12px;background:#FFFDF6;border:2px solid var(--tinta);border-radius:14px;padding:8px 12px;color:var(--tinta)}
+.podio .lugar.l1{background:#FFE58A}
+.podio .medalla{font-size:2rem;line-height:1}
+.podio .lugar b{font-size:1.1rem}
+.podio .lugar small{display:block;color:var(--suave)}
+.podio-gala{display:flex;flex-wrap:wrap;justify-content:center;gap:18px}
+.podio-gala>div{display:flex;flex-direction:column;align-items:center;gap:6px}
 .mono-corona{position:absolute;top:calc(var(--u)*-3.2);font-size:calc(var(--u)*3.6);z-index:2;pointer-events:none}
 .mono-cuerpo{width:calc(var(--u)*8);height:calc(var(--u)*10.4);margin-top:calc(var(--u)*-.6);overflow:visible}
 .mono-cuerpo line{stroke:#FFFDF6;stroke-width:3.4;stroke-linecap:round}
@@ -648,7 +656,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
   </div>
   <div class="formato rosa">
     <div class="folio"><span>Votación de eliminación</span><span id="v-folio"></span></div>
-    <h2>¿A quién eliminamos esta semana?</h2>
+    <h2 id="v-titulo">¿A quién eliminamos esta semana?</h2>
     <p id="v-instr" style="font-size:.95rem"></p>
     <div id="v-publico" class="aviso hidden">Votas como público: tu voto aparece en la tabla de la gala, pero no decide quién sale.</div>
     <div id="v-renglones"></div>
@@ -1113,10 +1121,10 @@ const aInputLocal = iso => iso ? new Date(new Date(iso).getTime() - new Date().g
 function proximoEvento(g) {
   const a = g.agenda; if (!a) return null;
   const entreSemanas = g.fase === 'registro' || (g.fase === 'gala' && g.gala_revelada);
-  if (entreSemanas && a.semana === g.semana + 1 && a.prueba_ini) return { t: a.prueba_ini, txt: g.semana === 0 ? 'La casa abre' : `Empieza la semana ${a.semana}` };
+  if (entreSemanas && a.semana === g.semana + 1 && a.prueba_ini) return { t: a.prueba_ini, txt: g.semana === 0 ? 'La casa abre' : g.activos <= 3 ? 'Empieza la gran final' : `Empieza la semana ${a.semana}` };
   if (a.semana !== g.semana) return null;
   const m = { prueba: [a.prueba_fin, 'La prueba cierra'], espera: [a.voto_ini, 'La votación abre'], votacion: [a.voto_fin, 'La votación cierra'],
-              decision: [a.gala, 'La gala empieza'], gala: [g.gala_revelada ? null : a.gala, 'La gala empieza'] }[g.fase];
+              decision: [a.gala, 'La gala empieza'], gala: [g.gala_revelada ? null : a.gala, g.es_final ? 'La gran final empieza' : 'La gala empieza'] }[g.fase];
   return m && m[0] ? { t: m[0], txt: m[1] } : null;
 }
 let ultimoEmpujon = 0;
@@ -1338,6 +1346,7 @@ function cerrarSesion() {
 function faseTexto(g) {
   if (g.semana === 0) return 'Inscripciones abiertas';
   if (g.fin) return '¡Tenemos ganador!';
+  if (g.es_final) return { espera: 'Gran final: la votación abre pronto', votacion: 'Gran final: votación abierta', gala: 'Gran final en preparación' }[g.fase] || 'Gran final';
   return {
     prueba: 'Prueba del líder',
     espera: 'Esperando la votación',
@@ -1357,7 +1366,7 @@ function pintarCasa() {
   $('#c-yo').dataset.ficha = yo.id;
   $('#c-semana').textContent = g.semana === 0 ? 'Semana 0' : 'Semana ' + g.semana;
   $('#c-fase').textContent = faseTexto(g);
-  $('#c-cuenta').textContent = g.semana === 0 ? `${habitantes.length} de ${g.cupo}` : (activos.length === 1 ? '1 sigue en la casa' : `${activos.length} siguen en la casa`);
+  $('#c-cuenta').textContent = g.semana === 0 ? `${habitantes.length} de ${g.cupo}` : (g.fin ? 'Terminó el juego' : activos.length === 1 ? '1 sigue en la casa' : `${activos.length} siguen en la casa`);
 
   SALA.sincronizar();
 
@@ -1378,14 +1387,20 @@ function pintarAccion() {
   const lider = porId(g.lider_id);
   let h = '';
 
-  // Ganador
-  if (g.semana > 0 && g.activos === 1 && g.fase === 'gala' && g.gala_revelada) {
+  // Gran final con podio
+  if (g.fin && est.podio?.length) {
+    const ganadores = est.podio.filter(x => x.lugar === 1);
+    h = `<div class="formato amarillo"><div class="folio"><span>Gran final</span><span>Semana ${g.semana}</span></div>
+      <h2 style="text-align:center">${ganadores.length > 1 ? '¡Empate en el primer lugar!' : `${esc(ganadores[0].nombre)} gana Alfa Brother`}</h2>
+      ${pintarPodio(est.podio)}
+      <button class="btn sec" style="margin-top:14px" data-gala="${g.semana}">Ver la gran final otra vez</button></div>` + pintarAciertos(ganadores);
+  } else if (g.semana > 0 && g.activos === 1 && g.fase === 'gala' && g.gala_revelada) {
     const gan = est.jugadores.find(j => j.rol === 'jugador' && j.estado === 'activo');
     h = `<div class="formato amarillo" style="text-align:center">
       <div class="folio"><span>Gran final</span><span>Ganador</span></div>
       <div style="display:flex;justify-content:center;margin:8px 0">${avatar(gan, 96)}</div>
       <h2>${esc(gan.nombre)} gana Alfa Brother</h2>
-      <p>Nadie lo pudo eliminar.</p></div>` + pintarAciertos(gan);
+      <p>Nadie lo pudo eliminar.</p></div>` + pintarAciertos([gan]);
   } else if (g.semana === 0) {
     h = pintarSalaEspera();
   } else if (g.fase === 'prueba') {
@@ -1396,6 +1411,12 @@ function pintarAccion() {
     else if (mi_intento) cuerpo = `<p>Tu intento quedó incompleto y cuenta como cero.</p>`;
     else cuerpo = `<p>${esc(p.desc)}</p><p><b>Solo tienes un intento.</b></p><button class="btn" id="a-jugar">Jugar la prueba</button>`;
     h = `<div class="formato amarillo"><div class="folio"><span>Prueba del líder</span><span>Semana ${g.semana}</span></div><h2>${esc(p.nombre)}</h2>${cuerpo}</div>`;
+  } else if (g.fase === 'espera' && g.es_final) {
+    h = `<div class="formato amarillo"><div class="folio"><span>Gran final</span><span>Semana ${g.semana}</span></div>
+      <h2>¡Llegamos a la gran final!</h2>
+      <p>Ya no hay prueba ni líder: todo se decide con los votos. Quien junte <b>menos</b> puntos gana; quien junte más queda en el lugar más bajo del podio.</p>
+      <p>Ya puedes entrar al confesionario a preparar tu voto; lo envías cuando abra.</p>
+      <button class="btn" id="a-votar">Ir al confesionario</button></div>`;
   } else if (g.fase === 'espera') {
     h = `<div class="formato rosa"><div class="folio"><span>Votación de eliminación</span><span>Semana ${g.semana}</span></div>
       <h2>La votación abre pronto</h2>
@@ -1406,9 +1427,10 @@ function pintarAccion() {
     const voté = mis_votos.length > 0;
     const resumen = voté ? `<ul style="margin:6px 0 10px;padding-left:18px">${mis_votos.map(v => `<li><b>${v.puntos} ${v.puntos === 1 ? 'punto' : 'puntos'}:</b> ${esc(porId(v.id)?.nombre)}</li>`).join('')}</ul>` : '';
     h = `<div class="formato rosa"><div class="folio"><span>Votación de eliminación</span><span>Semana ${g.semana}</span></div>
-      <h2>${voté ? 'Tu voto está registrado' : 'Es hora de votar'}</h2>
+      <h2>${voté ? 'Tu voto está registrado' : g.es_final ? '¡Gran final! Es hora de votar' : 'Es hora de votar'}</h2>
+      ${g.es_final ? '<p>No hay líder. Quien junte <b>menos</b> puntos gana Alfa Brother; si hay empate, comparten el lugar.</p>' : ''}
       ${lider ? `<p>Líder de la semana: <b>${esc(lider.nombre)}</b> 👑. Si queda con más puntos, se salva.</p>` : ''}
-      ${voté ? resumen : '<p>Reparte 3, 2 y 1 puntos entre tres habitantes. Quien junte más puntos sale de la casa.</p>'}
+      ${voté ? resumen : g.es_final ? '' : '<p>Reparte 3, 2 y 1 puntos entre tres habitantes. Quien junte más puntos sale de la casa.</p>'}
       ${yo.rol === 'espectador' ? '<p class="ayuda">Tu voto es del público: sale en la tabla pero no decide.</p>' : ''}
       <button class="btn" id="a-votar">${voté ? 'Cambiar mi voto' : 'Votar'}</button></div>`;
   } else if (g.fase === 'decision') {
@@ -1423,7 +1445,7 @@ function pintarAccion() {
     }
   } else if (g.fase === 'gala' && !g.gala_revelada) {
     h = `<div class="formato"><div class="folio"><span>Aviso</span><span>Semana ${g.semana}</span></div>
-      <h2>La gala está por comenzar</h2><p>La votación cerró. Mantén esta pantalla abierta: la revelación aparecerá sola.</p></div>`;
+      <h2>${g.es_final ? 'La gran final está por comenzar' : 'La gala está por comenzar'}</h2><p>La votación cerró. Mantén esta pantalla abierta: la revelación aparecerá sola.</p></div>`;
   } else if (g.fase === 'gala') {
     const elim = porId(g.eliminado_id);
     h = `<div class="formato"><div class="folio"><span>Gala</span><span>Semana ${g.semana}</span></div>
@@ -1432,7 +1454,7 @@ function pintarAccion() {
       <button class="btn sec" style="color:var(--texto)" data-gala="${g.semana}">Ver la gala otra vez</button></div>`;
   }
 
-  if (yo.rol === 'jugador' && yo.estado === 'eliminado' && !(g.activos === 1 && g.gala_revelada)) {
+  if (yo.rol === 'jugador' && yo.estado === 'eliminado' && !g.fin) {
     h += `<p style="margin-top:12px;color:#C9C3EE;font-size:.9rem">Ya no estás en la casa, pero tu voto sigue contando cada semana.</p>`;
   }
 
@@ -1624,11 +1646,19 @@ function pintarReloj() {
 }
 setInterval(pintarReloj, 1000);
 
-// Al final del juego: quién le atinó a su predicción
-function pintarAciertos(gan) {
-  if (!est.predicciones) return '';
+const MEDALLA = { 1: '🥇', 2: '🥈', 3: '🥉' };
+const LUGAR = { 1: 'Primer lugar', 2: 'Segundo lugar', 3: 'Tercer lugar' };
+function pintarPodio(podio) {
+  return `<div class="podio">${podio.map(x => `<div class="lugar l${x.lugar}"><span class="medalla">${MEDALLA[x.lugar] || ''}</span>
+    ${avatar(porId(x.id) || x, x.lugar === 1 ? 56 : 44)}<div><b>${esc(x.nombre)}</b><small>${LUGAR[x.lugar] || ''} · ${x.puntos} ${x.puntos === 1 ? 'punto' : 'puntos'} en contra</small></div></div>`).join('')}</div>`;
+}
+// Al final del juego: quién le atinó a su predicción (puede haber varios ganadores)
+function pintarAciertos(ganadores) {
+  if (!est.predicciones?.length) return '';
   const nombre = id => esc(porId(id)?.nombre || '?');
-  const alGanador = est.predicciones.filter(p => p.ganador_id === gan.id);
+  const ids = new Set(ganadores.map(x => x.id));
+  const gan = { nombre: ganadores.map(x => x.nombre).join(' o ') };
+  const alGanador = est.predicciones.filter(p => ids.has(p.ganador_id));
   const alPrimero = est.primer_eliminado ? est.predicciones.filter(p => p.primero_id === est.primer_eliminado) : [];
   const lista = arr => arr.length ? `<ul class="aciertos" style="padding-left:18px">${arr.map(p => `<li>${nombre(p.id)}</li>`).join('')}</ul>` : '<p class="ayuda">Nadie le atinó.</p>';
   return `<div class="formato rosa"><div class="folio"><span>Predicciones reveladas</span><span>${est.predicciones.length} en total</span></div>
@@ -1660,7 +1690,7 @@ const TUTO = [
       ${[3, 2, 1].map((n, i) => `<g transform="translate(56,${24 + i * 38})"><rect width="148" height="30" rx="8" fill="#FFFDF6" stroke="#1B1440" stroke-width="2" stroke-dasharray="${i === 0 ? '0' : '5 4'}"/>
         <text x="16" y="23" text-anchor="middle" font-family="Anton,Impact" font-size="22" fill="#D7263D">${n}</text>
         <circle cx="48" cy="15" r="10" fill="${['#7A3FB5', '#0F7C8C', '#B5541F'][i]}"/><rect x="66" y="10" width="${60 - i * 12}" height="10" rx="5" fill="#C9C3EE"/></g>`).join('')}</svg>` },
-  { t: 'La gala de eliminación', p: 'Sale quien junte más puntos. Si es el líder, se salva y sale el siguiente; si hay empate, decide el líder. En la gala se ven los puntos y los motivos, pero nunca quién votó por quién.',
+  { t: 'La gala de eliminación', p: 'Sale quien junte más puntos. Si es el líder, se salva y sale el siguiente; si hay empate, decide el líder. En la gala se ven los puntos y los motivos, pero nunca quién votó por quién. Cuando quedan 3, es la gran final: sin prueba ni líder, y quien junte menos puntos gana.',
     svg: `<svg viewBox="0 0 260 150"><circle cx="130" cy="72" r="46" fill="#7A3FB5"/><text x="130" y="90" text-anchor="middle" font-family="Anton,Impact" font-size="50" fill="#fff">?</text>
       <g transform="rotate(-14 130 82)"><rect x="34" y="66" width="192" height="36" rx="7" fill="#FFFDF6" stroke="#D7263D" stroke-width="5"/>
       <text x="130" y="93" text-anchor="middle" font-family="Anton,Impact" font-size="22" fill="#D7263D">¡ELIMINADO!</text></g></svg>` },
@@ -1860,13 +1890,15 @@ const SALA = (() => {
   }
   function pintarActor(a, j) {
     const el = a.el;
-    const firma = [j.nombre, !!fotos[j.id], j.id === est.juego.lider_id, j.id === miId].join('|');
+    const medalla = est.juego.fin ? MEDALLA[est.podio?.find(x => x.id === j.id)?.lugar] : null;
+    const firma = [j.nombre, !!fotos[j.id], j.id === est.juego.lider_id, j.id === miId, medalla].join('|');
     if (a.firma === firma) return;
     a.firma = firma;
     $('.mono-cab', el).style.background = colorDe(j.nombre);
     $('.mono-cab', el).innerHTML = cabeza(j);
     $('.mono-nom', el).textContent = j.id === miId ? 'Tú' : j.nombre;
-    $('.mono-corona', el).classList.toggle('hidden', j.id !== est.juego.lider_id || j.estado !== 'activo');
+    $('.mono-corona', el).textContent = medalla || '👑';
+    $('.mono-corona', el).classList.toggle('hidden', !medalla && (j.id !== est.juego.lider_id || j.estado !== 'activo'));
     el.classList.toggle('yo', j.id === miId);
   }
 
@@ -2346,7 +2378,7 @@ function mostrarBienvenida() {
   if (!est) return;
   const g = est.juego, prox = proximoEvento(g);
   $('#bv-hola').textContent = `Hola, ${est.yo.nombre}`;
-  $('#bv-fase').textContent = g.semana > 0 && g.activos === 1 && g.gala_revelada ? 'Gran final' : faseTexto(g);
+  $('#bv-fase').textContent = faseTexto(g);
   $('#bv-semana').textContent = g.semana === 0 ? 'Antes de la semana 1' : `Semana ${g.semana}`;
   $('#bv-prox').innerHTML = prox
     ? `<div class="proximo" data-hasta="${prox.t}"><span>${esc(prox.txt)} en</span><b class="js-falta">${faltaTexto(new Date(prox.t) - Date.now())}</b><small>${esc(fmtFecha(prox.t))}</small></div>`
@@ -2387,6 +2419,8 @@ function abrirVotacion() {
     : n === 3
       ? 'Da 3 puntos a quien más quieres que salga, 2 al segundo y 1 al tercero. Si quieres, escribe por qué.'
       : `Quedan pocos habitantes: reparte ${voto.map(v => v.puntos).join(' y ')} puntos.`;
+  $('#v-titulo').textContent = g.es_final ? 'Gran final: ¿quién queda abajo del podio?' : '¿A quién eliminamos esta semana?';
+  if (g.es_final && candidatos.length) $('#v-instr').textContent = `Da ${voto.map(v => v.puntos).join(' y ')} puntos. Quien junte más puntos queda en el lugar más bajo y quien junte menos gana Alfa Brother.`;
   $('#v-publico').classList.toggle('hidden', yo.rol !== 'espectador');
   $('#v-error').classList.add('hidden');
   const abierta = g.fase === 'votacion';
@@ -2697,8 +2731,7 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
   const tabla = r.tabla;
   const elim = tabla.find(t => t.id === r.eliminado_id) || { id: r.eliminado_id, nombre: r.eliminado, puntos: 0 };
   const persona = id => porId(id) || tabla.find(t => t.id === id) || { id, nombre: '?' };
-  // gran final: en la tabla solo quedaban dos; el que no sale gana
-  const ganador = tabla.length === 2 ? tabla.find(t => t.id !== r.eliminado_id) : null;
+  const ganadores = r.final ? (r.podio || []).filter(x => x.lugar === 1) : [];
 
   // Telón: un toque para que el celular permita el sonido
   if (conTelon) {
@@ -2721,9 +2754,33 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
   try {
     SFX.tocar('dindon');
     E.innerHTML = `<p class="typed" style="color:#C9C3EE;margin:0">Semana ${r.semana}</p>
-      <h1 class="display gala-titulo">${ganador ? 'Gran final' : 'Gala de eliminación'}</h1>
+      <h1 class="display gala-titulo">${r.final ? 'Gran final' : 'Gala de eliminación'}</h1>
       <p class="lema" style="font-size:1.4rem">¡Te vamos a cobrar!</p>`;
     await esperar(2600);
+
+    if (r.final) {
+      // podio: del lugar más bajo al ganador; los empatados salen juntos
+      E.innerHTML = `<p class="typed" style="color:#C9C3EE;margin:0">Sin prueba y sin líder</p>
+        <h2 class="display" style="font-size:2.2rem">Los votos decidieron el podio</h2>`;
+      await esperar(2600);
+      const lugares = [...new Set(r.podio.map(x => x.lugar))].sort((a, b) => b - a);
+      for (const l of lugares) {
+        const xs = r.podio.filter(x => x.lugar === l), ult = l === 1, varios = xs.length > 1;
+        E.innerHTML = `<p class="display suspenso">${ult ? (varios ? 'Hay empate… los ganadores de Alfa Brother son' : 'Y el ganador de Alfa Brother es')
+          : `En ${LUGAR[l].toLowerCase()}${varios ? ', empatados, quedan' : ' queda'}`}<span class="puntos-suspenso"></span></p>`;
+        SFX.tocar('redoble', ult ? 3.5 : 2.5);
+        await esperar(ult ? 3500 : 2500);
+        E.innerHTML = `<div class="podio-gala">${xs.map(x => `<div><div style="font-size:${ult ? 3 : 2.4}rem;line-height:1">${MEDALLA[l]}</div>
+            ${avatar(persona(x.id), varios ? 110 : ult ? 170 : 140)}
+            <h2 class="display" style="font-size:${ult ? 2.4 : 2}rem;margin:0">${esc(x.nombre)}</h2>
+            <p style="margin:0">${x.puntos} ${x.puntos === 1 ? 'punto' : 'puntos'} en contra</p></div>`).join('')}</div>
+          ${ult ? `<p class="lema" style="font-size:1.5rem">${varios ? '¡Ganan Alfa Brother!' : '¡Gana Alfa Brother!'}</p>` : `<p style="color:#C9C3EE">${LUGAR[l]}</p>`}`;
+        if (ult) { SFX.tocar('fanfarria'); lluviaBilletes(40); if (navigator.vibrate) navigator.vibrate([100, 60, 100, 60, 200]); }
+        else SFX.tocar('tadan');
+        await esperar(ult ? 5500 : 3200);
+      }
+      throw 'saltar';
+    }
 
     if (r.lider_id) {
       E.innerHTML = `<p class="typed" style="color:#C9C3EE;margin:0">Líder de la semana</p>
@@ -2770,29 +2827,22 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
     $('#g-salida')?.classList.add('arrastrado');
     SFX.tocar('swish');
     await esperar(1200);
-    if (ganador) {
-      E.innerHTML = `<p class="typed" style="color:#C9C3EE;margin:0">Después de ${r.semana} semanas…</p>
-        <div style="font-size:3rem">👑</div>${avatar(persona(ganador.id), 170)}
-        <h2 class="display" style="font-size:2.6rem;margin-top:10px">${esc(ganador.nombre)}</h2>
-        <p class="lema" style="font-size:1.5rem">¡Gana Alfa Brother!</p>`;
-      SFX.tocar('fanfarria'); lluviaBilletes(40);
-      if (navigator.vibrate) navigator.vibrate([100, 60, 100, 60, 200]);
-      await esperar(5000);
-    }
   } catch (e) { if (e !== 'saltar') console.error(e); }
   SFX.parar();
 
   // tabla completa
   $('#g-saltar').classList.add('hidden');
-  const ordenFinal = [...tabla].sort((a, b) => b.puntos - a.puntos || b.publico - a.publico);
+  const ordenFinal = r.final ? [...tabla].sort((a, b) => a.puntos - b.puntos || a.nombre.localeCompare(b.nombre))
+    : [...tabla].sort((a, b) => b.puntos - a.puntos || b.publico - a.publico);
+  const lugarDe = id => r.final ? r.podio.find(x => x.id === id)?.lugar : null;
   E.style.justifyContent = 'flex-start';
-  E.innerHTML = `<h2 class="display" style="font-size:2rem;color:var(--luz);margin-top:8px">Semana ${r.semana}: resultados</h2>
-    <p style="margin:0;color:#C9C3EE">${ganador ? `Ganó <b style="color:#fff">${esc(ganador.nombre)}</b> · ` : ''}Salió <b style="color:#fff">${esc(r.eliminado)}</b>${r.lider ? ` · Líder: <b style="color:#fff">${esc(r.lider)}</b>` : ''}</p>
+  E.innerHTML = `<h2 class="display" style="font-size:2rem;color:var(--luz);margin-top:8px">${r.final ? 'Gran final' : `Semana ${r.semana}`}: resultados</h2>
+    <p style="margin:0;color:#C9C3EE">${r.final ? `${ganadores.length > 1 ? 'Ganaron' : 'Ganó'} <b style="color:#fff">${esc(ganadores.map(x => x.nombre).join(' y '))}</b>` : `Salió <b style="color:#fff">${esc(r.eliminado)}</b>`}${r.lider ? ` · Líder: <b style="color:#fff">${esc(r.lider)}</b>` : ''}</p>
     <div class="formato tabla-final" style="text-align:left">
       <div class="folio"><span>Habitante</span><span>Puntos · Público</span></div>
       ${ordenFinal.map(t => `<div class="res ${t.id === r.eliminado_id ? 'fuera' : ''}">
         <div class="fila">${avatar(persona(t.id), 38)}
-          <span class="nm">${esc(t.nombre)}${t.lider ? ' 👑' : ''}<small>${t.votos} ${t.votos === 1 ? 'voto' : 'votos'}${t.motivos.length ? ` · ${t.motivos.length} ${t.motivos.length === 1 ? 'motivo' : 'motivos'}` : ''}</small></span>
+          <span class="nm">${lugarDe(t.id) ? MEDALLA[lugarDe(t.id)] + ' ' : ''}${esc(t.nombre)}${t.lider ? ' 👑' : ''}<small>${t.votos} ${t.votos === 1 ? 'voto' : 'votos'}${t.motivos.length ? ` · ${t.motivos.length} ${t.motivos.length === 1 ? 'motivo' : 'motivos'}` : ''}</small></span>
           <span class="pt">${t.puntos}</span><span class="pb">${t.publico} del público</span></div>
         ${t.motivos.length ? `<details style="margin-top:4px"><summary style="cursor:pointer;font-size:.85rem;color:var(--tinta);margin-left:48px">Ver por qué votaron</summary>
           <ul class="motivos">${t.motivos.map(m => `<li>“${esc(m.t)}”${m.p ? ' <em>(público)</em>' : ''}</li>`).join('')}</ul></details>` : ''}
@@ -2892,7 +2942,7 @@ async function adminJuego(C) {
   const act = hab.filter(j => j.estado === 'activo');
   let h = `<div class="adm-caja"><h3>Estado</h3><dl class="kv">
     <dt>Semana</dt><dd>${c.semana}</dd>
-    <dt>Fase</dt><dd>${esc(faseTexto({ ...c }))}</dd>
+    <dt>Fase</dt><dd>${esc(faseTexto({ ...c, fin: c.terminado }))}</dd>
     <dt>Prueba</dt><dd>${c.prueba ? esc(PRUEBAS[c.prueba].nombre) : '—'}</dd>
     <dt>Líder</dt><dd>${c.lider_id ? esc(nombreDe(c.lider_id)) : '—'}</dd>
     <dt>Habitantes</dt><dd>${act.length} activos de ${hab.length} · ${adm.jug.length - hab.length} de público</dd>
@@ -2904,16 +2954,17 @@ async function adminJuego(C) {
   const entre = c.fase === 'registro' || (c.fase === 'gala' && c.gala_revelada);
   const semAg = entre ? c.semana + 1 : c.semana;
   const ag = c.ag_semana === semAg ? c : {};
+  const finalAg = entre ? act.length >= 2 && act.length <= 3 && !c.terminado : c.es_final;   // la semana de la agenda es la gran final
   const campo = (id, txt, val) => `<label for="${id}">${txt}</label><input class="in" type="datetime-local" id="${id}" value="${aInputLocal(val)}">`;
   h += `<div class="adm-caja"><h3>Agenda de la semana ${semAg}</h3>
-    <p class="ayuda">El juego avanza solo a estas horas. Deja vacío lo que quieras hacer a mano. Si hay empate y el líder no decide antes de la gala, el programa elige al azar.</p>
+    <p class="ayuda">${finalAg ? '¡Es la gran final! No hay prueba ni líder: al empezar se abre la votación (o espera a la hora que pongas).' : 'El juego avanza solo a estas horas. Deja vacío lo que quieras hacer a mano. Si hay empate y el líder no decide antes de la gala, el programa elige al azar.'}</p>
     <div class="agenda-grid">
-      ${entre ? `<label for="ag-prueba">Prueba del líder</label><select class="in" id="ag-prueba">${Object.entries(PRUEBAS).map(([k, v]) => `<option value="${k}" ${ag.ag_prueba === k ? 'selected' : ''}>${esc(v.nombre)}</option>`).join('')}</select>` : ''}
-      ${entre ? campo('ag-prueba-ini', semAg === 1 ? 'Abre la casa (empieza la prueba)' : 'Empieza la prueba', ag.ag_prueba_ini) : ''}
-      ${campo('ag-prueba-fin', 'Cierra la prueba (se nombra líder)', ag.ag_prueba_fin)}
+      ${entre && !finalAg ? `<label for="ag-prueba">Prueba del líder</label><select class="in" id="ag-prueba">${Object.entries(PRUEBAS).map(([k, v]) => `<option value="${k}" ${ag.ag_prueba === k ? 'selected' : ''}>${esc(v.nombre)}</option>`).join('')}</select>` : ''}
+      ${entre ? campo('ag-prueba-ini', finalAg ? 'Empieza la gran final' : semAg === 1 ? 'Abre la casa (empieza la prueba)' : 'Empieza la prueba', ag.ag_prueba_ini) : ''}
+      ${finalAg ? '' : campo('ag-prueba-fin', 'Cierra la prueba (se nombra líder)', ag.ag_prueba_fin)}
       ${campo('ag-voto-ini', 'Abre la votación', ag.ag_voto_ini)}
       ${campo('ag-voto-fin', 'Cierra la votación', ag.ag_voto_fin)}
-      ${campo('ag-gala', 'Gala: revelación del eliminado', ag.ag_gala)}
+      ${campo('ag-gala', finalAg ? 'Gran final: revelación del podio' : 'Gala: revelación del eliminado', ag.ag_gala)}
     </div>
     <label class="radio-op" style="margin-top:10px"><input type="checkbox" id="ag-repetir" ${c.ag_repetir !== false ? 'checked' : ''} style="width:20px;height:20px;accent-color:var(--ok)"> Repetir cada semana (mismos días y horas)</label>
     <div class="adm-acciones"><button class="btn chico" id="ag-guardar">Guardar agenda</button>
@@ -2925,7 +2976,13 @@ async function adminJuego(C) {
       ${preds.map(p => `<div class="adm-fila"><div class="info"><b>${esc(nombreDe(p.jugador_id))}</b>
         <small>Gana: ${esc(nombreDe(p.ganador_id))} · Sale primero: ${esc(nombreDe(p.primero_id))}</small></div></div>`).join('') || '<p class="ayuda">Nadie ha hecho su predicción.</p>'}</div>`;
   }
-  if (c.fase === 'registro' || (c.fase === 'gala' && c.gala_revelada)) {
+  if (c.terminado) {
+    h += `<div class="adm-caja"><h3>Juego terminado</h3><p>Ya hubo gran final. Para jugar otra temporada usa <b>Reiniciar juego</b>.</p></div>`;
+  } else if (entre && finalAg) {
+    h += `<div class="adm-caja"><h3>Gran final (semana ${c.semana + 1})</h3>
+      <p>Quedan ${act.length} en la casa. No hay prueba ni líder: al iniciar se abre la votación. Quien junte menos puntos gana; los empates comparten lugar.</p>
+      <div class="adm-acciones"><button class="btn" id="ad-iniciar">Iniciar la gran final</button></div></div>`;
+  } else if (c.fase === 'registro' || (c.fase === 'gala' && c.gala_revelada)) {
     h += `<div class="adm-caja"><h3>Iniciar semana ${c.semana + 1}</h3>
       ${c.semana === 0 ? `<p class="ayuda">Al iniciar la semana 1 se cierran los lugares de habitante: quien se registre después entra como público.</p>` : ''}
       <label class="campo" for="ad-prueba">Prueba del líder</label>
@@ -2954,10 +3011,10 @@ async function adminJuego(C) {
     h += `<div class="adm-caja"><h3>Votación abierta</h3>
       <p><b>${ya.size}</b> de ${hab.length} habitantes han votado (incluye eliminados).</p>
       ${faltan.length ? `<p class="ayuda">Faltan: ${faltan.map(j => esc(j.nombre)).join(', ')}</p>` : ''}
-      <label class="campo" for="ad-lider2">Cambiar líder</label>
-      <select class="in" id="ad-lider2"><option value="">—</option>${act.map(j => `<option value="${j.id}" ${j.id === c.lider_id ? 'selected' : ''}>${esc(j.nombre)}</option>`).join('')}</select>
+      ${c.es_final ? '<p class="ayuda">Gran final: sin líder. Quien junte menos puntos gana.</p>' : `<label class="campo" for="ad-lider2">Cambiar líder</label>
+      <select class="in" id="ad-lider2"><option value="">—</option>${act.map(j => `<option value="${j.id}" ${j.id === c.lider_id ? 'selected' : ''}>${esc(j.nombre)}</option>`).join('')}</select>`}
       <div class="adm-acciones"><button class="btn" id="ad-cerrar-vot">Cerrar votación</button>
-      <button class="btn sec chico" data-fase="prueba">Regresar a la prueba</button></div></div>`;
+      ${c.es_final ? '' : '<button class="btn sec chico" data-fase="prueba">Regresar a la prueba</button>'}</div></div>`;
   }
   if (c.fase === 'decision') {
     h += `<div class="adm-caja"><h3>Empate</h3>
@@ -2965,7 +3022,17 @@ async function adminJuego(C) {
       <div class="adm-acciones">${c.empatados.map(id => `<button class="btn sec chico" data-decidir="${id}">Sale ${esc(nombreDe(id))}</button>`).join('')}</div>
       <div class="adm-acciones"><button class="btn sec chico" data-fase="votacion">Reabrir votación</button></div></div>`;
   }
-  if (c.fase === 'gala' && !c.gala_revelada) {
+  if (c.fase === 'gala' && !c.gala_revelada && c.es_final) {
+    // vista previa del podio: menos puntos = mejor lugar
+    const vs = await q(sb.from('votos').select('votado_id,puntos,es_publico').eq('semana', c.semana));
+    const pts = act.map(j => ({ j, p: vs.filter(v => !v.es_publico && v.votado_id === j.id).reduce((a, v) => a + v.puntos, 0) })).sort((a, b) => a.p - b.p);
+    let lugar = 0, prev = null;
+    const filas = pts.map(x => { if (x.p !== prev) { lugar++; prev = x.p; } return `<li>${MEDALLA[lugar] || ''} <b>${esc(x.j.nombre)}</b> · ${x.p} puntos</li>`; }).join('');
+    h += `<div class="adm-caja"><h3>Gran final lista</h3>
+      <ul style="list-style:none;padding:0;margin:6px 0">${filas}</ul><p class="ayuda">Nadie más lo sabe todavía. Al revelar, la gran final aparece en todos los celulares.</p>
+      <div class="adm-acciones"><button class="btn" id="ad-revelar">Revelar en todos los celulares</button>
+      <button class="btn sec chico" data-fase="votacion">Reabrir votación</button></div></div>`;
+  } else if (c.fase === 'gala' && !c.gala_revelada) {
     h += `<div class="adm-caja"><h3>Gala lista</h3>
       <p>Sale: <b>${esc(nombreDe(c.eliminado_id))}</b>. Nadie más lo sabe todavía.</p>
       <p class="ayuda">Al revelar, la gala aparece sola en todos los celulares que tengan el juego abierto.</p>
@@ -2976,7 +3043,7 @@ async function adminJuego(C) {
     <div class="adm-acciones"><button class="btn sec chico" id="ad-reiniciar">Reiniciar juego</button></div></div>`;
   C.innerHTML = h;
 
-  $('#ad-iniciar')?.addEventListener('click', () => accion('admin_iniciar_semana', { p_prueba: $('#ad-prueba').value }, 'Semana iniciada'));
+  $('#ad-iniciar')?.addEventListener('click', () => accion('admin_iniciar_semana', { p_prueba: $('#ad-prueba')?.value || 'memoria' }, finalAg ? '¡Empezó la gran final!' : 'Semana iniciada'));
   $('#ag-guardar')?.addEventListener('click', () => {
     const val = id => { const v = $('#' + id)?.value; return v ? new Date(v).toISOString() : null; };
     const datos = { semana: semAg, prueba: $('#ag-prueba')?.value || c.ag_prueba || c.prueba || 'memoria',
@@ -2997,7 +3064,7 @@ async function adminJuego(C) {
   $('#ad-cerrar-vot')?.addEventListener('click', async () => {
     if (!confirm('¿Cerrar la votación?')) return;
     const r = await accion('admin_cerrar_votacion', {});
-    if (r) toast(r.empate ? 'Hubo empate: decide el líder' : 'Votación cerrada. La gala está lista.', 3500);
+    if (r) toast(r.final ? 'Votación cerrada. La gran final está lista.' : r.empate ? 'Hubo empate: decide el líder' : 'Votación cerrada. La gala está lista.', 3500);
   });
   $$('[data-decidir]').forEach(b => b.onclick = () => { if (confirm('¿Sale ' + nombreDe(b.dataset.decidir) + '?')) accion('admin_decidir', { p_id: b.dataset.decidir }, 'Decidido'); });
   $$('[data-fase]').forEach(b => b.onclick = () => { if (confirm('¿Seguro?')) accion('admin_fase', { p_fase: b.dataset.fase }, 'Fase cambiada'); });

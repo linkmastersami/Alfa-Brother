@@ -128,6 +128,11 @@ create table if not exists public.chismes (
 -- No se guarda quién los escribió.
 alter table public.chismes add column if not exists pendiente boolean not null default false;
 
+-- v5: gran final (con 3 o menos en la casa no hay prueba ni líder; se vota por los lugares)
+alter table public.config add column if not exists es_final   boolean not null default false;
+alter table public.config add column if not exists terminado  boolean not null default false;
+alter table public.config add column if not exists aviso_voto int;   -- semana en que ya se mandó el recordatorio de votar
+
 -- Predicción secreta: quién gana y quién sale primero
 create table if not exists public.predicciones (
   jugador_id  uuid primary key references public.jugadores(id) on delete cascade,
@@ -305,7 +310,7 @@ begin
   perform public._avanzar_agenda();
   select * into c from public.config where id = 1;
   select count(*) into v_activos from public.jugadores where rol = 'jugador' and estado = 'activo';
-  v_fin := c.semana > 0 and v_activos <= 1 and c.gala_revelada;
+  v_fin := c.terminado or (c.semana > 0 and v_activos <= 1 and c.gala_revelada);
 
   return jsonb_build_object(
     'yo', jsonb_build_object('id', yo.id, 'nombre', yo.nombre, 'rol', yo.rol, 'estado', yo.estado, 'frase', yo.frase),
@@ -315,8 +320,9 @@ begin
         'id', p.jugador_id, 'ganador_id', p.ganador_id, 'primero_id', p.primero_id)), '[]'::jsonb)
         from public.predicciones p) end,
     'primer_eliminado', (select (h.resultados->>'eliminado_id') from public.historial h where h.semana = 1),
+    'podio', case when v_fin then (select h.resultados->'podio' from public.historial h where h.semana = c.semana) end,
     'juego', jsonb_build_object(
-      'inicio_at', c.inicio_at, 'fin', v_fin,
+      'inicio_at', c.inicio_at, 'fin', v_fin, 'es_final', c.es_final,
       'agenda', case when c.ag_semana in (c.semana, c.semana + 1) then jsonb_build_object(
         'semana', c.ag_semana, 'prueba', c.ag_prueba, 'prueba_ini', c.ag_prueba_ini, 'prueba_fin', c.ag_prueba_fin,
         'voto_ini', c.ag_voto_ini, 'voto_fin', c.ag_voto_fin, 'gala', c.ag_gala) end,
@@ -529,18 +535,29 @@ end $$;
 
 create or replace function public._iniciar_semana(p_prueba text)
 returns void language plpgsql security definer set search_path = public as $$
-declare c public.config;
+declare
+  c public.config;
+  v_act int;
+  v_final boolean;
 begin
   select * into c from public.config where id = 1 for update;
   if not (c.fase = 'registro' or (c.fase = 'gala' and c.gala_revelada)) then raise exception 'FASE_INCORRECTA'; end if;
-  if p_prueba not in ('trivia','memoria','adeudo') then raise exception 'PRUEBA_INVALIDA'; end if;
-  if p_prueba = 'trivia' and not exists (select 1 from public.trivia where activa) then raise exception 'SIN_TRIVIAS'; end if;
-  -- con un solo habitante en la casa ya hay ganador: no se abre otra semana
-  if c.semana > 0 and (select count(*) from public.jugadores where rol = 'jugador' and estado = 'activo') <= 1 then
-    raise exception 'JUEGO_TERMINADO';
+  select count(*) into v_act from public.jugadores where rol = 'jugador' and estado = 'activo';
+  -- ya hubo gran final (o solo queda uno): no se abre otra semana
+  if c.terminado or (c.semana > 0 and v_act <= 1) then raise exception 'JUEGO_TERMINADO'; end if;
+  -- con 3 o menos en la casa es la gran final: sin prueba ni líder, se vota directo
+  v_final := v_act between 2 and 3;
+  if not v_final then
+    if p_prueba not in ('trivia','memoria','adeudo') then raise exception 'PRUEBA_INVALIDA'; end if;
+    if p_prueba = 'trivia' and not exists (select 1 from public.trivia where activa) then raise exception 'SIN_TRIVIAS'; end if;
   end if;
   update public.config
-     set semana = c.semana + 1, fase = 'prueba', prueba = p_prueba, lider_id = null, eliminado_id = null,
+     set semana = c.semana + 1,
+         fase = case when not v_final then 'prueba'
+                     when c.ag_semana = c.semana + 1 and c.ag_voto_ini > now() then 'espera'
+                     else 'votacion' end,
+         prueba = case when v_final then null else p_prueba end,
+         es_final = v_final, lider_id = null, eliminado_id = null,
          empatados = '{}', gala_revelada = false, actualizado = now()
    where id = 1;
 end $$;
@@ -589,6 +606,12 @@ begin
   select * into c from public.config where id = 1 for update;
   if c.fase <> 'votacion' then raise exception 'FASE_INCORRECTA'; end if;
 
+  -- gran final: no sale nadie, los lugares se calculan al revelar
+  if c.es_final then
+    update public.config set eliminado_id = null, empatados = '{}', fase = 'gala', gala_revelada = false, actualizado = now() where id = 1;
+    return jsonb_build_object('final', true, 'empate', false);
+  end if;
+
   res := public._resultados(c.semana);
   select max((x->>'puntos')::int) into v_max
     from jsonb_array_elements(res) x where (x->>'id')::uuid is distinct from c.lider_id;
@@ -627,9 +650,27 @@ declare
   v_max_otros int;
 begin
   select * into c from public.config where id = 1 for update;
-  if c.fase <> 'gala' or c.eliminado_id is null or c.gala_revelada then raise exception 'FASE_INCORRECTA'; end if;
+  if c.fase <> 'gala' or c.gala_revelada or (c.eliminado_id is null and not c.es_final) then raise exception 'FASE_INCORRECTA'; end if;
 
   res := public._resultados(c.semana);
+
+  -- gran final: menos puntos = mejor lugar; los empatados comparten lugar
+  if c.es_final then
+    insert into public.historial (semana, resultados) values (c.semana, jsonb_build_object(
+      'semana', c.semana, 'final', true,
+      'eliminado_id', null, 'eliminado', null, 'lider_id', null, 'lider', null,
+      'lider_salvado', false, 'desempate', false,
+      'podio', (select jsonb_agg(jsonb_build_object('id', x->>'id', 'nombre', x->>'nombre', 'puntos', (x->>'puntos')::int, 'lugar', lugar)
+                                 order by lugar, x->>'nombre')
+                  from (select x, dense_rank() over (order by (x->>'puntos')::int) as lugar
+                          from jsonb_array_elements(res) x) t),
+      'tabla', res))
+    on conflict (semana) do update set resultados = excluded.resultados, creado = now();
+    update public.config set gala_revelada = true, terminado = true, actualizado = now(),
+           ag_semana = null, ag_prueba_ini = null, ag_prueba_fin = null, ag_voto_ini = null, ag_voto_fin = null, ag_gala = null
+     where id = 1;
+    return;
+  end if;
   select max((x->>'puntos')::int) filter (where (x->>'id')::uuid = c.lider_id),
          max((x->>'puntos')::int) filter (where (x->>'id')::uuid is distinct from c.lider_id)
     into v_max_lider, v_max_otros
@@ -755,7 +796,7 @@ begin
            set eliminado_id = c.empatados[1 + floor(random() * cardinality(c.empatados))::int],
                fase = 'gala', gala_revelada = false, actualizado = now()
          where id = 1;
-      elsif c.fase = 'gala' and not c.gala_revelada and c.eliminado_id is not null and c.ag_gala <= now() then
+      elsif c.fase = 'gala' and not c.gala_revelada and (c.eliminado_id is not null or c.es_final) and c.ag_gala <= now() then
         perform public._revelar();
       else
         exit;
@@ -827,6 +868,7 @@ returns void language plpgsql security definer set search_path = public as $$
 begin
   perform public._solo_admin();
   if p_fase not in ('prueba','espera','votacion') then raise exception 'FASE_INVALIDA'; end if;
+  if p_fase = 'prueba' and (select es_final from public.config where id = 1) then raise exception 'FASE_INCORRECTA'; end if;
   update public.config set fase = p_fase, eliminado_id = null, empatados = '{}', gala_revelada = false, actualizado = now() where id = 1;
 end $$;
 
@@ -858,7 +900,7 @@ begin
   delete from public.predicciones where true;
   update public.jugadores set estado = 'activo', semana_eliminado = null where true;
   update public.config set semana = 0, fase = 'registro', prueba = null, lider_id = null, eliminado_id = null,
-         empatados = '{}', gala_revelada = false, actualizado = now() where id = 1;
+         empatados = '{}', gala_revelada = false, es_final = false, terminado = false, aviso_voto = null, actualizado = now() where id = 1;
 end $$;
 
 -- Las funciones internas no se pueden llamar directo desde el celular
