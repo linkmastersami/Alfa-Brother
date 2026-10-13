@@ -2099,20 +2099,56 @@ const SALA = (() => {
     parejasCache.set(clave, mapa);
     return mapa;
   }
-  const camina = id => !(id === miId && soyActor()) && !(online.has(id) && actores.get(id)?.ctrl);
-  function destino(id, k) {
+  // mi monito lo muevo yo solo un rato después de tocar el piso; luego vuelve a pasear solo
+  const manual = () => { const y = actores.get(miId); return !!(y?.ctrl && (Date.now() < (y.ctrlHasta || 0) || Date.now() < y.ocupado)); };
+  const camina = id => id === miId ? !manual() : !(online.has(id) && actores.get(id)?.ctrl);
+  function destino(id, k, prof = 0) {
     const p = parejas(k).get(id);
     if (p && camina(p.otro)) {
       const r = azar(hash('m' + k + p.key)), s = SPOTS[Math.floor(r() * SPOTS.length)];
       return limitar(s[0] + (p.lado ? 5.5 : -5.5), s[1]);
     }
-    const r = azar(hash(id + ':' + k)), s = SPOTS[Math.floor(r() * SPOTS.length)];
+    const r = azar(hash(id + ':' + k));
+    // a veces se queda donde estaba (se ve más natural que todos caminen siempre)
+    if (prof < 4 && r() < .38) return destino(id, k - 1, prof + 1);
+    const s = SPOTS[Math.floor(r() * SPOTS.length)];
     return limitar(s[0] + r() * 6 - 3, s[1] + r() * 4 - 2);
+  }
+  // Cada monito sale a una hora distinta del turno y camina a su propia velocidad
+  const planCache = new Map();
+  // cada monito cambia de turno en un momento distinto (hasta 3 s antes)
+  const borde = (id, q) => -azar(hash('b' + id + q))() * 3000;
+  function plan(id, k) {
+    const otro = q => { const x = parejas(q).get(id); return x ? +camina(x.otro) : 2; };
+    const clave = id + '|' + k + '|' + camina(id) + otro(k) + otro(k - 1);
+    let pl = planCache.get(clave);
+    if (pl) return pl;
+    const a = destino(id, k - 1), b = destino(id, k);
+    const r = azar(hash('t' + id + k));
+    const dist = Math.hypot(b[0] - a[0], (b[1] - a[1]) * 1.3);
+    const anda = dist < 1 ? 0 : Math.min(5600, Math.max(900, dist * (85 + r() * 60)));
+    // puede salir desde antes de que empiece el turno (así no arrancan todos juntos)
+    // y siempre llega antes de que salga hacia el siguiente destino
+    const enPareja = !!parejas(k).get(id);
+    const ini = borde(id, k), fin = T + borde(id, k + 1) - anda - 300;
+    const max = Math.max(ini, enPareja ? Math.min(4000, fin) : fin);
+    const sale = ini + r() * (max - ini);
+    pl = { a, b, sale, anda, llega: sale + anda };
+    if (planCache.size > 600) planCache.clear();
+    planCache.set(clave, pl);
+    return pl;
   }
   function posSolo(id, t) {
     const k = Math.floor(t / T), ph = t - k * T;
-    const a = destino(id, k - 1), b = destino(id, k);
-    if (ph < 3500) { const e = suave(ph / 3500); return { x: lerp(a[0], b[0], e), y: lerp(a[1], b[1], e), mueve: Math.hypot(b[0] - a[0], b[1] - a[1]) > 1, izq: b[0] < a[0] }; }
+    // ¿ya va saliendo hacia el destino del siguiente turno?
+    const n = plan(id, k + 1);
+    if (n.anda && n.sale < 0 && ph >= T + n.sale) {
+      const e = suave(Math.min(1, (ph - T - n.sale) / n.anda));
+      return { x: lerp(n.a[0], n.b[0], e), y: lerp(n.a[1], n.b[1], e), mueve: true, izq: n.b[0] < n.a[0] };
+    }
+    const { a, b, sale, anda, llega } = plan(id, k);
+    if (!anda || ph < sale) return { x: a[0], y: a[1], mueve: false, izq: undefined };
+    if (ph < llega) { const e = suave((ph - sale) / anda); return { x: lerp(a[0], b[0], e), y: lerp(a[1], b[1], e), mueve: true, izq: b[0] < a[0] }; }
     // al llegar, si tiene pareja se voltean a verse
     const p = parejas(k).get(id);
     return { x: b[0], y: b[1], mueve: false, izq: p && camina(p.otro) ? p.lado === 1 : undefined };
@@ -2174,10 +2210,6 @@ const SALA = (() => {
         a.el = crearEl(a); a.firma = null;
         (enSala ? capa : $('#palco-lista')).appendChild(a.el);
         a.enSala = enSala;
-        if (j.id === miId && enSala && !a.ctrl) {
-          const p = posSolo(j.id, ahora);
-          a.ctrl = { fx: p.x, fy: p.y, tx: p.x, ty: p.y, t0: ahora, dur: 0 };
-        }
       }
       pintarActor(a, j);
     }
@@ -2254,6 +2286,7 @@ const SALA = (() => {
     congelar(B, B.x, B.y, ahora + total, tx < B.x);
     yo.ocupado = 0; yo.retoHasta = ahora + total; miCooldown = ahora + total + 2500;
     yo.ctrl = { fx: yo.x, fy: yo.y, tx, ty, t0: ahora, dur };
+    yo.ctrlHasta = ahora + total + 6000;
     mandar({ tipo: 'reto', a: miId, b: id, x: B.x, y: B.y, dur: total });
     mandar({ tipo: 'mov', id: miId, fx: yo.x, fy: yo.y, tx, ty, dur });
     clearTimeout(yo.llegaT);
@@ -2331,6 +2364,7 @@ const SALA = (() => {
     if (Date.now() < yo.ocupado || Date.now() < (yo.retoHasta || 0)) return;
     const dur = Math.max(450, Math.hypot(tx - yo.x, ty - yo.y) * 42);
     yo.ctrl = { fx: yo.x, fy: yo.y, tx, ty, t0: Date.now(), dur };
+    yo.ctrlHasta = Date.now() + dur + 12000;          // se queda ahí un rato y luego vuelve a pasear
     mandar({ tipo: 'mov', id: miId, fx: yo.x, fy: yo.y, tx, ty, dur });
     clearTimeout(yo.llegaT);
   });
@@ -2344,6 +2378,7 @@ const SALA = (() => {
     const dur = Math.max(350, Math.hypot(tx - yo.x, ty - yo.y) * 38);
     yo.ocupado = 0; yo.retoHasta = 0;
     yo.ctrl = { fx: yo.x, fy: yo.y, tx, ty, t0: Date.now(), dur };
+    yo.ctrlHasta = Date.now() + dur + 20000;
     mandar({ tipo: 'mov', id: miId, fx: yo.x, fy: yo.y, tx, ty, dur });
     clearTimeout(yo.llegaT);
     SFX.tocar('swish');
@@ -2371,9 +2406,16 @@ const SALA = (() => {
         if (ahora < (actores.get(id)?.ocupado || 0) || ahora < (actores.get(p.otro)?.ocupado || 0)) continue;
         const r = azar(hash('j' + k + p.key)), [a, b] = r() < .5 ? [id, p.otro].sort() : [id, p.otro].sort().reverse();
         const par = PLATICAS[Math.floor(r() * PLATICAS.length)];
-        const espera = k * T + 4200 - ahora;
+        const llegan = Math.max(plan(a, k).llega, plan(b, k).llega);
+        if (llegan > T - 2600) continue;
+        const espera = k * T + Math.max(300, llegan + 500) - ahora;
         if (espera > -300) setTimeout(() => { if (camina(a) && camina(b) && Date.now() >= (actores.get(a)?.ocupado || 0)) platica(a, b, par); }, Math.max(0, espera));
       }
+    }
+    const yoA = actores.get(miId);
+    if (yoA?.enSala && yoA.ctrl && ahora >= (yoA.ctrlHasta || 0) && ahora >= yoA.ocupado) {
+      yoA.ctrl = null;
+      mandar({ tipo: 'auto', id: miId });
     }
     for (const a of actores.values()) {
       if (!a.enSala) continue;
@@ -2431,12 +2473,14 @@ const SALA = (() => {
   function miPosicion() {
     const yo = actores.get(miId);
     if (yo?.enSala && yo.ctrl) mandar({ tipo: 'pos', id: miId, x: yo.x, y: yo.y });
+    else if (yo?.enSala) mandar({ tipo: 'auto', id: miId });
   }
   function recibir({ payload: m }) {
     if (!m || m.id === miId && m.tipo !== 'env') return;
     const a = actores.get(m.id);
     if (m.tipo === 'mov' && a) a.ctrl = { fx: m.fx, fy: m.fy, tx: m.tx, ty: m.ty, t0: Date.now(), dur: m.dur };
     else if (m.tipo === 'pos' && a) a.ctrl = { fx: m.x, fy: m.y, tx: m.x, ty: m.y, t0: Date.now(), dur: 0 };
+    else if (m.tipo === 'auto' && a) a.ctrl = null;      // volvió a pasear solo
     else if (m.tipo === 'emo') { burbuja(m.id, m.e); saludar(m.id); }
     else if (m.tipo === 'ppt') jugarPPT(m.a, m.b, m.ja, m.jb);
     else if (m.tipo === 'reto') {
