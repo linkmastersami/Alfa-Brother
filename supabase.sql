@@ -1456,7 +1456,7 @@ $$;
 -- Cada quien recibe una misión distinta; todos son objetivo de exactamente una persona.
 create or replace function public._repartir_misiones(p_semana int, p_reemplazar boolean)
 returns int language plpgsql security definer set search_path = public as $$
--- Solo los habitantes que siguen en la casa. Cada quien recibe 5 misiones con 5 objetivos distintos
+-- Todos los habitantes (en la casa y eliminados; el público no). Cada quien recibe 5 misiones con 5 objetivos distintos
 -- (si quedan pocos se repiten). En cada ronda todos son objetivo de exactamente una persona.
 declare
   v_ids uuid[];
@@ -1471,7 +1471,7 @@ declare
 begin
   if p_semana < 1 then return 0; end if;
   if p_reemplazar then delete from public.misiones where semana = p_semana and cumplida is null; end if;
-  select array_agg(j.id order by random()) into v_ids from public.jugadores j where j.rol = 'jugador' and j.estado = 'activo';
+  select array_agg(j.id order by random()) into v_ids from public.jugadores j where j.rol = 'jugador';
   n := coalesce(array_length(v_ids, 1), 0);
   if n < 2 then return 0; end if;
   select array_agg(texto order by random()) into v_txt from public.misiones_banco where activa;

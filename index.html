@@ -2816,7 +2816,7 @@ function tarjetaMision(g) {
   const mias = est.misiones || [], prog = est.progreso_misiones || [];
   if (!mias.length && !prog.length) return '';
   const hechas = mias.filter(m => m.cumplida).length;
-  const deLaCasa = est.yo.rol === 'jugador' && est.yo.estado === 'activo';
+  const deLaCasa = est.yo.rol === 'jugador';      // habitantes, sigan en la casa o eliminados
   let h = `<div class="juego-card" id="tarjeta-mision"><h3>🕵️ ${mias.length ? 'Mis misiones secretas' : 'Misiones de la casa'} <small>${mias.length ? `${hechas} de ${mias.length} cumplidas` : `Semana ${g.semana}`}</small></h3>`;
   if (mias.length) {
     if (hechas === mias.length) h += `<p>✅ <b>¡Cumpliste todas tus misiones!</b> La próxima semana te llegan otras 5.</p>`;
@@ -2837,7 +2837,7 @@ function tarjetaMision(g) {
     h += `<div class="mis-tablero"><b>Cómo van en la casa</b>${prog.map(x => { const j = porId(x.id);
       return `<div class="mis-fila">${j ? avatar(j, 22) : ''}<span class="nm">${esc(j?.nombre || '?')}${x.id === est.yo.id ? ' (tú)' : ''}</span>
         <span class="puntos-mis">${'●'.repeat(x.hechas)}<i>${'○'.repeat(Math.max(0, x.total - x.hechas))}</i></span><small>${x.hechas}/${x.total}</small></div>`; }).join('')}</div>`;
-    if (!mias.length) h += `<p class="ayuda" style="margin-top:6px">Las misiones son solo para los habitantes de la casa. Aquí ves cuántas lleva cada quien.</p>`;
+    if (!mias.length) h += `<p class="ayuda" style="margin-top:6px">Las misiones son para los habitantes (en la casa y eliminados). Aquí ves cuántas lleva cada quien.</p>`;
   }
   return h + '</div>';
 }
@@ -4090,7 +4090,7 @@ async function adminExtras(C) {
           <button class="mini" data-enc-borrar="${e.id}">Borrar</button></div>`;
       }).join('') || '<p class="ayuda">Todavía no hay encuestas.</p>'}</div>
     <div class="adm-caja"><h3>Misiones de la semana ${c.semana}</h3>
-      <p class="ayuda">Solo los habitantes que siguen en la casa: 5 misiones cada quien, con objetivos distintos. Se cumplen cuando el objetivo escanea el código de quien la cumplió. Van ${mis.filter(m => m.cumplida).length} de ${mis.length}.</p>
+      <p class="ayuda">Todos los habitantes, en la casa o eliminados (el público no): 5 misiones cada quien, con objetivos distintos. Se cumplen cuando el objetivo escanea el código de quien la cumplió. Van ${mis.filter(m => m.cumplida).length} de ${mis.length}.</p>
       ${[...mis].sort((a, b) => nombreDe(a.jugador_id).localeCompare(nombreDe(b.jugador_id)) || a.n - b.n).map(m => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>${esc(nombreDe(m.jugador_id))} · ${m.n}</b>
         <small style="white-space:normal">${esc(m.texto)}</small></div><span>${m.cumplida ? '✅' : '⏳'}</span></div>`).join('') || '<p class="ayuda">Las misiones se reparten solas al empezar cada semana.</p>'}
       <div class="adm-acciones"><button class="btn sec chico" id="mis-repartir" ${c.semana ? '' : 'disabled'}>Repartir de nuevo (cambia las que no se han cumplido)</button></div></div>
