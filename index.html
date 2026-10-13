@@ -1639,14 +1639,14 @@ function pintarAciertos(gan) {
    TUTORIAL ILUSTRADO
    ===================================================================== */
 const TUTO = [
-  { t: 'Regístrate y toma tu silla', p: 'Pon tu nombre, un PIN de 4 números y, si quieres, tu foto y una frase. Los primeros 16 son habitantes de la casa; los demás entran como público.',
+  { t: 'Regístrate y entra a la casa', p: 'Pon tu nombre, un PIN de 4 números y, si quieres, tu foto y una frase. Los primeros 16 son habitantes de la casa; los demás entran como público.',
     svg: `<svg viewBox="0 0 260 150"><rect x="20" y="10" width="70" height="128" rx="12" fill="#FFFDF6"/><rect x="28" y="24" width="54" height="94" rx="4" fill="#2A2160"/>
       <circle cx="55" cy="48" r="13" fill="#FFD54A"/><text x="55" y="54" text-anchor="middle" font-family="Anton,Impact" font-size="15" fill="#1B1440">$</text>
       <g fill="#FFD54A">${[0, 1, 2, 3].map(i => `<circle cx="${38 + i * 11}" cy="82" r="4"/>`).join('')}</g>
       <rect x="36" y="96" width="38" height="12" rx="6" fill="#D7263D"/>
       ${[0, 1, 2].map(i => `<g transform="translate(${112 + i * 48},48)"><rect x="4" y="0" width="30" height="28" rx="7" fill="#3B2E8C"/><rect x="0" y="26" width="38" height="8" rx="3" fill="#4A3AA8"/><rect x="3" y="34" width="4" height="14" fill="#3B2E8C"/><rect x="31" y="34" width="4" height="14" fill="#3B2E8C"/>
         ${i < 2 ? `<circle cx="19" cy="12" r="11" fill="${['#D7263D', '#2337A8'][i]}"/>` : ''}</g>`).join('')}
-      <text x="185" y="122" text-anchor="middle" font-family="Work Sans,sans-serif" font-size="12" fill="#C9C3EE">16 sillas</text></svg>` },
+      <text x="185" y="122" text-anchor="middle" font-family="Work Sans,sans-serif" font-size="12" fill="#C9C3EE">16 lugares</text></svg>` },
   { t: 'Gana la prueba y sé el líder', p: 'Cada semana hay una prueba: trivia de la oficina, memoria de expedientes o calcula el adeudo. Solo tienes un intento. El mejor puntaje es el líder 👑 y queda protegido.',
     svg: `<svg viewBox="0 0 260 150"><path d="M60 100 L48 50 L78 72 L100 40 L122 72 L152 50 L140 100 Z" fill="#FFD54A" stroke="#1B1440" stroke-width="4" stroke-linejoin="round"/>
       <circle cx="100" cy="40" r="7" fill="#D7263D"/><circle cx="48" cy="50" r="6" fill="#D7263D"/><circle cx="152" cy="50" r="6" fill="#D7263D"/>
@@ -1750,11 +1750,14 @@ async function abrirFicha(id) {
     h += `<h3>Mándale un emoji</h3>` + (SALA.enVivo()
       ? `<div class="emoji-envio">${EMOJIS.map(e => `<button data-envia="${e}">${e}</button>`).join('')}</div>`
       : '<p class="ayuda">Conectando con la casa…</p>');
+    if (SALA.puedeRetar(id)) h += `<button class="btn" id="ficha-reto" style="margin-top:12px">✊✋✌️ Jugar piedra, papel o tijera</button>`;
+    else if (j.estado === 'activo' && !SALA.soyActor()) h += `<p class="ayuda" style="margin-top:10px">Piedra, papel o tijera: solo entre habitantes que están en la casa.</p>`;
   }
   h += `<button class="btn sec" id="ficha-cerrar" style="margin-top:16px;color:var(--texto)">Cerrar</button>`;
   caja.innerHTML = h;
   $('#ficha-cerrar').onclick = cerrarFicha;
   $$('[data-envia]', caja).forEach(b => b.onclick = () => { cerrarFicha(); SALA.enviarEmoji(id, b.dataset.envia); });
+  const reto = $('#ficha-reto'); if (reto) reto.onclick = () => { cerrarFicha(); SALA.retar(id); };
   $$('[data-mio]', caja).forEach(b => b.onclick = () => { cerrarFicha(); SALA.miEmoji(b.dataset.mio); });
 }
 function cerrarFicha() { $('#m-ficha').classList.add('hidden'); }
@@ -1947,20 +1950,49 @@ const SALA = (() => {
       }, 2400);
     }, retraso);
   }
-  function revisarReto() {
-    const yo = actores.get(miId);
-    if (!yo?.enSala || Date.now() < miCooldown || Date.now() < yo.ocupado) return;
-    let mejor = null, dist = 12;
-    for (const a of actores.values()) {
-      if (a.id === miId || !a.enSala || Date.now() < a.ocupado) continue;
-      const d = Math.hypot(a.x - yo.x, (a.y - yo.y) * 1.4);
-      if (d < dist) { dist = d; mejor = a; }
-    }
-    if (!mejor) return;
-    miCooldown = Date.now() + 7000;
-    const ja = Math.floor(Math.random() * 3), jb = Math.floor(Math.random() * 3);
-    mandar({ tipo: 'ppt', a: miId, b: mejor.id, ja, jb });
-    jugarPPT(miId, mejor.id, ja, jb);
+  // Retar a alguien: mi monito camina hasta él y juegan. Todos los celulares lo ven.
+  const puedeRetar = id => id !== miId && soyActor() && !!actores.get(id)?.enSala;
+  function congelar(a, x, y, hasta, miraIzq) {
+    a.ocupado = hasta; a.congelado = { x, y }; a.mira = miraIzq;
+    if (a.ctrl) a.ctrl = { fx: x, fy: y, tx: x, ty: y, t0: Date.now(), dur: 0 };
+  }
+  function retar(id) {
+    const yo = actores.get(miId), B = actores.get(id), ahora = Date.now();
+    if (!puedeRetar(id) || !yo || !B) { toast('Solo puedes retar a habitantes que están en la casa'); return; }
+    if (ahora < miCooldown || ahora < (yo.retoHasta || 0)) { toast('Espera tantito, acabas de jugar'); return; }
+    if (ahora < B.ocupado) { toast(`${porId(id)?.nombre || 'Esa persona'} está jugando, espera tantito`); return; }
+    const lado = yo.x < B.x ? -1 : 1;                          // me paro del lado donde vengo
+    let [tx, ty] = limitar(B.x + lado * 8, B.y);
+    if (Math.abs(tx - B.x) < 6) [tx, ty] = limitar(B.x - lado * 8, B.y);   // pegado a la pared: del otro lado
+    const dur = Math.max(450, Math.hypot(tx - yo.x, ty - yo.y) * 38);
+    const total = dur + 4600;
+    congelar(B, B.x, B.y, ahora + total, tx < B.x);
+    yo.ocupado = 0; yo.retoHasta = ahora + total; miCooldown = ahora + total + 2500;
+    yo.ctrl = { fx: yo.x, fy: yo.y, tx, ty, t0: ahora, dur };
+    mandar({ tipo: 'reto', a: miId, b: id, x: B.x, y: B.y, dur: total });
+    mandar({ tipo: 'mov', id: miId, fx: yo.x, fy: yo.y, tx, ty, dur });
+    clearTimeout(yo.llegaT);
+    SFX.tocar('swish');
+    burbuja(miId, '✊✋✌️', Math.min(dur, 1800));
+    yo.llegaT = setTimeout(() => {
+      if (!actores.get(id)?.enSala) return;
+      const ja = Math.floor(Math.random() * 3), jb = Math.floor(Math.random() * 3);
+      mandar({ tipo: 'ppt', a: miId, b: id, ja, jb });
+      jugarPPT(miId, id, ja, jb);
+    }, dur + 60);
+  }
+  // Los que caminan solos ya no juegan: cuando se juntan platican con emojis.
+  const PLATICAS = [['👋', '👋'], ['☕', '😋'], ['😂', '🤣'], ['💸', '😱'], ['📞', '🙄'], ['🍕', '🤤'], ['🤫', '😮'],
+    ['💅', '🙄'], ['🔥', '😎'], ['📄', '😩'], ['🧾', '💸'], ['👀', '🤭'], ['🎉', '🥳'], ['😴', '🥱'], ['🤑', '🤑'], ['🍩', '😍']];
+  function platica(aId, bId, par) {
+    const A = actores.get(aId), B = actores.get(bId);
+    if (!A?.enSala || !B?.enSala) return;
+    const vuela = !$('#c-sala-box').classList.contains('hidden');
+    if (vuela) volar(aId, bId, par[0]); else burbuja(bId, par[0]);
+    setTimeout(() => {
+      if (!actores.get(bId)?.enSala) return;
+      if (vuela) volar(bId, aId, par[1]); else burbuja(aId, par[1]);
+    }, 1500);
   }
   function permitido() {
     if (Date.now() - ultimoEnvio < 1100) return false;
@@ -1987,6 +2019,8 @@ const SALA = (() => {
     return [r.left + r.width * PANTALLA[0] / 100, r.top + r.height * PANTALLA[1] / 105];
   }
   function volar(deId, aId, e) {
+    // con una ventana abierta no vuela por encima: solo aparece la burbuja
+    if (document.querySelector('.modal:not(.hidden)')) { burbuja(aId, e, 2600); return; }
     const [x0, y0] = puntoDe(deId), [x1, y1] = puntoDe(aId);
     const v = document.createElement('div');
     v.className = 'emoji-vuela'; v.textContent = e;
@@ -2009,12 +2043,11 @@ const SALA = (() => {
     const r = caja.getBoundingClientRect();
     const [tx, ty] = limitar((e.clientX - r.left) / r.width * 100, (e.clientY - r.top) / r.height * 105 + 4);
     const yo = actores.get(miId);
-    if (Date.now() < yo.ocupado) return;
+    if (Date.now() < yo.ocupado || Date.now() < (yo.retoHasta || 0)) return;
     const dur = Math.max(450, Math.hypot(tx - yo.x, ty - yo.y) * 42);
     yo.ctrl = { fx: yo.x, fy: yo.y, tx, ty, t0: Date.now(), dur };
     mandar({ tipo: 'mov', id: miId, fx: yo.x, fy: yo.y, tx, ty, dur });
     clearTimeout(yo.llegaT);
-    yo.llegaT = setTimeout(revisarReto, dur + 80);
   });
   $('#palco-lista').addEventListener('click', e => { const m = e.target.closest('.mono'); if (m) abrirFicha(m.dataset.id); });
   // camina hasta un punto (puerta, tele) y al llegar hace algo
@@ -2024,7 +2057,7 @@ const SALA = (() => {
     const yo = actores.get(miId);
     if (!yo?.enSala) return alLlegar();
     const dur = Math.max(350, Math.hypot(tx - yo.x, ty - yo.y) * 38);
-    yo.ocupado = 0;
+    yo.ocupado = 0; yo.retoHasta = 0;
     yo.ctrl = { fx: yo.x, fy: yo.y, tx, ty, t0: Date.now(), dur };
     mandar({ tipo: 'mov', id: miId, fx: yo.x, fy: yo.y, tx, ty, dur });
     clearTimeout(yo.llegaT);
@@ -2043,16 +2076,18 @@ const SALA = (() => {
     raf = null;
     if (!visible()) return;
     const ahora = Date.now(), k = Math.floor(ahora / T);
-    // partidas entre los que caminan solos: todos los celulares calculan lo mismo
+    // pláticas entre los que caminan solos: todos los celulares calculan lo mismo
     if (k !== programadoK) {
       programadoK = k;
       const vistos = new Set();
       for (const [id, p] of parejas(k)) {
         if (vistos.has(p.key)) continue; vistos.add(p.key);
         if (!camina(id) || !camina(p.otro)) continue;
-        const [a, b] = [id, p.otro].sort(), r = azar(hash('j' + k + p.key));
+        if (ahora < (actores.get(id)?.ocupado || 0) || ahora < (actores.get(p.otro)?.ocupado || 0)) continue;
+        const r = azar(hash('j' + k + p.key)), [a, b] = r() < .5 ? [id, p.otro].sort() : [id, p.otro].sort().reverse();
+        const par = PLATICAS[Math.floor(r() * PLATICAS.length)];
         const espera = k * T + 4200 - ahora;
-        if (espera > -300) jugarPPT(a, b, Math.floor(r() * 3), Math.floor(r() * 3), Math.max(0, espera));
+        if (espera > -300) setTimeout(() => { if (camina(a) && camina(b) && Date.now() >= (actores.get(a)?.ocupado || 0)) platica(a, b, par); }, Math.max(0, espera));
       }
     }
     for (const a of actores.values()) {
@@ -2119,6 +2154,15 @@ const SALA = (() => {
     else if (m.tipo === 'pos' && a) a.ctrl = { fx: m.x, fy: m.y, tx: m.x, ty: m.y, t0: Date.now(), dur: 0 };
     else if (m.tipo === 'emo') { burbuja(m.id, m.e); saludar(m.id); }
     else if (m.tipo === 'ppt') jugarPPT(m.a, m.b, m.ja, m.jb);
+    else if (m.tipo === 'reto') {
+      const B = actores.get(m.b), A = actores.get(m.a);
+      if (B?.enSala) congelar(B, m.x, m.y, Date.now() + Math.min(m.dur || 0, 15000), A ? A.x < m.x : undefined);
+      if (m.b === miId) {
+        SFX.tocar('timbre');
+        if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
+        toast(`${porId(m.a)?.nombre || 'Alguien'} te retó a piedra, papel o tijera ✊✋✌️`, 3500);
+      }
+    }
     else if (m.tipo === 'env') {
       volar(m.de, m.a, m.e);
       if (m.a === miId) {
@@ -2155,7 +2199,7 @@ const SALA = (() => {
     actores.clear(); programadoK = null;
     pintarVivo();
   }
-  return { sincronizar, conectar, desconectar, miEmoji, enviarEmoji, soyActor, irAPuerta, irATele, enVivo: () => vivo, despertar };
+  return { sincronizar, conectar, desconectar, miEmoji, enviarEmoji, retar, puedeRetar, soyActor, irAPuerta, irATele, enVivo: () => vivo, despertar };
 })();
 
 /* =====================================================================
