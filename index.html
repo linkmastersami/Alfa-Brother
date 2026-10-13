@@ -2349,7 +2349,8 @@ const SALA = (() => {
   }
   function volar(deId, aId, e) {
     // con una ventana abierta no vuela por encima: solo aparece la burbuja
-    if (document.querySelector('.modal:not(.hidden)')) { burbuja(aId, e, 2600); return; }
+    // con una ventana, el panel o la gala abiertos, o fuera de la casa: solo burbuja, nada flota encima
+    if (document.querySelector('.modal:not(.hidden)') || !$('#admin').classList.contains('hidden') || galaAbierta || pantalla !== 's-casa') { burbuja(aId, e, 2600); return; }
     const [x0, y0] = puntoDe(deId), [x1, y1] = puntoDe(aId);
     const v = document.createElement('div');
     v.className = 'emoji-vuela'; v.textContent = e;
@@ -2401,7 +2402,7 @@ const SALA = (() => {
   }
 
   // ---------- cuadro por cuadro ----------
-  function visible() { return !!est && pantalla === 's-casa' && !document.hidden && !galaAbierta; }
+  function visible() { return !!est && pantalla === 's-casa' && !document.hidden && !galaAbierta && $('#admin').classList.contains('hidden'); }
   function despertar() { if (!raf && visible()) raf = requestAnimationFrame(cuadro); }
   function cuadro() {
     raf = null;
@@ -3692,13 +3693,14 @@ const nombreDe = id => adm.jug.find(j => j.id === id)?.nombre || '—';
 
 function abrirAdmin() {
   $('#admin').classList.remove('hidden'); document.body.style.overflow = 'hidden';
+  $$('.emoji-vuela, .flota').forEach(x => x.remove());      // nada de la casa flotando sobre el panel
   cargarAdmin();
   clearInterval(adm.timer);
   adm.timer = setInterval(() => { if (['juego', 'votos', 'pruebas'].includes(adm.tab) && !document.hidden) cargarAdmin(true); }, 6000);
 }
 function cerrarAdmin() {
   $('#admin').classList.add('hidden'); document.body.style.overflow = '';
-  clearInterval(adm.timer); refrescar();
+  clearInterval(adm.timer); refrescar(); SALA.despertar();
 }
 $('#a-cerrar').onclick = cerrarAdmin;
 $('#a-logout').onclick = async () => { await sb.auth.signOut(); cerrarAdmin(); };
