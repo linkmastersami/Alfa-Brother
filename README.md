@@ -90,7 +90,7 @@ Todos (habitantes, eliminados y público) empiezan con **$1,000 Billetes Alfa** 
 - **Encuesta del día:** la producción la programa; todos votan en secreto y pueden apostar qué opción gana.
 - **Misiones secretas:** para todos los habitantes, sigan en la casa o estén eliminados (el público no participa). Al empezar cada semana cada habitante recibe 5 misiones, cada una sobre otro habitante distinto (por ejemplo, *Haz que Karla diga "pagaré"*). Todos ven en la casa cuántas lleva cada quien. Cuando la cumples, le enseñas tu código QR a esa persona y ella lo escanea desde su juego (**📷 Escanear código de misión**); solo el objetivo puede confirmarla.
 - **Récords de la casa:** los mejores puntajes de las prácticas de memoria y adeudo.
-- **Tienda del monito:** sombreros, lentes, color del cuerpo y algo en la mano. Se ve en la casa, en los minijuegos y en la votación.
+- **Tienda del monito:** sombreros, lentes, color del cuerpo (hasta arcoíris), algo en la mano, mascotas que caminan contigo y efectos que flotan alrededor. Precios de $400 a $8,000. Se ve en la casa, en los minijuegos y en la votación.
 
 ---
 
@@ -145,6 +145,7 @@ Versión 6 (podio y avisos): gran final con 3 sin prueba ni líder, podio por vo
 Versión 7 (Billetes Alfa): billetes, apuestas, encuesta del día, misiones secretas, récords de la casa y tienda del monito.
 Versión 8 (avisos de producción): avisos solo para ti de votos, chismes, registros y empates.
 Versión 9 (misiones): 5 misiones por semana para todos los habitantes, en la casa o eliminados.
+Versión 10 (tienda): precios nuevos, más artículos, mascotas y efectos.
 
 ---
 

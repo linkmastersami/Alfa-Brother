@@ -1610,30 +1610,73 @@ end $$;
 --  TIENDA DEL MONITO
 -- ---------------------------------------------------------------------
 
+-- v10: tienda más cara y con mascotas y efectos
+alter table public.tienda drop constraint if exists tienda_tipo_check;
+alter table public.tienda add constraint tienda_tipo_check check (tipo in ('sombrero','lentes','color','mano','mascota','efecto'));
+
 insert into public.tienda (id, tipo, nombre, icono, precio, orden) values
-  ('gorra',      'sombrero', 'Gorra',              '🧢', 200, 1),
-  ('moño',       'sombrero', 'Moño',               '🎀', 150, 2),
-  ('flor',       'sombrero', 'Flor',               '🌸', 150, 3),
-  ('casco',      'sombrero', 'Casco',              '⛑️', 250, 4),
-  ('pamela',     'sombrero', 'Sombrero',           '👒', 300, 5),
-  ('birrete',    'sombrero', 'Birrete',            '🎓', 350, 6),
-  ('copa',       'sombrero', 'Sombrero de copa',   '🎩', 450, 7),
-  ('lentes',     'lentes',   'Lentes',             '👓', 200, 1),
-  ('goggles',    'lentes',   'Goggles',            '🥽', 300, 2),
-  ('oscuros',    'lentes',   'Lentes oscuros',     '🕶️', 350, 3),
-  ('rojo',       'color',    'Rojo',               '#FF4D5E', 150, 1),
-  ('azul',       'color',    'Azul',               '#4D8DFF', 150, 2),
-  ('verde',      'color',    'Verde',              '#2ED198', 150, 3),
-  ('rosa',       'color',    'Rosa',               '#FF6FB5', 150, 4),
-  ('morado',     'color',    'Morado',             '#A974FF', 150, 5),
-  ('dorado',     'color',    'Dorado',             '#FFC93C', 600, 6),
-  ('cafe',       'mano',     'Café',               '☕', 150, 1),
-  ('portapapel', 'mano',     'Portapapeles',       '📋', 150, 2),
-  ('cel',        'mano',     'Celular',            '📱', 200, 3),
-  ('taco',       'mano',     'Taco',               '🌮', 200, 4),
-  ('maletin',    'mano',     'Maletín',            '💼', 250, 5),
-  ('fajo',       'mano',     'Fajo de billetes',   '💵', 300, 6),
-  ('micro',      'mano',     'Micrófono',          '🎤', 300, 7)
+  -- sombreros
+  ('moño',       'sombrero', 'Moño',               '🎀',   500, 1),
+  ('flor',       'sombrero', 'Flor',               '🌸',   500, 2),
+  ('gorra',      'sombrero', 'Gorra',              '🧢',   600, 3),
+  ('casco',      'sombrero', 'Casco',              '⛑️',   800, 4),
+  ('pamela',     'sombrero', 'Sombrero',           '👒',   900, 5),
+  ('militar',    'sombrero', 'Casco militar',      '🪖',  1000, 6),
+  ('birrete',    'sombrero', 'Birrete',            '🎓',  1200, 7),
+  ('hongo',      'sombrero', 'Hongo',              '🍄',  1500, 8),
+  ('copa',       'sombrero', 'Sombrero de copa',   '🎩',  1800, 9),
+  ('calabaza',   'sombrero', 'Calabaza',           '🎃',  2000, 10),
+  ('arbolito',   'sombrero', 'Arbolito',           '🎄',  2200, 11),
+  ('pulpo',      'sombrero', 'Pulpo',              '🐙',  2500, 12),
+  ('unicornio',  'sombrero', 'Unicornio',          '🦄',  3500, 13),
+  -- lentes
+  ('lentes',     'lentes',   'Lentes',             '👓',   500, 1),
+  ('goggles',    'lentes',   'Goggles',            '🥽',   900, 2),
+  ('oscuros',    'lentes',   'Lentes oscuros',     '🕶️',  1200, 3),
+  ('buceo',      'lentes',   'Visor de buceo',     '🤿',  1500, 4),
+  ('disfraz',    'lentes',   'Disfraz secreto',    '🥸',  2000, 5),
+  -- color del cuerpo
+  ('rojo',       'color',    'Rojo',               '#FF4D5E',  400, 1),
+  ('azul',       'color',    'Azul',               '#4D8DFF',  400, 2),
+  ('verde',      'color',    'Verde',              '#2ED198',  400, 3),
+  ('rosa',       'color',    'Rosa',               '#FF6FB5',  400, 4),
+  ('morado',     'color',    'Morado',             '#A974FF',  400, 5),
+  ('naranja',    'color',    'Naranja',            '#FF9F43',  400, 6),
+  ('turquesa',   'color',    'Turquesa',           '#2EE6D6',  500, 7),
+  ('plata',      'color',    'Plata',              '#C9D2E3', 1500, 8),
+  ('dorado',     'color',    'Dorado',             '#FFC93C', 3000, 9),
+  ('arcoiris',   'color',    'Arcoíris',           'arcoiris', 5000, 10),
+  -- en la mano
+  ('cafe',       'mano',     'Café',               '☕',   400, 1),
+  ('portapapel', 'mano',     'Portapapeles',       '📋',   400, 2),
+  ('cel',        'mano',     'Celular',            '📱',   600, 3),
+  ('taco',       'mano',     'Taco',               '🌮',   600, 4),
+  ('pizza',      'mano',     'Pizza',              '🍕',   700, 5),
+  ('maletin',    'mano',     'Maletín',            '💼',   800, 6),
+  ('globo',      'mano',     'Globo',              '🎈',   800, 7),
+  ('rosa_flor',  'mano',     'Rosa',               '🌹',   900, 8),
+  ('micro',      'mano',     'Micrófono',          '🎤',  1000, 9),
+  ('extintor',   'mano',     'Extintor',           '🧯',  1200, 10),
+  ('fajo',       'mano',     'Fajo de billetes',   '💵',  1500, 11),
+  ('guitarra',   'mano',     'Guitarra',           '🎸',  2000, 12),
+  ('varita',     'mano',     'Varita mágica',      '🪄',  2500, 13),
+  ('trofeo',     'mano',     'Trofeo',             '🏆',  4000, 14),
+  -- mascotas (caminan contigo)
+  ('pollito',    'mascota',  'Pollito',            '🐣',  1800, 1),
+  ('tortuga',    'mascota',  'Tortuga',            '🐢',  2000, 2),
+  ('cerdito',    'mascota',  'Cerdito',            '🐷',  2200, 3),
+  ('perrito',    'mascota',  'Perrito',            '🐶',  2500, 4),
+  ('gatito',     'mascota',  'Gatito',             '🐱',  2500, 5),
+  ('perico',     'mascota',  'Perico',             '🦜',  3000, 6),
+  ('dino',       'mascota',  'Dinosaurio',         '🦖',  5000, 7),
+  ('dragon',     'mascota',  'Dragón',             '🐉',  8000, 8),
+  -- efectos (flotan alrededor)
+  ('brillos',    'efecto',   'Brillitos',          '✨',  3000, 1),
+  ('nieve',      'efecto',   'Nieve',              '❄️',  3000, 2),
+  ('corazones',  'efecto',   'Corazones',          '💖',  3500, 3),
+  ('estrellas',  'efecto',   'Estrellas',          '⭐',  4000, 4),
+  ('llamas',     'efecto',   'En llamas',          '🔥',  5000, 5),
+  ('billetes',   'efecto',   'Lluvia de billetes', '💸',  6000, 6)
 on conflict (id) do update set tipo = excluded.tipo, nombre = excluded.nombre, icono = excluded.icono,
                                precio = excluded.precio, orden = excluded.orden;
 
