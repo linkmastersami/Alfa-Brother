@@ -216,6 +216,11 @@ create table if not exists public.misiones (
   unique (semana, jugador_id)
 );
 
+-- v9: 5 misiones por semana (n = 1..5)
+alter table public.misiones add column if not exists n int not null default 1;
+alter table public.misiones drop constraint if exists misiones_semana_jugador_id_key;
+create unique index if not exists misiones_semana_jugador_n on public.misiones (semana, jugador_id, n);
+
 -- Récords de las prácticas
 create table if not exists public.practicas (
   jugador_id    uuid not null references public.jugadores(id) on delete cascade,
@@ -1451,29 +1456,45 @@ $$;
 -- Cada quien recibe una misión distinta; todos son objetivo de exactamente una persona.
 create or replace function public._repartir_misiones(p_semana int, p_reemplazar boolean)
 returns int language plpgsql security definer set search_path = public as $$
+-- Solo los habitantes que siguen en la casa. Cada quien recibe 5 misiones con 5 objetivos distintos
+-- (si quedan pocos se repiten). En cada ronda todos son objetivo de exactamente una persona.
 declare
   v_ids uuid[];
   v_txt text[];
   n int;
   i int;
+  r int;
+  k int;
   v_obj uuid;
+  v_num int;
+  v_hechas int := 0;
 begin
   if p_semana < 1 then return 0; end if;
   if p_reemplazar then delete from public.misiones where semana = p_semana and cumplida is null; end if;
-  select array_agg(j.id order by random()) into v_ids from public.jugadores j
-   where not exists (select 1 from public.misiones m where m.semana = p_semana and m.jugador_id = j.id);
+  select array_agg(j.id order by random()) into v_ids from public.jugadores j where j.rol = 'jugador' and j.estado = 'activo';
   n := coalesce(array_length(v_ids, 1), 0);
   if n < 2 then return 0; end if;
   select array_agg(texto order by random()) into v_txt from public.misiones_banco where activa;
   if v_txt is null then return 0; end if;
-  for i in 1..n loop
-    v_obj := v_ids[1 + i % n];
-    insert into public.misiones (semana, jugador_id, objetivo_id, texto, codigo)
-    values (p_semana, v_ids[i], v_obj,
-            replace(v_txt[1 + (i - 1) % array_length(v_txt, 1)], '{nombre}', (select nombre from public.jugadores where id = v_obj)),
-            public._codigo());
+  r := 0;
+  for k in 1..20 loop                                   -- rondas (se salta la que caería en uno mismo)
+    exit when r >= 5;
+    continue when k % n = 0;
+    r := r + 1;
+    for i in 1..n loop
+      -- ¿le falta una misión en este número?
+      select min(x) into v_num from generate_series(1, 5) x
+       where not exists (select 1 from public.misiones m where m.semana = p_semana and m.jugador_id = v_ids[i] and m.n = x);
+      continue when v_num is null;
+      v_obj := v_ids[1 + (i - 1 + k) % n];
+      insert into public.misiones (semana, jugador_id, objetivo_id, n, texto, codigo)
+      values (p_semana, v_ids[i], v_obj, v_num,
+              replace(v_txt[1 + ((i - 1) * 5 + r - 1) % array_length(v_txt, 1)], '{nombre}', (select nombre from public.jugadores where id = v_obj)),
+              public._codigo());
+      v_hechas := v_hechas + 1;
+    end loop;
   end loop;
-  return n;
+  return v_hechas;
 end $$;
 
 -- El objetivo escanea el código de quien cumplió la misión
@@ -1493,7 +1514,8 @@ begin
   update public.misiones set cumplida = now() where id = m.id;
   perform public._mover(m.jugador_id, 300, 'Misión secreta cumplida');
   perform public._mover(yo.id, 50, 'Ayudaste a cumplir una misión secreta');
-  perform public._avisar('🕵️ ¡Misión cumplida!', format('%s confirmó tu misión. Ganaste $300.', yo.nombre), array[m.jugador_id]);
+  perform public._avisar('🕵️ ¡Misión cumplida!', format('%s confirmó tu misión. Ganaste $300 (%s de 5).', yo.nombre,
+    (select count(*) from public.misiones where semana = m.semana and jugador_id = m.jugador_id and cumplida is not null)), array[m.jugador_id]);
   return jsonb_build_object('texto', m.texto, 'de', (select nombre from public.jugadores where id = m.jugador_id));
 end $$;
 
@@ -1686,8 +1708,14 @@ begin
           'resultado', case when e.liquidada then e.resultado end) order by e.cierra), '[]'::jsonb)
         from public.encuestas e where e.abre <= now() and e.cierra > now() - interval '24 hours'),
     'proxima_encuesta', (select min(abre) from public.encuestas where abre > now()),
-    'mision', (select jsonb_build_object('texto', m.texto, 'objetivo_id', m.objetivo_id, 'codigo', m.codigo, 'cumplida', m.cumplida is not null)
+    'misiones', (select coalesce(jsonb_agg(jsonb_build_object('n', m.n, 'texto', m.texto, 'objetivo_id', m.objetivo_id, 'codigo', m.codigo,
+          'cumplida', m.cumplida is not null) order by m.n), '[]'::jsonb)
         from public.misiones m where m.semana = c.semana and m.jugador_id = p_yo),
+    -- todos (también el público) ven cuántas lleva cada habitante
+    'progreso_misiones', (select coalesce(jsonb_agg(jsonb_build_object('id', x.jugador_id, 'hechas', x.hechas, 'total', x.total)
+          order by x.hechas desc, x.jugador_id), '[]'::jsonb)
+        from (select jugador_id, count(*) filter (where cumplida is not null)::int as hechas, count(*)::int as total
+                from public.misiones where semana = c.semana group by jugador_id) x),
     'misiones_cumplidas', (select count(*) from public.misiones where semana = c.semana and cumplida is not null),
     'records', (select coalesce(jsonb_agg(jsonb_build_object('juego', r.juego, 'id', r.jugador_id, 'mejor', r.mejor) order by r.juego, r.mejor desc), '[]'::jsonb)
         from (select p.*, row_number() over (partition by p.juego order by p.mejor desc, p.jugador_id) as n

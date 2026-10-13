@@ -435,6 +435,21 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .elegir-hab label:has(input:checked){border-color:var(--tinta);background:#E8ECFF}
 .elegir-hab input{position:absolute;opacity:0;pointer-events:none}
 .elegir-hab small{color:var(--suave);font-weight:500}
+.mis-item{display:flex;gap:10px;align-items:flex-start;margin-top:8px}
+.mis-item .num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--luz);color:var(--texto);font-weight:800;display:grid;place-items:center;font-size:.85rem;margin-top:8px}
+.mis-item.hecha .num{background:none;font-size:1.1rem}
+.mis-item .mis-cuerpo{flex:1;min-width:0}
+.mis-item .mision-txt{margin-top:0}
+.mis-item .btn{margin-top:6px;white-space:normal;text-align:left}
+.mis-item small{color:#7FE0B0;font-weight:700}
+.mis-item.hecha .mision-txt{opacity:.6;text-decoration:line-through}
+.mis-tablero{margin-top:12px;background:#1B1440;border-radius:10px;padding:10px 12px}
+.mis-tablero>b{display:block;font-size:.88rem;color:var(--luz);margin-bottom:4px}
+.mis-fila{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:.88rem}
+.mis-fila .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.puntos-mis{color:var(--luz);letter-spacing:2px;font-size:.8rem}
+.puntos-mis i{font-style:normal;color:#5B5296}
+.mis-fila small{color:#A9A3D6;width:28px;text-align:right}
 /* monito reutilizable */
 .mm{--u:calc(var(--t)/8.4);position:relative;display:inline-flex;flex-direction:column;align-items:center;width:calc(var(--u)*13);padding-top:calc(var(--u)*4.4);flex:none}
 .mm-cab{position:relative;z-index:1;width:var(--t);height:var(--t);border-radius:50%;overflow:hidden;display:grid;place-items:center;font-family:Anton,Impact,sans-serif;color:#fff;font-size:calc(var(--t)*.5);box-shadow:0 0 0 2px var(--aro,#FFFDF6);flex:none;transition:transform .25s}
@@ -2631,12 +2646,13 @@ function revisarEconomia() {
   saldoVisto = est.billetes;
   if (est.bono) { setTimeout(() => { toast(`💵 +${fmt$(est.bono)} por entrar hoy`, 3200); SFX.tocar('caja'); lluviaBilletes(10); }, 900); }
   // misión cumplida (la confirmó la otra persona)
-  const m = est.mision;
-  const clave = m ? est.juego.semana + ':' + m.cumplida : null;
-  if (misionCumplidaVista && m?.cumplida && misionCumplidaVista !== clave) {
-    cerrarQR(true);
+  const mias = est.misiones || [], hechas = mias.filter(x => x.cumplida).length;
+  const clave = est.juego.semana + ':' + hechas;
+  if (misionCumplidaVista && hechas && misionCumplidaVista.split(':')[0] === String(est.juego.semana) && misionCumplidaVista !== clave) {
+    const enQR = mias.find(x => x.n === qrMision);
+    if (enQR?.cumplida) cerrarQR(true);
     SFX.tocar('fanfarria'); lluviaBilletes(24);
-    toast('🕵️ ¡Misión cumplida! Ganaste $300', 4000);
+    toast(`🕵️ ¡Misión cumplida! Ganaste $300 (${hechas} de ${mias.length})`, 4000);
   }
   misionCumplidaVista = clave;
   // apuestas que ya se pagaron
@@ -2656,9 +2672,9 @@ function revisarEconomia() {
 
 function pintarEconomia() {
   $('#c-billetes').innerHTML = `💵 <b>${fmt$(est.billetes)}</b>`;
-  const m = est.mision;
-  $('#c-mision-chip').classList.toggle('hidden', !m);
-  $('#c-mision-chip').innerHTML = m ? (m.cumplida ? '🕵️ Misión ✅' : '🕵️ Mi misión<span class="punto"></span>') : '';
+  const mias = est.misiones || [], hechas = mias.filter(x => x.cumplida).length;
+  $('#c-mision-chip').classList.toggle('hidden', !mias.length);
+  $('#c-mision-chip').innerHTML = mias.length ? `🕵️ Misiones ${hechas}/${mias.length}${hechas < mias.length ? '<span class="punto"></span>' : ' ✅'}` : '';
   const g = est.juego;
   let h = tarjetaApuestas(g);
   const abiertas = (est.encuestas || []).filter(e => e.abierta);
@@ -2676,7 +2692,7 @@ function pintarEconomia() {
   });
   $('#c-juegos [data-revelar]')?.addEventListener('click', () => { misionVisible = true; SFX.tocar('swish'); pintarEconomia(); });
   $('#c-juegos [data-ocultar]')?.addEventListener('click', () => { misionVisible = false; pintarEconomia(); });
-  $('#c-juegos [data-cumpli]')?.addEventListener('click', abrirQR);
+  $$('#c-juegos [data-cumpli]').forEach(b => b.onclick = () => abrirQR(+b.dataset.cumpli));
   $('#c-juegos [data-escanear]')?.addEventListener('click', abrirEscaner);
   $$('#c-juegos [data-practicar]').forEach(b => b.onclick = () => abrirPractica(b.dataset.practicar));
 }
@@ -2797,18 +2813,33 @@ function tarjetaEncuesta(e) {
 /* ---------- misión secreta ---------- */
 function tarjetaMision(g) {
   if (g.semana === 0 || g.fin) return '';
-  const m = est.mision;
-  const obj = m && porId(m.objetivo_id);
-  let h = `<div class="juego-card" id="tarjeta-mision"><h3>🕵️ Misión secreta <small>${est.misiones_cumplidas} cumplidas esta semana</small></h3>`;
-  if (!m) h += `<p class="ayuda">Esta semana no te tocó misión. La próxima semana recibes una.</p>`;
-  else if (m.cumplida) h += `<p>✅ <b>¡Misión cumplida!</b> Ganaste $300. La próxima semana te llega otra.</p>`;
-  else if (!misionVisible) h += `<button class="revelar" data-revelar>👀 Toca para ver tu misión (que nadie vea tu pantalla)</button>`;
-  else h += `<div class="mision-txt">${esc(m.texto)}</div>
-      <p class="ayuda" style="margin-top:6px">Cuando la cumplas, enséñale tu código a <b>${esc(obj?.nombre || 'esa persona')}</b> para que lo escanee desde su juego. Ganas $300 y ${esc(obj?.nombre || 'él o ella')} $50.</p>
-      <div class="fila-btn"><button class="btn chico" data-cumpli>✅ ¡Ya la cumplí!</button><button class="btn sec chico" data-ocultar>Ocultar</button></div>`;
-  h += `<div class="fila-btn" style="margin-top:10px"><button class="btn sec chico" data-escanear>📷 Escanear código de misión</button></div>
-    <p class="ayuda">¿Alguien cumplió su misión contigo? Escanea su código para confirmarlo y ganas $50.</p></div>`;
-  return h;
+  const mias = est.misiones || [], prog = est.progreso_misiones || [];
+  if (!mias.length && !prog.length) return '';
+  const hechas = mias.filter(m => m.cumplida).length;
+  const deLaCasa = est.yo.rol === 'jugador' && est.yo.estado === 'activo';
+  let h = `<div class="juego-card" id="tarjeta-mision"><h3>🕵️ ${mias.length ? 'Mis misiones secretas' : 'Misiones de la casa'} <small>${mias.length ? `${hechas} de ${mias.length} cumplidas` : `Semana ${g.semana}`}</small></h3>`;
+  if (mias.length) {
+    if (hechas === mias.length) h += `<p>✅ <b>¡Cumpliste todas tus misiones!</b> La próxima semana te llegan otras 5.</p>`;
+    if (!misionVisible) h += `<button class="revelar" data-revelar>👀 Toca para ver tus misiones (que nadie vea tu pantalla)</button>`;
+    else {
+      h += mias.map(m => { const obj = porId(m.objetivo_id);
+        return `<div class="mis-item ${m.cumplida ? 'hecha' : ''}"><span class="num">${m.cumplida ? '✅' : m.n}</span>
+          <div class="mis-cuerpo"><div class="mision-txt">${esc(m.texto)}</div>
+          ${m.cumplida ? '<small>Cumplida · +$300</small>' : `<button class="btn chico" data-cumpli="${m.n}">¡Ya la cumplí! · código para ${esc(obj?.nombre || '?')}</button>`}</div></div>`; }).join('');
+      h += `<p class="ayuda" style="margin-top:8px">Cuando cumplas una, enséñale su código a esa persona para que lo escanee desde su juego. Ganas $300 por cada una y ella $50.</p>
+        <div class="fila-btn"><button class="btn sec chico" data-ocultar>Ocultar mis misiones</button></div>`;
+    }
+  }
+  if (deLaCasa) h += `<div class="fila-btn" style="margin-top:10px"><button class="btn sec chico" data-escanear>📷 Escanear código de misión</button></div>
+    <p class="ayuda">¿Alguien cumplió una misión contigo? Escanea su código para confirmarlo y ganas $50.</p>`;
+  // tablero: todos ven cuántas lleva cada habitante
+  if (prog.length) {
+    h += `<div class="mis-tablero"><b>Cómo van en la casa</b>${prog.map(x => { const j = porId(x.id);
+      return `<div class="mis-fila">${j ? avatar(j, 22) : ''}<span class="nm">${esc(j?.nombre || '?')}${x.id === est.yo.id ? ' (tú)' : ''}</span>
+        <span class="puntos-mis">${'●'.repeat(x.hechas)}<i>${'○'.repeat(Math.max(0, x.total - x.hechas))}</i></span><small>${x.hechas}/${x.total}</small></div>`; }).join('')}</div>`;
+    if (!mias.length) h += `<p class="ayuda" style="margin-top:6px">Las misiones son solo para los habitantes de la casa. Aquí ves cuántas lleva cada quien.</p>`;
+  }
+  return h + '</div>';
 }
 const LIB_QR = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';
 const LIB_JSQR = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
@@ -2819,9 +2850,10 @@ function cargarScript(url) {
     document.head.appendChild(s);
   });
 }
-let qrPoll = null;
-async function abrirQR() {
-  const m = est.mision; if (!m) return;
+let qrPoll = null, qrMision = null;
+async function abrirQR(n) {
+  const m = (est.misiones || []).find(x => x.n === n); if (!m) return;
+  qrMision = n;
   const obj = porId(m.objetivo_id);
   $('#qr-caja-modal').innerHTML = `<div class="folio"><span>Misión secreta</span><span>Semana ${est.juego.semana}</span></div>
     <h2>¡Enséñale esto a ${esc(obj?.nombre || 'tu objetivo')}!</h2>
@@ -2950,7 +2982,7 @@ async function abrirBilletes() {
       <li>Entrar al juego cada día: <b>$100</b></li>
       <li>Primera práctica del día de cada juego: <b>$50</b></li>
       <li>Romper un récord de la casa: <b>$200</b></li>
-      <li>Cumplir tu misión secreta: <b>$300</b> (y $50 a quien te ayude)</li>
+      <li>Cada misión secreta cumplida: <b>$300</b>, hasta 5 por semana (y $50 a quien te ayude)</li>
       <li>Atinarle a las apuestas del líder, del eliminado y de la encuesta</li></ul>
     <button class="btn tinta" id="bi-tienda" style="margin-top:12px">🛍️ Ir a la tienda del monito</button>
     <h3 style="margin-top:16px">Los más ricos de la casa</h3>
@@ -4058,10 +4090,10 @@ async function adminExtras(C) {
           <button class="mini" data-enc-borrar="${e.id}">Borrar</button></div>`;
       }).join('') || '<p class="ayuda">Todavía no hay encuestas.</p>'}</div>
     <div class="adm-caja"><h3>Misiones de la semana ${c.semana}</h3>
-      <p class="ayuda">Cada quien tiene una misión distinta y todos son objetivo de alguien. Se cumplen cuando el objetivo escanea el código de quien la cumplió.</p>
-      ${mis.map(m => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>${esc(nombreDe(m.jugador_id))}</b>
+      <p class="ayuda">Solo los habitantes que siguen en la casa: 5 misiones cada quien, con objetivos distintos. Se cumplen cuando el objetivo escanea el código de quien la cumplió. Van ${mis.filter(m => m.cumplida).length} de ${mis.length}.</p>
+      ${[...mis].sort((a, b) => nombreDe(a.jugador_id).localeCompare(nombreDe(b.jugador_id)) || a.n - b.n).map(m => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>${esc(nombreDe(m.jugador_id))} · ${m.n}</b>
         <small style="white-space:normal">${esc(m.texto)}</small></div><span>${m.cumplida ? '✅' : '⏳'}</span></div>`).join('') || '<p class="ayuda">Las misiones se reparten solas al empezar cada semana.</p>'}
-      <div class="adm-acciones"><button class="btn sec chico" id="mis-repartir" ${c.semana ? '' : 'disabled'}>Repartir de nuevo (las no cumplidas)</button></div></div>
+      <div class="adm-acciones"><button class="btn sec chico" id="mis-repartir" ${c.semana ? '' : 'disabled'}>Repartir de nuevo (cambia las que no se han cumplido)</button></div></div>
     <form class="adm-caja" id="mb-form"><h3>Banco de misiones (${banco.filter(b => b.activa).length} activas)</h3>
       <p class="ayuda">Escribe <b>{nombre}</b> donde va la persona objetivo. Ej. Haz que {nombre} diga "pagaré".</p>
       <input class="in" id="mb-txt" maxlength="160" placeholder='Haz que {nombre} te cuente un chisme'>
@@ -4098,7 +4130,7 @@ async function adminExtras(C) {
   };
   $$('[data-enc-borrar]').forEach(b => b.onclick = () => { if (confirm('¿Borrar esta encuesta? Si alguien apostó, se le devuelve.')) accion('admin_borrar_encuesta', { p_id: +b.dataset.encBorrar }, 'Encuesta borrada'); });
   $('#mis-repartir').onclick = async () => {
-    if (!confirm('¿Repartir de nuevo las misiones que no se han cumplido? Cada quien recibirá una misión distinta.')) return;
+    if (!confirm('¿Cambiar las misiones que no se han cumplido? Cada habitante vuelve a tener 5 (las cumplidas se quedan).')) return;
     const n = await accion('admin_repartir_misiones', {});
     if (n !== undefined) toast(`${n} misiones repartidas`);
   };

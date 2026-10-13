@@ -83,12 +83,12 @@ Todos (habitantes, eliminados y público) empiezan con **$1,000 Billetes Alfa** 
 | Entrar al juego cada día | $100 |
 | Primera práctica del día de cada juego | $50 |
 | Romper un récord de la casa | $200 (una vez al día por juego) |
-| Cumplir la misión secreta | $300, y $50 para quien la confirma |
+| Cada misión secreta cumplida (hasta 5 por semana) | $300, y $50 para quien la confirma |
 | Atinarle a una apuesta | tu parte del pozo |
 
 - **Apuestas:** mientras está la prueba se apuesta quién será el líder; hasta que cierra la votación, quién sale. Lo apostado se junta en un pozo y se reparte entre los que atinaron según cuánto puso cada uno. Si nadie atina, se devuelve todo. En la gran final no hay apuestas de líder ni de eliminado. El líder siempre se decide solo entre quienes siguen en la casa.
 - **Encuesta del día:** la producción la programa; todos votan en secreto y pueden apostar qué opción gana.
-- **Misión secreta:** al empezar cada semana cada quien recibe una misión distinta sobre otra persona (por ejemplo, *Haz que Karla diga "pagaré"*). Todos son objetivo de exactamente una persona. Cuando la cumples, le enseñas tu código QR a esa persona y ella lo escanea desde su juego (**📷 Escanear código de misión**); solo el objetivo puede confirmarla.
+- **Misiones secretas:** solo para los habitantes que siguen en la casa (el público y los eliminados no participan). Al empezar cada semana cada habitante recibe 5 misiones, cada una sobre una persona distinta de la casa (por ejemplo, *Haz que Karla diga "pagaré"*). Todos ven en la casa cuántas lleva cada quien. Cuando la cumples, le enseñas tu código QR a esa persona y ella lo escanea desde su juego (**📷 Escanear código de misión**); solo el objetivo puede confirmarla.
 - **Récords de la casa:** los mejores puntajes de las prácticas de memoria y adeudo.
 - **Tienda del monito:** sombreros, lentes, color del cuerpo y algo en la mano. Se ve en la casa, en los minijuegos y en la votación.
 
@@ -144,6 +144,7 @@ Versión 5 (gran final): cuando queda un solo habitante el juego se detiene y la
 Versión 6 (podio y avisos): gran final con 3 sin prueba ni líder, podio por votos, avisos al celular y reloj automático de la agenda.
 Versión 7 (Billetes Alfa): billetes, apuestas, encuesta del día, misiones secretas, récords de la casa y tienda del monito.
 Versión 8 (avisos de producción): avisos solo para ti de votos, chismes, registros y empates.
+Versión 9 (misiones): 5 misiones por semana, solo para los habitantes en la casa.
 
 ---
 
