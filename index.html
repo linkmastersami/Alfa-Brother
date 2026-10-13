@@ -341,7 +341,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .vista-tog{display:flex;gap:6px;margin:-2px 0 10px}
 .vista-tog button{appearance:none;border:0;border-radius:999px;padding:6px 12px;font-weight:700;font-size:.85rem;background:var(--noche-2);color:#C9C3EE;cursor:pointer}
 .vista-tog button[aria-selected="true"]{background:var(--luz);color:var(--texto)}
-.sala{position:relative;isolation:isolate;width:100%;aspect-ratio:100/105;border-radius:14px;overflow:hidden;background:#3B2E8C;touch-action:manipulation;user-select:none;-webkit-user-select:none;cursor:pointer;box-shadow:inset 0 0 0 3px #1B1440}
+.sala{position:relative;isolation:isolate;width:100%;aspect-ratio:100/150;border-radius:14px;overflow:hidden;background:#3B2E8C;touch-action:manipulation;user-select:none;-webkit-user-select:none;cursor:pointer;box-shadow:inset 0 0 0 3px #1B1440}
 .sala-fondo{position:absolute;inset:0;width:100%;height:100%}
 .sala-actores{position:absolute;inset:0}
 .sala-vivo{position:absolute;top:6px;right:8px;font-size:.72rem;font-weight:700;color:#fff;background:rgba(27,20,64,.75);border-radius:999px;padding:2px 8px;pointer-events:none}
@@ -430,6 +430,11 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .gradas.abajo{margin-top:8px}
 .cand .mm{margin:0 auto}
 .renglon .quien .mm{margin:-6px -4px -2px}
+.elegir-hab{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.elegir-hab label{display:inline-flex;align-items:center;gap:6px;border:2px solid #D9D2B8;border-radius:999px;padding:3px 10px 3px 3px;cursor:pointer;font-weight:600;font-size:.88rem;background:#fff;user-select:none}
+.elegir-hab label:has(input:checked){border-color:var(--tinta);background:#E8ECFF}
+.elegir-hab input{position:absolute;opacity:0;pointer-events:none}
+.elegir-hab small{color:var(--suave);font-weight:500}
 /* monito reutilizable */
 .mm{--u:calc(var(--t)/8.4);position:relative;display:inline-flex;flex-direction:column;align-items:center;width:calc(var(--u)*13);padding-top:calc(var(--u)*4.4);flex:none}
 .mm-cab{position:relative;z-index:1;width:var(--t);height:var(--t);border-radius:50%;overflow:hidden;display:grid;place-items:center;font-family:Anton,Impact,sans-serif;color:#fff;font-size:calc(var(--t)*.5);box-shadow:0 0 0 2px var(--aro,#FFFDF6);flex:none;transition:transform .25s}
@@ -697,13 +702,13 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
   <div class="seccion-t"><span>Habitantes</span><small id="c-cuenta"></small></div>
   <div id="c-sala-box">
     <div class="sala" id="sala">
-      <svg class="sala-fondo" viewBox="0 0 100 105" preserveAspectRatio="none" aria-hidden="true">
+      <svg class="sala-fondo" viewBox="0 0 100 150" preserveAspectRatio="none" aria-hidden="true">
         <defs>
           <pattern id="tapiz" width="6" height="46" patternUnits="userSpaceOnUse"><rect width="6" height="46" fill="#2A2160"/><rect width="3" height="46" fill="#2E2468"/></pattern>
         </defs>
         <rect width="100" height="46" fill="url(#tapiz)"/>
-        <rect y="44" width="100" height="61" fill="#3B2E8C"/>
-        <g stroke="#33287A" stroke-width=".5"><line x1="0" y1="54" x2="100" y2="54"/><line x1="0" y1="66" x2="100" y2="66"/><line x1="0" y1="80" x2="100" y2="80"/><line x1="0" y1="96" x2="100" y2="96"/></g>
+        <rect y="44" width="100" height="106" fill="#3B2E8C"/>
+        <g stroke="#33287A" stroke-width=".5"><line x1="0" y1="54" x2="100" y2="54"/><line x1="0" y1="66" x2="100" y2="66"/><line x1="0" y1="80" x2="100" y2="80"/><line x1="0" y1="96" x2="100" y2="96"/><line x1="0" y1="114" x2="100" y2="114"/><line x1="0" y1="134" x2="100" y2="134"/></g>
         <rect y="43" width="100" height="2.4" fill="#1B1440"/>
         <!-- puerta del confesionario -->
         <rect x="4" y="13" width="15" height="31" rx="1" fill="#D7263D"/>
@@ -720,7 +725,11 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
         <circle cx="80" cy="16" r="5.2" fill="#FFFDF6" stroke="#1B1440" stroke-width=".8"/>
         <line x1="80" y1="16" x2="80" y2="12.6" stroke="#1B1440" stroke-width=".7" stroke-linecap="round"/><line x1="80" y1="16" x2="82.6" y2="17" stroke="#D7263D" stroke-width=".6" stroke-linecap="round"/>
         <!-- tapete -->
-        <ellipse cx="50" cy="86" rx="23" ry="8" fill="#F7C6D0" opacity=".18"/>
+        <ellipse cx="50" cy="96" rx="27" ry="10" fill="#F7C6D0" opacity=".18"/>
+        <!-- garrafón de agua y otra planta -->
+        <rect x="88" y="118" width="7" height="12" rx="1.2" fill="#1B1440"/><rect x="88.6" y="108" width="5.8" height="10" rx="2.4" fill="#7FC8F8" opacity=".85"/>
+        <path d="M8 138 q-5 -7 -1 -12 M8 138 q4 -8 1 -13" stroke="#1E8E5A" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <rect x="4.8" y="137" width="6.4" height="6" rx="1" fill="#B5541F"/>
         <!-- sillón -->
         <rect x="6" y="48" width="34" height="8" rx="2" fill="#7A3FB5"/>
         <rect x="7" y="54" width="32" height="6" rx="1.5" fill="#8E52CC"/>
@@ -1648,12 +1657,12 @@ function pintarSalaEspera() {
   if (inicioCasa(g)) {
     h += `<div class="formato amarillo"><div class="folio"><span>Aviso de apertura</span><span>Semana 0</span></div>
       <h2 id="sala-titulo">La casa abre en</h2><div class="reloj" id="sala-reloj"></div>
-      <p class="ayuda" style="margin-top:10px">${libres ? `Quedan ${libres} ${libres === 1 ? 'silla libre' : 'sillas libres'}. ¡Pásale el link a quien falte!` : 'Ya están los 16 habitantes.'}</p>
+      <p class="ayuda" style="margin-top:10px">${libres ? `Quedan ${libres} ${libres === 1 ? 'lugar libre' : 'lugares libres'}. ¡Pásale el link a quien falte!` : 'Ya están los 16 habitantes.'}</p>
       ${libres ? '<button class="btn tinta" data-compartir style="margin-top:6px">📲 Compartir el link</button>' : ''}</div>`;
   } else {
     h += `<div class="formato"><div class="folio"><span>Aviso</span><span>Semana 0</span></div>
       <h2>La casa abre pronto</h2>
-      <p>${libres ? `Quedan ${libres} ${libres === 1 ? 'silla libre' : 'sillas libres'}. ¡Pásale el link a quien falte!` : 'Ya están los 16 habitantes. Falta que la producción dé el arranque.'}</p>
+      <p>${libres ? `Quedan ${libres} ${libres === 1 ? 'lugar libre' : 'lugares libres'}. ¡Pásale el link a quien falte!` : 'Ya están los 16 habitantes. Falta que la producción dé el arranque.'}</p>
       ${libres ? '<button class="btn tinta" data-compartir style="margin-top:6px">📲 Compartir el link</button>' : ''}
       ${yo.rol === 'espectador' ? '<p><span class="sello">PÚBLICO</span></p>' : ''}</div>`;
   }
@@ -2059,7 +2068,7 @@ document.addEventListener('click', e => {
 
 /* =====================================================================
    LA CASA: monitos de palitos + modo en vivo
-   - Coordenadas de la sala: x 0–100, y 0–105 (y = pies).
+   - Coordenadas de la sala: x 0–100, y 0–150 (y = pies).
    - Quien no está conectado camina solo; su ruta sale de la hora y su id,
      así todos los celulares ven lo mismo sin mandar nada.
    - Quien está conectado mueve a su monito y lo manda por Supabase Realtime.
@@ -2067,8 +2076,9 @@ document.addEventListener('click', e => {
 const SALA = (() => {
   const T = 9000;                         // duración de cada "turno" de los que caminan solos
   const PUERTA = [12, 56], PANTALLA = [50, 24];
-  const SPOTS = [[14, 64], [30, 64], [46, 76], [56, 86], [44, 96], [62, 95], [76, 92], [91, 86], [10, 92], [26, 82],
-    [52, 62], [90, 68], [76, 63], [30, 98], [68, 80], [86, 99], [18, 75], [38, 87], [60, 71], [8, 80]];
+  const SPOTS = [[14, 64], [30, 64], [52, 62], [76, 63], [90, 68], [8, 80], [24, 78], [44, 76], [60, 80], [92, 88],
+    [14, 96], [34, 92], [56, 98], [74, 92], [84, 104], [8, 112], [26, 110], [46, 112], [66, 112], [90, 120],
+    [16, 126], [36, 128], [56, 126], [76, 128], [24, 142], [46, 144], [66, 142], [84, 140]];
   const MANOS = ['✊', '✋', '✌️'];
   const actores = new Map();               // id -> actor
   let online = new Set(), canal = null, vivo = false, miId = null;
@@ -2080,7 +2090,8 @@ const SALA = (() => {
   const azar = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   const lerp = (a, b, e) => a + (b - a) * e;
   const suave = e => e < .5 ? 2 * e * e : 1 - Math.pow(-2 * e + 2, 2) / 2;
-  const limitar = (x, y) => [Math.max(6, Math.min(94, x)), Math.max(56, Math.min(101, y))];
+  const ALTO = 150;
+  const limitar = (x, y) => [Math.max(6, Math.min(94, x)), Math.max(56, Math.min(146, y))];
 
   // ---------- quién camina solo ----------
   const enCasaIds = () => [...actores.values()].filter(a => a.enSala).map(a => a.id).sort();
@@ -2334,7 +2345,7 @@ const SALA = (() => {
       if (r.width) return [r.left + r.width / 2, r.top];
     }
     const r = caja.getBoundingClientRect();
-    return [r.left + r.width * PANTALLA[0] / 100, r.top + r.height * PANTALLA[1] / 105];
+    return [r.left + r.width * PANTALLA[0] / 100, r.top + r.height * PANTALLA[1] / ALTO];
   }
   function volar(deId, aId, e) {
     // con una ventana abierta no vuela por encima: solo aparece la burbuja
@@ -2354,12 +2365,12 @@ const SALA = (() => {
     if (m) { abrirFicha(m.dataset.id); return; }
     // ¿tocó la puerta del confesionario?
     const rr = caja.getBoundingClientRect();
-    const ux = (e.clientX - rr.left) / rr.width * 100, uy = (e.clientY - rr.top) / rr.height * 105;
+    const ux = (e.clientX - rr.left) / rr.width * 100, uy = (e.clientY - rr.top) / rr.height * ALTO;
     if (ux >= 2 && ux <= 21 && uy >= 7 && uy <= 46) { irAlConfesionario(); return; }
     if (ux >= 35 && ux <= 65 && uy >= 5 && uy <= 28) { irAlOjo(); return; }
     if (!soyActor()) { toast('Solo los habitantes en la casa pueden caminar'); return; }
     const r = caja.getBoundingClientRect();
-    const [tx, ty] = limitar((e.clientX - r.left) / r.width * 100, (e.clientY - r.top) / r.height * 105 + 4);
+    const [tx, ty] = limitar((e.clientX - r.left) / r.width * 100, (e.clientY - r.top) / r.height * ALTO + 4);
     const yo = actores.get(miId);
     if (Date.now() < yo.ocupado || Date.now() < (yo.retoHasta || 0)) return;
     const dur = Math.max(450, Math.hypot(tx - yo.x, ty - yo.y) * 42);
@@ -2454,7 +2465,7 @@ const SALA = (() => {
     }
     for (const a of lista) {
       const [x, y] = limitar(a.rx, a.ry), p = a.p;
-      a.el.style.transform = `translate3d(${(x / 100 * W).toFixed(1)}px, ${(y / 105 * H).toFixed(1)}px, 0) translateY(-100%)`;
+      a.el.style.transform = `translate3d(${(x / 100 * W).toFixed(1)}px, ${(y / ALTO * H).toFixed(1)}px, 0) translateY(-100%)`;
       a.el.style.zIndex = Math.round(y * 10);
       a.el.classList.toggle('camina', p.mueve);
       if (p.izq !== undefined) a.el.classList.toggle('izq', p.izq);
@@ -4010,11 +4021,14 @@ async function adminExtras(C) {
   const estadoEnc = e => +new Date(e.abre) > ahora ? `Programada: abre ${fmtFecha(e.abre)}` : +new Date(e.cierra) > ahora ? `Abierta hasta ${fmtFecha(e.cierra)}` : 'Cerrada';
   const ricos = [...adm.jug].sort((a, b) => (b.billetes ?? 0) - (a.billetes ?? 0));
   C.innerHTML = `<form class="adm-caja" id="en-form"><h3>Encuesta del día</h3>
-      <p class="ayuda">Sale en la casa a la hora que pongas (y llega aviso al celular). Todos votan en secreto y pueden apostar qué opción gana.</p>
+      <p class="ayuda">Sale en la casa a la hora que pongas (y llega aviso al celular). Todos votan en secreto y pueden apostar qué opción gana. Puedes programar todas las que quieras, el mismo día o varias seguidas.</p>
       <label class="campo" for="en-preg">Pregunta</label>
       <input class="in" id="en-preg" maxlength="140" required placeholder="¿Quién es más probable que llegue tarde mañana?">
       <label class="campo" for="en-tipo">Opciones</label>
-      <select class="in" id="en-tipo"><option value="casa">Los habitantes que siguen en la casa</option><option value="todos">Todos los registrados</option><option value="propias">Escribir mis propias opciones</option></select>
+      <select class="in" id="en-tipo"><option value="casa">Los habitantes que siguen en la casa</option><option value="elegir">Elegir a los habitantes que quiera</option><option value="todos">Todos los registrados</option><option value="propias">Escribir mis propias opciones</option></select>
+      <div class="hidden" id="en-elegir"><p class="ayuda" style="margin-top:8px">Toca a los que quieras poner como opciones (mínimo 2): <b id="en-n">0</b> elegidos.</p>
+        <div class="elegir-hab">${[...adm.jug].sort((a, b) => (a.rol === 'jugador' && a.estado === 'activo' ? 0 : 1) - (b.rol === 'jugador' && b.estado === 'activo' ? 0 : 1) || a.nombre.localeCompare(b.nombre))
+          .map(j => `<label><input type="checkbox" value="${j.id}">${avatar(j, 26)}${esc(j.nombre)}${j.rol === 'espectador' ? ' <small>(público)</small>' : j.estado === 'eliminado' ? ' <small>(eliminado)</small>' : ''}</label>`).join('')}</div></div>
       <textarea class="in hidden" id="en-ops" rows="4" placeholder="Una opción por renglón (de 2 a 8)" style="margin-top:8px"></textarea>
       <div class="agenda-grid" style="margin-top:8px">
         <label for="en-abre">Abre</label><input class="in" type="datetime-local" id="en-abre" value="${aInputLocal(new Date().toISOString())}">
@@ -4046,12 +4060,17 @@ async function adminExtras(C) {
       ${ricos.map(j => `<div class="adm-fila"><div class="info"><b>${esc(j.nombre)}</b><small>${j.rol === 'espectador' ? 'Público' : j.estado === 'eliminado' ? 'Eliminado' : 'En la casa'}</small></div>
         <b>${fmt$(j.billetes ?? 0)}</b><button class="mini" data-bill="${j.id}">± Ajustar</button></div>`).join('')}</div>`;
 
-  $('#en-tipo').onchange = e => $('#en-ops').classList.toggle('hidden', e.target.value !== 'propias');
+  $('#en-tipo').onchange = e => {
+    $('#en-ops').classList.toggle('hidden', e.target.value !== 'propias');
+    $('#en-elegir').classList.toggle('hidden', e.target.value !== 'elegir');
+  };
+  $$('#en-elegir input').forEach(i => i.onchange = () => { $('#en-n').textContent = $$('#en-elegir input:checked').length; });
   $('#en-form').onsubmit = async e => {
     e.preventDefault();
     const preg = $('#en-preg').value.trim(), tipo = $('#en-tipo').value;
     let ops;
     if (tipo === 'propias') ops = $('#en-ops').value.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 8).map(t => ({ t }));
+    else if (tipo === 'elegir') ops = $$('#en-elegir input:checked').map(i => adm.jug.find(j => j.id === i.value)).filter(Boolean).map(j => ({ t: j.nombre, id: j.id }));
     else ops = adm.jug.filter(j => tipo === 'todos' || (j.rol === 'jugador' && j.estado === 'activo')).map(j => ({ t: j.nombre, id: j.id }));
     if (preg.length < 3) return toast('Escribe la pregunta');
     if (ops.length < 2) return toast('Se necesitan al menos 2 opciones');
@@ -4060,6 +4079,7 @@ async function adminExtras(C) {
     try {
       await q(sb.from('encuestas').insert({ pregunta: preg, opciones: ops, abre: abre.toISOString(), cierra: cierra.toISOString() }));
       toast(+abre <= Date.now() + 60000 ? '📊 Encuesta publicada' : '📊 Encuesta programada para ' + fmtFecha(abre)); cargarAdmin();
+      $('#en-preg') && ($('#en-preg').value = '');
     } catch (x) { toast(mensajeError(x)); }
   };
   $$('[data-enc-borrar]').forEach(b => b.onclick = () => { if (confirm('¿Borrar esta encuesta? Si alguien apostó, se le devuelve.')) accion('admin_borrar_encuesta', { p_id: +b.dataset.encBorrar }, 'Encuesta borrada'); });
