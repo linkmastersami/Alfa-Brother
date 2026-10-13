@@ -249,6 +249,12 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .ad-aviso.bien{color:var(--ok)}
 .ad-aviso.mal{color:var(--sello)}
 
+/* ---------- v11: predicción minimizada ---------- */
+.pred-mini .folio{margin-bottom:2px}
+.pred-mini-fila{display:flex;align-items:center;gap:12px}
+.pred-mini-fila p{flex:1;margin:0;font-size:.92rem}
+.pred-mini .btn.sec{color:var(--texto);flex:none}
+
 /* ---------- v10: que el teclado no tape las ventanas ---------- */
 .modal{top:var(--vvt,0px);bottom:auto;height:var(--vvh,100%);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .ojo-modal.contando{place-items:start center;padding-top:12px}
@@ -1494,6 +1500,12 @@ function pintarExtrasSala() {
         ${j ? avatar(j, 38) + `<span>${esc(j.nombre)}</span><small>Cambiar</small>` : '<span>Toca para elegir a un habitante</span>'}
       </button>`;
   };
+  const completa = mi_prediccion?.ganador_id && mi_prediccion?.primero_id;
+  if (completa && !predAbierta) {
+    h += `<div class="formato rosa prediccion pred-mini"><div class="folio"><span>Predicción secreta</span><span>Guardada 🔒</span></div>
+      <div class="pred-mini-fila"><p>Tu predicción está guardada. Se revela al final del juego.</p>
+      <button class="btn sec chico" id="pred-cambiar">Cambiar</button></div></div>`;
+  } else
   h += `<div class="formato rosa prediccion"><div class="folio"><span>Predicción secreta</span><span>${mi_prediccion ? 'Guardada' : 'Pendiente'}</span></div>
     <h2>¿Quién crees que…?</h2>
     <p>Nadie la verá hasta el final del juego. Ahí se revela quién le atinó.</p>
@@ -1512,7 +1524,7 @@ function pintarExtrasSala() {
   return h;
 }
 
-let predSel = null;
+let predSel = null, predAbierta = false;
 // Ventana con las fotos de los habitantes que están en la casa
 function abrirElegir(campo) {
   const enCasa = est.jugadores.filter(j => j.rol === 'jugador' && j.estado === 'activo');
@@ -1535,11 +1547,14 @@ function conectarSalaEspera() {
     b.disabled = true;
     try {
       await rpc('predecir', { p_token: token, p_ganador: predSel.ganador, p_primero: predSel.primero });
+      predAbierta = false;
       await selloEnviado('GUARDADA');
       refrescar();
     } catch (e) { toast(mensajeError(e)); b.disabled = false; }
   };
   $$('[data-elegir]').forEach(x => x.onclick = () => abrirElegir(x.dataset.elegir));
+  const bc = $('#pred-cambiar');
+  if (bc) bc.onclick = () => { predAbierta = true; pintarAccion(); };
   $$('[data-practica]').forEach(x => x.onclick = () => abrirPractica(x.dataset.practica));
   $$('[data-compartir]').forEach(x => x.onclick = compartirJuego);
   pintarReloj();
@@ -1743,7 +1758,19 @@ async function abrirFicha(id) {
   $$('[data-mio]', caja).forEach(b => b.onclick = () => { cerrarFicha(); SALA.miEmoji(b.dataset.mio); });
 }
 function cerrarFicha() { $('#m-ficha').classList.add('hidden'); }
-$('#m-ficha').addEventListener('click', e => { if (e.target.id === 'm-ficha') cerrarFicha(); });
+// Tocar fuera de una ventana (en el fondo oscuro) la cierra.
+// Solo si el toque empezó y terminó en el fondo, para no cerrarla al seleccionar texto.
+let toqueFondo = null;
+document.addEventListener('pointerdown', e => { toqueFondo = e.target.classList?.contains('modal') ? e.target : null; }, true);
+document.addEventListener('click', e => {
+  const m = e.target;
+  if (!m.classList?.contains('modal') || m !== toqueFondo) return;
+  toqueFondo = null;
+  if (m.id === 'm-bienvenida') return $('#bv-ok').click();      // cerrar la bienvenida = OK
+  if (m.id === 'm-ojo') return $('#ojo-cerrar').click();
+  if (m.id === 'm-tuto') { store.set('ab_tuto', '1'); }          // ya lo vio
+  m.classList.add('hidden');
+});
 // tocar cualquier foto con data-ficha abre la ficha
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-ficha]');
@@ -2050,14 +2077,18 @@ const SALA = (() => {
     // que no se encimen: se empujan un poco solo al dibujar (igual en todos los celulares)
     const lista = [...actores.values()].filter(a => a.enSala);
     for (const a of lista) { a.rx = a.x; a.ry = a.y; }
-    for (let i = 0; i < lista.length; i++) for (let j = i + 1; j < lista.length; j++) {
-      const A = lista[i], B = lista[j];
-      let dx = B.rx - A.rx, dy = (B.ry - A.ry) * 1.6;
-      const d = Math.hypot(dx, dy);
-      if (d >= 7) continue;
-      if (d < .01) { dx = A.id < B.id ? 1 : -1; dy = 0; }
-      const n = Math.hypot(dx, dy), f = (7 - d) / 2;
-      A.rx -= dx / n * f; B.rx += dx / n * f; A.ry -= dy / n * f / 1.6; B.ry += dy / n * f / 1.6;
+    const SEP = 9;
+    for (let vuelta = 0; vuelta < 4; vuelta++) {
+      for (let i = 0; i < lista.length; i++) for (let j = i + 1; j < lista.length; j++) {
+        const A = lista[i], B = lista[j];
+        let dx = B.rx - A.rx, dy = (B.ry - A.ry) * 1.6;
+        const d = Math.hypot(dx, dy);
+        if (d >= SEP) continue;
+        if (d < .01) { dx = A.id < B.id ? 1 : -1; dy = 0; }
+        const n = Math.hypot(dx, dy), f = (SEP - d) / 2;
+        A.rx -= dx / n * f; B.rx += dx / n * f; A.ry -= dy / n * f / 1.6; B.ry += dy / n * f / 1.6;
+      }
+      for (const a of lista) [a.rx, a.ry] = limitar(a.rx, a.ry);   // sin salirse de la sala
     }
     for (const a of lista) {
       const [x, y] = limitar(a.rx, a.ry), p = a.p;
