@@ -76,12 +76,12 @@ Comparte ese link en el grupo de la oficina.
 
 ### Billetes Alfa y actividades
 
-Todos (habitantes, eliminados y público) empiezan con **$1,000 Billetes Alfa** (no son dinero de verdad). Se ganan así:
+Todos (habitantes, eliminados y público) empiezan con **$2,000 Billetes Alfa** (no son dinero de verdad). Se ganan así:
 
 | Cómo | Billetes |
 |---|---|
-| Entrar al juego cada día | $100 |
-| Primera práctica del día de cada juego | $50 |
+| Entrar al juego cada día | $200 |
+| Primera práctica del día de cada juego | $100 |
 | Romper un récord de la casa | $200 (una vez al día por juego) |
 | Cada misión secreta cumplida (hasta 5 por semana) | $300, y $50 para quien la confirma |
 | Atinarle a una apuesta | tu parte del pozo |
@@ -146,6 +146,7 @@ Versión 7 (Billetes Alfa): billetes, apuestas, encuesta del día, misiones secr
 Versión 8 (avisos de producción): avisos solo para ti de votos, chismes, registros y empates.
 Versión 9 (misiones): 5 misiones por semana para todos los habitantes, en la casa o eliminados.
 Versión 10 (tienda): precios nuevos, más artículos, mascotas y efectos.
+Versión 11: saldo inicial de $2,000, bono diario de $200 y práctica del día de $100.
 
 ---
 
@@ -189,5 +190,5 @@ Sin conexión en vivo el juego sigue funcionando: todos los monitos caminan solo
 | "Activa al menos una pregunta de trivia" | Ve a **Trivia** y activa preguntas antes de iniciar una semana de trivia. |
 | "Los avisos todavía no están listos" | Falta publicar la función `avisos` o apagar **Verify JWT** (ver sección 7). |
 | Activé los avisos pero no llega ninguno | Revisa en **Database** → **Extensions** que **pg_net** esté encendido y vuelve a ejecutar `supabase.sql`. En **Edge Functions** → `avisos` → **Logs** se ven los errores. |
-| Quiero empezar de cero | **Juego** → **Reiniciar juego** (escribe REINICIAR). Los registrados se quedan; todos regresan a $1,000 billetes y conservan lo que compraron en la tienda. |
+| Quiero empezar de cero | **Juego** → **Reiniciar juego** (escribe REINICIAR). Los registrados se quedan; todos regresan a $2,000 billetes y conservan lo que compraron en la tienda. |
 | La cámara no abre para escanear la misión | El navegador necesita permiso de cámara. Si no lo da, se puede escribir el código de 6 letras. |

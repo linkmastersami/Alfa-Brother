@@ -150,7 +150,8 @@ create table if not exists public.push_ajustes (
 );
 
 -- v7: Billetes Alfa, apuestas, encuesta del día, misiones secretas, récords y tienda
-alter table public.jugadores add column if not exists billetes    int    not null default 1000;
+alter table public.jugadores add column if not exists billetes    int    not null default 2000;
+alter table public.jugadores alter column billetes set default 2000;
 alter table public.jugadores add column if not exists ultimo_bono date;
 alter table public.jugadores add column if not exists estilo      jsonb  not null default '{}'::jsonb;
 alter table public.jugadores add column if not exists compras     text[] not null default '{}';
@@ -164,6 +165,17 @@ create table if not exists public.movimientos (
   creado     timestamptz not null default now()
 );
 create index if not exists movimientos_jugador on public.movimientos (jugador_id, creado desc);
+
+-- v11: saldo inicial de $2,000. A quien ya estaba registrado se le suman $1,000 una sola vez.
+alter table public.config add column if not exists inicio_doble boolean not null default false;
+do $$ begin
+  if not (select inicio_doble from public.config where id = 1) then
+    insert into public.movimientos (jugador_id, monto, concepto)
+      select id, 1000, 'Ajuste: ahora todos empiezan con $2,000' from public.jugadores;
+    update public.jugadores set billetes = billetes + 1000 where true;
+    update public.config set inicio_doble = true where id = 1;
+  end if;
+end $$;
 
 -- Apuestas con pozo compartido: líder y eliminado de la semana, y encuestas
 create table if not exists public.apuestas (
@@ -431,7 +443,7 @@ begin
   -- bono por entrar cada día
   if yo.ultimo_bono is distinct from public._hoy() then
     update public.jugadores set ultimo_bono = public._hoy() where id = yo.id and ultimo_bono is distinct from public._hoy();
-    if found then perform public._mover(yo.id, 100, 'Bono por entrar hoy'); v_bono := 100; end if;
+    if found then perform public._mover(yo.id, 200, 'Bono por entrar hoy'); v_bono := 200; end if;
   end if;
   select * into c from public.config where id = 1;
   select count(*) into v_activos from public.jugadores where rol = 'jugador' and estado = 'activo';
@@ -1057,7 +1069,7 @@ begin
   delete from public.misiones where true;
   delete from public.practicas where true;
   delete from public.encuestas where liquidada;
-  update public.jugadores set billetes = 1000, ultimo_bono = null where true;
+  update public.jugadores set billetes = 2000, ultimo_bono = null where true;
   update public.config set semana = 0, fase = 'registro', prueba = null, lider_id = null, eliminado_id = null,
          empatados = '{}', gala_revelada = false, es_final = false, terminado = false, aviso_voto = null, actualizado = now() where id = 1;
 end $$;
@@ -1591,7 +1603,7 @@ begin
   insert into public.practicas (jugador_id, juego) values (yo.id, p_juego) on conflict do nothing;
   select * into p from public.practicas where jugador_id = yo.id and juego = p_juego for update;
   if p.ultimo_premio is distinct from public._hoy() then
-    perform public._mover(yo.id, 50, 'Práctica del día'); v_premio := 50;
+    perform public._mover(yo.id, 100, 'Práctica del día'); v_premio := 100;
   end if;
   if v > v_rec and v > 0 then
     v_record := true;
@@ -1603,7 +1615,8 @@ begin
      set mejor = greatest(mejor, v), partidas = partidas + 1, ultimo_premio = public._hoy(),
          ultimo_record = case when v_record then public._hoy() else ultimo_record end
    where jugador_id = yo.id and juego = p_juego;
-  return jsonb_build_object('mejor', greatest(p.mejor, v), 'record', v_record, 'premio', v_premio);
+  return jsonb_build_object('mejor', greatest(p.mejor, v), 'record', v_record, 'premio', v_premio,
+    'premio_dia', case when p.ultimo_premio is distinct from public._hoy() then 100 else 0 end);
 end $$;
 
 -- ---------------------------------------------------------------------

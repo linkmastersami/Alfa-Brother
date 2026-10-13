@@ -2991,7 +2991,7 @@ function tarjetaRecords() {
   return `<div class="juego-card"><h3>🏆 Récords de la casa <small>Prácticas</small></h3>
     <div class="record-cols">${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}</div>
     <div class="fila-btn"><button class="btn chico" data-practicar="memoria">Practicar memoria</button><button class="btn chico" data-practicar="adeudo">Practicar adeudo</button></div>
-    <p class="ayuda" style="margin-top:6px">La primera práctica de cada día paga $50 y romper un récord de la casa, $200.</p></div>`;
+    <p class="ayuda" style="margin-top:6px">La primera práctica de cada día paga $100 y romper un récord de la casa, $200.</p></div>`;
 }
 
 /* ---------- mis billetes ---------- */
@@ -3005,8 +3005,8 @@ async function abrirBilletes() {
     <h2 class="display" style="font-size:2.6rem;margin:2px 0">${fmt$(d.billetes)}</h2>
     <h3 style="margin-top:12px">Cómo ganar más</h3>
     <ul style="margin:4px 0 0;padding-left:18px;font-size:.92rem">
-      <li>Entrar al juego cada día: <b>$100</b></li>
-      <li>Primera práctica del día de cada juego: <b>$50</b></li>
+      <li>Entrar al juego cada día: <b>$200</b></li>
+      <li>Primera práctica del día de cada juego: <b>$100</b></li>
       <li>Romper un récord de la casa: <b>$200</b></li>
       <li>Cada misión secreta cumplida: <b>$300</b>, hasta 5 por semana (y $50 a quien te ayude)</li>
       <li>Atinarle a las apuestas del líder, del eliminado y de la encuesta</li></ul>
@@ -3369,8 +3369,8 @@ async function finPractica(html, tipo, puntaje = 0) {
   let extra = '';
   try {
     const r = await rpc('guardar_practica', { p_token: token, p_juego: tipo, p_puntaje: puntaje });
-    if (r.record) { extra += `<p style="font-weight:800">🏆 ¡Nuevo récord de la casa!${r.premio >= 200 ? ' +$200' : ''}</p>`; lluviaBilletes(20); SFX.tocar('fanfarria'); }
-    if (r.premio % 200 === 50) extra += `<p>💵 +$50 por tu primera práctica de hoy</p>`;
+    if (r.record) { extra += `<p style="font-weight:800">🏆 ¡Nuevo récord de la casa!${r.premio - (r.premio_dia || 0) >= 200 ? ' +$200' : ''}</p>`; lluviaBilletes(20); SFX.tocar('fanfarria'); }
+    if (r.premio_dia) extra += `<p>💵 +$${r.premio_dia} por tu primera práctica de hoy</p>`;
   } catch { }
   $('#p-volver').classList.remove('hidden');
   $('#p-caja').innerHTML = `<div class="folio"><span>Práctica terminada</span><span>No cuenta</span></div>${gradaFiesta()}${html}${extra}
