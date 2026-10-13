@@ -237,6 +237,12 @@ create table if not exists public.tienda (
   orden  int  not null default 0
 );
 
+-- v8: celulares de la producción (reciben avisos de lo que hay que revisar)
+create table if not exists public.push_produccion (
+  endpoint text primary key,
+  creado   timestamptz not null default now()
+);
+
 -- Predicción secreta: quién gana y quién sale primero
 create table if not exists public.predicciones (
   jugador_id  uuid primary key references public.jugadores(id) on delete cascade,
@@ -259,7 +265,7 @@ do $$
 declare t text;
 begin
   foreach t in array array['config','jugadores','sesiones','trivia','intentos','votos','historial','admins','predicciones','chismes','push_subs','push_ajustes',
-                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda'] loop
+                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda','push_produccion'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists admin_todo on public.%I', t);
     execute format('create policy admin_todo on public.%I for all to authenticated using (public.es_admin()) with check (public.es_admin())', t);
@@ -370,6 +376,7 @@ begin
   returning id into v_id;
 
   insert into public.sesiones (jugador_id) values (v_id) returning token into v_token;
+  perform public._avisar_produccion('🙋 Nuevo registro', format('%s entró como %s.', v_nombre, case when v_rol = 'jugador' then 'habitante' else 'público' end));
   return jsonb_build_object('token', v_token, 'rol', v_rol);
 end $$;
 
@@ -598,6 +605,9 @@ declare
   v_req int;
   v_n int;
   e jsonb;
+  v_ya boolean;
+  v_votaron int;
+  v_total int;
 begin
   yo := public._yo(p_token);
   select * into c from public.config where id = 1;
@@ -623,11 +633,24 @@ begin
     if char_length(coalesce(e->>'motivo', '')) > 200 then raise exception 'MOTIVO_LARGO'; end if;
   end loop;
 
+  v_ya := exists (select 1 from public.votos where semana = c.semana and votante_id = yo.id);
   delete from public.votos where semana = c.semana and votante_id = yo.id;
   insert into public.votos (semana, votante_id, votado_id, puntos, motivo, es_publico)
   select c.semana, yo.id, (x->>'id')::uuid, (x->>'puntos')::int,
          nullif(btrim(coalesce(x->>'motivo', '')), ''), yo.rol = 'espectador'
     from jsonb_array_elements(p_votos) x;
+  -- aviso a la producción (solo la primera vez que vota, no cuando cambia su voto)
+  if not v_ya then
+    select count(distinct votante_id) into v_votaron from public.votos where semana = c.semana and not es_publico;
+    select count(*) into v_total from public.jugadores where rol = 'jugador';
+    if yo.rol = 'espectador' then
+      perform public._avisar_produccion('🗳️ Votó el público', format('%s ya votó (su voto no cuenta).', yo.nombre));
+    elsif v_votaron >= v_total then
+      perform public._avisar_produccion('✅ Ya votaron todos', format('%s fue el último. Ya puedes cerrar la votación.', yo.nombre));
+    else
+      perform public._avisar_produccion('🗳️ Nuevo voto', format('%s ya votó. Van %s de %s.', yo.nombre, v_votaron, v_total));
+    end if;
+  end if;
 end $$;
 
 -- El líder rompe el empate
@@ -973,6 +996,9 @@ begin
   if char_length(v) < 3 or char_length(v) > 160 then raise exception 'CHISME_INVALIDO'; end if;
   if (select count(*) from public.chismes where pendiente) >= 200 then raise exception 'BUZON_LLENO'; end if;
   insert into public.chismes (texto, activo, pendiente) values (v, false, true);
+  perform public._avisar_produccion('👁️ Chisme por revisar',
+    (select case when count(*) = 1 then 'Hay 1 pendiente en el panel (pestaña Ojo).'
+                 else format('Hay %s pendientes en el panel (pestaña Ojo).', count(*)) end from public.chismes where pendiente));
 end $$;
 
 -- Cuenta regresiva de la sala de espera (null la quita)
@@ -1059,6 +1085,29 @@ begin
   end;
 end $$;
 
+-- Avisos solo para los celulares de la producción
+create or replace function public._avisar_produccion(p_titulo text, p_cuerpo text)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_ids uuid[];
+begin
+  select array_agg(distinct s.jugador_id) into v_ids
+    from public.push_subs s join public.push_produccion p on p.endpoint = s.endpoint;
+  if v_ids is null then return; end if;
+  perform public._avisar(p_titulo, p_cuerpo, v_ids);
+exception when others then null;
+end $$;
+
+-- La producción marca este celular para recibir sus avisos (o lo quita)
+create or replace function public.admin_push_produccion(p_endpoint text, p_activar boolean)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  perform public._solo_admin();
+  if not p_activar then delete from public.push_produccion where endpoint = p_endpoint; return; end if;
+  if not exists (select 1 from public.push_subs where endpoint = p_endpoint) then raise exception 'SIN_AVISOS'; end if;
+  insert into public.push_produccion (endpoint) values (p_endpoint) on conflict do nothing;
+  perform public._avisar_produccion('🎬 Avisos de producción activados', 'Aquí te llegará lo que tengas que revisar: votos, chismes, registros y empates.');
+end $$;
+
 -- Cada cambio de fase avisa a todos
 create or replace function public._config_avisos()
 returns trigger language plpgsql security definer set search_path = public as $$
@@ -1093,6 +1142,10 @@ begin
       end if;
     elsif new.fase = 'decision' and old.fase <> 'decision' and new.lider_id is not null then
       perform public._avisar('⚖️ Hubo empate', 'Eres el líder: tú decides quién sale. Entra al juego.', array[new.lider_id]);
+    end if;
+    if new.fase = 'decision' and old.fase <> 'decision' then
+      perform public._avisar_produccion('⚖️ Hubo empate', case when new.lider_id is null then 'No hay líder: tienes que decidir quién sale desde el panel.'
+                                                              else 'El líder está decidiendo. Si tarda, puedes decidir tú desde el panel.' end);
     elsif new.fase = 'gala' and new.gala_revelada and not old.gala_revelada then
       if new.terminado then
         perform public._avisar('🏆 ¡Tenemos ganador!', 'Terminó la gran final de Alfa Brother. Entra a ver el podio.');
@@ -1652,6 +1705,7 @@ revoke all on function public._revelar()             from public, anon, authenti
 revoke all on function public._avanzar_agenda()      from public, anon, authenticated;
 revoke all on function public._avisar(text, text, uuid[]) from public, anon, authenticated;
 revoke all on function public._recordatorios()       from public, anon, authenticated;
+revoke all on function public._avisar_produccion(text, text) from public, anon, authenticated;
 revoke all on function public._reloj()               from public, anon, authenticated;
 revoke all on function public._mover(uuid, int, text) from public, anon, authenticated;
 revoke all on function public._liquidar(text, bigint, text[], text) from public, anon, authenticated;

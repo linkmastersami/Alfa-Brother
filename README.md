@@ -143,6 +143,7 @@ Versión 4 (chismes del público): los jugadores pueden mandarle chismes al ojo.
 Versión 5 (gran final): cuando queda un solo habitante el juego se detiene y la agenda se apaga sola, para que no empiece otra semana.
 Versión 6 (podio y avisos): gran final con 3 sin prueba ni líder, podio por votos, avisos al celular y reloj automático de la agenda.
 Versión 7 (Billetes Alfa): billetes, apuestas, encuesta del día, misiones secretas, récords de la casa y tienda del monito.
+Versión 8 (avisos de producción): avisos solo para ti de votos, chismes, registros y empates.
 
 ---
 
@@ -158,6 +159,8 @@ Se configura una sola vez:
 4. Abre el juego en tu celular y toca **Activar avisos**. La primera vez la función crea sus llaves sola; debe llegarte "🔔 ¡Avisos activados!".
 
 No hay claves que copiar: las llaves viven en la tabla `push_ajustes`, que solo puede leer la producción.
+
+**Avisos solo para la producción:** en el panel → **Juego** → **Avisos al celular** → **Recibirlos en este celular**. Te llega un aviso cuando alguien vota (y cuando ya votaron todos), cuando llega un chisme por revisar, cuando alguien se registra y cuando hay empate. Antes hay que tener activados los avisos del juego en ese mismo celular.
 
 Cada jugador activa los avisos en su propio celular (sale una tarjeta en la casa y el enlace **Activar avisos** abajo). En **iPhone** solo funcionan con el juego instalado en la pantalla de inicio (iOS 16.4 o más nuevo) y abierto desde ahí.
 

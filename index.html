@@ -997,6 +997,7 @@ const ERRORES = {
   SIN_TRIVIAS: 'Activa al menos una pregunta de trivia antes de iniciar la semana.',
   JUEGO_TERMINADO: 'El juego ya terminó: solo queda un habitante. Para empezar otro, usa Reiniciar juego.',
   SIN_CANDIDATOS: 'No hay candidatos para eliminar.',
+  SIN_AVISOS: 'Primero activa los avisos del juego en este celular (🔔 Activar avisos, abajo en la casa).',
   SIN_BILLETES: 'No te alcanzan los billetes.',
   APUESTA_MINIMA: 'La apuesta mínima es de $10.',
   APUESTA_MAXIMA: 'La apuesta máxima es de $5,000.',
@@ -1852,7 +1853,8 @@ const AVISOS = (() => {
     else if (st === 'ios') $('#m-ios').classList.remove('hidden');
     else activar();
   };
-  return { activar, sincronizar, olvidar, pintar };
+  const endpoint = async () => (await suscripcion().catch(() => null))?.endpoint || null;
+  return { activar, sincronizar, olvidar, pintar, endpoint };
 })();
 
 /* ---------- compartir el link ---------- */
@@ -3842,12 +3844,21 @@ async function adminJuego(C) {
       <div class="adm-acciones"><button class="btn" id="ad-revelar">Revelar en todos los celulares</button>
       <button class="btn sec chico" data-fase="votacion">Reabrir votación</button></div></div>`;
   }
-  const [subs, aj] = await Promise.all([q(sb.from('push_subs').select('jugador_id')), q(sb.from('push_ajustes').select('vapid_publica'))]);
+  const [subs, aj, prod, miEndpoint] = await Promise.all([q(sb.from('push_subs').select('jugador_id')), q(sb.from('push_ajustes').select('vapid_publica')),
+    q(sb.from('push_produccion').select('endpoint')).catch(() => []), AVISOS.endpoint()]);
+  const soyProd = miEndpoint && prod.some(x => x.endpoint === miEndpoint);
   const conAvisos = new Set(subs.map(x => x.jugador_id)).size;
   h += `<div class="adm-caja"><h3>Avisos al celular</h3>
     ${aj[0]?.vapid_publica
       ? `<p>${conAvisos} ${conAvisos === 1 ? 'persona los tiene' : 'personas los tienen'} activados (${subs.length} ${subs.length === 1 ? 'celular' : 'celulares'}). Los cambios de fase avisan solos.</p>`
       : '<p class="ayuda">Todavía no están listos: publica la función <b>avisos</b> en Supabase (ver la guía) y activa los avisos desde tu celular.</p>'}
+    <div style="background:#F4F1E6;border-radius:10px;padding:10px 12px;margin:10px 0">
+      <b>🎬 Avisos solo para ti</b>
+      <p class="ayuda" style="margin:4px 0 8px">Te avisa cuando alguien vota, cuando llega un chisme por revisar, cuando alguien se registra y cuando hay empate. Nadie más los recibe.</p>
+      ${!miEndpoint ? '<p class="ayuda" style="margin:0">Primero activa los avisos del juego en este celular: en la casa, abajo, toca <b>🔔 Activar avisos</b>. Luego regresa aquí.</p>'
+        : soyProd ? '<p style="margin:0 0 8px">✅ Este celular recibe los avisos de producción.</p><button class="btn sec chico" id="av-prod-no">Dejar de recibirlos aquí</button>'
+        : '<button class="btn chico" id="av-prod-si">Recibirlos en este celular</button>'}
+    </div>
     <label class="campo" for="av-titulo">Mandar un aviso a todos</label>
     <input class="in" id="av-titulo" maxlength="60" placeholder="Título, p. ej. 📢 Mañana es la gala">
     <textarea class="in" id="av-cuerpo" maxlength="160" rows="2" placeholder="Mensaje (opcional)" style="margin-top:8px"></textarea>
@@ -3882,6 +3893,8 @@ async function adminJuego(C) {
   $$('[data-decidir]').forEach(b => b.onclick = () => { if (confirm('¿Sale ' + nombreDe(b.dataset.decidir) + '?')) accion('admin_decidir', { p_id: b.dataset.decidir }, 'Decidido'); });
   $$('[data-fase]').forEach(b => b.onclick = () => { if (confirm('¿Seguro?')) accion('admin_fase', { p_fase: b.dataset.fase }, 'Fase cambiada'); });
   $('#ad-revelar')?.addEventListener('click', () => { if (confirm('¿Revelar la gala en todos los celulares?')) accion('admin_revelar', {}, '¡Gala revelada!'); });
+  $('#av-prod-si')?.addEventListener('click', () => accion('admin_push_produccion', { p_endpoint: miEndpoint, p_activar: true }, '🎬 Listo: aquí te llegarán los avisos de producción'));
+  $('#av-prod-no')?.addEventListener('click', () => accion('admin_push_produccion', { p_endpoint: miEndpoint, p_activar: false }, 'Ya no recibirás avisos de producción aquí'));
   $('#av-mandar')?.addEventListener('click', async () => {
     const t = $('#av-titulo').value.trim(), c = $('#av-cuerpo').value.trim();
     if (t.length < 2) return toast('Escribe un título');
