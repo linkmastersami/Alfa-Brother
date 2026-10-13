@@ -133,6 +133,22 @@ alter table public.config add column if not exists es_final   boolean not null d
 alter table public.config add column if not exists terminado  boolean not null default false;
 alter table public.config add column if not exists aviso_voto int;   -- semana en que ya se mandó el recordatorio de votar
 
+-- v6: avisos al celular (web push)
+create table if not exists public.push_subs (
+  endpoint   text primary key,
+  sub        jsonb not null,
+  jugador_id uuid not null references public.jugadores(id) on delete cascade,
+  creado     timestamptz not null default now()
+);
+-- Llaves de los avisos: las crea sola la función "avisos" la primera vez que se usa
+create table if not exists public.push_ajustes (
+  id            int primary key default 1 check (id = 1),
+  vapid_publica text,
+  vapid_privada text,
+  clave         text,
+  funcion_url   text
+);
+
 -- Predicción secreta: quién gana y quién sale primero
 create table if not exists public.predicciones (
   jugador_id  uuid primary key references public.jugadores(id) on delete cascade,
@@ -154,7 +170,7 @@ $$;
 do $$
 declare t text;
 begin
-  foreach t in array array['config','jugadores','sesiones','trivia','intentos','votos','historial','admins','predicciones','chismes'] loop
+  foreach t in array array['config','jugadores','sesiones','trivia','intentos','votos','historial','admins','predicciones','chismes','push_subs','push_ajustes'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists admin_todo on public.%I', t);
     execute format('create policy admin_todo on public.%I for all to authenticated using (public.es_admin()) with check (public.es_admin())', t);
@@ -308,6 +324,7 @@ declare
 begin
   yo := public._yo(p_token);
   perform public._avanzar_agenda();
+  perform public._recordatorios();
   select * into c from public.config where id = 1;
   select count(*) into v_activos from public.jugadores where rol = 'jugador' and estado = 'activo';
   v_fin := c.terminado or (c.semana > 0 and v_activos <= 1 and c.gala_revelada);
@@ -903,12 +920,185 @@ begin
          empatados = '{}', gala_revelada = false, es_final = false, terminado = false, aviso_voto = null, actualizado = now() where id = 1;
 end $$;
 
+-- ---------------------------------------------------------------------
+--  AVISOS AL CELULAR
+--  La base de datos le pide a la función "avisos" (Edge Function) que
+--  mande la notificación. Si la función no está publicada, no pasa nada.
+-- ---------------------------------------------------------------------
+
+do $$ begin
+  begin create extension if not exists pg_net with schema extensions;
+  exception when others then raise notice 'pg_net no está disponible: actívalo en Database → Extensions'; end;
+end $$;
+
+create or replace function public._avisar(p_titulo text, p_cuerpo text, p_solo uuid[] default null)
+returns void language plpgsql security definer set search_path = public, extensions as $$
+declare a public.push_ajustes;
+begin
+  select * into a from public.push_ajustes where id = 1;
+  if a.clave is null or a.funcion_url is null then return; end if;
+  if not exists (select 1 from public.push_subs where p_solo is null or jugador_id = any (p_solo)) then return; end if;
+  begin
+    perform net.http_post(
+      url := a.funcion_url,
+      body := jsonb_build_object('titulo', p_titulo, 'cuerpo', p_cuerpo, 'solo', to_jsonb(p_solo)),
+      headers := jsonb_build_object('Content-Type', 'application/json', 'x-clave', a.clave),
+      timeout_milliseconds := 8000);
+  exception when others then null;      -- un aviso que falla nunca detiene el juego
+  end;
+end $$;
+
+-- Cada cambio de fase avisa a todos
+create or replace function public._config_avisos()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  v_lider text;
+  v_prueba text;
+begin
+  if new.fase is not distinct from old.fase and new.semana is not distinct from old.semana
+     and new.gala_revelada is not distinct from old.gala_revelada then
+    return new;
+  end if;
+  begin
+    select nombre into v_lider from public.jugadores where id = new.lider_id;
+    v_prueba := case new.prueba when 'trivia' then 'Trivia de la oficina' when 'memoria' then 'Memoria de expedientes'
+                                when 'adeudo' then 'Calcula el adeudo' else 'la prueba' end;
+    if new.fase = 'prueba' and (old.fase <> 'prueba' or new.semana <> old.semana) then
+      perform public._avisar(format('🏆 Semana %s: prueba del líder', new.semana),
+                             format('Ya puedes jugar %s. Solo tienes un intento.', v_prueba));
+    elsif new.fase = 'espera' and old.fase <> 'espera' then
+      if new.es_final then
+        perform public._avisar('🏁 ¡Llegamos a la gran final!', 'Sin prueba ni líder: todo se decide con los votos. Ya puedes preparar tu voto.');
+      elsif v_lider is not null then
+        perform public._avisar(format('👑 %s es el líder de la semana', v_lider), 'La prueba cerró. Ya puedes preparar tu voto en el confesionario.');
+      end if;
+    elsif new.fase = 'votacion' and old.fase <> 'votacion' then
+      if new.es_final then
+        perform public._avisar('🏁 ¡Gran final! Ya se puede votar', 'Quien junte menos puntos gana Alfa Brother. Entra al confesionario.');
+      else
+        perform public._avisar('🗳️ Se abrió la votación',
+          case when v_lider is not null and old.fase = 'prueba' then format('%s es el líder 👑. Entra al confesionario a votar.', v_lider)
+               else 'Entra al confesionario a votar.' end);
+      end if;
+    elsif new.fase = 'decision' and old.fase <> 'decision' and new.lider_id is not null then
+      perform public._avisar('⚖️ Hubo empate', 'Eres el líder: tú decides quién sale. Entra al juego.', array[new.lider_id]);
+    elsif new.fase = 'gala' and new.gala_revelada and not old.gala_revelada then
+      if new.terminado then
+        perform public._avisar('🏆 ¡Tenemos ganador!', 'Terminó la gran final de Alfa Brother. Entra a ver el podio.');
+      else
+        perform public._avisar('🎬 ¡Empezó la gala!', 'Entra a ver quién salió de la casa.');
+      end if;
+    end if;
+  exception when others then null;
+  end;
+  return new;
+end $$;
+drop trigger if exists config_avisos on public.config;
+create trigger config_avisos after update on public.config
+  for each row execute function public._config_avisos();
+
+-- Recordatorio: una hora antes de que cierre la votación, a quien no ha votado
+create or replace function public._recordatorios()
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  c public.config;
+  v_ids uuid[];
+begin
+  select * into c from public.config where id = 1;
+  if c.fase = 'votacion' and c.ag_semana = c.semana and c.ag_voto_fin is not null
+     and c.ag_voto_fin > now() and c.ag_voto_fin <= now() + interval '60 minutes'
+     and c.aviso_voto is distinct from c.semana then
+    update public.config set aviso_voto = c.semana where id = 1 and aviso_voto is distinct from c.semana;
+    if not found then return; end if;                       -- otro celular ya lo mandó
+    select array_agg(j.id) into v_ids from public.jugadores j
+     where not exists (select 1 from public.votos v where v.semana = c.semana and v.votante_id = j.id)
+       and exists (select 1 from public.push_subs s where s.jugador_id = j.id);
+    if v_ids is not null then
+      perform public._avisar('⏰ Última hora para votar', 'La votación cierra en menos de una hora y todavía no votas.', v_ids);
+    end if;
+  end if;
+end $$;
+
+-- El reloj: cada minuto avanza la agenda aunque nadie tenga el juego abierto
+create or replace function public._reloj()
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  perform public._avanzar_agenda();
+  perform public._recordatorios();
+end $$;
+
+do $$ begin
+  begin create extension if not exists pg_cron with schema pg_catalog;
+  exception when others then
+    begin create extension if not exists pg_cron;
+    exception when others then raise notice 'pg_cron no está disponible: actívalo en Database → Extensions'; end;
+  end;
+  begin perform cron.schedule('alfa-brother-reloj', '* * * * *', 'select public._reloj()');
+  exception when others then raise notice 'No se pudo programar el reloj (falta pg_cron)'; end;
+end $$;
+
+-- Llave pública para suscribirse (la privada nunca sale de la base)
+create or replace function public.push_clave()
+returns text language sql stable security definer set search_path = public as $$
+  select vapid_publica from public.push_ajustes where id = 1;
+$$;
+
+create or replace function public.guardar_push(p_token uuid, p_sub jsonb)
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  yo public.jugadores;
+  v_end text := p_sub->>'endpoint';
+begin
+  yo := public._yo(p_token);
+  if v_end is null or v_end !~ '^https://' or char_length(v_end) > 1000
+     or p_sub->'keys'->>'p256dh' is null or p_sub->'keys'->>'auth' is null then
+    raise exception 'SUSCRIPCION_INVALIDA';
+  end if;
+  insert into public.push_subs (endpoint, sub, jugador_id) values (v_end, p_sub, yo.id)
+  on conflict (endpoint) do update set sub = excluded.sub, jugador_id = excluded.jugador_id, creado = now();
+  -- máximo 5 celulares por persona
+  delete from public.push_subs where jugador_id = yo.id and endpoint in (
+    select endpoint from public.push_subs where jugador_id = yo.id order by creado desc offset 5);
+end $$;
+
+create or replace function public.borrar_push(p_token uuid, p_endpoint text)
+returns void language plpgsql security definer set search_path = public as $$
+declare yo public.jugadores;
+begin
+  yo := public._yo(p_token);
+  delete from public.push_subs where endpoint = p_endpoint and jugador_id = yo.id;
+end $$;
+
+-- Aviso de prueba solo para mí
+create or replace function public.probar_aviso(p_token uuid)
+returns void language plpgsql security definer set search_path = public as $$
+declare yo public.jugadores;
+begin
+  yo := public._yo(p_token);
+  perform public._avisar('🔔 ¡Avisos activados!', format('Hola, %s. Así te vamos a avisar cuando haya algo nuevo en la casa.', yo.nombre), array[yo.id]);
+end $$;
+
+-- La producción manda un aviso a todos
+create or replace function public.admin_aviso(p_titulo text, p_cuerpo text)
+returns int language plpgsql security definer set search_path = public as $$
+begin
+  perform public._solo_admin();
+  if char_length(btrim(coalesce(p_titulo, ''))) < 2 or char_length(p_titulo) > 60 or char_length(coalesce(p_cuerpo, '')) > 160 then
+    raise exception 'AVISO_INVALIDO';
+  end if;
+  perform public._avisar(btrim(p_titulo), btrim(coalesce(p_cuerpo, '')));
+  return (select count(*) from public.push_subs);
+end $$;
+
 -- Las funciones internas no se pueden llamar directo desde el celular
 revoke all on function public._iniciar_semana(text)  from public, anon, authenticated;
 revoke all on function public._cerrar_prueba(uuid)   from public, anon, authenticated;
 revoke all on function public._cerrar_votacion()     from public, anon, authenticated;
 revoke all on function public._revelar()             from public, anon, authenticated;
 revoke all on function public._avanzar_agenda()      from public, anon, authenticated;
+revoke all on function public._avisar(text, text, uuid[]) from public, anon, authenticated;
+revoke all on function public._recordatorios()       from public, anon, authenticated;
+revoke all on function public._reloj()               from public, anon, authenticated;
 
 -- Que Supabase reconozca de inmediato las funciones nuevas
 notify pgrst, 'reload schema';

@@ -359,6 +359,11 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .podio .lugar small{display:block;color:var(--suave)}
 .podio-gala{display:flex;flex-wrap:wrap;justify-content:center;gap:18px}
 .podio-gala>div{display:flex;flex-direction:column;align-items:center;gap:6px}
+.avisos-card{display:flex;align-items:center;gap:10px;background:#2A2160;border:1px solid #4A3AA8;border-radius:14px;padding:10px 12px;margin-top:12px}
+.avisos-card .ico{font-size:1.6rem}
+.avisos-card>div{flex:1;min-width:0}
+.avisos-card small{display:block;color:#C9C3EE;font-size:.82rem;margin-top:2px}
+.cerrar-x{background:none;border:0;color:#C9C3EE;font-size:1.5rem;line-height:1;cursor:pointer;padding:4px}
 .mono-corona{position:absolute;top:calc(var(--u)*-3.2);font-size:calc(var(--u)*3.6);z-index:2;pointer-events:none}
 .mono-cuerpo{width:calc(var(--u)*8);height:calc(var(--u)*10.4);margin-top:calc(var(--u)*-.6);overflow:visible}
 .mono-cuerpo line{stroke:#FFFDF6;stroke-width:3.4;stroke-linecap:round}
@@ -573,6 +578,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
   </div>
 
   <div id="c-accion"></div>
+  <div id="c-avisos" class="hidden"></div>
 
   <div class="seccion-t"><span>Habitantes</span><small id="c-cuenta"></small></div>
   <div id="c-sala-box">
@@ -636,6 +642,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 
   <div class="pie" style="flex-wrap:wrap;gap:4px 16px">
     <button class="link hidden js-instalar" id="c-instalar">📲 Instalar el juego</button>
+    <button class="link hidden" id="c-avisos-link">🔔 Activar avisos</button>
     <button class="link" id="c-tuto">Cómo se juega</button>
     <button class="link" id="c-cambiar-foto">Cambiar mi foto</button>
     <button class="link" id="c-frase">Mi frase</button>
@@ -859,6 +866,8 @@ const ERRORES = {
   SIN_TRIVIAS: 'Activa al menos una pregunta de trivia antes de iniciar la semana.',
   JUEGO_TERMINADO: 'El juego ya terminó: solo queda un habitante. Para empezar otro, usa Reiniciar juego.',
   SIN_CANDIDATOS: 'No hay candidatos para eliminar.',
+  SUSCRIPCION_INVALIDA: 'Este navegador no dio una suscripción válida para avisos.',
+  AVISO_INVALIDO: 'Escribe un título de 2 a 60 letras y un mensaje de máximo 160.',
   PRUEBA_INVALIDA: 'Prueba no válida.',
   FASE_INVALIDA: 'Fase no válida.',
   CHISME_INVALIDO: 'El chisme debe tener entre 3 y 160 letras.',
@@ -1335,9 +1344,11 @@ async function entrarCasa() {
   await refrescar();
   SALA.conectar();
   mostrarBienvenida();
+  AVISOS.sincronizar();
 }
 function cerrarSesion() {
-  if (token) rpc('salir', { p_token: token }).catch(() => { });
+  // este celular deja de recibir avisos de esta persona
+  if (token) { const t = token; AVISOS.olvidar(t).finally(() => rpc('salir', { p_token: t }).catch(() => { })); }
   SALA.desconectar();
   token = null; est = null; predSel = null; store.del('ab_token');
   mostrarInicio();
@@ -1607,9 +1618,105 @@ $('#ios-ok').onclick = () => $('#m-ios').classList.add('hidden');
 pintarInstalar();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { });
 
+/* ---------- avisos al celular (web push) ---------- */
+const AVISOS = (() => {
+  const soportado = () => window.isSecureContext && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  const b64 = t => { const r = atob((t + '='.repeat((4 - t.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(r, c => c.charCodeAt(0)); };
+  const igual = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
+  async function clavePublica() {
+    let k = null;
+    try { k = await rpc('push_clave'); } catch { }
+    if (!k) {
+      // la primera vez la función crea las llaves
+      const r = await fetch(URL_BASE + '/functions/v1/avisos', { headers: { apikey: SUPABASE_ANON_KEY.trim() } }).catch(() => null);
+      if (r?.ok) k = (await r.json()).publica;
+    }
+    if (!k) throw new Error('AVISOS_NO_LISTOS');
+    return k;
+  }
+  async function suscripcion() {
+    if (!soportado()) return null;
+    const reg = await navigator.serviceWorker.getRegistration();
+    return reg ? reg.pushManager.getSubscription() : null;
+  }
+  async function estado() {
+    if (!soportado()) return esIOS && !yaInstalado() ? 'ios' : 'no';
+    if (Notification.permission === 'denied') return 'bloqueado';
+    const sub = await suscripcion().catch(() => null);
+    return sub && Notification.permission === 'granted' ? 'activo' : 'inactivo';
+  }
+  async function activar() {
+    try {
+      const k = await clavePublica();
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') {
+        toast(perm === 'denied' ? 'Bloqueaste los avisos. Puedes permitirlos en los ajustes del navegador.' : 'No se activaron los avisos', 4500);
+        return pintar();
+      }
+      const reg = await navigator.serviceWorker.ready;
+      const llave = b64(k);
+      let sub = await reg.pushManager.getSubscription();
+      const vieja = sub?.options?.applicationServerKey;
+      if (sub && vieja && !igual(new Uint8Array(vieja), llave)) { await sub.unsubscribe(); sub = null; }
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: llave });
+      await rpc('guardar_push', { p_token: token, p_sub: sub.toJSON() });
+      rpc('probar_aviso', { p_token: token }).catch(() => { });
+      SFX.tocar('caja');
+      toast('🔔 ¡Listo! Te avisaremos cuando haya algo nuevo en la casa', 4000);
+    } catch (e) {
+      toast(e.message === 'AVISOS_NO_LISTOS' ? 'Los avisos todavía no están listos. Avísale a la producción.' : 'No se pudieron activar los avisos: ' + mensajeError(e), 4500);
+    }
+    pintar();
+  }
+  async function desactivar() {
+    const sub = await suscripcion().catch(() => null);
+    if (sub) { rpc('borrar_push', { p_token: token, p_endpoint: sub.endpoint }).catch(() => { }); await sub.unsubscribe().catch(() => { }); }
+    toast('Avisos desactivados');
+    pintar();
+  }
+  // al abrir el juego vuelve a guardar la suscripción (por si cambió o entró otra persona en este celular)
+  async function sincronizar() {
+    try {
+      if (soportado() && Notification.permission === 'granted' && token) {
+        const sub = await suscripcion();
+        if (sub) await rpc('guardar_push', { p_token: token, p_sub: sub.toJSON() });
+      }
+    } catch { }
+    pintar();
+  }
+  async function olvidar(t) {
+    try { const sub = await suscripcion(); if (sub && t) await rpc('borrar_push', { p_token: t, p_endpoint: sub.endpoint }); } catch { }
+  }
+  async function pintar() {
+    const st = await estado();
+    const link = $('#c-avisos-link'), box = $('#c-avisos');
+    link.classList.toggle('hidden', st === 'no');
+    link.textContent = st === 'activo' ? '🔕 Quitar avisos' : '🔔 Activar avisos';
+    const ver = (st === 'inactivo' || st === 'ios') && !store.get('ab_avisos_no') && !!est && !est.juego.fin;
+    box.classList.toggle('hidden', !ver);
+    if (!ver) return;
+    box.innerHTML = `<div class="avisos-card"><span class="ico">🔔</span>
+      <div><b>Entérate al instante</b><small>${st === 'ios'
+        ? 'En iPhone, primero instala el juego en tu pantalla de inicio y ábrelo desde ahí; luego activa los avisos.'
+        : 'Te avisamos en el celular cuando empiece la prueba, abra la votación o llegue la gala.'}</small></div>
+      <button class="btn chico" id="av-si">${st === 'ios' ? 'Cómo' : 'Activar'}</button>
+      <button class="cerrar-x" id="av-no" aria-label="Ahora no">×</button></div>`;
+    $('#av-si').onclick = () => st === 'ios' ? $('#m-ios').classList.remove('hidden') : activar();
+    $('#av-no').onclick = () => { store.set('ab_avisos_no', '1'); box.classList.add('hidden'); toast('Puedes activarlos cuando quieras desde "Activar avisos", abajo'); };
+  }
+  $('#c-avisos-link').onclick = async () => {
+    const st = await estado();
+    if (st === 'activo') { if (confirm('¿Dejar de recibir avisos en este celular?')) desactivar(); }
+    else if (st === 'bloqueado') toast('Los avisos están bloqueados. Permítelos en los ajustes del navegador para este sitio.', 5000);
+    else if (st === 'ios') $('#m-ios').classList.remove('hidden');
+    else activar();
+  };
+  return { activar, sincronizar, olvidar, pintar };
+})();
+
 /* ---------- compartir el link ---------- */
 const LINK_JUEGO = location.origin + location.pathname.replace(/index\.html$/, '');
-const TEXTO_INVITACION = '👁️💵 ¡Entra a Alfa Brother: Te Vamos a Cobrar! El reality de la oficina. Regístrate y toma tu silla antes de que se llenen:';
+const TEXTO_INVITACION = '👁️💵 ¡Entra a Alfa Brother: Te Vamos a Cobrar! El reality de la oficina. Regístrate y aparta tu lugar antes de que se llenen:';
 async function compartirJuego() {
   if (navigator.share) {
     try { await navigator.share({ title: 'Alfa Brother', text: TEXTO_INVITACION, url: LINK_JUEGO }); return; }
@@ -2966,7 +3073,7 @@ async function adminJuego(C) {
       ${campo('ag-voto-fin', 'Cierra la votación', ag.ag_voto_fin)}
       ${campo('ag-gala', finalAg ? 'Gran final: revelación del podio' : 'Gala: revelación del eliminado', ag.ag_gala)}
     </div>
-    <label class="radio-op" style="margin-top:10px"><input type="checkbox" id="ag-repetir" ${c.ag_repetir !== false ? 'checked' : ''} style="width:20px;height:20px;accent-color:var(--ok)"> Repetir cada semana (mismos días y horas)</label>
+    <label class="radio-op ${finalAg ? 'hidden' : ''}" style="margin-top:10px"><input type="checkbox" id="ag-repetir" ${c.ag_repetir !== false ? 'checked' : ''} style="width:20px;height:20px;accent-color:var(--ok)"> Repetir cada semana (mismos días y horas)</label>
     <div class="adm-acciones"><button class="btn chico" id="ag-guardar">Guardar agenda</button>
     ${c.ag_semana ? '<button class="btn sec chico" id="ag-quitar">Quitar agenda</button>' : ''}</div></div>`;
 
@@ -3039,6 +3146,16 @@ async function adminJuego(C) {
       <div class="adm-acciones"><button class="btn" id="ad-revelar">Revelar en todos los celulares</button>
       <button class="btn sec chico" data-fase="votacion">Reabrir votación</button></div></div>`;
   }
+  const [subs, aj] = await Promise.all([q(sb.from('push_subs').select('jugador_id')), q(sb.from('push_ajustes').select('vapid_publica'))]);
+  const conAvisos = new Set(subs.map(x => x.jugador_id)).size;
+  h += `<div class="adm-caja"><h3>Avisos al celular</h3>
+    ${aj[0]?.vapid_publica
+      ? `<p>${conAvisos} ${conAvisos === 1 ? 'persona los tiene' : 'personas los tienen'} activados (${subs.length} ${subs.length === 1 ? 'celular' : 'celulares'}). Los cambios de fase avisan solos.</p>`
+      : '<p class="ayuda">Todavía no están listos: publica la función <b>avisos</b> en Supabase (ver la guía) y activa los avisos desde tu celular.</p>'}
+    <label class="campo" for="av-titulo">Mandar un aviso a todos</label>
+    <input class="in" id="av-titulo" maxlength="60" placeholder="Título, p. ej. 📢 Mañana es la gala">
+    <textarea class="in" id="av-cuerpo" maxlength="160" rows="2" placeholder="Mensaje (opcional)" style="margin-top:8px"></textarea>
+    <div class="adm-acciones"><button class="btn chico" id="av-mandar">Mandar aviso</button></div></div>`;
   h += `<div class="adm-caja"><h3>Reiniciar</h3><p class="ayuda">Borra votos, pruebas y galas, y regresa a la semana 0. Los jugadores registrados se quedan.</p>
     <div class="adm-acciones"><button class="btn sec chico" id="ad-reiniciar">Reiniciar juego</button></div></div>`;
   C.innerHTML = h;
@@ -3069,6 +3186,13 @@ async function adminJuego(C) {
   $$('[data-decidir]').forEach(b => b.onclick = () => { if (confirm('¿Sale ' + nombreDe(b.dataset.decidir) + '?')) accion('admin_decidir', { p_id: b.dataset.decidir }, 'Decidido'); });
   $$('[data-fase]').forEach(b => b.onclick = () => { if (confirm('¿Seguro?')) accion('admin_fase', { p_fase: b.dataset.fase }, 'Fase cambiada'); });
   $('#ad-revelar')?.addEventListener('click', () => { if (confirm('¿Revelar la gala en todos los celulares?')) accion('admin_revelar', {}, '¡Gala revelada!'); });
+  $('#av-mandar')?.addEventListener('click', async () => {
+    const t = $('#av-titulo').value.trim(), c = $('#av-cuerpo').value.trim();
+    if (t.length < 2) return toast('Escribe un título');
+    if (!confirm(`¿Mandar "${t}" a todos los celulares con avisos?`)) return;
+    const n = await accion('admin_aviso', { p_titulo: t, p_cuerpo: c });
+    if (n !== undefined) toast(n ? `Aviso enviado a ${n} ${n === 1 ? 'celular' : 'celulares'}` : 'Nadie tiene los avisos activados todavía', 3500);
+  });
   $('#ad-reiniciar')?.addEventListener('click', () => {
     if (prompt('Escribe REINICIAR para borrar votos, pruebas y galas') === 'REINICIAR') accion('admin_reiniciar_juego', {}, 'Juego reiniciado');
   });

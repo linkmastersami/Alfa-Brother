@@ -72,6 +72,7 @@ Comparte ese link en el grupo de la oficina.
 - **Votación:** todos reparten **3, 2 y 1 puntos** a tres habitantes activos, con un motivo opcional. Los eliminados siguen votando y su voto cuenta. El voto del público aparece en la tabla pero no cuenta.
 - **Resultado:** sale quien junte más puntos. Si el que más tiene es el líder, se salva y sale el siguiente. Si hay empate, el líder decide desde su celular.
 - **Gala:** se ve el conteo de puntos de cada uno, el eliminado con el sello y los motivos de forma anónima.
+- **Gran final:** cuando quedan 3 (o menos) en la casa ya no hay prueba ni líder: se abre la votación directo. Quien junte **menos** puntos gana; el que sigue queda en segundo y el más votado en tercero. Si hay empate, comparten el lugar (puede haber dos primeros o dos segundos lugares).
 
 ---
 
@@ -107,7 +108,7 @@ En el panel → **Juego** → **Agenda de la semana N** pones día y hora para:
 4. Cierra la votación
 5. Gala: revelación del eliminado
 
-El juego avanza solo a esas horas, cada vez que alguien tiene el juego abierto (revisa cada pocos segundos). Si hay empate y el líder no decide antes de la gala, el programa elige al azar. Con **Repetir cada semana**, después de cada gala la agenda se recorre 7 días sola. Lo que dejes vacío lo haces a mano con los botones de siempre.
+El juego avanza solo a esas horas: cada minuto lo revisa un reloj dentro de Supabase (pg_cron), aunque nadie tenga el juego abierto. Si pg_cron no está activo, avanza cuando alguien abre el juego. Si hay empate y el líder no decide antes de la gala, el programa elige al azar. Con **Repetir cada semana**, después de cada gala la agenda se recorre 7 días sola. Lo que dejes vacío lo haces a mano con los botones de siempre.
 
 Los jugadores ven arriba de la casa cuánto falta para lo siguiente (por ejemplo "La votación cierra en 3 h 20 min").
 
@@ -121,10 +122,28 @@ Versión 2 (sala de espera): agrega la frase de cada jugador, la predicción sec
 Versión 3 (agenda y el ojo): agrega la agenda automática, la fase de espera, las pistas del ojo y la tabla de chismes.
 Versión 4 (chismes del público): los jugadores pueden mandarle chismes al ojo.
 Versión 5 (gran final): cuando queda un solo habitante el juego se detiene y la agenda se apaga sola, para que no empiece otra semana.
+Versión 6 (podio y avisos): gran final con 3 sin prueba ni líder, podio por votos, avisos al celular y reloj automático de la agenda.
 
 ---
 
-## 7. La casa en vivo
+## 7. Avisos al celular
+
+El juego manda notificaciones cuando empieza la prueba, se nombra líder, abre la votación, hay empate (solo al líder), empieza la gala y hay ganador. Una hora antes de que cierre la votación le recuerda a quien no ha votado. Desde el panel (**Juego** → **Avisos al celular**) también puedes mandar un aviso a todos.
+
+Se configura una sola vez:
+
+1. Vuelve a ejecutar todo `supabase.sql` (activa `pg_net` y `pg_cron`). Si en los mensajes aparece "pg_net no está disponible" o "pg_cron no está disponible", ve a **Database** → **Extensions**, enciende **pg_net** y **pg_cron**, y ejecuta `supabase.sql` otra vez.
+2. **Edge Functions** → **Deploy a new function** → **Via Editor**. Nombre: `avisos`. Borra el ejemplo, pega todo el archivo `supabase/functions/avisos/index.ts` y presiona **Deploy function**.
+3. En la función, abre **Details** (o **Settings**) y apaga **Verify JWT with legacy secret** / **Enforce JWT Verification**. Guarda.
+4. Abre el juego en tu celular y toca **Activar avisos**. La primera vez la función crea sus llaves sola; debe llegarte "🔔 ¡Avisos activados!".
+
+No hay claves que copiar: las llaves viven en la tabla `push_ajustes`, que solo puede leer la producción.
+
+Cada jugador activa los avisos en su propio celular (sale una tarjeta en la casa y el enlace **Activar avisos** abajo). En **iPhone** solo funcionan con el juego instalado en la pantalla de inicio (iOS 16.4 o más nuevo) y abierto desde ahí.
+
+---
+
+## 8. La casa en vivo
 
 Los monitos usan **Supabase Realtime** (presencia y mensajes en vivo); no hace falta configurar nada ni ejecutar SQL. Si la etiqueta **● N en línea** no aparece:
 
@@ -135,7 +154,7 @@ Sin conexión en vivo el juego sigue funcionando: todos los monitos caminan solo
 
 ---
 
-## 8. Problemas comunes
+## 9. Problemas comunes
 
 | Mensaje | Qué hacer |
 |---|---|
@@ -143,4 +162,6 @@ Sin conexión en vivo el juego sigue funcionando: todos los monitos caminan solo
 | "Clave incorrecta" en el panel | Revisa que el usuario `produccion@alfabrother.app` exista, esté confirmado y que hayas ejecutado el `insert into public.admins`. |
 | "Demasiados intentos" | Alguien falló el PIN 5 veces. Espera 10 minutos o ponle un PIN nuevo desde **Habitantes**. |
 | "Activa al menos una pregunta de trivia" | Ve a **Trivia** y activa preguntas antes de iniciar una semana de trivia. |
+| "Los avisos todavía no están listos" | Falta publicar la función `avisos` o apagar **Verify JWT** (ver sección 7). |
+| Activé los avisos pero no llega ninguno | Revisa en **Database** → **Extensions** que **pg_net** esté encendido y vuelve a ejecutar `supabase.sql`. En **Edge Functions** → `avisos` → **Logs** se ven los errores. |
 | Quiero empezar de cero | **Juego** → **Reiniciar juego** (escribe REINICIAR). Los registrados se quedan. |
