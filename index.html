@@ -115,7 +115,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .sello{display:inline-block;border:3px solid var(--sello);color:var(--sello);font-family:Anton,Impact,sans-serif;padding:2px 10px;border-radius:6px;transform:rotate(-6deg);font-size:1rem;letter-spacing:.02em;background:transparent}
 
 /* Habitantes */
-.seccion-t{font-family:Anton,Impact,sans-serif;font-size:1.35rem;margin:28px 0 10px;display:flex;justify-content:space-between;align-items:baseline}
+.seccion-t{font-family:Anton,Impact,sans-serif;font-size:1.35rem;margin:28px 0 10px;display:flex;flex-wrap:wrap;column-gap:10px;justify-content:space-between;align-items:baseline}
 .seccion-t small{font-family:"Work Sans",sans-serif;font-size:.85rem;color:#C9C3EE}
 .rejilla{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 8px}
 .hab{text-align:center;font-size:.8rem;line-height:1.15;position:relative}
@@ -849,6 +849,7 @@ const ERRORES = {
   NO_EMPATADO: 'Esa persona no está en el empate.',
   FASE_INCORRECTA: 'Eso no se puede hacer en la fase actual.',
   SIN_TRIVIAS: 'Activa al menos una pregunta de trivia antes de iniciar la semana.',
+  JUEGO_TERMINADO: 'El juego ya terminó: solo queda un habitante. Para empezar otro, usa Reiniciar juego.',
   SIN_CANDIDATOS: 'No hay candidatos para eliminar.',
   PRUEBA_INVALIDA: 'Prueba no válida.',
   FASE_INVALIDA: 'Fase no válida.',
@@ -1336,6 +1337,7 @@ function cerrarSesion() {
 
 function faseTexto(g) {
   if (g.semana === 0) return 'Inscripciones abiertas';
+  if (g.fin) return '¡Tenemos ganador!';
   return {
     prueba: 'Prueba del líder',
     espera: 'Esperando la votación',
@@ -1355,7 +1357,7 @@ function pintarCasa() {
   $('#c-yo').dataset.ficha = yo.id;
   $('#c-semana').textContent = g.semana === 0 ? 'Semana 0' : 'Semana ' + g.semana;
   $('#c-fase').textContent = faseTexto(g);
-  $('#c-cuenta').textContent = g.semana === 0 ? `${habitantes.length} de ${g.cupo}` : `${activos.length} siguen en la casa`;
+  $('#c-cuenta').textContent = g.semana === 0 ? `${habitantes.length} de ${g.cupo}` : (activos.length === 1 ? '1 sigue en la casa' : `${activos.length} siguen en la casa`);
 
   SALA.sincronizar();
 
@@ -2360,6 +2362,7 @@ $('#bv-ok').onclick = () => {
 
 // Camina al confesionario (si tu monito está en la casa) y entra
 function irAlConfesionario() {
+  if (est?.juego?.fin) { toast('El juego ya terminó: el confesionario está cerrado. ¡Gracias por jugar!', 3500); return; }
   if (SALA.soyActor() && pantalla === 's-casa') SALA.irAPuerta(abrirVotacion);
   else abrirVotacion();
 }
@@ -2694,6 +2697,8 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
   const tabla = r.tabla;
   const elim = tabla.find(t => t.id === r.eliminado_id) || { id: r.eliminado_id, nombre: r.eliminado, puntos: 0 };
   const persona = id => porId(id) || tabla.find(t => t.id === id) || { id, nombre: '?' };
+  // gran final: en la tabla solo quedaban dos; el que no sale gana
+  const ganador = tabla.length === 2 ? tabla.find(t => t.id !== r.eliminado_id) : null;
 
   // Telón: un toque para que el celular permita el sonido
   if (conTelon) {
@@ -2716,7 +2721,7 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
   try {
     SFX.tocar('dindon');
     E.innerHTML = `<p class="typed" style="color:#C9C3EE;margin:0">Semana ${r.semana}</p>
-      <h1 class="display gala-titulo">Gala de eliminación</h1>
+      <h1 class="display gala-titulo">${ganador ? 'Gran final' : 'Gala de eliminación'}</h1>
       <p class="lema" style="font-size:1.4rem">¡Te vamos a cobrar!</p>`;
     await esperar(2600);
 
@@ -2765,6 +2770,15 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
     $('#g-salida')?.classList.add('arrastrado');
     SFX.tocar('swish');
     await esperar(1200);
+    if (ganador) {
+      E.innerHTML = `<p class="typed" style="color:#C9C3EE;margin:0">Después de ${r.semana} semanas…</p>
+        <div style="font-size:3rem">👑</div>${avatar(persona(ganador.id), 170)}
+        <h2 class="display" style="font-size:2.6rem;margin-top:10px">${esc(ganador.nombre)}</h2>
+        <p class="lema" style="font-size:1.5rem">¡Gana Alfa Brother!</p>`;
+      SFX.tocar('fanfarria'); lluviaBilletes(40);
+      if (navigator.vibrate) navigator.vibrate([100, 60, 100, 60, 200]);
+      await esperar(5000);
+    }
   } catch (e) { if (e !== 'saltar') console.error(e); }
   SFX.parar();
 
@@ -2773,7 +2787,7 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
   const ordenFinal = [...tabla].sort((a, b) => b.puntos - a.puntos || b.publico - a.publico);
   E.style.justifyContent = 'flex-start';
   E.innerHTML = `<h2 class="display" style="font-size:2rem;color:var(--luz);margin-top:8px">Semana ${r.semana}: resultados</h2>
-    <p style="margin:0;color:#C9C3EE">Salió <b style="color:#fff">${esc(r.eliminado)}</b>${r.lider ? ` · Líder: <b style="color:#fff">${esc(r.lider)}</b>` : ''}</p>
+    <p style="margin:0;color:#C9C3EE">${ganador ? `Ganó <b style="color:#fff">${esc(ganador.nombre)}</b> · ` : ''}Salió <b style="color:#fff">${esc(r.eliminado)}</b>${r.lider ? ` · Líder: <b style="color:#fff">${esc(r.lider)}</b>` : ''}</p>
     <div class="formato tabla-final" style="text-align:left">
       <div class="folio"><span>Habitante</span><span>Puntos · Público</span></div>
       ${ordenFinal.map(t => `<div class="res ${t.id === r.eliminado_id ? 'fuera' : ''}">

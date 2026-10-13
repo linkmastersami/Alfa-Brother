@@ -119,6 +119,8 @@ Cuando el juego reciba funciones nuevas que necesiten la base de datos, vuelve a
 
 Versión 2 (sala de espera): agrega la frase de cada jugador, la predicción secreta y la cuenta regresiva.
 Versión 3 (agenda y el ojo): agrega la agenda automática, la fase de espera, las pistas del ojo y la tabla de chismes.
+Versión 4 (chismes del público): los jugadores pueden mandarle chismes al ojo.
+Versión 5 (gran final): cuando queda un solo habitante el juego se detiene y la agenda se apaga sola, para que no empiece otra semana.
 
 ---
 

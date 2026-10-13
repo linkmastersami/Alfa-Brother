@@ -535,6 +535,10 @@ begin
   if not (c.fase = 'registro' or (c.fase = 'gala' and c.gala_revelada)) then raise exception 'FASE_INCORRECTA'; end if;
   if p_prueba not in ('trivia','memoria','adeudo') then raise exception 'PRUEBA_INVALIDA'; end if;
   if p_prueba = 'trivia' and not exists (select 1 from public.trivia where activa) then raise exception 'SIN_TRIVIAS'; end if;
+  -- con un solo habitante en la casa ya hay ganador: no se abre otra semana
+  if c.semana > 0 and (select count(*) from public.jugadores where rol = 'jugador' and estado = 'activo') <= 1 then
+    raise exception 'JUEGO_TERMINADO';
+  end if;
   update public.config
      set semana = c.semana + 1, fase = 'prueba', prueba = p_prueba, lider_id = null, eliminado_id = null,
          empatados = '{}', gala_revelada = false, actualizado = now()
@@ -644,7 +648,11 @@ begin
 
   update public.jugadores set estado = 'eliminado', semana_eliminado = c.semana where id = c.eliminado_id;
   update public.config set gala_revelada = true, actualizado = now() where id = 1;
-  if c.ag_repetir and c.ag_semana = c.semana then
+  if (select count(*) from public.jugadores where rol = 'jugador' and estado = 'activo') <= 1 then
+    -- fue la gran final: se apaga la agenda para que no empiece otra semana
+    update public.config set ag_semana = null, ag_prueba_ini = null, ag_prueba_fin = null,
+           ag_voto_ini = null, ag_voto_fin = null, ag_gala = null where id = 1;
+  elsif c.ag_repetir and c.ag_semana = c.semana then
     update public.config
        set ag_semana = ag_semana + 1,
            ag_prueba_ini = ag_prueba_ini + interval '7 days', ag_prueba_fin = ag_prueba_fin + interval '7 days',
