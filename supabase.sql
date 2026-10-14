@@ -248,7 +248,7 @@ create table if not exists public.practicas (
 
 -- v16: Monster Crazy también guarda récord (y paga como las prácticas)
 alter table public.practicas drop constraint if exists practicas_juego_check;
-alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster'));
+alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster','monster2'));   -- v17: Monster Crazy 2.0
 
 -- Tienda para personalizar el monito
 create table if not exists public.tienda (
@@ -1706,8 +1706,8 @@ declare
   v_record boolean := false;
 begin
   yo := public._yo(p_token);
-  if p_juego not in ('memoria', 'adeudo', 'monster') then raise exception 'JUEGO_INVALIDO'; end if;
-  v := least(greatest(coalesce(p_puntaje, 0), 0), case p_juego when 'memoria' then 1000 when 'monster' then 5000000 else 20000 end);
+  if p_juego not in ('memoria', 'adeudo', 'monster', 'monster2') then raise exception 'JUEGO_INVALIDO'; end if;
+  v := least(greatest(coalesce(p_puntaje, 0), 0), case p_juego when 'memoria' then 1000 when 'adeudo' then 20000 else 5000000 end);
   select coalesce(max(mejor), 0) into v_rec from public.practicas where juego = p_juego;
   insert into public.practicas (jugador_id, juego) values (yo.id, p_juego) on conflict do nothing;
   select * into p from public.practicas where jugador_id = yo.id and juego = p_juego for update;

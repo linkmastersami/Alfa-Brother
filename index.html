@@ -464,7 +464,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .revelar{appearance:none;border:2px dashed #6E5FD0;background:#1B1440;color:#C9C3EE;border-radius:10px;padding:14px;width:100%;font-weight:700;cursor:pointer;margin-top:8px;font-size:.95rem}
 .record-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
 .record-cols>div>b{display:block;font-size:.85rem;color:var(--luz);margin-bottom:4px}
-.record-cols>div:first-child{grid-column:1/-1}
+.record-cols>div:first-child,.record-cols>div:nth-child(2){grid-column:1/-1}
 .record-cols .r{display:flex;justify-content:space-between;gap:6px;font-size:.88rem;padding:2px 0}
 .record-cols .r span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .record-cols .r.yo{color:var(--luz)}
@@ -2989,7 +2989,7 @@ function pintarEconomia() {
   $$('#c-misiones [data-cumpli]').forEach(b => b.onclick = () => pedirMision(+b.dataset.cumpli));
   C.querySelector('#c-misiones [data-por-confirmar]')?.addEventListener('click', () => revisarPorConfirmar(true));
   $$('#c-jugar [data-practicar]').forEach(b => b.onclick = () => abrirPractica(b.dataset.practicar));
-  C.querySelector('#c-jugar [data-monster]')?.addEventListener('click', MONSTER.abrir);
+  $$('#c-jugar [data-monster]').forEach(b => b.onclick = () => MONSTER.abrir(b.dataset.monster));
 }
 
 /* ---------- ¿Qué me toca hoy? (lo primero que ve cada quien) ---------- */
@@ -3085,22 +3085,36 @@ function irTab(t, sonido = true) {
 $$('#tabbar button').forEach(b => b.onclick = () => irTab(b.dataset.tab));
 
 /* ---------- Monster Crazy (edición Alfa Brother, en monster.html) ---------- */
+// Monster Crazy (el primero) solo se puede jugar hasta esta fecha; sus récords se quedan guardados.
+const MONSTER1_HASTA = new Date('2026-10-14T23:59:59-06:00').getTime();
+const JUEGOS_MONSTER = {
+  monster2: { nombre: 'Monster Crazy 2.0', archivo: 'monster2.html?v=1' },
+  monster: { nombre: 'Monster Crazy', archivo: 'monster.html?v=2' },
+};
+const monster1Disponible = () => Date.now() < MONSTER1_HASTA;
 function tarjetaMonster() {
-  const mio = (est.practicas || []).find(p => p.id === est.yo.id && p.juego === 'monster');
+  const mio = j => (est.practicas || []).find(p => p.id === est.yo.id && p.juego === j)?.mejor || 0;
   const caras = [...est.jugadores].sort(() => Math.random() - 0.5).slice(0, 6);
-  return `<div class="monster-card"><div class="ed">EDICIÓN ALFA BROTHER</div><h3>MONSTER CRAZY</h3>
-    <div class="monster-caras">${caras.map(j => avatar(j, 38)).join('')}</div>
-    <p>Las caras de tus compañeros salen sobre el monstruo: deslízales el dedo antes de que se acabe el tiempo. Cada oleada es más rápida: ¿hasta cuál llegas?</p>
-    <p style="font-size:.85rem;color:#FFD54A">Tu récord: <b>${(mio?.mejor || 0).toLocaleString('es-MX')}</b> · La primera partida del día paga $100 y romper el récord de la casa, $200.</p>
-    <button class="btn" data-monster>🎮 Jugar</button></div>`;
+  let h = `<div class="monster-card"><div class="ed">EDICIÓN ALFA BROTHER · NUEVO</div><h3>MONSTER CRAZY <span style="color:#FFD54A">2.0</span></h3>
+    <div class="monster-caras">${caras.map(j => avatar(j, 38)).join('')}<div class="av" style="width:38px;height:38px;background:#050207;font-size:20px">💀</div></div>
+    <p>Las caras de tus compañeros salen sobre el monstruo: deslízales el dedo antes de que se acabe el tiempo. <b>Desde la oleada 16 salen círculos negros 💀: si los tocas, pierdes un corazón</b> (y cada 3 oleadas sale uno más).</p>
+    <p style="font-size:.85rem;color:#FFD54A">Tu récord: <b>${mio('monster2').toLocaleString('es-MX')}</b> · La primera partida del día paga $100 y romper el récord de la casa, $200.</p>
+    <button class="btn" data-monster="monster2">🎮 Jugar</button></div>`;
+  if (monster1Disponible()) h += `<div class="monster-card" style="border-color:#7A3FB5;box-shadow:none"><div class="ed">⏳ SOLO HASTA HOY</div><h3 style="font-size:1.4rem">MONSTER CRAZY</h3>
+    <p>La versión de siempre, sin círculos negros. Mañana se retira, pero tu récord se queda guardado en la casa.</p>
+    <p style="font-size:.85rem;color:#FFD54A">Tu récord: <b>${mio('monster').toLocaleString('es-MX')}</b></p>
+    <button class="btn sec" data-monster="monster">Jugar la versión clásica</button></div>`;
+  return h;
 }
 const MONSTER = (() => {
-  let abierto = false;
+  let abierto = false, juego = 'monster2';
   const caja = () => $('#m-monster');
-  function abrir() {
+  function abrir(cual) {
     if (abierto) return;
+    juego = JUEGOS_MONSTER[cual] ? cual : 'monster2';
+    if (juego === 'monster' && !monster1Disponible()) { toast('Monster Crazy clásico ya se retiró. ¡Juega la 2.0!'); juego = 'monster2'; }
     abierto = true;
-    caja().innerHTML = `<iframe src="monster.html?v=1" title="Monster Crazy" allow="fullscreen; autoplay"></iframe>`;
+    caja().innerHTML = `<iframe src="${JUEGOS_MONSTER[juego].archivo}" title="${JUEGOS_MONSTER[juego].nombre}" allow="fullscreen; autoplay"></iframe>`;
     caja().classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     SFX.pausaParaGala(true);
@@ -3115,21 +3129,23 @@ const MONSTER = (() => {
     refrescar();
   }
   const enviar = m => caja().querySelector('iframe')?.contentWindow?.postMessage(m, location.origin);
+  // la llave del puntaje pendiente (la de Monster Crazy clásico se queda como estaba)
+  const llave = j => 'ab_monster_pend_' + (j === 'monster' ? '' : j + '_') + est.yo.id;
   window.addEventListener('message', async ev => {
     if (!abierto || ev.origin !== location.origin) return;
-    const d = ev.data || {};
+    const d = ev.data || {}, j = juego;
     if (d.type === 'monsterListo') {
-      const caras = est.jugadores.map(j => ({ nombre: j.nombre, color: colorDe(j.nombre), foto: fotos[j.id] || null }));
-      const mio = (est.practicas || []).find(p => p.id === est.yo.id && p.juego === 'monster');
+      const caras = est.jugadores.map(x => ({ nombre: x.nombre, color: colorDe(x.nombre), foto: fotos[x.id] || null }));
+      const mio = (est.practicas || []).find(p => p.id === est.yo.id && p.juego === j);
       enviar({ type: 'monsterCaras', caras, record: mio?.mejor || 0 });
     } else if (d.type === 'monsterProgreso') {
-      guardarPendiente(d.puntuacion);
+      guardarPendiente(j, d.puntuacion);
     } else if (d.type === 'monsterGameOver') {
-      guardarPendiente(d.puntuacion);
+      guardarPendiente(j, d.puntuacion);
       mandando = true;
       try {
-        const r = await rpc('guardar_practica', { p_token: token, p_juego: 'monster', p_puntaje: Math.round(d.puntuacion || 0) });
-        store.del('ab_monster_pend_' + est.yo.id);
+        const r = await rpc('guardar_practica', { p_token: token, p_juego: j, p_puntaje: Math.round(d.puntuacion || 0) });
+        store.del(llave(j));
         enviar({ type: 'monsterResult', ok: true, record: r.mejor, esRecord: r.record, premio: r.premio,
           aviso: r.premio ? '' : 'Ya cobraste la partida de hoy. ¡Mañana hay más billetes!',
           top: (r.top || []).map(x => ({ nombre: x.nombre, puntos: x.mejor, yo: x.id === est.yo.id })) });
@@ -3139,18 +3155,20 @@ const MONSTER = (() => {
   });
   // El puntaje se guarda en el celular mientras juegas: si se cierra la app o falla el internet,
   // se manda la próxima vez que entres al juego.
-  function guardarPendiente(p) {
-    const k = 'ab_monster_pend_' + est.yo.id, antes = +store.get(k) || 0;
+  function guardarPendiente(j, p) {
+    const k = llave(j), antes = +store.get(k) || 0;
     if ((p || 0) > antes) store.set(k, String(Math.round(p)));
   }
   let mandando = false, ultimoIntento = 0;
   async function mandarPendiente() {
     if (mandando || abierto || !est || !token || Date.now() - ultimoIntento < 60000) return;   // reintenta cada minuto como mucho
-    const k = 'ab_monster_pend_' + est.yo.id, p = +store.get(k) || 0;
-    if (!p) return;
-    mandando = true; ultimoIntento = Date.now();
-    try { await rpc('guardar_practica', { p_token: token, p_juego: 'monster', p_puntaje: p }); store.del(k); toast(`🎮 Guardamos tu partida de Monster Crazy: ${p.toLocaleString('es-MX')} puntos`, 3500); refrescar(); }
-    catch { } finally { mandando = false; }
+    for (const j of Object.keys(JUEGOS_MONSTER)) {
+      const k = llave(j), p = +store.get(k) || 0;
+      if (!p) continue;
+      mandando = true; ultimoIntento = Date.now();
+      try { await rpc('guardar_practica', { p_token: token, p_juego: j, p_puntaje: p }); store.del(k); toast(`🎮 Guardamos tu partida de ${JUEGOS_MONSTER[j].nombre}: ${p.toLocaleString('es-MX')} puntos`, 3500); refrescar(); }
+      catch { } finally { mandando = false; }
+    }
   }
   return { abrir, cerrar, mandarPendiente };
 })();
@@ -3389,7 +3407,7 @@ function tarjetaRecords() {
       <div class="r" style="margin-top:4px;color:#C9C3EE"><span>Tu mejor</span><span>${mio?.mejor ?? 0}</span></div></div>`;
   };
   return `<div class="juego-card"><h3>🏆 Récords de la casa <small>Juegos y prácticas</small></h3>
-    <div class="record-cols">${col('monster', 'Monster Crazy')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}</div>
+    <div class="record-cols">${col('monster2', 'Monster Crazy 2.0')}${col('monster', 'Monster Crazy (clásico)')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}</div>
     <div class="fila-btn"><button class="btn chico" data-practicar="memoria">Practicar memoria</button><button class="btn chico" data-practicar="adeudo">Practicar adeudo</button></div>
     <p class="ayuda" style="margin-top:6px">Practica las pruebas del líder. La primera partida de cada juego al día paga $100 y romper un récord de la casa, $200.</p></div>`;
 }
@@ -4695,7 +4713,7 @@ async function adminExtras(C) {
   ]);
   const chatMsgs = await q(sb.from('chat').select('*').order('id', { ascending: false })).then(x => x.slice(0, 40)).catch(() => []);
   const recs = await q(sb.from('practicas').select('*').order('mejor', { ascending: false })).catch(() => []);
-  const JUEGOS_REC = { monster: 'Monster Crazy', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo' };
+  const JUEGOS_REC = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy (clásico)', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo' };
   const ahora = Date.now();
   const estadoEnc = e => +new Date(e.abre) > ahora ? `Programada: abre ${fmtFecha(e.abre)}` : +new Date(e.cierra) > ahora ? `Abierta hasta ${fmtFecha(e.cierra)}` : 'Cerrada';
   const ricos = [...adm.jug].sort((a, b) => (b.billetes ?? 0) - (a.billetes ?? 0));
