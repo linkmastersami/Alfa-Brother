@@ -256,7 +256,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .modal .formato{width:100%;max-width:420px}
 
 /* Panel admin */
-#admin{position:fixed;inset:0;z-index:40;background:#EFEBDD;color:var(--texto);overflow:auto}
+#admin{position:fixed;inset:0;z-index:58;background:#EFEBDD;color:var(--texto);overflow:auto}
 #admin .wrap{padding-top:12px}
 .adm-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .adm-top h1{font-family:Anton,Impact,sans-serif;font-size:1.5rem}
@@ -1745,6 +1745,7 @@ function pintarCasa() {
   pintarAccion();
   pintarEconomia();
   pintarHoy();
+  MONSTER.mandarPendiente();
 }
 
 function pintarAccion() {
@@ -3089,7 +3090,7 @@ function tarjetaMonster() {
   const caras = [...est.jugadores].sort(() => Math.random() - 0.5).slice(0, 6);
   return `<div class="monster-card"><div class="ed">EDICIÓN ALFA BROTHER</div><h3>MONSTER CRAZY</h3>
     <div class="monster-caras">${caras.map(j => avatar(j, 38)).join('')}</div>
-    <p>Las caras de tus compañeros salen sobre el monstruo: deslízales el dedo antes de que se acabe el tiempo. No se acaba nunca, ¿hasta qué oleada llegas?</p>
+    <p>Las caras de tus compañeros salen sobre el monstruo: deslízales el dedo antes de que se acabe el tiempo. Cada oleada es más rápida: ¿hasta cuál llegas?</p>
     <p style="font-size:.85rem;color:#FFD54A">Tu récord: <b>${(mio?.mejor || 0).toLocaleString('es-MX')}</b> · La primera partida del día paga $100 y romper el récord de la casa, $200.</p>
     <button class="btn" data-monster>🎮 Jugar</button></div>`;
 }
@@ -3121,16 +3122,37 @@ const MONSTER = (() => {
       const caras = est.jugadores.map(j => ({ nombre: j.nombre, color: colorDe(j.nombre), foto: fotos[j.id] || null }));
       const mio = (est.practicas || []).find(p => p.id === est.yo.id && p.juego === 'monster');
       enviar({ type: 'monsterCaras', caras, record: mio?.mejor || 0 });
+    } else if (d.type === 'monsterProgreso') {
+      guardarPendiente(d.puntuacion);
     } else if (d.type === 'monsterGameOver') {
+      guardarPendiente(d.puntuacion);
+      mandando = true;
       try {
         const r = await rpc('guardar_practica', { p_token: token, p_juego: 'monster', p_puntaje: Math.round(d.puntuacion || 0) });
+        store.del('ab_monster_pend_' + est.yo.id);
         enviar({ type: 'monsterResult', ok: true, record: r.mejor, esRecord: r.record, premio: r.premio,
           aviso: r.premio ? '' : 'Ya cobraste la partida de hoy. ¡Mañana hay más billetes!',
           top: (r.top || []).map(x => ({ nombre: x.nombre, puntos: x.mejor, yo: x.id === est.yo.id })) });
       } catch (e) { enviar({ type: 'monsterResult', ok: false }); }
+      finally { mandando = false; }
     } else if (d.type === 'monsterExit') cerrar();
   });
-  return { abrir, cerrar };
+  // El puntaje se guarda en el celular mientras juegas: si se cierra la app o falla el internet,
+  // se manda la próxima vez que entres al juego.
+  function guardarPendiente(p) {
+    const k = 'ab_monster_pend_' + est.yo.id, antes = +store.get(k) || 0;
+    if ((p || 0) > antes) store.set(k, String(Math.round(p)));
+  }
+  let mandando = false, ultimoIntento = 0;
+  async function mandarPendiente() {
+    if (mandando || abierto || !est || !token || Date.now() - ultimoIntento < 60000) return;   // reintenta cada minuto como mucho
+    const k = 'ab_monster_pend_' + est.yo.id, p = +store.get(k) || 0;
+    if (!p) return;
+    mandando = true; ultimoIntento = Date.now();
+    try { await rpc('guardar_practica', { p_token: token, p_juego: 'monster', p_puntaje: p }); store.del(k); toast(`🎮 Guardamos tu partida de Monster Crazy: ${p.toLocaleString('es-MX')} puntos`, 3500); refrescar(); }
+    catch { } finally { mandando = false; }
+  }
+  return { abrir, cerrar, mandarPendiente };
 })();
 
 /* ---------- apuestas ---------- */
@@ -4672,6 +4694,8 @@ async function adminExtras(C) {
     q(sb.from('misiones_banco').select('*').order('id')),
   ]);
   const chatMsgs = await q(sb.from('chat').select('*').order('id', { ascending: false })).then(x => x.slice(0, 40)).catch(() => []);
+  const recs = await q(sb.from('practicas').select('*').order('mejor', { ascending: false })).catch(() => []);
+  const JUEGOS_REC = { monster: 'Monster Crazy', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo' };
   const ahora = Date.now();
   const estadoEnc = e => +new Date(e.abre) > ahora ? `Programada: abre ${fmtFecha(e.abre)}` : +new Date(e.cierra) > ahora ? `Abierta hasta ${fmtFecha(e.cierra)}` : 'Cerrada';
   const ricos = [...adm.jug].sort((a, b) => (b.billetes ?? 0) - (a.billetes ?? 0));
@@ -4714,6 +4738,19 @@ async function adminExtras(C) {
       <p class="ayuda">Lo ven solo los habitantes. Aquí puedes leer los últimos mensajes y borrar alguno ofensivo.</p>
       ${chatMsgs.map(m => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>${esc(nombreDe(m.jugador_id))}</b>
         <small style="white-space:normal">${esc(m.texto)} · ${esc(fechaCorta(m.creado))}</small></div><button class="mini" data-chat-del="${m.id}">Borrar</button></div>`).join('') || '<p class="ayuda">Todavía no hay mensajes.</p>'}</div>
+    <form class="adm-caja" id="rec-form"><h3>Récords de los juegos</h3>
+      <p class="ayuda">Para corregir o poner a mano el récord de alguien (por ejemplo, si se le cerró la app y no se guardó). El número que pongas queda como su mejor puntaje.</p>
+      <label class="campo" for="rec-juego">Juego</label>
+      <select class="in" id="rec-juego">${Object.entries(JUEGOS_REC).map(([k, n]) => `<option value="${k}">${n}</option>`).join('')}</select>
+      <label class="campo" for="rec-quien">Persona</label>
+      <select class="in" id="rec-quien">${[...adm.jug].sort((a, b) => a.nombre.localeCompare(b.nombre)).map(j => `<option value="${j.id}">${esc(j.nombre)}</option>`).join('')}</select>
+      <label class="campo" for="rec-pts">Récord (puntos)</label>
+      <input class="in" id="rec-pts" type="number" min="0" step="1" inputmode="numeric" required placeholder="862089">
+      <div class="adm-acciones"><button class="btn">Guardar récord</button></div>
+      ${Object.entries(JUEGOS_REC).map(([k, n]) => { const top = recs.filter(r => r.juego === k && r.mejor > 0).slice(0, 5);
+        return `<p style="margin:14px 0 4px;font-weight:700">${n}</p>` + (top.map((r, i) => `<div class="adm-fila"><div class="info"><b>${i + 1}. ${esc(nombreDe(r.jugador_id))}</b><small>${r.partidas} ${r.partidas === 1 ? 'partida' : 'partidas'}</small></div>
+          <b>${Number(r.mejor).toLocaleString('es-MX')}</b><button type="button" class="mini" data-rec-edit="${r.jugador_id}|${k}|${r.mejor}">Editar</button></div>`).join('') || '<p class="ayuda">Nadie todavía.</p>'); }).join('')}
+    </form>
     <div class="adm-caja"><h3>Billetes Alfa</h3>
       <p class="ayuda">Puedes dar premios o quitar billetes (por ejemplo, a quien gane un reto en la oficina).</p>
       ${ricos.map(j => `<div class="adm-fila"><div class="info"><b>${esc(j.nombre)}</b><small>${j.rol === 'espectador' ? 'Público' : j.estado === 'eliminado' ? 'Eliminado' : 'En la casa'}</small></div>
@@ -4767,6 +4804,22 @@ async function adminExtras(C) {
     if (!confirm('¿Borrar este mensaje del chat?')) return;
     try { await q(sb.from('chat').delete().eq('id', b.dataset.chatDel)); toast('Mensaje borrado'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
   });
+  $$('[data-rec-edit]').forEach(b => b.onclick = () => {
+    const [id, juego, mejor] = b.dataset.recEdit.split('|');
+    $('#rec-juego').value = juego; $('#rec-quien').value = id; $('#rec-pts').value = mejor;
+    $('#rec-pts').focus(); $('#rec-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  $('#rec-form').onsubmit = async e => {
+    e.preventDefault();
+    const juego = $('#rec-juego').value, id = $('#rec-quien').value, pts = Math.max(0, Math.round(+$('#rec-pts').value || 0));
+    if (!confirm(`¿Poner ${pts.toLocaleString('es-MX')} puntos como récord de ${nombreDe(id)} en ${JUEGOS_REC[juego]}?`)) return;
+    try {
+      const ya = recs.find(r => r.jugador_id === id && r.juego === juego);
+      if (ya) await q(sb.from('practicas').update({ mejor: pts }).eq('jugador_id', id).eq('juego', juego));
+      else await q(sb.from('practicas').insert({ jugador_id: id, juego, mejor: pts, partidas: 1 }));
+      toast('🏆 Récord guardado'); cargarAdmin();
+    } catch (x) { toast(mensajeError(x)); }
+  };
   $$('[data-bill]').forEach(b => b.onclick = async () => {
     const m = prompt(`¿Cuántos billetes para ${nombreDe(b.dataset.bill)}? (usa un número negativo para quitar)`, '100');
     if (m === null || !+m) return;

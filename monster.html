@@ -137,7 +137,7 @@
   <div class="caras-demo" id="carasDemo"></div>
   <div class="subtitle">Sobre el monstruo van a salir las caras de tus compañeros. Deslízales el dedo encima (o tócalas) antes de que se acabe el tiempo.</div>
   <button class="btn" id="startBtn">JUGAR</button>
-  <div class="instructions">3 vidas · cada 5 oleadas ganas un corazón · no se acaba nunca: ¿hasta dónde llegas?</div>
+  <div class="instructions">3 vidas (máximo 5) · cada 10 oleadas recuperas un corazón · cada oleada es más rápida: ¿hasta dónde llegas?</div>
   <div class="stat" style="margin-top:14px">Tu récord: <b id="recordInicio">0</b></div>
 </div>
 
@@ -172,7 +172,11 @@
     el.addEventListener('touchend', e => { e.preventDefault(); fn(); });
     el.addEventListener('click', fn);
   }
-  bindTap(document.getElementById('closeBtn'), () => notifyParent('monsterExit'));
+  bindTap(document.getElementById('closeBtn'), () => {
+    // salir a media partida también guarda el puntaje
+    if (state === 'playing' && score > 0) { state = 'over'; notifyParent('monsterGameOver', { puntuacion: score, oleada: wave, salio: true }); }
+    notifyParent('monsterExit');
+  });
   bindTap(document.getElementById('exitBtn'), () => notifyParent('monsterExit'));
 
   function resize(){
@@ -241,7 +245,9 @@
   let lastTime = 0;
   let waveClearedRecently = false;
   let waveFailedRecently = false;
-  const LIFEUP_EVERY_N_WAVES = 5;
+  // Dificultad: cada oleada es más rápida, con más caras y más chicas; los corazones tienen tope.
+  const LIFEUP_EVERY_N_WAVES = 10;
+  const MAX_VIDAS = 5;
 
   // El enemigo clásico: cuerpo morado oscuro con brillo rojo
   const ENEMIGO = {
@@ -273,13 +279,14 @@
   // ---------- Generación de oleada ----------
   // El tiempo se acorta y salen más caras conforme avanzan las oleadas (sin fin).
   function spawnWave(){
-    waveTimeLimit = Math.max(1600, 4200 - (wave-1)*180);
+    // 4.2 s al inicio; ~2.2 s en la oleada 20, ~1.1 s en la 40 y nunca menos de 0.75 s
+    waveTimeLimit = Math.max(750, Math.round(4200 * Math.pow(0.965, wave-1)));
     waveTimeRemaining = waveTimeLimit;
-    const count = Math.min(3 + Math.floor((wave-1)/2), 6);
+    const count = Math.min(3 + Math.floor((wave-1)/3), 8);
     const fuente = [...carasParaJugar()].sort(() => Math.random() - 0.5);
     zones = [];
     const marginX = W*0.16, marginTop = H*0.22, marginBottom = H*0.12;
-    const r = Math.max(34, Math.min(W,H)*0.075);
+    const r = Math.max(26, Math.min(W,H)*0.075 * Math.max(0.7, 1 - (wave-1)*0.006));
     for(let i=0;i<count;i++){
       let x,y,tries=0,valid=false;
       do{
@@ -369,12 +376,13 @@
     waveClearedRecently = true;
     score += Math.round(300 * (waveTimeRemaining / waveTimeLimit)) + 200;
     updateScoreUI();
-    const ganaVidaExtra = wave % LIFEUP_EVERY_N_WAVES === 0;
+    const ganaVidaExtra = wave % LIFEUP_EVERY_N_WAVES === 0 && lives < MAX_VIDAS;
     if(ganaVidaExtra){
       if(lives >= maxLives) maxLives++;
       lives++;
       updateLivesUI();
     }
+    notifyParent('monsterProgreso', { puntuacion: score, oleada: wave });   // por si cierran la app a media partida
     flashMessage(ganaVidaExtra ? '¡COBRADO! +1 ❤️' : '¡COBRADO!', '#2ecc71');
     beep(700, 0.18, 'sine', 0.13);
     vibrate(ganaVidaExtra ? [30,30,60,40,90] : [30,30,60]);
