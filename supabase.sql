@@ -500,6 +500,9 @@ begin
         from public.votos v where v.semana = c.semana and v.votante_id = yo.id),
     'mi_intento', (select jsonb_build_object('puntaje', i.puntaje, 'terminado', i.terminado is not null)
         from public.intentos i where i.semana = c.semana and i.jugador_id = yo.id),
+    -- misiones que cumplí la semana pasada: cuentan la mitad para el líder de esta semana
+    'misiones_previas', (select count(*) from public.misiones m
+        where m.semana = c.semana - 1 and m.jugador_id = yo.id and m.cumplida is not null),
     'galas', (select coalesce(jsonb_agg(h.semana order by h.semana desc), '[]'::jsonb) from public.historial h)
   ) || public._economia(yo.id, v_bono);
 end $$;
@@ -739,7 +742,26 @@ begin
   exception when others then null; end;
 end $$;
 
--- Cierra la prueba. Sin p_lider elige al mejor puntaje (empate: quien terminó primero).
+-- v15: el líder sale mitad de la prueba y mitad de las misiones cumplidas la semana pasada.
+-- Prueba: tu puntaje contra el mejor de la semana (hasta 50). Misiones: 10 por cada una (hasta 50).
+-- Solo cuenta quien jugó la prueba. Empate: mejor prueba, luego quien terminó primero.
+create or replace function public._tabla_lider(p_semana int)
+returns table (jugador_id uuid, puntaje int, misiones int, total numeric, terminado timestamptz)
+language sql stable security definer set search_path = public as $$
+  with i as (
+    select i.jugador_id, greatest(i.puntaje, 0) as puntaje, i.terminado,
+           least(5, (select count(*) from public.misiones m
+                      where m.semana = p_semana - 1 and m.jugador_id = i.jugador_id and m.cumplida is not null))::int as misiones
+      from public.intentos i join public.jugadores j on j.id = i.jugador_id
+     where i.semana = p_semana and i.puntaje is not null and j.estado = 'activo' and j.rol = 'jugador'),
+  mx as (select greatest(max(puntaje), 1) as m from i)
+  select i.jugador_id, i.puntaje, i.misiones, round(50.0 * i.puntaje / mx.m + 10 * i.misiones, 1), i.terminado
+    from i, mx
+   order by 4 desc, 2 desc, 5 asc
+$$;
+revoke all on function public._tabla_lider(int) from public, anon, authenticated;
+
+-- Cierra la prueba. Sin p_lider elige al mejor del puntaje combinado (prueba + misiones).
 create or replace function public._cerrar_prueba(p_lider uuid default null)
 returns uuid language plpgsql security definer set search_path = public as $$
 declare
@@ -749,11 +771,7 @@ begin
   select * into c from public.config where id = 1 for update;
   if c.fase <> 'prueba' then raise exception 'FASE_INCORRECTA'; end if;
   if v_lider is null then
-    select i.jugador_id into v_lider
-      from public.intentos i join public.jugadores j on j.id = i.jugador_id
-     where i.semana = c.semana and i.puntaje is not null and j.estado = 'activo' and j.rol = 'jugador'
-     order by i.puntaje desc, i.terminado asc
-     limit 1;
+    select t.jugador_id into v_lider from public._tabla_lider(c.semana) t limit 1;
   end if;
   update public.config
      set lider_id = v_lider,

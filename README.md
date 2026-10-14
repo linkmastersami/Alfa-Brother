@@ -68,7 +68,7 @@ Comparte ese link en el grupo de la oficina.
 ## 3. Cómo se juega
 
 - **Registro:** cada quien entra al link, pone su nombre, crea un PIN de 4 números y, si quiere, una foto. Los primeros 16 son habitantes; los demás entran como **público**.
-- **Prueba del líder:** un intento por habitante. Gana el mejor puntaje (en empate, quien terminó primero).
+- **Prueba del líder:** un intento por habitante. El líder sale **mitad de la prueba y mitad de las misiones secretas cumplidas la semana pasada**: la prueba da hasta 50 puntos (tu puntaje contra el mejor de la semana) y cada misión 10 (hasta 50). Solo cuenta quien jugó la prueba; en empate gana la mejor prueba y luego quien terminó primero.
 - **Votación:** todos reparten **3, 2 y 1 puntos** a tres habitantes activos, con un motivo opcional. Los eliminados siguen votando y su voto cuenta. El voto del público aparece en la tabla pero no cuenta.
 - **Resultado:** sale quien junte más puntos. Si el que más tiene es el líder, se salva y sale el siguiente. Si hay empate, el líder decide desde su celular.
 - **Gala:** se ve el conteo de puntos de cada uno, el eliminado con el sello y los motivos de forma anónima.
@@ -123,7 +123,7 @@ Tú juegas como cualquier otro con tu propio nombre y PIN. Si alguien te ve el c
 En el panel → **Juego** → **Agenda de la semana N** pones día y hora para:
 
 1. Abre la casa / empieza la prueba (y qué prueba toca)
-2. Cierra la prueba: se nombra líder al mejor puntaje
+2. Cierra la prueba: se nombra líder al mejor puntaje combinado (prueba + misiones)
 3. Abre la votación
 4. Cierra la votación
 5. Gala: revelación del eliminado
@@ -151,6 +151,7 @@ Versión 11: saldo inicial de $2,000, bono diario de $200 y práctica del día d
 Versión 12: los avisos de la producción se guardan en el botón 🔔 de la casa.
 Versión 13: chat de la casa para los habitantes, con menciones.
 Versión 14: las misiones ya no usan código QR: tocas «¡Ya la cumplí!» y la otra persona confirma o dice que es falso.
+Versión 15: las misiones de la semana pasada cuentan la mitad para elegir al líder.
 
 ---
 

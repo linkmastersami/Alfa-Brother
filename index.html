@@ -406,6 +406,9 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .ap-op.sel{border-color:var(--tinta);background:#fff}
 .chips-monto{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .chips-monto button{appearance:none;border:2px solid var(--texto);background:#fff;border-radius:999px;padding:5px 11px;font-weight:700;cursor:pointer}
+.lider-mis{margin-top:12px;background:rgba(27,20,64,.08);border-radius:12px;padding:10px 12px;display:grid;gap:4px}
+.lider-mis small{color:inherit;opacity:.85;line-height:1.35}
+.lider-mis .puntos-mis{font-size:1.1rem;letter-spacing:.15em}
 .mis-espera{display:block;margin-top:6px;color:#FFD54A!important;font-weight:700}
 .mis-botones{display:grid;gap:8px;margin-top:14px}
 .btn.falso{background:#FF4D5E;color:#fff}
@@ -1681,6 +1684,13 @@ function pintarAccion() {
     else if (mi_intento?.terminado) cuerpo = `<p>Tu puntaje: <b class="display" style="font-size:1.6rem">${mi_intento.puntaje}</b></p><p class="ayuda">El líder se anuncia cuando cierre la prueba.</p>`;
     else if (mi_intento) cuerpo = `<p>Tu intento quedó incompleto y cuenta como cero.</p>`;
     else cuerpo = `<p>${esc(p.desc)}</p><p><b>Solo tienes un intento.</b></p><button class="btn" id="a-jugar">Jugar la prueba</button>`;
+    // mitad prueba, mitad misiones de la semana pasada
+    if (soyHabitanteActivo && g.semana > 1) {
+      const mp = Math.min(5, est.misiones_previas || 0);
+      cuerpo += `<div class="lider-mis"><b>🕵️ Tus misiones de la semana pasada: ${mp} de 5</b>
+        <span class="puntos-mis">${'●'.repeat(mp)}<i>${'○'.repeat(5 - mp)}</i></span>
+        <small>El líder sale mitad de esta prueba y mitad de las misiones que cumpliste la semana pasada. Ya llevas <b>${mp * 10} de 50</b> puntos por misiones.${mi_intento ? '' : ' Para contar tienes que jugar la prueba.'}</small></div>`;
+    }
     h = `<div class="formato amarillo"><div class="folio"><span>Prueba del líder</span><span>Semana ${g.semana}</span></div><h2>${esc(p.nombre)}</h2>${cuerpo}</div>`;
   } else if (g.fase === 'espera' && g.es_final) {
     h = `<div class="formato amarillo"><div class="folio"><span>Gran final</span><span>Semana ${g.semana}</span></div>
@@ -2040,7 +2050,7 @@ const TUTO = [
       ${[0, 1, 2].map(i => `<g transform="translate(${112 + i * 48},48)"><rect x="4" y="0" width="30" height="28" rx="7" fill="#3B2E8C"/><rect x="0" y="26" width="38" height="8" rx="3" fill="#4A3AA8"/><rect x="3" y="34" width="4" height="14" fill="#3B2E8C"/><rect x="31" y="34" width="4" height="14" fill="#3B2E8C"/>
         ${i < 2 ? `<circle cx="19" cy="12" r="11" fill="${['#D7263D', '#2337A8'][i]}"/>` : ''}</g>`).join('')}
       <text x="185" y="122" text-anchor="middle" font-family="Work Sans,sans-serif" font-size="12" fill="#C9C3EE">16 lugares</text></svg>` },
-  { t: 'Gana la prueba y sé el líder', p: 'Cada semana hay una prueba: trivia de la oficina, memoria de expedientes o calcula el adeudo. Solo tienes un intento. El mejor puntaje es el líder 👑 y queda protegido.',
+  { t: 'Gana la prueba y sé el líder', p: 'Cada semana hay una prueba: trivia de la oficina, memoria de expedientes o calcula el adeudo. Solo tienes un intento. El líder 👑 sale mitad de la prueba y mitad de las misiones secretas que cumpliste la semana pasada, y queda protegido.',
     svg: `<svg viewBox="0 0 260 150"><path d="M60 100 L48 50 L78 72 L100 40 L122 72 L152 50 L140 100 Z" fill="#FFD54A" stroke="#1B1440" stroke-width="4" stroke-linejoin="round"/>
       <circle cx="100" cy="40" r="7" fill="#D7263D"/><circle cx="48" cy="50" r="6" fill="#D7263D"/><circle cx="152" cy="50" r="6" fill="#D7263D"/>
       <rect x="56" y="100" width="88" height="14" rx="4" fill="#FFD54A" stroke="#1B1440" stroke-width="4"/>
@@ -4092,11 +4102,12 @@ async function adminJuego(C) {
   }
   if (c.fase === 'prueba') {
     const ints = await q(sb.from('intentos').select('*').eq('semana', c.semana).order('puntaje', { ascending: false, nullsFirst: false }));
-    const top = ints.find(i => i.puntaje !== null && adm.jug.find(j => j.id === i.jugador_id)?.estado === 'activo');
+    const misPrev = await q(sb.from('misiones').select('jugador_id,cumplida').eq('semana', c.semana - 1));
+    const top = tablaLider(ints, misPrev)[0];
     h += `<div class="adm-caja"><h3>Prueba en curso</h3>
-      <p>${ints.filter(i => i.terminado).length} de ${act.length} ya jugaron. Va ganando: <b>${top ? esc(nombreDe(top.jugador_id)) + ` (${top.puntaje})` : 'nadie'}</b></p>
+      <p>${ints.filter(i => i.terminado).length} de ${act.length} ya jugaron. Va ganando: <b>${top ? esc(nombreDe(top.jugador_id)) + ` (${top.total} pts: prueba ${top.puntaje} + ${top.mis} misiones)` : 'nadie'}</b></p>
       <label class="campo" for="ad-lider">Líder</label>
-      <select class="in" id="ad-lider"><option value="">Automático: mejor puntaje</option>${act.map(j => `<option value="${j.id}">${esc(j.nombre)}</option>`).join('')}</select>
+      <select class="in" id="ad-lider"><option value="">Automático: mejor puntaje (prueba + misiones)</option>${act.map(j => `<option value="${j.id}">${esc(j.nombre)}</option>`).join('')}</select>
       <div class="adm-acciones"><button class="btn" id="ad-cerrar-prueba">Cerrar prueba y nombrar líder</button></div></div>`;
   }
   if (c.fase === 'espera') {
@@ -4240,14 +4251,30 @@ async function adminVotos(C) {
 }
 
 /* ---- Pruebas ---- */
+// Igual que _tabla_lider en la base: mitad prueba (contra el mejor) y mitad misiones de la semana pasada
+function tablaLider(ints, misPrev) {
+  const val = ints.filter(i => i.puntaje !== null && i.terminado && (j => j?.estado === 'activo' && j?.rol === 'jugador')(adm.jug.find(j => j.id === i.jugador_id)));
+  const max = Math.max(1, ...val.map(i => Math.max(0, i.puntaje)));
+  return val.map(i => {
+    const mis = Math.min(5, misPrev.filter(m => m.jugador_id === i.jugador_id && m.cumplida).length);
+    return { ...i, mis, total: Math.round((50 * Math.max(0, i.puntaje) / max + 10 * mis) * 10) / 10 };
+  }).sort((a, b) => b.total - a.total || b.puntaje - a.puntaje || new Date(a.terminado) - new Date(b.terminado));
+}
+
 async function adminPruebas(C) {
   const c = adm.cfg;
   const ints = c.semana ? await q(sb.from('intentos').select('*').eq('semana', c.semana).order('puntaje', { ascending: false, nullsFirst: false })) : [];
+  const misPrev = c.semana > 1 ? await q(sb.from('misiones').select('jugador_id,cumplida').eq('semana', c.semana - 1)) : [];
+  const tabla = tablaLider(ints, misPrev), fuera = ints.filter(i => !tabla.some(t => t.jugador_id === i.jugador_id));
   C.innerHTML = `<div class="adm-caja"><h3>Puntajes de la semana ${c.semana}</h3>
     ${c.prueba ? `<p class="ayuda">${esc(PRUEBAS[c.prueba].nombre)}</p>` : ''}
-    ${ints.map((i, k) => `<div class="adm-fila"><div class="info"><b>${k + 1}. ${esc(nombreDe(i.jugador_id))}</b>
-      <small>${i.terminado ? new Date(i.terminado).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : 'Incompleto'}</small></div>
-      <span class="pill ${k === 0 && i.puntaje !== null ? 'verde' : ''}">${i.puntaje ?? 0}</span></div>`).join('') || '<p class="ayuda">Nadie ha jugado todavía.</p>'}
+    <p class="ayuda">El líder sale mitad de la prueba (su puntaje contra el mejor, hasta 50) y mitad de las misiones cumplidas la semana pasada (10 cada una, hasta 50).</p>
+    ${tabla.map((i, k) => `<div class="adm-fila"><div class="info"><b>${k + 1}. ${esc(nombreDe(i.jugador_id))}</b>
+      <small>Prueba ${i.puntaje} · ${i.mis} misiones · ${new Date(i.terminado).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</small></div>
+      <span class="pill ${k === 0 ? 'verde' : ''}">${i.total}</span></div>`).join('')}
+    ${fuera.map(i => `<div class="adm-fila"><div class="info"><b>${esc(nombreDe(i.jugador_id))}</b>
+      <small>${i.puntaje === null ? 'Incompleto' : 'Ya no está en la casa'}</small></div><span class="pill">${i.puntaje ?? 0}</span></div>`).join('')}
+    ${ints.length ? '' : '<p class="ayuda">Nadie ha jugado todavía.</p>'}
     </div>`;
 }
 
