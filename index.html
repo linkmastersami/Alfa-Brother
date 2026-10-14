@@ -132,6 +132,45 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 
 .galas{display:flex;flex-wrap:wrap;gap:8px}
 .pie{margin-top:32px;display:flex;justify-content:space-between;color:#C9C3EE}
+/* pestañas de la casa */
+#s-casa{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:repeat(4,1fr);max-width:480px;margin:0 auto;
+  background:#1B1440;border-top:1px solid #4A3AA8;padding:6px 6px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -6px 18px rgba(0,0,0,.35)}
+.tabbar button{position:relative;border:0;background:none;color:#A9A3D6;font:600 .74rem "Work Sans",sans-serif;display:grid;justify-items:center;gap:1px;padding:6px 0;border-radius:12px;cursor:pointer}
+.tabbar button span{font-size:1.35rem;line-height:1.1;filter:grayscale(.6);opacity:.8}
+.tabbar button.on{color:#fff;background:#2A2160}
+.tabbar button.on span{filter:none;opacity:1}
+.tabbar .badge{position:absolute;top:2px;left:calc(50% + 8px);min-width:18px;height:18px;border-radius:9px;background:#D7263D;color:#fff;font:800 .68rem/18px "Work Sans",sans-serif;padding:0 5px;font-style:normal}
+.tab-titulo{font-family:Anton,Impact,sans-serif;font-size:1.6rem;margin:14px 0 2px;color:#fff}
+/* ¿Qué me toca hoy? */
+.hoy{background:#FFFDF6;color:var(--texto);border-radius:16px;padding:14px;margin-top:12px;box-shadow:0 6px 0 #0E0A26}
+.hoy h2{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.4rem;margin:0 0 8px}
+.cal{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;margin:0 0 12px;counter-reset:paso}
+.cal div{position:relative;background:#EDEAFB;border-radius:10px;padding:6px 4px 5px;text-align:center;font-size:.72rem;color:#5B5592;line-height:1.2}
+.cal div b{display:block;font-size:.84rem;color:var(--texto)}
+.cal div.ya{background:#DDF5E6;color:#1E8E5A}
+.cal div.ya b{color:#1E8E5A}
+.cal div.ahora{background:#D7263D;color:#FFE3E8;box-shadow:0 3px 0 #8E1526}
+.cal div.ahora b{color:#fff}
+.pend{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px dashed #D9D4F3}
+.pend:first-of-type{border-top:0}
+.pend .ic{font-size:1.4rem;width:30px;text-align:center;flex:none}
+.pend .tx{flex:1;min-width:0;font-weight:600;font-size:.95rem;line-height:1.25}
+.pend .tx small{display:block;font-weight:500;color:#6A6496;font-size:.8rem}
+.pend.ok .tx{color:#1E8E5A}
+.pend .btn{flex:none;padding:8px 14px;font-size:.85rem}
+.hoy-libre{margin:2px 0 0;color:#5B5592;font-size:.92rem}
+/* Monster Crazy */
+.monster-card{position:relative;overflow:hidden;background:radial-gradient(circle at 50% 0%,#4a0f3a,#14061c 75%);border:1px solid #ff3b3b;border-radius:16px;padding:16px;margin-top:12px;color:#fff;box-shadow:0 0 22px rgba(255,40,40,.25)}
+.monster-card h3{font:900 1.9rem/1 Anton,Impact,sans-serif;color:#ff4d4d;text-shadow:0 0 14px #ff2020;margin:0;letter-spacing:.02em}
+.monster-card .ed{color:#FFD54A;font-weight:800;font-size:.7rem;letter-spacing:.18em}
+.monster-card p{color:#E7D2FF;font-size:.92rem;margin:8px 0}
+.monster-caras{display:flex;margin:10px 0}
+.monster-caras .av{border:2px solid #fff;margin-left:-8px;box-shadow:0 0 10px rgba(255,40,40,.6)}
+.monster-caras .av:first-child{margin-left:0}
+.monster-card .btn{width:100%;font-size:1.1rem}
+#m-monster{position:fixed;inset:0;z-index:300;background:#0a0510}
+#m-monster iframe{width:100%;height:100%;border:0;display:block}
 
 /* Votación */
 .renglon{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px;border:2px dashed var(--texto);border-radius:12px;margin-top:10px;background:rgba(255,255,255,.55);cursor:pointer}
@@ -236,7 +275,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .radio-op{display:flex;align-items:center;gap:8px;margin-top:6px}
 .radio-op input[type=radio]{width:20px;height:20px;accent-color:var(--ok)}
 
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--texto);color:#fff;padding:10px 16px;border-radius:999px;z-index:90;font-weight:600;font-size:.92rem;max-width:90vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--texto);color:#fff;padding:10px 16px;border-radius:999px;z-index:90;font-weight:600;font-size:.92rem;max-width:90vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 
 .campo-dinero{display:flex;align-items:center;gap:6px}
 .campo-dinero span{font-family:Anton,Impact,sans-serif;font-size:1.8rem;color:var(--tinta)}
@@ -398,6 +437,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .revelar{appearance:none;border:2px dashed #6E5FD0;background:#1B1440;color:#C9C3EE;border-radius:10px;padding:14px;width:100%;font-weight:700;cursor:pointer;margin-top:8px;font-size:.95rem}
 .record-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
 .record-cols>div>b{display:block;font-size:.85rem;color:var(--luz);margin-bottom:4px}
+.record-cols>div:first-child{grid-column:1/-1}
 .record-cols .r{display:flex;justify-content:space-between;gap:6px;font-size:.88rem;padding:2px 0}
 .record-cols .r span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .record-cols .r.yo{color:var(--luz)}
@@ -487,7 +527,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .noti p{margin:2px 0;font-size:.92rem}
 .noti small{color:var(--suave);font-size:.78rem}
 .noti.nueva b::after{content:" • nuevo";color:#D7263D;font-size:.75rem;font-weight:800}
-.chat-flota{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:55;width:58px;height:58px;border-radius:50%;border:0;background:#FFD54A;font-size:1.7rem;box-shadow:0 6px 16px rgba(0,0,0,.45);cursor:pointer;display:grid;place-items:center}
+.chat-flota{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:55;width:58px;height:58px;border-radius:50%;border:0;background:#FFD54A;font-size:1.7rem;box-shadow:0 6px 16px rgba(0,0,0,.45);cursor:pointer;display:grid;place-items:center}
 .chat-flota .badge{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;border-radius:11px;background:#D7263D;color:#fff;font-size:.78rem;font-weight:800;line-height:22px;padding:0 6px}
 .chat-flota .badge.menc{background:#2337A8}
 #m-chat.modal{padding:0;place-items:stretch;overflow:hidden;background:rgba(10,6,30,.9)}
@@ -775,8 +815,11 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
     <button class="chip-eco dinero" id="c-billetes">💵 <b>$0</b></button>
     <button class="chip-eco" id="c-tienda">🛍️ Tienda</button>
     <button class="chip-eco" id="c-notis" aria-label="Notificaciones">🔔<span class="badge hidden" id="c-notis-n"></span></button>
-    <button class="chip-eco hidden" id="c-mision-chip">🕵️ Mi misión</button>
   </div>
+
+  <!-- pestaña Casa -->
+  <div class="tab-pane" id="tab-casa">
+  <div id="c-hoy"></div>
   <div id="c-accion"></div>
   <div id="c-avisos" class="hidden"></div>
 
@@ -833,7 +876,6 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
     <p class="ayuda sala-ayuda" id="sala-ayuda">Toca el piso para caminar · toca a alguien para ver su ficha</p>
   </div>
   <div class="rejilla hidden" id="c-habitantes"></div>
-  <div id="c-juegos"></div>
   <div id="c-extra"></div>
 
   <div id="c-espect-box" class="hidden">
@@ -845,17 +887,30 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
     <div class="seccion-t"><span>Galas pasadas</span></div>
     <div class="galas" id="c-galas"></div>
   </div>
+  </div>
+
+  <!-- pestañas Jugar, Billetes y Misiones -->
+  <div class="tab-pane hidden" id="tab-jugar"><div class="tab-titulo">🎮 Jugar</div><div id="c-jugar"></div></div>
+  <div class="tab-pane hidden" id="tab-billetes"><div class="tab-titulo">💵 Billetes Alfa</div><div id="c-dinero"></div></div>
+  <div class="tab-pane hidden" id="tab-misiones"><div class="tab-titulo">🕵️ Misiones secretas</div><div id="c-misiones"></div></div>
 
   <div class="pie" style="flex-wrap:wrap;gap:4px 16px">
     <button class="link hidden js-instalar" id="c-instalar">📲 Instalar el juego</button>
     <button class="link hidden" id="c-avisos-link">🔔 Activar avisos</button>
-    <button class="link" id="c-tuto">Cómo se juega</button>
+    <button class="link" id="c-tuto">❓ Cómo se juega</button>
     <button class="link" id="c-cambiar-foto">Cambiar mi foto</button>
     <button class="link" id="c-frase">Mi frase</button>
     <input id="c-foto" type="file" accept="image/*" class="hidden">
     <button class="link" id="c-salir">Salir</button>
   </div>
+  <nav class="tabbar" id="tabbar" aria-label="Secciones">
+    <button data-tab="casa" class="on"><span>🏠</span>Casa<i class="badge hidden"></i></button>
+    <button data-tab="jugar"><span>🎮</span>Jugar<i class="badge hidden"></i></button>
+    <button data-tab="billetes"><span>💵</span>Billetes<i class="badge hidden"></i></button>
+    <button data-tab="misiones"><span>🕵️</span>Misiones<i class="badge hidden"></i></button>
+  </nav>
 </section>
+<div id="m-monster" class="hidden"></div>
 
 <!-- ============================ PANTALLA: CONFESIONARIO (votar) -->
 <section id="s-votar" class="wrap hidden confesionario">
@@ -1599,6 +1654,7 @@ async function refrescar() {
 let firmaFase = null, conocidos = null, nuevos = [], esperandoGala = null;
 async function entrarCasa() {
   mostrar('s-casa');
+  irTab('casa', false);
   $('#c-accion').innerHTML = '';
   firmaFase = null; conocidos = null;
   await refrescar();
@@ -1653,6 +1709,7 @@ function pintarCasa() {
 
   pintarAccion();
   pintarEconomia();
+  pintarHoy();
 }
 
 function pintarAccion() {
@@ -2042,29 +2099,29 @@ function pintarAciertos(ganadores) {
    TUTORIAL ILUSTRADO
    ===================================================================== */
 const TUTO = [
-  { t: 'Regístrate y entra a la casa', p: 'Pon tu nombre, un PIN de 4 números y, si quieres, tu foto y una frase. Los primeros 16 son habitantes de la casa; los demás entran como público.',
-    svg: `<svg viewBox="0 0 260 150"><rect x="20" y="10" width="70" height="128" rx="12" fill="#FFFDF6"/><rect x="28" y="24" width="54" height="94" rx="4" fill="#2A2160"/>
-      <circle cx="55" cy="48" r="13" fill="#FFD54A"/><text x="55" y="54" text-anchor="middle" font-family="Anton,Impact" font-size="15" fill="#1B1440">$</text>
-      <g fill="#FFD54A">${[0, 1, 2, 3].map(i => `<circle cx="${38 + i * 11}" cy="82" r="4"/>`).join('')}</g>
-      <rect x="36" y="96" width="38" height="12" rx="6" fill="#D7263D"/>
-      ${[0, 1, 2].map(i => `<g transform="translate(${112 + i * 48},48)"><rect x="4" y="0" width="30" height="28" rx="7" fill="#3B2E8C"/><rect x="0" y="26" width="38" height="8" rx="3" fill="#4A3AA8"/><rect x="3" y="34" width="4" height="14" fill="#3B2E8C"/><rect x="31" y="34" width="4" height="14" fill="#3B2E8C"/>
-        ${i < 2 ? `<circle cx="19" cy="12" r="11" fill="${['#D7263D', '#2337A8'][i]}"/>` : ''}</g>`).join('')}
-      <text x="185" y="122" text-anchor="middle" font-family="Work Sans,sans-serif" font-size="12" fill="#C9C3EE">16 lugares</text></svg>` },
-  { t: 'Gana la prueba y sé el líder', p: 'Cada semana hay una prueba: trivia de la oficina, memoria de expedientes o calcula el adeudo. Solo tienes un intento. El líder 👑 sale mitad de la prueba y mitad de las misiones secretas que cumpliste la semana pasada, y queda protegido.',
+  { t: 'Cada semana son 3 pasos', p: 'Prueba del líder → votación → gala, donde alguien sale de la casa. No tienes que memorizar nada: arriba, en «¿Qué me toca hoy?», siempre ves lo que te falta hacer.',
+    svg: `<svg viewBox="0 0 260 150">${[['👑', 'Prueba', '#FFD54A'], ['🗳️', 'Votación', '#F7C6D0'], ['🎤', 'Gala', '#D7263D']].map(([e, n, c], i) => `<g transform="translate(${14 + i * 84},34)">
+      <rect width="64" height="76" rx="12" fill="${c}"/><text x="32" y="40" text-anchor="middle" font-size="28">${e}</text>
+      <text x="32" y="64" text-anchor="middle" font-family="Work Sans,sans-serif" font-weight="700" font-size="11" fill="${i === 2 ? '#fff' : '#1B1440'}">${n}</text></g>
+      ${i < 2 ? `<path d="M${82 + i * 84} 72 l12 0 m-5 -6 l6 6 l-6 6" stroke="#FFFDF6" stroke-width="3" fill="none" stroke-linecap="round"/>` : ''}`).join('')}</svg>` },
+  { t: '1 · Sé el líder 👑', p: 'Juega la prueba de la semana (un solo intento). El líder sale mitad de tu puntaje y mitad de las misiones secretas que cumpliste la semana pasada. El líder no puede salir esa semana.',
     svg: `<svg viewBox="0 0 260 150"><path d="M60 100 L48 50 L78 72 L100 40 L122 72 L152 50 L140 100 Z" fill="#FFD54A" stroke="#1B1440" stroke-width="4" stroke-linejoin="round"/>
       <circle cx="100" cy="40" r="7" fill="#D7263D"/><circle cx="48" cy="50" r="6" fill="#D7263D"/><circle cx="152" cy="50" r="6" fill="#D7263D"/>
       <rect x="56" y="100" width="88" height="14" rx="4" fill="#FFD54A" stroke="#1B1440" stroke-width="4"/>
       <circle cx="205" cy="80" r="34" fill="#FFFDF6" stroke="#FBE9A6" stroke-width="6"/><rect x="198" y="36" width="14" height="10" rx="3" fill="#FBE9A6"/>
       <path d="M205 80 L205 58" stroke="#D7263D" stroke-width="5" stroke-linecap="round"/><path d="M205 80 L222 88" stroke="#1B1440" stroke-width="4" stroke-linecap="round"/></svg>` },
-  { t: 'Vota con 3, 2 y 1 puntos', p: 'Reparte tus puntos entre tres habitantes y, si quieres, escribe por qué. Votan todos, incluso los eliminados. El público también vota, pero su voto no decide.',
+  { t: '2 · Vota con 3, 2 y 1 puntos', p: 'Entra al confesionario (la puerta roja) y dale 3, 2 y 1 puntos a quien quieras sacar. En la gala sale quien junte más. Nadie sabe quién votó por quién. En la gran final (quedan 3) gana quien junte menos.',
     svg: `<svg viewBox="0 0 260 150"><rect x="40" y="8" width="180" height="134" rx="8" fill="#F7C6D0"/>
       ${[3, 2, 1].map((n, i) => `<g transform="translate(56,${24 + i * 38})"><rect width="148" height="30" rx="8" fill="#FFFDF6" stroke="#1B1440" stroke-width="2" stroke-dasharray="${i === 0 ? '0' : '5 4'}"/>
         <text x="16" y="23" text-anchor="middle" font-family="Anton,Impact" font-size="22" fill="#D7263D">${n}</text>
         <circle cx="48" cy="15" r="10" fill="${['#7A3FB5', '#0F7C8C', '#B5541F'][i]}"/><rect x="66" y="10" width="${60 - i * 12}" height="10" rx="5" fill="#C9C3EE"/></g>`).join('')}</svg>` },
-  { t: 'La gala de eliminación', p: 'Sale quien junte más puntos. Si es el líder, se salva y sale el siguiente; si hay empate, decide el líder. En la gala se ven los puntos y los motivos, pero nunca quién votó por quién. Cuando quedan 3, es la gran final: sin prueba ni líder, y quien junte menos puntos gana.',
-    svg: `<svg viewBox="0 0 260 150"><circle cx="130" cy="72" r="46" fill="#7A3FB5"/><text x="130" y="90" text-anchor="middle" font-family="Anton,Impact" font-size="50" fill="#fff">?</text>
-      <g transform="rotate(-14 130 82)"><rect x="34" y="66" width="192" height="36" rx="7" fill="#FFFDF6" stroke="#D7263D" stroke-width="5"/>
-      <text x="130" y="93" text-anchor="middle" font-family="Anton,Impact" font-size="22" fill="#D7263D">¡ELIMINADO!</text></g></svg>` },
+  { t: '3 · Mientras esperas', p: 'Cumple tus misiones secretas, juega Monster Crazy, vota en las encuestas y apuesta con tus Billetes Alfa. Con lo que juntes, viste a tu monito en la tienda. Todo está en las pestañas de abajo.',
+    svg: `<svg viewBox="0 0 260 150"><rect x="10" y="96" width="240" height="44" rx="12" fill="#1B1440" stroke="#4A3AA8" stroke-width="2"/>
+      ${[['🏠', 'Casa'], ['🎮', 'Jugar'], ['💵', 'Billetes'], ['🕵️', 'Misiones']].map(([e, n], i) => `<text x="${40 + i * 60}" y="120" text-anchor="middle" font-size="18">${e}</text>
+      <text x="${40 + i * 60}" y="134" text-anchor="middle" font-family="Work Sans,sans-serif" font-size="9" fill="#C9C3EE">${n}</text>`).join('')}
+      <circle cx="130" cy="48" r="34" fill="#4a0f3a" stroke="#ff3b3b" stroke-width="3"/>
+      ${[[112, 40, '#D7263D'], [146, 38, '#2337A8'], [130, 62, '#1E8E5A']].map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="11" fill="${c}" stroke="#fff" stroke-width="2"/>`).join('')}
+      <text x="208" y="54" text-anchor="middle" font-size="26">💵</text><text x="52" y="54" text-anchor="middle" font-size="26">🕵️</text></svg>` },
 ];
 let pasoTuto = 0;
 function abrirTutorial() { pasoTuto = 0; pintarTutorial(); $('#m-tuto').classList.remove('hidden'); }
@@ -2079,7 +2136,7 @@ function pintarTutorial() {
 $('#t-atras').onclick = () => { pasoTuto = Math.max(0, pasoTuto - 1); SFX.tocar('swish'); pintarTutorial(); };
 $('#t-sig').onclick = () => {
   if (pasoTuto < TUTO.length - 1) { pasoTuto++; SFX.tocar('swish'); pintarTutorial(); return; }
-  store.set('ab_tuto', '1'); $('#m-tuto').classList.add('hidden'); refrescar();
+  store.set('ab_tuto2', '1'); $('#m-tuto').classList.add('hidden'); refrescar();
 };
 $('#c-tuto').onclick = abrirTutorial;
 $('#c-frase').onclick = async () => {
@@ -2178,7 +2235,7 @@ document.addEventListener('click', e => {
   if (m.id === 'm-bienvenida') return $('#bv-ok').click();      // cerrar la bienvenida = OK
   if (m.id === 'm-ojo') return $('#ojo-cerrar').click();
   if (m.id === 'm-mis-conf') return;                             // hay que contestar: es cierto o es falso
-  if (m.id === 'm-tuto') { store.set('ab_tuto', '1'); }          // ya lo vio
+  if (m.id === 'm-tuto') { store.set('ab_tuto2', '1'); }          // ya lo vio
   m.classList.add('hidden');
 });
 // tocar cualquier foto con data-ficha abre la ficha
@@ -2831,30 +2888,169 @@ function pintarEconomia() {
   pintarAnuncios();
   CHAT.revisar();
   $('#c-billetes').innerHTML = `💵 <b>${fmt$(est.billetes)}</b>`;
-  const mias = est.misiones || [], hechas = mias.filter(x => x.cumplida).length;
-  $('#c-mision-chip').classList.toggle('hidden', !mias.length);
-  $('#c-mision-chip').innerHTML = mias.length ? `🕵️ Misiones ${hechas}/${mias.length}${hechas < mias.length ? '<span class="punto"></span>' : ' ✅'}` : '';
   const g = est.juego;
-  let h = tarjetaApuestas(g);
+  // pestaña Billetes: saldo, apuestas y encuestas
+  let h = `<div class="juego-card"><h3>💵 Tu saldo <small>No son de verdad 😉</small></h3>
+    <div class="display" style="font-size:2.2rem;color:#7CF29A">${fmt$(est.billetes)}</div>
+    <p class="ayuda">Ganas billetes entrando cada día, cumpliendo misiones, jugando y atinándole a las apuestas. Se gastan en la tienda para vestir a tu monito.</p>
+    <div class="fila-btn"><button class="btn chico" data-ver-billetes>Ver mis movimientos</button><button class="btn sec chico" data-ver-tienda>🛍️ Ir a la tienda</button></div></div>`;
+  h += tarjetaApuestas(g);
   const abiertas = (est.encuestas || []).filter(e => e.abierta);
   h += (est.encuestas || []).map(tarjetaEncuesta).join('');
   if (est.proxima_encuesta && !abiertas.length) h += `<div class="juego-card"><h3>📊 Encuesta del día <small>${esc(fmtFecha(est.proxima_encuesta))}</small></h3>
     <p class="ayuda">La próxima encuesta abre pronto. Podrás votar y apostar por el resultado.</p></div>`;
-  h += tarjetaMision(g);
-  h += tarjetaRecords();
-  $('#c-juegos').innerHTML = h;
+  $('#c-dinero').innerHTML = h;
+  // pestaña Misiones
+  $('#c-misiones').innerHTML = tarjetaMision(g) || `<div class="juego-card"><p>${g.semana === 0 ? 'Las misiones secretas empiezan cuando abra la casa (semana 1).' : 'Esta semana no hay misiones.'}</p>
+    <p class="ayuda">Cada semana cada habitante recibe 5 misiones secretas sobre sus compañeros. Las que cumplas te dan billetes y cuentan la mitad para ser líder la semana siguiente.</p></div>`;
+  // pestaña Jugar: Monster Crazy y las prácticas con sus récords
+  $('#c-jugar').innerHTML = tarjetaMonster() + tarjetaRecords();
   // botones
-  $$('#c-juegos [data-apostar]').forEach(b => b.onclick = () => abrirApuesta(b.dataset.apostar, b.dataset.ref ? +b.dataset.ref : null));
-  $$('#c-juegos [data-votar-enc]').forEach(b => b.onclick = async () => {
+  const C = $('#s-casa');
+  C.querySelector('[data-ver-billetes]').onclick = abrirBilletes;
+  C.querySelector('[data-ver-tienda]').onclick = () => $('#c-tienda').click();
+  $$('#s-casa [data-apostar]').forEach(b => b.onclick = () => abrirApuesta(b.dataset.apostar, b.dataset.ref ? +b.dataset.ref : null));
+  $$('#s-casa [data-votar-enc]').forEach(b => b.onclick = async () => {
     try { await rpc('votar_encuesta', { p_token: token, p_id: +b.dataset.votarEnc, p_opcion: +b.dataset.op }); SFX.tocar('clic'); toast('Voto guardado (es anónimo)'); refrescar(); }
     catch (e) { toast(mensajeError(e)); }
   });
-  $('#c-juegos [data-revelar]')?.addEventListener('click', () => { misionVisible = true; SFX.tocar('swish'); pintarEconomia(); });
-  $('#c-juegos [data-ocultar]')?.addEventListener('click', () => { misionVisible = false; pintarEconomia(); });
-  $$('#c-juegos [data-cumpli]').forEach(b => b.onclick = () => pedirMision(+b.dataset.cumpli));
-  $('#c-juegos [data-por-confirmar]')?.addEventListener('click', () => revisarPorConfirmar(true));
-  $$('#c-juegos [data-practicar]').forEach(b => b.onclick = () => abrirPractica(b.dataset.practicar));
+  C.querySelector('#c-misiones [data-revelar]')?.addEventListener('click', () => { misionVisible = true; SFX.tocar('swish'); pintarEconomia(); });
+  C.querySelector('#c-misiones [data-ocultar]')?.addEventListener('click', () => { misionVisible = false; pintarEconomia(); });
+  $$('#c-misiones [data-cumpli]').forEach(b => b.onclick = () => pedirMision(+b.dataset.cumpli));
+  C.querySelector('#c-misiones [data-por-confirmar]')?.addEventListener('click', () => revisarPorConfirmar(true));
+  $$('#c-jugar [data-practicar]').forEach(b => b.onclick = () => abrirPractica(b.dataset.practicar));
+  C.querySelector('#c-jugar [data-monster]')?.addEventListener('click', MONSTER.abrir);
 }
+
+/* ---------- ¿Qué me toca hoy? (lo primero que ve cada quien) ---------- */
+const diaCorto = t => new Date(t).toLocaleString('es-MX', { weekday: 'short', hour: 'numeric' }).replace('.', '');
+function calendarioSemana(g) {
+  if (g.semana === 0 || g.fin) return '';
+  const a = g.agenda && g.agenda.semana === g.semana ? g.agenda : null;
+  const pasos = g.es_final ? [] : [{ n: 'Prueba', f: ['prueba'], t: a?.prueba_ini }];
+  pasos.push({ n: 'Votación', f: ['espera', 'votacion', 'decision'], t: a?.voto_ini }, { n: 'Gala', f: ['gala'], t: a?.gala });
+  const actual = pasos.findIndex(p => p.f.includes(g.fase));
+  return `<div class="cal">${pasos.map((p, i) => {
+    const cls = i < actual || (p.n === 'Gala' && g.gala_revelada) ? 'ya' : i === actual ? 'ahora' : '';
+    return `<div class="${cls}"><b>${cls === 'ya' ? '✓ ' : ''}${p.n}</b>${p.t ? esc(diaCorto(p.t)) : cls === 'ahora' ? 'ahora' : '&nbsp;'}</div>`;
+  }).join('')}</div>`;
+}
+function pendientesHoy() {
+  const { yo, juego: g, mis_votos, mi_intento } = est;
+  const items = [];   // { ic, tx, sub, btn, accion, ok }
+  const habitante = yo.rol === 'jugador', activo = habitante && yo.estado === 'activo';
+  if (g.semana > 0 && !g.fin) {
+    if (g.fase === 'prueba' && activo) items.push(mi_intento?.terminado
+      ? { ic: '✅', tx: 'Ya jugaste la prueba del líder', sub: `Tu puntaje: ${mi_intento.puntaje}`, ok: true }
+      : { ic: '👑', tx: 'Juega la prueba del líder', sub: 'Solo tienes un intento', btn: 'Jugar', accion: 'prueba' });
+    if (g.fase === 'espera') items.push({ ic: '🗳️', tx: 'Prepara tu voto', sub: 'La votación abre pronto; ya puedes entrar al confesionario', btn: 'Ir', accion: 'votar' });
+    if (g.fase === 'votacion') items.push(mis_votos.length
+      ? { ic: '✅', tx: 'Ya votaste', sub: 'Puedes cambiar tu voto mientras siga abierta', ok: true }
+      : { ic: '🗳️', tx: 'Vota en el confesionario', sub: g.es_final ? 'Gran final: quien junte menos puntos gana' : 'Reparte 3, 2 y 1 puntos', btn: 'Votar', accion: 'votar' });
+    if (g.fase === 'decision' && g.lider_id === yo.id) items.push({ ic: '⚖️', tx: 'Hubo empate: tú decides quién sale', btn: 'Decidir', accion: 'casa' });
+  }
+  for (const p of est.por_confirmar || []) items.push({ ic: '🕵️', tx: `${porId(p.de)?.nombre || 'Alguien'} dice que cumplió su misión contigo`, sub: 'Dile si es cierto', btn: 'Responder', accion: 'confirmar' });
+  const mias = est.misiones || [];
+  if (mias.length) {
+    const faltan = mias.filter(m => !m.cumplida && !m.pedida).length;
+    items.push(faltan ? { ic: '🕵️', tx: `Te ${faltan === 1 ? 'falta 1 misión secreta' : `faltan ${faltan} misiones secretas`}`, sub: '$300 cada una y cuentan para ser líder', btn: 'Ver', accion: 'misiones' }
+      : { ic: '✅', tx: mias.every(m => m.cumplida) ? 'Cumpliste todas tus misiones' : 'Tus misiones esperan confirmación', ok: true });
+  }
+  const sinVotar = (est.encuestas || []).filter(e => e.abierta && e.mi_voto == null);
+  if (sinVotar.length) items.push({ ic: '📊', tx: sinVotar.length === 1 ? 'Hay una encuesta abierta' : `Hay ${sinVotar.length} encuestas abiertas`, sub: 'Vota y apuesta por el resultado', btn: 'Ver', accion: 'billetes' });
+  const apuestas = apuestasAbiertas(g).filter(t => !(est.mis_apuestas || []).some(a => a.tipo === t && a.ref === g.semana));
+  if (apuestas.length) items.push({ ic: '💰', tx: apuestas.includes('lider') ? '¿Quién será el líder? Apuesta' : '¿Quién sale esta semana? Apuesta', sub: 'Pozo compartido entre los que atinan', btn: 'Apostar', accion: 'billetes' });
+  return items;
+}
+function pintarHoy() {
+  const g = est.juego;
+  const items = pendientesHoy(), faltan = items.filter(i => !i.ok);
+  let h = `<div class="hoy"><h2>${g.fin ? '¡Se acabó el juego!' : '¿Qué me toca hoy?'}</h2>${calendarioSemana(g)}`;
+  h += items.map((it, i) => `<div class="pend ${it.ok ? 'ok' : ''}"><span class="ic">${it.ic}</span><div class="tx">${esc(it.tx)}${it.sub ? `<small>${esc(it.sub)}</small>` : ''}</div>
+    ${it.btn ? `<button class="btn chico" data-hoy="${i}">${esc(it.btn)}</button>` : ''}</div>`).join('');
+  if (!faltan.length) {
+    const prox = g.semana > 0 && !g.fin ? proximoEvento(g) : null;
+    h += `<p class="hoy-libre">${g.semana === 0 ? '🎉 Ya estás dentro. La casa abre pronto: mientras, viste a tu monito en la tienda y juega Monster Crazy.'
+      : g.fin ? 'Gracias por jugar Alfa Brother.' : `😎 Todo listo por hoy.${prox ? ` ${esc(prox.txt)}: ${esc(diaCorto(prox.t))}.` : ''} Mientras, juega Monster Crazy o viste a tu monito.`}</p>`;
+  }
+  $('#c-hoy').innerHTML = h + '</div>';
+  $$('#c-hoy [data-hoy]').forEach(b => b.onclick = () => {
+    const a = items[+b.dataset.hoy].accion;
+    if (a === 'prueba') abrirPrueba();
+    else if (a === 'votar') irAlConfesionario();
+    else if (a === 'confirmar') revisarPorConfirmar(true);
+    else if (a === 'misiones') { misionVisible = true; pintarEconomia(); irTab('misiones'); }
+    else if (a === 'casa') $('#c-accion').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    else irTab(a);
+  });
+  // globitos en las pestañas
+  const badge = (tab, n) => { const el = $(`#tabbar [data-tab="${tab}"] .badge`); el.textContent = n; el.classList.toggle('hidden', !n); };
+  badge('casa', tabActual === 'casa' ? '' : items.filter(i => !i.ok && ['prueba', 'votar', 'casa'].includes(i.accion)).length || '');
+  badge('misiones', (est.por_confirmar || []).length || '');
+  badge('billetes', items.filter(i => !i.ok && i.accion === 'billetes').length || '');
+  badge('jugar', store.get('ab_vio_jugar') ? '' : 'NUEVO');
+}
+let tabActual = 'casa';
+function irTab(t, sonido = true) {
+  tabActual = t;
+  for (const x of ['casa', 'jugar', 'billetes', 'misiones']) $('#tab-' + x).classList.toggle('hidden', x !== t);
+  $$('#tabbar button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  if (t === 'jugar') store.set('ab_vio_jugar', '1');
+  window.scrollTo({ top: 0 });
+  if (sonido) SFX.tocar('clic');
+  if (est) pintarHoy();
+}
+$$('#tabbar button').forEach(b => b.onclick = () => irTab(b.dataset.tab));
+
+/* ---------- Monster Crazy (edición Alfa Brother, en monster.html) ---------- */
+function tarjetaMonster() {
+  const mio = (est.practicas || []).find(p => p.id === est.yo.id && p.juego === 'monster');
+  const caras = [...est.jugadores].sort(() => Math.random() - 0.5).slice(0, 6);
+  return `<div class="monster-card"><div class="ed">EDICIÓN ALFA BROTHER</div><h3>MONSTER CRAZY</h3>
+    <div class="monster-caras">${caras.map(j => avatar(j, 38)).join('')}</div>
+    <p>Las caras de tus compañeros salen sobre el monstruo: deslízales el dedo antes de que se acabe el tiempo. No se acaba nunca, ¿hasta qué oleada llegas?</p>
+    <p style="font-size:.85rem;color:#FFD54A">Tu récord: <b>${(mio?.mejor || 0).toLocaleString('es-MX')}</b> · La primera partida del día paga $100 y romper el récord de la casa, $200.</p>
+    <button class="btn" data-monster>🎮 Jugar</button></div>`;
+}
+const MONSTER = (() => {
+  let abierto = false;
+  const caja = () => $('#m-monster');
+  function abrir() {
+    if (abierto) return;
+    abierto = true;
+    caja().innerHTML = `<iframe src="monster.html?v=1" title="Monster Crazy" allow="fullscreen; autoplay"></iframe>`;
+    caja().classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    SFX.pausaParaGala(true);
+  }
+  function cerrar() {
+    if (!abierto) return;
+    abierto = false;
+    caja().classList.add('hidden');
+    caja().innerHTML = '';
+    document.body.style.overflow = '';
+    SFX.pausaParaGala(false);
+    refrescar();
+  }
+  const enviar = m => caja().querySelector('iframe')?.contentWindow?.postMessage(m, location.origin);
+  window.addEventListener('message', async ev => {
+    if (!abierto || ev.origin !== location.origin) return;
+    const d = ev.data || {};
+    if (d.type === 'monsterListo') {
+      const caras = est.jugadores.map(j => ({ nombre: j.nombre, color: colorDe(j.nombre), foto: fotos[j.id] || null }));
+      const mio = (est.practicas || []).find(p => p.id === est.yo.id && p.juego === 'monster');
+      enviar({ type: 'monsterCaras', caras, record: mio?.mejor || 0 });
+    } else if (d.type === 'monsterGameOver') {
+      try {
+        const r = await rpc('guardar_practica', { p_token: token, p_juego: 'monster', p_puntaje: Math.round(d.puntuacion || 0) });
+        enviar({ type: 'monsterResult', ok: true, record: r.mejor, esRecord: r.record, premio: r.premio,
+          aviso: r.premio ? '' : 'Ya cobraste la partida de hoy. ¡Mañana hay más billetes!',
+          top: (r.top || []).map(x => ({ nombre: x.nombre, puntos: x.mejor, yo: x.id === est.yo.id })) });
+      } catch (e) { enviar({ type: 'monsterResult', ok: false }); }
+    } else if (d.type === 'monsterExit') cerrar();
+  });
+  return { abrir, cerrar };
+})();
 
 /* ---------- apuestas ---------- */
 const AP_TXT = {
@@ -3089,10 +3285,10 @@ function tarjetaRecords() {
       || '<div class="r"><span class="ayuda">Nadie todavía</span></div>'}
       <div class="r" style="margin-top:4px;color:#C9C3EE"><span>Tu mejor</span><span>${mio?.mejor ?? 0}</span></div></div>`;
   };
-  return `<div class="juego-card"><h3>🏆 Récords de la casa <small>Prácticas</small></h3>
-    <div class="record-cols">${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}</div>
+  return `<div class="juego-card"><h3>🏆 Récords de la casa <small>Juegos y prácticas</small></h3>
+    <div class="record-cols">${col('monster', 'Monster Crazy')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}</div>
     <div class="fila-btn"><button class="btn chico" data-practicar="memoria">Practicar memoria</button><button class="btn chico" data-practicar="adeudo">Practicar adeudo</button></div>
-    <p class="ayuda" style="margin-top:6px">La primera práctica de cada día paga $100 y romper un récord de la casa, $200.</p></div>`;
+    <p class="ayuda" style="margin-top:6px">Practica las pruebas del líder. La primera partida de cada juego al día paga $100 y romper un récord de la casa, $200.</p></div>`;
 }
 
 /* ---------- mis billetes ---------- */
@@ -3172,7 +3368,6 @@ function pintarTienda() {
 }
 $('#c-billetes').onclick = abrirBilletes;
 $('#c-tienda').onclick = abrirTienda;
-$('#c-mision-chip').onclick = () => { misionVisible = true; pintarEconomia(); $('#tarjeta-mision')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
 
 /* =====================================================================
    CHAT DE LA CASA (solo habitantes)
@@ -3468,7 +3663,7 @@ function mostrarBienvenida() {
 $('#bv-ok').onclick = () => {
   $('#m-bienvenida').classList.add('hidden');
   SFX.tocar('dindon');
-  if (!store.get('ab_tuto')) abrirTutorial();
+  if (!store.get('ab_tuto2')) abrirTutorial();
   else refrescar();          // por si hay una gala esperando
 };
 

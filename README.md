@@ -89,7 +89,9 @@ Todos (habitantes, eliminados y público) empiezan con **$2,000 Billetes Alfa** 
 - **Apuestas:** mientras está la prueba se apuesta quién será el líder; hasta que cierra la votación, quién sale. Lo apostado se junta en un pozo y se reparte entre los que atinaron según cuánto puso cada uno. Si nadie atina, se devuelve todo. En la gran final no hay apuestas de líder ni de eliminado. El líder siempre se decide solo entre quienes siguen en la casa.
 - **Encuesta del día:** la producción la programa; todos votan en secreto y pueden apostar qué opción gana.
 - **Misiones secretas:** para todos los habitantes, sigan en la casa o estén eliminados (el público no participa). Al empezar cada semana cada habitante recibe 5 misiones, cada una sobre otro habitante distinto (por ejemplo, *Haz que Karla diga "pagaré"*). Todos ven en la casa cuántas lleva cada quien. Cuando la cumples, tocas **✅ ¡Ya la cumplí!** y a esa persona le llega un aviso (o le sale en pantalla si tiene el juego abierto): **Sí, es cierto** (tú ganas $300 y ella $50) o **Eso es falso** (se cancela y la misión sigue pendiente). Solo el objetivo puede confirmarla.
-- **Récords de la casa:** los mejores puntajes de las prácticas de memoria y adeudo.
+- **Récords de la casa:** los mejores puntajes de Monster Crazy y de las prácticas de memoria y adeudo.
+- **Monster Crazy (pestaña 🎮 Jugar):** copia adaptada del Monster Crazy del repo `juego-codigos-multijugador` (`monster.html`), solo con el enemigo clásico y con las caras de los compañeros como puntos débiles. Oleadas infinitas; la primera partida del día paga $100 y romper el récord de la casa, $200.
+- **Pestañas:** 🏠 Casa (arriba, «¿Qué me toca hoy?» con el calendario de la semana y lo pendiente de cada quien), 🎮 Jugar, 💵 Billetes (saldo, apuestas y encuestas) y 🕵️ Misiones.
 - **Chat de la casa:** botón flotante 💬 abajo a la derecha, solo para habitantes (en la casa y eliminados; el público no lo ve). Escribe **@** para etiquetar a alguien: le llega un aviso. Desde **Extras** puedes leer y borrar mensajes.
 - **Tienda del monito:** sombreros, lentes, color del cuerpo (hasta arcoíris), algo en la mano, mascotas que caminan contigo y efectos que flotan alrededor. Precios de $400 a $8,000. Se ve en la casa, en los minijuegos y en la votación.
 
@@ -152,6 +154,7 @@ Versión 12: los avisos de la producción se guardan en el botón 🔔 de la cas
 Versión 13: chat de la casa para los habitantes, con menciones.
 Versión 14: las misiones ya no usan código QR: tocas «¡Ya la cumplí!» y la otra persona confirma o dice que es falso.
 Versión 15: las misiones de la semana pasada cuentan la mitad para elegir al líder.
+Versión 16: Monster Crazy (récords y premio diario) y la casa en pestañas con «¿Qué me toca hoy?».
 
 ---
 

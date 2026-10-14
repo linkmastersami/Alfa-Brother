@@ -246,6 +246,10 @@ create table if not exists public.practicas (
   primary key (jugador_id, juego)
 );
 
+-- v16: Monster Crazy también guarda récord (y paga como las prácticas)
+alter table public.practicas drop constraint if exists practicas_juego_check;
+alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster'));
+
 -- Tienda para personalizar el monito
 create table if not exists public.tienda (
   id     text primary key,
@@ -1702,8 +1706,8 @@ declare
   v_record boolean := false;
 begin
   yo := public._yo(p_token);
-  if p_juego not in ('memoria', 'adeudo') then raise exception 'JUEGO_INVALIDO'; end if;
-  v := least(greatest(coalesce(p_puntaje, 0), 0), case p_juego when 'memoria' then 1000 else 20000 end);
+  if p_juego not in ('memoria', 'adeudo', 'monster') then raise exception 'JUEGO_INVALIDO'; end if;
+  v := least(greatest(coalesce(p_puntaje, 0), 0), case p_juego when 'memoria' then 1000 when 'monster' then 5000000 else 20000 end);
   select coalesce(max(mejor), 0) into v_rec from public.practicas where juego = p_juego;
   insert into public.practicas (jugador_id, juego) values (yo.id, p_juego) on conflict do nothing;
   select * into p from public.practicas where jugador_id = yo.id and juego = p_juego for update;
@@ -1721,7 +1725,10 @@ begin
          ultimo_record = case when v_record then public._hoy() else ultimo_record end
    where jugador_id = yo.id and juego = p_juego;
   return jsonb_build_object('mejor', greatest(p.mejor, v), 'record', v_record, 'premio', v_premio,
-    'premio_dia', case when p.ultimo_premio is distinct from public._hoy() then 100 else 0 end);
+    'premio_dia', case when p.ultimo_premio is distinct from public._hoy() then 100 else 0 end,
+    'top', (select coalesce(jsonb_agg(jsonb_build_object('id', t.jugador_id, 'nombre', j.nombre, 'mejor', t.mejor) order by t.mejor desc), '[]'::jsonb)
+              from (select * from public.practicas where juego = p_juego and mejor > 0 order by mejor desc limit 5) t
+              join public.jugadores j on j.id = t.jugador_id));
 end $$;
 
 -- ---------------------------------------------------------------------
