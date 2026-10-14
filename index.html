@@ -406,10 +406,9 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .ap-op.sel{border-color:var(--tinta);background:#fff}
 .chips-monto{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .chips-monto button{appearance:none;border:2px solid var(--texto);background:#fff;border-radius:999px;padding:5px 11px;font-weight:700;cursor:pointer}
-.qr-caja{display:grid;place-items:center;background:#fff;border-radius:12px;padding:12px;margin:12px auto 6px;width:max-content;max-width:100%}
-.qr-caja svg,.qr-caja img{width:220px;height:220px;display:block}
-.codigo-grande{font-family:"Special Elite",monospace;font-size:2rem;letter-spacing:.25em;text-align:center;margin:6px 0}
-.esc-video{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;background:#000;display:block;margin-top:10px}
+.mis-espera{display:block;margin-top:6px;color:#FFD54A!important;font-weight:700}
+.mis-botones{display:grid;gap:8px;margin-top:14px}
+.btn.falso{background:#FF4D5E;color:#fff}
 .mov{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px dashed #D9D2B8;font-size:.9rem}
 .mov b{white-space:nowrap}
 .mov b.mas{color:var(--ok)}
@@ -1014,8 +1013,8 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 <div id="m-billetes" class="modal hidden"><div class="formato amarillo" id="bi-caja"></div></div>
 <div id="m-apuesta" class="modal hidden"><div class="formato amarillo" id="ap-caja"></div></div>
 <div id="m-tienda" class="modal hidden"><div class="formato" id="ti-caja"></div></div>
-<div id="m-qr" class="modal hidden"><div class="formato" id="qr-caja-modal"></div></div>
-<div id="m-escaner" class="modal hidden"><div class="formato" id="esc-caja"></div></div>
+<div id="m-mis-pedir" class="modal hidden"><div class="formato" id="mp-caja"></div></div>
+<div id="m-mis-conf" class="modal hidden"><div class="formato amarillo" id="mc-caja"></div></div>
 
 <!-- ============================ ELEGIR HABITANTE -->
 <div id="m-elegir" class="modal hidden">
@@ -1111,6 +1110,9 @@ const ERRORES = {
   NO_ERES_OBJETIVO: 'Esa misión no era sobre ti. Solo la persona de la misión puede confirmarla.',
   MISION_YA_CUMPLIDA: 'Esa misión ya estaba cumplida.',
   MISION_VENCIDA: 'Esa misión era de una semana pasada.',
+  MISION_NO_EXISTE: 'Esa misión ya no existe (quizá se repartieron otras).',
+  MISION_YA_PEDIDA: 'Ya le avisaste: falta que confirme.',
+  MISION_SIN_PEDIR: 'Esa persona ya no está esperando tu respuesta.',
   YA_LO_TIENES: 'Ya lo tienes.',
   JUEGO_INVALIDO: 'Juego no válido.',
   SUSCRIPCION_INVALIDA: 'Este navegador no dio una suscripción válida para avisos.',
@@ -1606,7 +1608,7 @@ function cerrarSesion() {
   if (token) { const t = token; AVISOS.olvidar(t).finally(() => rpc('salir', { p_token: t }).catch(() => { })); }
   SALA.desconectar();
   token = null; est = null; predSel = null; store.del('ab_token');
-  saldoVisto = null; pagosVistos = null; misionCumplidaVista = null; misionVisible = false; anuncioAvisado = null;
+  saldoVisto = null; pagosVistos = null; misionCumplidaVista = null; pedidasVistas = null; misionVisible = false; anuncioAvisado = null;
   CHAT.reiniciar(); CHAT.cerrar(); $('#chat-btn').classList.add('hidden');
   mostrarInicio();
 }
@@ -2165,8 +2167,7 @@ document.addEventListener('click', e => {
   toqueFondo = null;
   if (m.id === 'm-bienvenida') return $('#bv-ok').click();      // cerrar la bienvenida = OK
   if (m.id === 'm-ojo') return $('#ojo-cerrar').click();
-  if (m.id === 'm-escaner') return cerrarEscaner();
-  if (m.id === 'm-qr') return cerrarQR();
+  if (m.id === 'm-mis-conf') return;                             // hay que contestar: es cierto o es falso
   if (m.id === 'm-tuto') { store.set('ab_tuto', '1'); }          // ya lo vio
   m.classList.add('hidden');
 });
@@ -2609,6 +2610,7 @@ const SALA = (() => {
     else if (m.tipo === 'emo') { burbuja(m.id, m.e); saludar(m.id); }
     else if (m.tipo === 'ppt') jugarPPT(m.a, m.b, m.ja, m.jb);
     else if (m.tipo === 'chat') CHAT.cargar();
+    else if (m.tipo === 'mision' && m.a === miId) refrescar();   // alguien me pide confirmar (o ya contestaron la mía)
     else if (m.tipo === 'reto') {
       const B = actores.get(m.b), A = actores.get(m.a);
       if (B?.enSala) congelar(B, m.x, m.y, Date.now() + Math.min(m.dur || 0, 15000), A ? A.x < m.x : undefined);
@@ -2655,7 +2657,8 @@ const SALA = (() => {
     pintarVivo();
   }
   const avisarChat = () => mandar({ tipo: 'chat' });
-  return { sincronizar, conectar, desconectar, miEmoji, enviarEmoji, retar, puedeRetar, soyActor, avisarChat, irAPuerta, irATele, enVivo: () => vivo, despertar };
+  const avisarMision = a => mandar({ tipo: 'mision', a });
+  return { sincronizar, conectar, desconectar, miEmoji, enviarEmoji, retar, puedeRetar, soyActor, avisarChat, avisarMision, irAPuerta, irATele, enVivo: () => vivo, despertar };
 })();
 
 /* =====================================================================
@@ -2724,7 +2727,7 @@ function gradaFiesta(n = 6) {
 /* =====================================================================
    BILLETES ALFA: saldo, apuestas, encuesta, misión, récords y tienda
    ===================================================================== */
-let saldoVisto = null, misionVisible = false, pagosVistos = null, misionCumplidaVista = null;
+let saldoVisto = null, misionVisible = false, pagosVistos = null, misionCumplidaVista = null, pedidasVistas = null;
 const fmt$ = n => '$' + Number(n || 0).toLocaleString('es-MX');
 
 function flotar(el, texto, menos = false) {
@@ -2751,12 +2754,22 @@ function revisarEconomia() {
   const mias = est.misiones || [], hechas = mias.filter(x => x.cumplida).length;
   const clave = est.juego.semana + ':' + hechas;
   if (misionCumplidaVista && hechas && misionCumplidaVista.split(':')[0] === String(est.juego.semana) && misionCumplidaVista !== clave) {
-    const enQR = mias.find(x => x.n === qrMision);
-    if (enQR?.cumplida) cerrarQR(true);
+    $('#m-mis-pedir').classList.add('hidden');
     SFX.tocar('fanfarria'); lluviaBilletes(24);
     toast(`🕵️ ¡Misión cumplida! Ganaste $300 (${hechas} de ${mias.length})`, 4000);
   }
   misionCumplidaVista = clave;
+  // la otra persona dijo que era falso: la misión vuelve a quedar pendiente
+  const pedidasAhora = new Set(mias.filter(x => x.pedida).map(x => x.n));
+  if (pedidasVistas) for (const n of pedidasVistas) {
+    const m = mias.find(x => x.n === n);
+    if (m && !m.pedida && !m.cumplida) {
+      $('#m-mis-pedir').classList.add('hidden');
+      SFX.tocar('buzzer'); toast(`❌ ${porId(m.objetivo_id)?.nombre || 'La otra persona'} dijo que tu misión es falsa. Sigue pendiente.`, 5000);
+    }
+  }
+  pedidasVistas = pedidasAhora;
+  revisarPorConfirmar();
   // apuestas que ya se pagaron
   const pagadas = (est.mis_apuestas || []).filter(a => a.pago !== null);
   const vistos = pagosVistos || new Set(JSON.parse(store.get('ab_pagos_' + est.yo.id) || '[]'));
@@ -2828,8 +2841,8 @@ function pintarEconomia() {
   });
   $('#c-juegos [data-revelar]')?.addEventListener('click', () => { misionVisible = true; SFX.tocar('swish'); pintarEconomia(); });
   $('#c-juegos [data-ocultar]')?.addEventListener('click', () => { misionVisible = false; pintarEconomia(); });
-  $$('#c-juegos [data-cumpli]').forEach(b => b.onclick = () => abrirQR(+b.dataset.cumpli));
-  $('#c-juegos [data-escanear]')?.addEventListener('click', abrirEscaner);
+  $$('#c-juegos [data-cumpli]').forEach(b => b.onclick = () => pedirMision(+b.dataset.cumpli));
+  $('#c-juegos [data-por-confirmar]')?.addEventListener('click', () => revisarPorConfirmar(true));
   $$('#c-juegos [data-practicar]').forEach(b => b.onclick = () => abrirPractica(b.dataset.practicar));
 }
 
@@ -2961,13 +2974,15 @@ function tarjetaMision(g) {
       h += mias.map(m => { const obj = porId(m.objetivo_id);
         return `<div class="mis-item ${m.cumplida ? 'hecha' : ''}"><span class="num">${m.cumplida ? '✅' : m.n}</span>
           <div class="mis-cuerpo"><div class="mision-txt">${esc(m.texto)}</div>
-          ${m.cumplida ? '<small>Cumplida · +$300</small>' : `<button class="btn chico" data-cumpli="${m.n}">¡Ya la cumplí! · código para ${esc(obj?.nombre || '?')}</button>`}</div></div>`; }).join('');
-      h += `<p class="ayuda" style="margin-top:8px">Cuando cumplas una, enséñale su código a esa persona para que lo escanee desde su juego. Ganas $300 por cada una y ella $50.</p>
+          ${m.cumplida ? '<small>Cumplida · +$300</small>'
+            : m.pedida ? `<small class="mis-espera">⏳ Esperando que ${esc(obj?.nombre || '?')} confirme…</small>`
+            : `<button class="btn chico" data-cumpli="${m.n}">✅ ¡Ya la cumplí con ${esc(obj?.nombre || '?')}!</button>`}</div></div>`; }).join('');
+      h += `<p class="ayuda" style="margin-top:8px">Cuando cumplas una, toca <b>¡Ya la cumplí!</b> y a esa persona le llega un aviso para confirmarlo. Si dice que es cierto, ganas $300 y esa persona $50.</p>
         <div class="fila-btn"><button class="btn sec chico" data-ocultar>Ocultar mis misiones</button></div>`;
     }
   }
-  if (deLaCasa) h += `<div class="fila-btn" style="margin-top:10px"><button class="btn sec chico" data-escanear>📷 Escanear código de misión</button></div>
-    <p class="ayuda">¿Alguien cumplió una misión contigo? Escanea su código para confirmarlo y ganas $50.</p>`;
+  const porConf = est.por_confirmar || [];
+  if (deLaCasa && porConf.length) h += `<div class="fila-btn" style="margin-top:10px"><button class="btn chico" data-por-confirmar>🕵️ ${porConf.length === 1 ? `${esc(porId(porConf[0].de)?.nombre || 'Alguien')} dice que cumplió una misión contigo` : `${porConf.length} misiones esperan tu respuesta`}</button></div>`;
   // tablero: todos ven cuántas lleva cada habitante
   if (prog.length) {
     h += `<div class="mis-tablero"><b>Cómo van en la casa</b>${prog.map(x => { const j = porId(x.id);
@@ -2977,116 +2992,82 @@ function tarjetaMision(g) {
   }
   return h + '</div>';
 }
-const LIB_QR = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';
-const LIB_JSQR = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
-const cargadas = {};
-function cargarScript(url) {
-  return cargadas[url] ||= new Promise((res, rej) => {
-    const s = document.createElement('script'); s.src = url; s.onload = res; s.onerror = () => { delete cargadas[url]; rej(new Error('Sin conexión')); };
-    document.head.appendChild(s);
-  });
-}
-let qrPoll = null, qrMision = null;
-async function abrirQR(n) {
+// Quien cumplió la misión le avisa a la otra persona
+function pedirMision(n) {
   const m = (est.misiones || []).find(x => x.n === n); if (!m) return;
-  qrMision = n;
-  const obj = porId(m.objetivo_id);
-  $('#qr-caja-modal').innerHTML = `<div class="folio"><span>Misión secreta</span><span>Semana ${est.juego.semana}</span></div>
-    <h2>¡Enséñale esto a ${esc(obj?.nombre || 'tu objetivo')}!</h2>
-    <p style="margin:4px 0 0">Que abra su juego, toque <b>📷 Escanear código de misión</b> y apunte a tu pantalla.</p>
-    <div class="qr-caja" id="qr-img"><p class="ayuda">Generando código…</p></div>
-    <div class="codigo-grande">${esc(m.codigo)}</div>
-    <p class="ayuda" style="text-align:center">Si no puede escanear, que escriba este código.</p>
-    <button class="btn sec" id="qr-cerrar" style="margin-top:12px">Cerrar</button>`;
-  $('#qr-cerrar').onclick = () => cerrarQR();
-  $('#m-qr').classList.remove('hidden');
-  try {
-    await cargarScript(LIB_QR);
-    const qr = qrcode(0, 'M'); qr.addData(LINK_JUEGO + '?mision=' + m.codigo); qr.make();
-    $('#qr-img').innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true });
-  } catch { $('#qr-img').innerHTML = '<p class="ayuda">No se pudo dibujar el QR. Usa el código de abajo.</p>'; }
-  clearInterval(qrPoll);
-  qrPoll = setInterval(() => { if ($('#m-qr').classList.contains('hidden')) return clearInterval(qrPoll); refrescar(); }, 3500);
+  const obj = porId(m.objetivo_id) || { id: '', nombre: '?' };
+  $('#mp-caja').innerHTML = `<div class="folio"><span>Misión secreta</span><span>Semana ${est.juego.semana}</span></div>
+    <div style="display:flex;justify-content:center;margin-top:6px">${monito(obj, { tam: 64, cara: '🤔' })}</div>
+    <h2 style="text-align:center">¿Ya la cumpliste con ${esc(obj.nombre)}?</h2>
+    <div class="mision-txt">${esc(m.texto)}</div>
+    <p style="margin:10px 0 0">A ${esc(obj.nombre)} le va a llegar un aviso para que diga si es cierto. Si confirma, ganas <b>$300</b> y ${esc(obj.nombre)} <b>$50</b>.</p>
+    <div class="error hidden" id="mp-error"></div>
+    <div class="mis-botones"><button class="btn" id="mp-si">✅ Sí, avisarle</button><button class="link" id="mp-no" style="justify-self:center">Todavía no</button></div>`;
+  $('#mp-no').onclick = () => $('#m-mis-pedir').classList.add('hidden');
+  $('#mp-si').onclick = async () => {
+    $('#mp-si').disabled = true;
+    try {
+      await rpc('reclamar_mision', { p_token: token, p_n: n });
+      SALA.avisarMision(m.objetivo_id);
+      SFX.tocar('swish');
+      $('#mp-caja').innerHTML = `<div style="text-align:center;padding:6px 0">
+        <div style="display:flex;justify-content:center">${monito(obj, { tam: 64, cara: '📨' })}</div>
+        <h2>¡Listo!</h2><p>Ya le avisamos a <b>${esc(obj.nombre)}</b>. En cuanto diga que es cierto, te llegan tus $300.</p>
+        <button class="btn" id="mp-ok" style="margin-top:12px">Va</button></div>`;
+      $('#mp-ok').onclick = () => $('#m-mis-pedir').classList.add('hidden');
+      refrescar();
+    } catch (e) { $('#mp-si').disabled = false; mostrarError($('#mp-error'), e); }
+  };
+  $('#m-mis-pedir').classList.remove('hidden');
 }
-function cerrarQR(cumplida = false) {
-  clearInterval(qrPoll);
-  if ($('#m-qr').classList.contains('hidden')) return;
-  if (cumplida) {
-    $('#qr-caja-modal').innerHTML = `<div style="text-align:center;padding:10px 0"><div style="font-size:3rem">🕵️✅</div><h2>¡Misión cumplida!</h2><p>Ganaste <b>$300</b>.</p>
-      <button class="btn" id="qr-ok" style="margin-top:12px">¡Bien!</button></div>`;
-    $('#qr-ok').onclick = () => $('#m-qr').classList.add('hidden');
-  } else $('#m-qr').classList.add('hidden');
-}
-let camara = null, escaneoRaf = null;
-async function abrirEscaner(codigoInicial = '') {
-  $('#esc-caja').innerHTML = `<div class="folio"><span>Misión secreta</span><span>Confirmar</span></div>
-    <h2>Escanea su código</h2>
-    <p style="margin:4px 0 0">Si alguien te dice que cumplió su misión contigo, apunta la cámara al código de su celular.</p>
-    <video class="esc-video" id="esc-video" playsinline muted></video>
-    <p class="ayuda" id="esc-estado" style="text-align:center">Abriendo la cámara…</p>
-    <label class="campo" for="esc-codigo" style="display:block;margin-top:8px;font-weight:600">O escribe el código</label>
-    <input class="in" id="esc-codigo" maxlength="6" autocomplete="off" autocapitalize="characters" style="text-transform:uppercase;letter-spacing:.2em;font-family:'Special Elite',monospace" value="${esc(codigoInicial)}">
-    <div class="error hidden" id="esc-error"></div>
-    <div style="display:grid;gap:8px;margin-top:12px"><button class="btn" id="esc-ok">Confirmar</button><button class="link" id="esc-cerrar" style="justify-self:center">Cerrar</button></div>`;
-  $('#esc-cerrar').onclick = cerrarEscaner;
-  $('#esc-ok').onclick = () => confirmarCodigo($('#esc-codigo').value);
-  $('#m-escaner').classList.remove('hidden');
-  if (codigoInicial) { $('#esc-video').classList.add('hidden'); $('#esc-estado').textContent = ''; return; }
-  try {
-    camara = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
-    const v = $('#esc-video'); v.srcObject = camara; await v.play();
-    $('#esc-estado').textContent = 'Apunta al código QR';
-    let detector = null;
-    if ('BarcodeDetector' in window) { try { detector = new BarcodeDetector({ formats: ['qr_code'] }); } catch { } }
-    if (!detector) await cargarScript(LIB_JSQR);
-    const cv = document.createElement('canvas'), cx = cv.getContext('2d', { willReadFrequently: true });
-    let ocupado = false;
-    const paso = async () => {
-      if (!camara) return;
-      if (!ocupado && v.readyState >= 2) {
-        ocupado = true;
-        let texto = null;
-        try {
-          if (detector) { const r = await detector.detect(v); texto = r[0]?.rawValue || null; }
-          else {
-            cv.width = v.videoWidth; cv.height = v.videoHeight; cx.drawImage(v, 0, 0);
-            texto = jsQR(cx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height)?.data || null;
-          }
-        } catch { }
-        ocupado = false;
-        if (texto) { const c = (texto.match(/mision=([A-Za-z0-9]{6})/) || [null, texto])[1]; if (/^[A-Za-z0-9]{6}$/.test(c)) { SFX.tocar('clic'); return confirmarCodigo(c); } }
+
+// A la persona de la misión le sale en pantalla: ¿es cierto?
+let misionPreguntada = null;
+const hayModalAbierto = () => [...document.querySelectorAll('.modal')].some(m => !m.classList.contains('hidden'));
+function revisarPorConfirmar(forzar = false) {
+  const lista = est?.por_confirmar || [];
+  const caja = $('#m-mis-conf');
+  if (!caja.classList.contains('hidden')) {
+    // ya se está mostrando: si esa ya no está pendiente (la contestó en otro lado), se cierra
+    if (!lista.some(x => x.id === misionPreguntada)) caja.classList.add('hidden'); else return;
+  }
+  if (!lista.length || pantalla !== 's-casa' || (!forzar && hayModalAbierto())) return;
+  const p = lista[0], de = porId(p.de) || { id: '', nombre: 'Alguien' };
+  misionPreguntada = p.id;
+  $('#mc-caja').innerHTML = `<div class="folio"><span>Misión secreta</span><span>¿Es cierto?</span></div>
+    <div style="display:flex;justify-content:center;margin-top:6px" id="mc-mono">${monito(de, { tam: 70, cara: '🕵️' })}</div>
+    <h2 style="text-align:center">¿Es cierto que ${esc(de.nombre)} cumplió su misión contigo?</h2>
+    <p style="margin:4px 0 0">Su misión era:</p>
+    <div class="mision-txt">${esc(p.texto)}</div>
+    <div class="error hidden" id="mc-error"></div>
+    <div class="mis-botones"><button class="btn" id="mc-si">✅ Sí, es cierto</button><button class="btn falso" id="mc-no">❌ Eso es falso</button></div>
+    <p class="ayuda" style="text-align:center">Si confirmas, ${esc(de.nombre)} gana $300 y tú $50. Si es falso, se cancela.</p>`;
+  const responder = async ok => {
+    $('#mc-si').disabled = $('#mc-no').disabled = true;
+    try {
+      await rpc('responder_mision', { p_token: token, p_id: p.id, p_ok: ok });
+      SALA.avisarMision(p.de);
+      if (ok) {
+        $('#mc-caja').innerHTML = `<div style="text-align:center"><div style="display:flex;justify-content:center;margin-top:6px">${monito(de, { tam: 70, cara: '🎉', clase: 'festeja' })}</div>
+          <h2>¡Confirmado!</h2><p>${esc(de.nombre)} ganó $300 y tú <b>$50</b> por confirmar 🕵️</p><button class="btn" id="mc-fin" style="margin-top:10px">¡Va!</button></div>`;
+        SFX.tocar('fanfarria'); lluviaBilletes(14);
+      } else {
+        $('#mc-caja').innerHTML = `<div style="text-align:center"><div style="display:flex;justify-content:center;margin-top:6px">${monito(de, { tam: 70, cara: '😳', clase: 'triste' })}</div>
+          <h2>Cancelada</h2><p>Le avisamos a ${esc(de.nombre)} que dijiste que es falso. Su misión sigue pendiente.</p><button class="btn" id="mc-fin" style="margin-top:10px">Ok</button></div>`;
+        SFX.tocar('buzzer');
       }
-      escaneoRaf = requestAnimationFrame(paso);
-    };
-    paso();
-  } catch {
-    $('#esc-video').classList.add('hidden');
-    $('#esc-estado').textContent = 'No se pudo abrir la cámara. Escribe el código.';
-  }
-}
-function apagarCamara() {
-  cancelAnimationFrame(escaneoRaf);
-  if (camara) { camara.getTracks().forEach(t => t.stop()); camara = null; }
-}
-function cerrarEscaner() { apagarCamara(); $('#m-escaner').classList.add('hidden'); }
-async function confirmarCodigo(c) {
-  c = String(c || '').trim().toUpperCase();
-  if (c.length !== 6) return mostrarError($('#esc-error'), new Error('El código tiene 6 letras y números'));
-  apagarCamara();
-  try {
-    const r = await rpc('confirmar_mision', { p_token: token, p_codigo: c });
-    const quien = est.jugadores.find(j => j.nombre === r.de) || { id: '', nombre: r.de };
-    $('#esc-caja').innerHTML = `<div style="text-align:center"><div class="folio"><span>Misión secreta</span><span>Confirmada</span></div>
-      <div style="display:flex;justify-content:center;margin-top:6px" id="esc-mono">${monito(quien, { tam: 70, cara: '🎉', clase: 'festeja' })}</div>
-      <h2>¡Confirmado!</h2><p>La misión de <b>${esc(r.de)}</b> era:</p><div class="mision-txt" style="text-align:left">${esc(r.texto)}</div>
-      <p>Ganaste <b>$50</b> por ayudar 🕵️</p><button class="btn" id="esc-fin" style="margin-top:10px">¡Va!</button></div>`;
-    $('#esc-fin').onclick = () => $('#m-escaner').classList.add('hidden');
-    SFX.tocar('fanfarria'); lluviaBilletes(14);
-    refrescar();
-  } catch (e) {
-    $('#m-escaner').classList.contains('hidden') || mostrarError($('#esc-error'), e);
-    $('#esc-video')?.classList.add('hidden');
-  }
+      misionPreguntada = null;
+      $('#mc-fin').onclick = () => { caja.classList.add('hidden'); refrescar(); };
+    } catch (e) {
+      $('#mc-si').disabled = $('#mc-no').disabled = false; mostrarError($('#mc-error'), e);
+      if (['MISION_SIN_PEDIR', 'MISION_YA_CUMPLIDA', 'MISION_VENCIDA', 'MISION_NO_EXISTE'].some(c => String(e?.message).includes(c))) setTimeout(() => { caja.classList.add('hidden'); refrescar(); }, 2200);
+    }
+  };
+  $('#mc-si').onclick = () => responder(true);
+  $('#mc-no').onclick = () => responder(false);
+  caja.classList.remove('hidden');
+  SFX.tocar('timbre');
+  if (navigator.vibrate) navigator.vibrate([60, 80, 60]);
 }
 
 /* ---------- récords de la casa ---------- */
@@ -4382,7 +4363,7 @@ async function adminExtras(C) {
           <button class="mini" data-enc-borrar="${e.id}">Borrar</button></div>`;
       }).join('') || '<p class="ayuda">Todavía no hay encuestas.</p>'}</div>
     <div class="adm-caja"><h3>Misiones de la semana ${c.semana}</h3>
-      <p class="ayuda">Todos los habitantes, en la casa o eliminados (el público no): 5 misiones cada quien, con objetivos distintos. Se cumplen cuando el objetivo escanea el código de quien la cumplió. Van ${mis.filter(m => m.cumplida).length} de ${mis.length}.</p>
+      <p class="ayuda">Todos los habitantes, en la casa o eliminados (el público no): 5 misiones cada quien, con objetivos distintos. Se cumplen cuando quien la hizo toca «Ya la cumplí» y el objetivo confirma que es cierto. Van ${mis.filter(m => m.cumplida).length} de ${mis.length}.</p>
       ${[...mis].sort((a, b) => nombreDe(a.jugador_id).localeCompare(nombreDe(b.jugador_id)) || a.n - b.n).map(m => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>${esc(nombreDe(m.jugador_id))} · ${m.n}</b>
         <small style="white-space:normal">${esc(m.texto)}</small></div><span>${m.cumplida ? '✅' : '⏳'}</span></div>`).join('') || '<p class="ayuda">Las misiones se reparten solas al empezar cada semana.</p>'}
       <div class="adm-acciones"><button class="btn sec chico" id="mis-repartir" ${c.semana ? '' : 'disabled'}>Repartir de nuevo (cambia las que no se han cumplido)</button></div></div>
@@ -4500,12 +4481,9 @@ async function adminHabitantes(C) {
 (async function iniciar() {
   if (!configurado) return mostrar('s-config');
   pintarFotoRegistro();
-  const codigoMision = new URLSearchParams(location.search).get('mision');
-  if (codigoMision) history.replaceState(null, '', location.pathname);
-  if (token) {
-    store.set('ab_conocido', '1'); await entrarCasa();
-    if (codigoMision) { $('#m-bienvenida').classList.add('hidden'); abrirEscaner(codigoMision.toUpperCase().slice(0, 6)); }
-  } else { mostrarInicio(); if (codigoMision) toast('Entra con tu nombre y PIN y vuelve a escanear el código', 5000); }
+  if (new URLSearchParams(location.search).has('mision')) history.replaceState(null, '', location.pathname);   // links viejos con QR
+  if (token) { store.set('ab_conocido', '1'); await entrarCasa(); }
+  else mostrarInicio();
   setInterval(() => { if (!document.hidden && token && ['s-casa'].includes(pantalla)) refrescar(); }, 7000);
   let ocultaDesde = 0;
   document.addEventListener('visibilitychange', async () => {

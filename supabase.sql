@@ -232,6 +232,8 @@ create table if not exists public.misiones (
 alter table public.misiones add column if not exists n int not null default 1;
 alter table public.misiones drop constraint if exists misiones_semana_jugador_id_key;
 create unique index if not exists misiones_semana_jugador_n on public.misiones (semana, jugador_id, n);
+-- v14: sin código QR. Quien la cumplió toca "Ya la cumplí" (pedida) y la otra persona confirma o dice que es falso
+alter table public.misiones add column if not exists pedida timestamptz;
 
 -- Récords de las prácticas
 create table if not exists public.practicas (
@@ -1566,26 +1568,54 @@ begin
   return v_hechas;
 end $$;
 
--- El objetivo escanea el código de quien cumplió la misión
-create or replace function public.confirmar_mision(p_token uuid, p_codigo text)
+-- v14: quien cumplió la misión toca "¡Ya la cumplí!" y a la otra persona le llega el aviso para confirmar
+drop function if exists public.confirmar_mision(uuid, text);
+create or replace function public.reclamar_mision(p_token uuid, p_n int)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare
   yo public.jugadores;
   m public.misiones;
 begin
   yo := public._yo(p_token);
-  select * into m from public.misiones where codigo = upper(btrim(coalesce(p_codigo, ''))) for update;
-  if not found then raise exception 'CODIGO_INVALIDO'; end if;
-  if m.jugador_id = yo.id then raise exception 'ES_TU_CODIGO'; end if;
+  select * into m from public.misiones
+   where semana = (select semana from public.config where id = 1) and jugador_id = yo.id and n = p_n for update;
+  if not found then raise exception 'MISION_NO_EXISTE'; end if;
+  if m.cumplida is not null then raise exception 'MISION_YA_CUMPLIDA'; end if;
+  if m.pedida is not null then raise exception 'MISION_YA_PEDIDA'; end if;
+  update public.misiones set pedida = now() where id = m.id;
+  perform public._avisar('🕵️ ¿Es cierto?', format('%s dice que cumplió una misión secreta contigo. Entra a confirmarlo.', yo.nombre), array[m.objetivo_id]);
+  return jsonb_build_object('objetivo_id', m.objetivo_id);
+end $$;
+
+-- La persona de la misión responde: es cierto (los dos ganan) o es falso (se cancela y la misión sigue pendiente)
+create or replace function public.responder_mision(p_token uuid, p_id bigint, p_ok boolean)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  yo public.jugadores;
+  m public.misiones;
+  v_de text;
+begin
+  yo := public._yo(p_token);
+  select * into m from public.misiones where id = p_id for update;
+  if not found then raise exception 'MISION_NO_EXISTE'; end if;
   if m.objetivo_id <> yo.id then raise exception 'NO_ERES_OBJETIVO'; end if;
   if m.cumplida is not null then raise exception 'MISION_YA_CUMPLIDA'; end if;
-  if m.semana <> (select semana from public.config where id = 1) then raise exception 'MISION_VENCIDA'; end if;
-  update public.misiones set cumplida = now() where id = m.id;
-  perform public._mover(m.jugador_id, 300, 'Misión secreta cumplida');
-  perform public._mover(yo.id, 50, 'Ayudaste a cumplir una misión secreta');
-  perform public._avisar('🕵️ ¡Misión cumplida!', format('%s confirmó tu misión. Ganaste $300 (%s de 5).', yo.nombre,
-    (select count(*) from public.misiones where semana = m.semana and jugador_id = m.jugador_id and cumplida is not null)), array[m.jugador_id]);
-  return jsonb_build_object('texto', m.texto, 'de', (select nombre from public.jugadores where id = m.jugador_id));
+  if m.pedida is null then raise exception 'MISION_SIN_PEDIR'; end if;
+  if m.semana <> (select semana from public.config where id = 1) then
+    raise exception 'MISION_VENCIDA';
+  end if;
+  v_de := (select nombre from public.jugadores where id = m.jugador_id);
+  if coalesce(p_ok, false) then
+    update public.misiones set cumplida = now(), pedida = null where id = m.id;
+    perform public._mover(m.jugador_id, 300, 'Misión secreta cumplida');
+    perform public._mover(yo.id, 50, 'Confirmaste una misión secreta');
+    perform public._avisar('🕵️ ¡Misión cumplida!', format('%s confirmó tu misión. Ganaste $300 (%s de 5).', yo.nombre,
+      (select count(*) from public.misiones where semana = m.semana and jugador_id = m.jugador_id and cumplida is not null)), array[m.jugador_id]);
+  else
+    update public.misiones set pedida = null where id = m.id;
+    perform public._avisar('🕵️ Misión rechazada', format('%s dijo que es falso. Tu misión sigue pendiente.', yo.nombre), array[m.jugador_id]);
+  end if;
+  return jsonb_build_object('ok', coalesce(p_ok, false), 'texto', m.texto, 'de', v_de);
 end $$;
 
 create or replace function public.admin_repartir_misiones()
@@ -1824,9 +1854,12 @@ begin
     'chat_ultimo', case when yo.rol = 'jugador' then (select max(id) from public.chat) end,
     'anuncios', (select coalesce(jsonb_agg(jsonb_build_object('id', a.id, 'titulo', a.titulo, 'cuerpo', a.cuerpo, 'creado', a.creado) order by a.id desc), '[]'::jsonb)
         from (select * from public.anuncios order by id desc limit 30) a),
-    'misiones', (select coalesce(jsonb_agg(jsonb_build_object('n', m.n, 'texto', m.texto, 'objetivo_id', m.objetivo_id, 'codigo', m.codigo,
-          'cumplida', m.cumplida is not null) order by m.n), '[]'::jsonb)
+    'misiones', (select coalesce(jsonb_agg(jsonb_build_object('n', m.n, 'texto', m.texto, 'objetivo_id', m.objetivo_id, 
+          'cumplida', m.cumplida is not null, 'pedida', m.pedida is not null) order by m.n), '[]'::jsonb)
         from public.misiones m where m.semana = c.semana and m.jugador_id = p_yo),
+    -- misiones que alguien dice que cumplió conmigo y esperan mi respuesta
+    'por_confirmar', (select coalesce(jsonb_agg(jsonb_build_object('id', m.id, 'de', m.jugador_id, 'texto', m.texto) order by m.pedida), '[]'::jsonb)
+        from public.misiones m where m.semana = c.semana and m.objetivo_id = p_yo and m.pedida is not null and m.cumplida is null),
     -- todos (también el público) ven cuántas lleva cada habitante
     'progreso_misiones', (select coalesce(jsonb_agg(jsonb_build_object('id', x.jugador_id, 'hechas', x.hechas, 'total', x.total)
           order by x.hechas desc, x.jugador_id), '[]'::jsonb)

@@ -88,7 +88,7 @@ Todos (habitantes, eliminados y público) empiezan con **$2,000 Billetes Alfa** 
 
 - **Apuestas:** mientras está la prueba se apuesta quién será el líder; hasta que cierra la votación, quién sale. Lo apostado se junta en un pozo y se reparte entre los que atinaron según cuánto puso cada uno. Si nadie atina, se devuelve todo. En la gran final no hay apuestas de líder ni de eliminado. El líder siempre se decide solo entre quienes siguen en la casa.
 - **Encuesta del día:** la producción la programa; todos votan en secreto y pueden apostar qué opción gana.
-- **Misiones secretas:** para todos los habitantes, sigan en la casa o estén eliminados (el público no participa). Al empezar cada semana cada habitante recibe 5 misiones, cada una sobre otro habitante distinto (por ejemplo, *Haz que Karla diga "pagaré"*). Todos ven en la casa cuántas lleva cada quien. Cuando la cumples, le enseñas tu código QR a esa persona y ella lo escanea desde su juego (**📷 Escanear código de misión**); solo el objetivo puede confirmarla.
+- **Misiones secretas:** para todos los habitantes, sigan en la casa o estén eliminados (el público no participa). Al empezar cada semana cada habitante recibe 5 misiones, cada una sobre otro habitante distinto (por ejemplo, *Haz que Karla diga "pagaré"*). Todos ven en la casa cuántas lleva cada quien. Cuando la cumples, tocas **✅ ¡Ya la cumplí!** y a esa persona le llega un aviso (o le sale en pantalla si tiene el juego abierto): **Sí, es cierto** (tú ganas $300 y ella $50) o **Eso es falso** (se cancela y la misión sigue pendiente). Solo el objetivo puede confirmarla.
 - **Récords de la casa:** los mejores puntajes de las prácticas de memoria y adeudo.
 - **Chat de la casa:** botón flotante 💬 abajo a la derecha, solo para habitantes (en la casa y eliminados; el público no lo ve). Escribe **@** para etiquetar a alguien: le llega un aviso. Desde **Extras** puedes leer y borrar mensajes.
 - **Tienda del monito:** sombreros, lentes, color del cuerpo (hasta arcoíris), algo en la mano, mascotas que caminan contigo y efectos que flotan alrededor. Precios de $400 a $8,000. Se ve en la casa, en los minijuegos y en la votación.
@@ -150,6 +150,7 @@ Versión 10 (tienda): precios nuevos, más artículos, mascotas y efectos.
 Versión 11: saldo inicial de $2,000, bono diario de $200 y práctica del día de $100.
 Versión 12: los avisos de la producción se guardan en el botón 🔔 de la casa.
 Versión 13: chat de la casa para los habitantes, con menciones.
+Versión 14: las misiones ya no usan código QR: tocas «¡Ya la cumplí!» y la otra persona confirma o dice que es falso.
 
 ---
 
@@ -194,4 +195,3 @@ Sin conexión en vivo el juego sigue funcionando: todos los monitos caminan solo
 | "Los avisos todavía no están listos" | Falta publicar la función `avisos` o apagar **Verify JWT** (ver sección 7). |
 | Activé los avisos pero no llega ninguno | Revisa en **Database** → **Extensions** que **pg_net** esté encendido y vuelve a ejecutar `supabase.sql`. En **Edge Functions** → `avisos` → **Logs** se ven los errores. |
 | Quiero empezar de cero | **Juego** → **Reiniciar juego** (escribe REINICIAR). Los registrados se quedan; todos regresan a $2,000 billetes y conservan lo que compraron en la tienda. |
-| La cámara no abre para escanear la misión | El navegador necesita permiso de cámara. Si no lo da, se puede escribir el código de 6 letras. |
