@@ -622,6 +622,9 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .mono.camina .bd{animation:paso .42s ease-in-out infinite alternate}
 .mono.camina .mono-cab{animation:rebote .21s ease-in-out infinite alternate}
 .mono.izq .mono-cuerpo{transform:scaleX(-1)}
+.mono.sentado .pi{transform:rotate(-78deg)}
+.mono.sentado .pd{transform:rotate(-66deg)}
+.mono.sentado::after{display:none}
 .mono.saluda .bd{animation:saludo .25s ease-in-out 6 alternate}
 @keyframes paso{from{transform:rotate(-24deg)}to{transform:rotate(24deg)}}
 @keyframes rebote{from{transform:translateY(0)}to{transform:translateY(calc(var(--u)*-.7))}}
@@ -875,6 +878,10 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
         <rect x="62" y="69" width="26" height="3" rx="1" fill="#B5541F"/>
         <rect x="64" y="72" width="1.6" height="8" fill="#8A3F17"/><rect x="84.4" y="72" width="1.6" height="8" fill="#8A3F17"/>
         <rect x="70" y="66.5" width="4" height="2.5" rx=".6" fill="#FFFDF6"/><circle cx="80" cy="67.6" r="1.6" fill="#FFD54A"/>
+        <!-- comedor: mesitas y sillas donde se sientan -->
+        <g class="silla"><rect x="53.8" y="75.4" width="6.4" height="1.2" rx=".4" fill="#B5541F"/><rect x="53.8" y="69" width="1.2" height="7" rx=".4" fill="#8A3F17"/><rect x="54.2" y="76.4" width=".8" height="2.6" fill="#8A3F17"/><rect x="59" y="76.4" width=".8" height="2.6" fill="#8A3F17"/></g><g class="silla"><rect x="89.8" y="75.4" width="6.4" height="1.2" rx=".4" fill="#B5541F"/><rect x="95" y="69" width="1.2" height="7" rx=".4" fill="#8A3F17"/><rect x="90.2" y="76.4" width=".8" height="2.6" fill="#8A3F17"/><rect x="95" y="76.4" width=".8" height="2.6" fill="#8A3F17"/></g>
+        <g class="mesita"><ellipse cx="30" cy="121" rx="3.4" ry=".9" fill="#1B1440" opacity=".35"/><rect x="29.2" y="117.6" width="1.6" height="3.4" fill="#8A3F17"/><rect x="24.8" y="116" width="10.4" height="1.9" rx=".8" fill="#E08A3C"/><rect x="27.4" y="114.4" width="2.2" height="1.6" rx=".4" fill="#FFFDF6"/><circle cx="32" cy="115.2" r=".9" fill="#FFD54A"/></g><g class="silla"><rect x="17.8" y="117.4" width="6.4" height="1.2" rx=".4" fill="#B5541F"/><rect x="17.8" y="111" width="1.2" height="7" rx=".4" fill="#8A3F17"/><rect x="18.2" y="118.4" width=".8" height="2.6" fill="#8A3F17"/><rect x="23" y="118.4" width=".8" height="2.6" fill="#8A3F17"/></g><g class="silla"><rect x="35.8" y="117.4" width="6.4" height="1.2" rx=".4" fill="#B5541F"/><rect x="41" y="111" width="1.2" height="7" rx=".4" fill="#8A3F17"/><rect x="36.2" y="118.4" width=".8" height="2.6" fill="#8A3F17"/><rect x="41" y="118.4" width=".8" height="2.6" fill="#8A3F17"/></g>
+        <g class="mesita"><ellipse cx="72" cy="137" rx="3.4" ry=".9" fill="#1B1440" opacity=".35"/><rect x="71.2" y="133.6" width="1.6" height="3.4" fill="#8A3F17"/><rect x="66.8" y="132" width="10.4" height="1.9" rx=".8" fill="#E08A3C"/><rect x="69.4" y="130.4" width="2.2" height="1.6" rx=".4" fill="#FFFDF6"/><circle cx="74" cy="131.2" r=".9" fill="#FFD54A"/></g><g class="silla"><rect x="59.8" y="133.4" width="6.4" height="1.2" rx=".4" fill="#B5541F"/><rect x="59.8" y="127" width="1.2" height="7" rx=".4" fill="#8A3F17"/><rect x="60.2" y="134.4" width=".8" height="2.6" fill="#8A3F17"/><rect x="65" y="134.4" width=".8" height="2.6" fill="#8A3F17"/></g><g class="silla"><rect x="77.8" y="133.4" width="6.4" height="1.2" rx=".4" fill="#B5541F"/><rect x="83" y="127" width="1.2" height="7" rx=".4" fill="#8A3F17"/><rect x="78.2" y="134.4" width=".8" height="2.6" fill="#8A3F17"/><rect x="83" y="134.4" width=".8" height="2.6" fill="#8A3F17"/></g>
         <!-- planta -->
         <path d="M92 50 q-6 -8 -2 -14 M92 50 q4 -9 1 -15 M92 50 q7 -5 5 -12" stroke="#1E8E5A" stroke-width="2" fill="none" stroke-linecap="round"/>
         <rect x="88.5" y="49" width="7" height="7" rx="1" fill="#B5541F"/>
@@ -2269,9 +2276,15 @@ document.addEventListener('click', e => {
 const SALA = (() => {
   const T = 9000;                         // duración de cada "turno" de los que caminan solos
   const PUERTA = [12, 56], PANTALLA = [50, 24];
-  const SPOTS = [[14, 64], [30, 64], [52, 62], [76, 63], [90, 68], [8, 80], [24, 78], [44, 76], [60, 80], [92, 88],
-    [14, 96], [34, 92], [56, 98], [74, 92], [84, 104], [8, 112], [26, 110], [46, 112], [66, 112], [90, 120],
-    [16, 126], [36, 128], [56, 126], [76, 128], [24, 142], [46, 144], [66, 142], [84, 140]];
+  const SPOTS = [[14, 66], [30, 66], [48, 62], [76, 62], [92, 64], [8, 84], [24, 82], [44, 82], [50, 92], [92, 92],
+    [12, 100], [34, 98], [56, 100], [76, 98], [88, 108], [8, 112], [52, 112], [66, 114], [90, 120], [12, 132],
+    [46, 128], [52, 140], [24, 142], [40, 146], [88, 146], [94, 130], [70, 104]];
+  // Asientos: el sillón y las sillas del comedor. izq = hacia dónde mira; en la mesa, a veces comen.
+  const ASIENTOS = [{ x: 15, y: 61, izq: false, mesa: false }, { x: 24, y: 61, izq: true, mesa: false }, { x: 33, y: 61, izq: true, mesa: false },
+    { x: 57, y: 79, izq: false, mesa: true }, { x: 93, y: 79, izq: true, mesa: true },
+    { x: 21, y: 121, izq: false, mesa: true }, { x: 39, y: 121, izq: true, mesa: true },
+    { x: 63, y: 137, izq: false, mesa: true }, { x: 81, y: 137, izq: true, mesa: true }];
+  const BLOQUE = 6;                        // se quedan sentados hasta ~6 turnos (casi un minuto)
   const MANOS = ['✊', '✋', '✌️'];
   const actores = new Map();               // id -> actor
   let online = new Set(), canal = null, vivo = false, miId = null;
@@ -2288,9 +2301,31 @@ const SALA = (() => {
 
   // ---------- quién camina solo ----------
   const enCasaIds = () => [...actores.values()].filter(a => a.enSala).map(a => a.id).sort();
+  // Dos grupos que se turnan las sillas (cada uno con sus asientos), desfasados medio bloque,
+  // así no se levantan todos al mismo tiempo. En cada bloque, algunos de cada grupo se sientan.
+  const grupo = id => hash('g' + id) % 2;
+  const sentadosCache = new Map();
+  function sentados(g, j) {
+    const ids = enCasaIds().filter(id => grupo(id) === g), clave = g + '|' + j + '|' + ids.join();
+    if (sentadosCache.has(clave)) return sentadosCache.get(clave);
+    const r = azar(hash('s' + g + ':' + j)), l = [...ids];
+    for (let i = l.length - 1; i > 0; i--) { const x = Math.floor(r() * (i + 1)); [l[i], l[x]] = [l[x], l[i]]; }
+    const libres = ASIENTOS.filter((_, i) => i % 2 === g);
+    for (let i = libres.length - 1; i > 0; i--) { const x = Math.floor(r() * (i + 1)); [libres[i], libres[x]] = [libres[x], libres[i]]; }
+    const mapa = new Map();
+    for (const id of l) { if (!libres.length) break; if (r() < .4) mapa.set(id, libres.pop()); }
+    if (sentadosCache.size > 40) sentadosCache.clear();
+    sentadosCache.set(clave, mapa);
+    return mapa;
+  }
+  function asiento(id, k) {
+    const g = grupo(id), j = Math.floor((k + g * (BLOQUE / 2)) / BLOQUE);
+    return sentados(g, j).get(id) || null;
+  }
+  const esAsiento = (x, y) => ASIENTOS.find(s => s.x === x && s.y === y) || null;
   const parejasCache = new Map();
   function parejas(k) {
-    const ids = enCasaIds(), clave = k + '|' + ids.join();
+    const ids = enCasaIds().filter(id => !asiento(id, k)), clave = k + '|' + ids.join();
     if (parejasCache.has(clave)) return parejasCache.get(clave);
     const r = azar(hash('p' + k)), l = [...ids];
     for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; }
@@ -2307,6 +2342,8 @@ const SALA = (() => {
   const manual = () => { const y = actores.get(miId); return !!(y?.ctrl && (Date.now() < (y.ctrlHasta || 0) || Date.now() < y.ocupado)); };
   const camina = id => id === miId ? !manual() : !(online.has(id) && actores.get(id)?.ctrl);
   function destino(id, k, prof = 0) {
+    const s0 = asiento(id, k);
+    if (s0) return [s0.x, s0.y];
     const p = parejas(k).get(id);
     if (p && camina(p.otro)) {
       const r = azar(hash('m' + k + p.key)), s = SPOTS[Math.floor(r() * SPOTS.length)];
@@ -2314,7 +2351,7 @@ const SALA = (() => {
     }
     const r = azar(hash(id + ':' + k));
     // a veces se queda donde estaba (se ve más natural que todos caminen siempre)
-    if (prof < 4 && r() < .38) return destino(id, k - 1, prof + 1);
+    if (prof < 4 && r() < .38 && !asiento(id, k - 1)) return destino(id, k - 1, prof + 1);
     const s = SPOTS[Math.floor(r() * SPOTS.length)];
     return limitar(s[0] + r() * 6 - 3, s[1] + r() * 4 - 2);
   }
@@ -2351,8 +2388,10 @@ const SALA = (() => {
       return { x: lerp(n.a[0], n.b[0], e), y: lerp(n.a[1], n.b[1], e), mueve: true, izq: n.b[0] < n.a[0] };
     }
     const { a, b, sale, anda, llega } = plan(id, k);
-    if (!anda || ph < sale) return { x: a[0], y: a[1], mueve: false, izq: undefined };
+    if (!anda || ph < sale) { const s = esAsiento(a[0], a[1]); return { x: a[0], y: a[1], mueve: false, izq: s ? s.izq : undefined, sentado: s }; }
     if (ph < llega) { const e = suave((ph - sale) / anda); return { x: lerp(a[0], b[0], e), y: lerp(a[1], b[1], e), mueve: true, izq: b[0] < a[0] }; }
+    const s = esAsiento(b[0], b[1]);
+    if (s) return { x: b[0], y: b[1], mueve: false, izq: s.izq, sentado: s };
     // al llegar, si tiene pareja se voltean a verse
     const p = parejas(k).get(id);
     return { x: b[0], y: b[1], mueve: false, izq: p && camina(p.otro) ? p.lado === 1 : undefined };
@@ -2506,19 +2545,9 @@ const SALA = (() => {
       jugarPPT(miId, id, ja, jb);
     }, dur + 60);
   }
-  // Los que caminan solos ya no juegan: cuando se juntan platican con emojis.
-  const PLATICAS = [['👋', '👋'], ['☕', '😋'], ['😂', '🤣'], ['💸', '😱'], ['📞', '🙄'], ['🍕', '🤤'], ['🤫', '😮'],
-    ['💅', '🙄'], ['🔥', '😎'], ['📄', '😩'], ['🧾', '💸'], ['👀', '🤭'], ['🎉', '🥳'], ['😴', '🥱'], ['🤑', '🤑'], ['🍩', '😍']];
-  function platica(aId, bId, par) {
-    const A = actores.get(aId), B = actores.get(bId);
-    if (!A?.enSala || !B?.enSala) return;
-    const vuela = !$('#c-sala-box').classList.contains('hidden');
-    if (vuela) volar(aId, bId, par[0]); else burbuja(bId, par[0]);
-    setTimeout(() => {
-      if (!actores.get(bId)?.enSala) return;
-      if (vuela) volar(bId, aId, par[1]); else burbuja(aId, par[1]);
-    }, 1500);
-  }
+  // De vez en cuando a alguien le sale un emoji de la cabeza (si está sentado a la mesa, de comida).
+  const PENSAR = ['😂', '😴', '🤔', '😎', '🙄', '😅', '🤫', '😮', '🥱', '💭', '🎶', '🤑', '👀', '😏', '🥲', '🤭'];
+  const COMIDA = ['🍕', '🌮', '☕', '😋', '🍩', '🥤', '🍔', '🥪'];
   function permitido() {
     if (Date.now() - ultimoEnvio < 1100) return false;
     ultimoEnvio = Date.now(); return true;
@@ -2604,20 +2633,20 @@ const SALA = (() => {
     raf = null;
     if (!visible()) return;
     const ahora = Date.now(), k = Math.floor(ahora / T);
-    // pláticas entre los que caminan solos: todos los celulares calculan lo mismo
+    // de vez en cuando a alguien le sale un emoji: todos los celulares calculan lo mismo
     if (k !== programadoK) {
       programadoK = k;
-      const vistos = new Set();
-      for (const [id, p] of parejas(k)) {
-        if (vistos.has(p.key)) continue; vistos.add(p.key);
-        if (!camina(id) || !camina(p.otro)) continue;
-        if (ahora < (actores.get(id)?.ocupado || 0) || ahora < (actores.get(p.otro)?.ocupado || 0)) continue;
-        const r = azar(hash('j' + k + p.key)), [a, b] = r() < .5 ? [id, p.otro].sort() : [id, p.otro].sort().reverse();
-        const par = PLATICAS[Math.floor(r() * PLATICAS.length)];
-        const llegan = Math.max(plan(a, k).llega, plan(b, k).llega);
-        if (llegan > T - 2600) continue;
-        const espera = k * T + Math.max(300, llegan + 500) - ahora;
-        if (espera > -300) setTimeout(() => { if (camina(a) && camina(b) && Date.now() >= (actores.get(a)?.ocupado || 0)) platica(a, b, par); }, Math.max(0, espera));
+      const r = azar(hash('e' + k)), ids = enCasaIds();
+      for (let n = 0; n < 2; n++) {
+        if (!ids.length || r() > .45) continue;
+        const id = ids[Math.floor(r() * ids.length)], cuando = k * T + 600 + r() * (T - 3200) - ahora, x = r();
+        if (cuando < -300) continue;
+        setTimeout(() => {
+          const A = actores.get(id);
+          if (!A?.enSala || !camina(id) || Date.now() < A.ocupado) return;
+          const lista = A.p?.sentado?.mesa && x < .7 ? COMIDA : PENSAR;
+          burbuja(id, lista[Math.floor(x * 997) % lista.length], 2600);
+        }, Math.max(0, cuando));
       }
     }
     const yoA = actores.get(miId);
@@ -2655,16 +2684,20 @@ const SALA = (() => {
         const d = Math.hypot(dx, dy);
         if (d >= SEP) continue;
         if (d < .01) { dx = A.id < B.id ? 1 : -1; dy = 0; }
+        // quien está sentado no se mueve de su silla: el otro se hace a un lado
+        const fa = A.p?.sentado ? 0 : B.p?.sentado ? 2 : 1, fb = B.p?.sentado ? 0 : A.p?.sentado ? 2 : 1;
         const n = Math.hypot(dx, dy), f = (SEP - d) / 2;
-        A.rx -= dx / n * f; B.rx += dx / n * f; A.ry -= dy / n * f / 1.6; B.ry += dy / n * f / 1.6;
+        A.rx -= dx / n * f * fa; B.rx += dx / n * f * fb; A.ry -= dy / n * f * fa / 1.6; B.ry += dy / n * f * fb / 1.6;
       }
       for (const a of lista) [a.rx, a.ry] = limitar(a.rx, a.ry);   // sin salirse de la sala
     }
     for (const a of lista) {
       const [x, y] = limitar(a.rx, a.ry), p = a.p;
-      a.el.style.transform = `translate3d(${(x / 100 * W).toFixed(1)}px, ${(y / ALTO * H).toFixed(1)}px, 0) translateY(-100%)`;
+      const baja = p.sentado ? 2.6 / 100 * W : 0;      // sentado: el cuerpo baja hasta la silla
+      a.el.style.transform = `translate3d(${(x / 100 * W).toFixed(1)}px, ${(y / ALTO * H + baja).toFixed(1)}px, 0) translateY(-100%)`;
       a.el.style.zIndex = Math.round(y * 10);
       a.el.classList.toggle('camina', p.mueve);
+      a.el.classList.toggle('sentado', !!p.sentado);
       if (p.izq !== undefined) a.el.classList.toggle('izq', p.izq);
     }
     raf = requestAnimationFrame(cuadro);
