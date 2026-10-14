@@ -144,7 +144,19 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .tab-titulo{font-family:Anton,Impact,sans-serif;font-size:1.6rem;margin:14px 0 2px;color:#fff}
 /* ¿Qué me toca hoy? */
 .hoy{background:#FFFDF6;color:var(--texto);border-radius:16px;padding:14px;margin-top:12px;box-shadow:0 6px 0 #0E0A26}
-.hoy h2{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.4rem;margin:0 0 8px}
+.hoy h2{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.4rem;margin:0;flex:1;text-align:left}
+/* tarjetas plegables */
+.pleg-cab{width:100%;display:flex;align-items:center;gap:10px;border:0;background:none;color:inherit;font:inherit;padding:0;cursor:pointer;text-align:left}
+.pleg-cab .flecha{flex:none;font-size:1.1rem;transition:transform .2s;opacity:.7}
+.plegable.abierto>.pleg-cab .flecha{transform:rotate(180deg)}
+.plegable:not(.abierto)>.pleg-cuerpo{display:none}
+.hoy .pleg-cuerpo{margin-top:10px}
+.pleg-n{flex:none;min-width:24px;height:24px;border-radius:12px;background:#D7263D;color:#fff;font:800 .8rem/24px "Work Sans",sans-serif;text-align:center;padding:0 7px}
+.pleg-n.ok{background:#1E8E5A}
+#c-accion>.plegable>.pleg-cab{background:#FBE9A6;color:var(--texto);border-radius:14px;padding:14px;margin-top:12px;box-shadow:0 6px 0 #0E0A26}
+#c-accion>.plegable>.pleg-cab span:first-child{font-family:Anton,Impact,sans-serif;font-size:1.3rem;flex:none}
+#c-accion>.plegable>.pleg-cab small{flex:1;text-align:right;color:#6A6496;font-weight:600;font-size:.8rem}
+#c-accion>.plegable.abierto>.pleg-cab{border-radius:14px 14px 0 0;box-shadow:none;margin-bottom:-12px;position:relative;z-index:1}
 .cal{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;margin:0 0 12px;counter-reset:paso}
 .cal div{position:relative;background:#EDEAFB;border-radius:10px;padding:6px 4px 5px;text-align:center;font-size:.72rem;color:#5B5592;line-height:1.2}
 .cal div b{display:block;font-size:.84rem;color:var(--texto)}
@@ -1798,7 +1810,10 @@ function pintarAccion() {
 
   const prox = g.semana > 0 ? proximoEvento(g) : null;
   if (prox) h = `<div class="proximo" data-hasta="${prox.t}"><span>${esc(prox.txt)} en</span><b class="js-falta">${faltaTexto(new Date(prox.t) - Date.now())}</b><small>${esc(fmtFecha(prox.t))}</small></div>` + h;
-  $('#c-accion').innerHTML = h;
+  // plegable: cerrado solo se ve "Desafío de hoy"; al tocarlo se despliega la tarjeta completa
+  $('#c-accion').innerHTML = h ? `<div class="plegable ${plegado.accion ? '' : 'abierto'}">
+    <button class="pleg-cab" data-pleg="accion" aria-expanded="${!plegado.accion}"><span>🎯 Desafío de hoy</span><small>${esc(faseTexto(g))}</small><span class="flecha">▾</span></button>
+    <div class="pleg-cuerpo">${h}</div></div>` : '';
   const extra = $('#c-extra');
   const enFoco = extra.contains(document.activeElement) && document.activeElement.tagName === 'SELECT';
   if (!enFoco) extra.innerHTML = g.semana === 0 ? `<div style="height:8px"></div>` + pintarExtrasSala() : '';
@@ -2965,7 +2980,9 @@ function pendientesHoy() {
 function pintarHoy() {
   const g = est.juego;
   const items = pendientesHoy(), faltan = items.filter(i => !i.ok);
-  let h = `<div class="hoy"><h2>${g.fin ? '¡Se acabó el juego!' : '¿Qué me toca hoy?'}</h2>${calendarioSemana(g)}`;
+  let h = `<div class="hoy plegable ${plegado.hoy ? '' : 'abierto'}"><button class="pleg-cab" data-pleg="hoy" aria-expanded="${!plegado.hoy}">
+    <h2>${g.fin ? '¡Se acabó el juego!' : '¿Qué me toca hoy?'}</h2>${faltan.length ? `<span class="pleg-n">${faltan.length}</span>` : '<span class="pleg-n ok">✓</span>'}<span class="flecha">▾</span></button>
+    <div class="pleg-cuerpo">${calendarioSemana(g)}`;
   h += items.map((it, i) => `<div class="pend ${it.ok ? 'ok' : ''}"><span class="ic">${it.ic}</span><div class="tx">${esc(it.tx)}${it.sub ? `<small>${esc(it.sub)}</small>` : ''}</div>
     ${it.btn ? `<button class="btn chico" data-hoy="${i}">${esc(it.btn)}</button>` : ''}</div>`).join('');
   if (!faltan.length) {
@@ -2973,7 +2990,7 @@ function pintarHoy() {
     h += `<p class="hoy-libre">${g.semana === 0 ? '🎉 Ya estás dentro. La casa abre pronto: mientras, viste a tu monito en la tienda y juega Monster Crazy.'
       : g.fin ? 'Gracias por jugar Alfa Brother.' : `😎 Todo listo por hoy.${prox ? ` ${esc(prox.txt)}: ${esc(diaCorto(prox.t))}.` : ''} Mientras, juega Monster Crazy o viste a tu monito.`}</p>`;
   }
-  $('#c-hoy').innerHTML = h + '</div>';
+  $('#c-hoy').innerHTML = h + '</div></div>';
   $$('#c-hoy [data-hoy]').forEach(b => b.onclick = () => {
     const a = items[+b.dataset.hoy].accion;
     if (a === 'prueba') abrirPrueba();
@@ -2991,6 +3008,16 @@ function pintarHoy() {
   badge('jugar', store.get('ab_vio_jugar') ? '' : 'NUEVO');
 }
 let tabActual = 'casa';
+const plegado = { hoy: true, accion: true };     // empiezan cerradas
+document.addEventListener('click', e => {
+  const b = e.target.closest?.('[data-pleg]'); if (!b) return;
+  const k = b.dataset.pleg;
+  plegado[k] = !plegado[k];
+  const caja = b.closest('.plegable');
+  caja.classList.toggle('abierto', !plegado[k]);
+  b.setAttribute('aria-expanded', String(!plegado[k]));
+  SFX.tocar('clic');
+});
 function irTab(t, sonido = true) {
   tabActual = t;
   for (const x of ['casa', 'jugar', 'billetes', 'misiones']) $('#tab-' + x).classList.toggle('hidden', x !== t);
