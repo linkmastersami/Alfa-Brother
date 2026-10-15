@@ -301,6 +301,15 @@ alter table public.noticiero_notas add column if not exists guion jsonb;
 alter table public.noticiero_notas drop constraint if exists noticiero_notas_texto_check;
 alter table public.noticiero_notas add constraint noticiero_notas_texto_check check (char_length(texto) between 1 and 4000);
 
+-- v22: el reportero del Noticierazo: los habitantes le cuentan noticias y le llegan a la producción
+create table if not exists public.reportajes (
+  id         bigint generated always as identity primary key,
+  jugador_id uuid not null references public.jugadores(id) on delete cascade,
+  texto      text not null check (char_length(texto) between 3 and 500),
+  usado      boolean not null default false,
+  creado     timestamptz not null default now()
+);
+
 -- Predicción secreta: quién gana y quién sale primero
 create table if not exists public.predicciones (
   jugador_id  uuid primary key references public.jugadores(id) on delete cascade,
@@ -323,7 +332,7 @@ do $$
 declare t text;
 begin
   foreach t in array array['config','jugadores','sesiones','trivia','intentos','votos','historial','admins','predicciones','chismes','push_subs','push_ajustes',
-                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda','push_produccion','anuncios','chat','sucesos','noticiero_notas'] loop
+                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda','push_produccion','anuncios','chat','sucesos','noticiero_notas','reportajes'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists admin_todo on public.%I', t);
     execute format('create policy admin_todo on public.%I for all to authenticated using (public.es_admin()) with check (public.es_admin())', t);
@@ -1936,10 +1945,10 @@ end $$;
 -- ---------------------------------------------------------------------
 alter table public.config add column if not exists noticiero_aviso date;
 
--- La edición de cada día sale a las 8 a.m. y cuenta el día anterior (hora de la Ciudad de México)
+-- La edición de cada día sale a las 9 a.m. (v22) y cuenta el día anterior (hora de la Ciudad de México)
 create or replace function public._noticiero_dia()
 returns date language sql stable as $$
-  select ((now() at time zone 'America/Mexico_City') - interval '8 hours')::date - 1
+  select ((now() at time zone 'America/Mexico_City') - interval '9 hours')::date - 1
 $$;
 
 -- p_avance (solo la producción): el noticiero que saldrá la próxima mañana, con lo que va del día
@@ -2004,12 +2013,27 @@ begin
   );
 end $$;
 
--- A las 8 de la mañana avisa a todos que ya salió la edición (una vez al día)
+-- Un habitante le cuenta una noticia al reportero (la producción ve quién la mandó)
+create or replace function public.contar_reportero(p_token uuid, p_texto text)
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  yo public.jugadores;
+  v text := regexp_replace(btrim(coalesce(p_texto, '')), '\s+', ' ', 'g');
+begin
+  yo := public._yo(p_token);
+  if yo.rol <> 'jugador' then raise exception 'SOLO_HABITANTES'; end if;
+  if char_length(v) < 3 or char_length(v) > 500 then raise exception 'NOTICIA_INVALIDA'; end if;
+  if (select count(*) from public.reportajes where jugador_id = yo.id and creado > now() - interval '1 day') >= 10 then raise exception 'REPORTERO_LLENO'; end if;
+  insert into public.reportajes (jugador_id, texto) values (yo.id, v);
+  perform public._avisar_produccion('🎤 Noticia para el reportero', format('%s le contó algo al reportero. Revísalo en el panel (pestaña Noticiero).', yo.nombre));
+end $$;
+
+-- A las 9 de la mañana avisa a todos que ya salió la edición (una vez al día)
 create or replace function public._noticiero_aviso()
 returns void language plpgsql security definer set search_path = public as $$
 declare v_hoy date := public._hoy();
 begin
-  if extract(hour from now() at time zone 'America/Mexico_City') <> 8 then return; end if;
+  if extract(hour from now() at time zone 'America/Mexico_City') <> 9 then return; end if;
   if (select noticiero_aviso from public.config where id = 1) is not distinct from v_hoy then return; end if;
   update public.config set noticiero_aviso = v_hoy where id = 1;
   if (select semana from public.config where id = 1) = 0 then return; end if;

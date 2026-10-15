@@ -92,7 +92,7 @@ Todos (habitantes, eliminados y público) empiezan con **$2,000 Billetes Alfa** 
 - **Récords de la casa:** los mejores puntajes de Monster Crazy y de las prácticas de memoria y adeudo.
 - **Monster Crazy (pestaña 🎮 Jugar):** copia adaptada del Monster Crazy del repo `juego-codigos-multijugador` (`monster.html`), solo con el enemigo clásico y con las caras de los compañeros como puntos débiles. Cada oleada es más rápida (máximo 5 corazones); si sales a media partida o se cierra la app, el puntaje se guarda igual. La primera partida del día paga $100 y romper el récord de la casa, $200.
 - **Monster Crazy 2.0 (`monster2.html`):** igual, pero desde la victoria 15 sale un círculo negro 💀 que quita un corazón si lo tocas, y uno más cada 3 victorias (hasta 8). El Monster Crazy clásico se pudo jugar hasta el 14 de octubre de 2026; sus récords se quedan.
-- **📺 El Noticierazo:** junto a la 🔔. Cada mañana a las 8 sale la edición con lo que pasó ayer (galas, líder, récords, misiones, encuestas, apuestas, tienda, chat…) narrada con voz por Elber Galarga y Rosa Melano, con albures y subtítulos. La producción puede dejar una nota en el panel (Extras) que leen en el noticiero del día siguiente.
+- **📺 El Noticierazo:** junto a la 🔔. Cada mañana a las 9 sale la edición con lo que pasó ayer (galas, líder, récords, misiones, encuestas, apuestas, tienda, chat…) narrada con voz por Elber Galarga y Rosa Melano, con albures y subtítulos. La producción puede dejar una nota en el panel (Extras) que leen en el noticiero del día siguiente.
 - **Pestañas:** 🏠 Casa (arriba, «¿Qué me toca hoy?» con el calendario de la semana y lo pendiente de cada quien), 🎮 Jugar, 💵 Billetes (saldo, apuestas y encuestas) y 🕵️ Misiones.
 - **Chat de la casa:** botón flotante 💬 abajo a la derecha, solo para habitantes (en la casa y eliminados; el público no lo ve). Escribe **@** para etiquetar a alguien: le llega un aviso. Desde **Extras** puedes leer y borrar mensajes.
 - **Tienda del monito:** sombreros, lentes, color del cuerpo (hasta arcoíris), algo en la mano, mascotas que caminan contigo y efectos que flotan alrededor. Precios de $400 a $8,000. Se ve en la casa, en los minijuegos y en la votación.
@@ -159,6 +159,7 @@ Versión 15: las misiones de la semana pasada cuentan la mitad para elegir al l�
 Versión 16: Monster Crazy (récords y premio diario) y la casa en pestañas con «¿Qué me toca hoy?».
 Versión 17: Monster Crazy 2.0 (círculos negros que quitan corazones desde la oleada 16).
 Versión 18: el público ya no puede ver los chismes del ojo.
+Versión 22: el noticiero sale a las 9 a.m.; notas para el siguiente noticiero (con cambio de día y caras de habitantes) y el reportero, al que los habitantes le cuentan noticias.
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.

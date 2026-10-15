@@ -200,11 +200,19 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .pr-top span{background:rgba(255,255,255,.1);border-radius:999px;padding:3px 10px;font-size:.8rem;color:#fff}
 /* El Noticierazo */
 .chip-eco.tv-chip{background:#D7263D;box-shadow:none}
+.chip-eco.rep-chip{background:#7A3FB5;box-shadow:none}
+.rep-cab{display:flex;gap:12px;align-items:center;margin:4px 0 10px}
+.rep-mono{font-size:2.4rem;flex:none}
+.rep-cab p{margin:0}
 .tvn-bloque{border:1px solid #D9D4F3;border-radius:12px;padding:8px;margin-top:8px;background:#FFFDF6}
 .tvn-loc{display:flex;gap:6px;margin-bottom:6px;align-items:center}
-.tvn-loc button[data-loc]{border:1px solid #C9C3EE;background:#fff;border-radius:999px;padding:5px 12px;font-weight:700;font-size:.85rem;cursor:pointer}
+.tvn-loc button[data-loc]{white-space:nowrap;border:1px solid #C9C3EE;background:#fff;border-radius:999px;padding:5px 9px;font-weight:700;font-size:.85rem;cursor:pointer}
 .tvn-loc button[data-loc].on{background:#1B1440;color:#fff;border-color:#1B1440}
 .tvn-loc .tvn-quitar{margin-left:auto}
+.tvn-hab{border:1px solid #C9C3EE;border-radius:999px;padding:5px 8px;font:700 .82rem "Work Sans",sans-serif;background:#fff;max-width:120px}
+.tvn-cara-caja:empty{display:none}
+.tvn-cara{display:inline-flex;align-items:center;gap:6px;margin-top:6px;background:#E8F7EE;color:#1E8E5A;border-radius:999px;padding:3px 4px 3px 10px;font-weight:700;font-size:.8rem}
+.tvn-cara button{border:0;background:#fff;border-radius:50%;width:22px;height:22px;cursor:pointer}
 .tv-aviso-card{width:100%;display:flex;align-items:center;gap:12px;text-align:left;border:0;cursor:pointer;margin-top:12px;padding:12px 14px;border-radius:14px;color:#fff;
   background:linear-gradient(135deg,#D7263D,#7A3FB5);box-shadow:0 6px 0 #0E0A26;animation:entra-aviso .4s ease-out}
 .tv-aviso-card .ic{font-size:1.9rem;animation:latido-vivo 1.4s infinite}
@@ -933,6 +941,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
     <button class="chip-eco" id="c-tienda">🛍️ Tienda</button>
     <button class="chip-eco" id="c-notis" aria-label="Notificaciones">🔔<span class="badge hidden" id="c-notis-n"></span></button>
     <button class="chip-eco tv-chip" id="c-tv" aria-label="El Noticierazo">📺 Noticiero<span class="punto hidden"></span></button>
+    <button class="chip-eco rep-chip hidden" id="c-reportero" aria-label="Contarle al reportero">🎤 Reportero</button>
   </div>
 
   <!-- pestaña Casa -->
@@ -1200,6 +1209,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 <div id="m-billetes" class="modal hidden"><div class="formato amarillo" id="bi-caja"></div></div>
 <div id="m-apuesta" class="modal hidden"><div class="formato amarillo" id="ap-caja"></div></div>
 <div id="m-tienda" class="modal hidden"><div class="formato" id="ti-caja"></div></div>
+<div id="m-reportero" class="modal hidden"><div class="formato" id="rep-caja"></div></div>
 <div id="m-agenda" class="modal hidden"><div class="formato" id="ag-caja"></div></div>
 <div id="m-mis-pedir" class="modal hidden"><div class="formato" id="mp-caja"></div></div>
 <div id="m-mis-conf" class="modal hidden"><div class="formato amarillo" id="mc-caja"></div></div>
@@ -1297,6 +1307,8 @@ const ERRORES = {
   ES_TU_CODIGO: 'Ese es tu propio código: lo tiene que escanear la otra persona.',
   NO_ERES_OBJETIVO: 'Esa misión no era sobre ti. Solo la persona de la misión puede confirmarla.',
   MISION_YA_CUMPLIDA: 'Esa misión ya estaba cumplida.',
+  NOTICIA_INVALIDA: 'La noticia debe tener entre 3 y 500 letras.',
+  REPORTERO_LLENO: 'Ya le contaste 10 cosas al reportero hoy. ¡Deja algo para mañana! 😅',
   OJO_SOLO_HABITANTES: 'El ojo solo les cuenta chismes a los habitantes de la casa. 👁️',
   PUBLICO_SIN_BILLETES: 'Como público juntas billetes, pero solo los habitantes pueden usarlos en la tienda y las apuestas.',
   MISION_VENCIDA: 'Esa misión era de una semana pasada.',
@@ -3059,6 +3071,7 @@ function pintarEconomia() {
   $('#c-billetes').innerHTML = `💵 <b>${fmt$(est.billetes)}</b>`;
   const publico = est.yo.rol !== 'jugador';
   $('#c-tienda').classList.toggle('hidden', publico);
+  $('#c-reportero').classList.toggle('hidden', publico);
   const g = est.juego;
   // pestaña Billetes: saldo, apuestas y encuestas
   let h = `<div class="juego-card"><h3>💵 Tu saldo <small>No son de verdad 😉</small></h3>
@@ -3298,15 +3311,15 @@ const MONSTER = (() => {
 /* =====================================================================
    EL NOTICIERAZO ALFA — el resumen del día anterior con dos presentadores
    Elber Galarga y Rosa Melano: ñeros, albureros y satíricos. Cada mañana a
-   las 8 sale la edición de ayer. La voz es la del celular (speechSynthesis).
+   las 9 sale la edición de ayer. La voz es la del celular (speechSynthesis).
    ===================================================================== */
 const TV = (() => {
   const EL = 'Elber Galarga', ELLA = 'Rosa Melano';
   let d = null, lineas = [], i = 0, sonando = false, pausa = false, conVoz = true, voces = null, guardia = null, sigT = null;
 
-  // ---------- qué edición toca (la de ayer; antes de las 8 a.m., la de antier) ----------
+  // ---------- qué edición toca (la de ayer; antes de las 9 a.m., la de antier) ----------
   const fechaMX = (t = Date.now()) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City', year: 'numeric', month: '2-digit', day: '2-digit' }).format(t);
-  const diaEdicion = () => { const hoy = fechaMX(Date.now() - 8 * 3600e3); const x = new Date(hoy + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() - 1); return x.toISOString().slice(0, 10); };
+  const diaEdicion = () => { const hoy = fechaMX(Date.now() - 9 * 3600e3); const x = new Date(hoy + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() - 1); return x.toISOString().slice(0, 10); };
   const diaBonito = dia => { const t = new Date(dia + 'T12:00:00Z').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }); return t.charAt(0).toUpperCase() + t.slice(1); };
   const hayNueva = () => !!est && est.juego.semana > 0 && store.get('ab_tv_visto') !== diaEdicion();
   function pintarBoton() {
@@ -3428,7 +3441,7 @@ const TV = (() => {
     [['e', 'Esto fue todo, raza. Mañana les traemos más.'], ['a', 'Si es que Elber aguanta hasta mañana, porque se cansa rápido.'], ['e', 'Yo aguanto lo que me echen, Rosa. ¡Bye, banda!']],
     [['a', 'Nos vamos, Grupo Alfa. Cuídense mucho.'], ['e', 'Y ya saben: el que no paga, no juega.'], ['a', 'Y el que juega con Elber, sale perdiendo. ¡Hasta mañana!']],
     [['e', 'Ya se nos acabó el tiempo, banda.'], ['a', 'Como a Elber en todo: se le acaba rapidito.'], ['e', 'Ríete, Rosa, ríete. ¡Nos vemos mañana!']],
-    [['a', 'Esto fue El Noticierazo, el noticiero que sí cobra.'], ['e', 'Mañana a las ocho, aquí mismo.'], ['a', 'Y tú llega temprano, Elber, que hoy llegaste tarde y despeinado.']],
+    [['a', 'Esto fue El Noticierazo, el noticiero que sí cobra.'], ['e', 'Mañana a las nueve, aquí mismo.'], ['a', 'Y tú llega temprano, Elber, que hoy llegaste tarde y despeinado.']],
     [['e', 'Nos despedimos, raza, que hay que ir a chambear.'], ['a', 'Tú ni chambeas, Elber, nomás calientas la silla.'], ['e', 'Alguien tiene que hacerlo, Rosa. ¡Hasta mañana!']],
     [['a', 'Gracias por vernos, banda bonita.'], ['e', 'Y si no les gustó, quéjense con la producción.'], ['a', 'Que ni nos paga, por cierto. ¡Bye!']],
     [['e', 'Aquí termina El Noticierazo.'], ['a', 'Vayan a trabajar, que el chisme no paga la renta.'], ['e', 'Pero cómo ayuda, Rosa, cómo ayuda. ¡Hasta mañana!']],
@@ -3616,7 +3629,7 @@ const TV = (() => {
     if (d.jugaron) { const k = d.jugaron; dos(`🎮 ${k} ${k === 1 ? 'se puso' : 'se pusieron'} a jugar`, llenar(frase('jug_in', T.jug_in), { k: k === 1 ? 'una persona' : k, se: k === 1 ? 'se puso' : 'se pusieron' }), reaccion('jug_j', NEUTRO, T.jug_j, {})); }
     // noticias importantes (las escribe la producción, con lo que dice cada locutor)
     const gn = (Array.isArray(d.nota_guion) ? d.nota_guion : []).filter(x => x && x.t && (x.q === 'e' || x.q === 'a'));
-    if (gn.length) nota('📌 Noticias importantes de ayer', [[gn[0].q, frase('nota_in', T.nota_in)], ...gn.map(x => [x.q, x.t])]);
+    if (gn.length) nota('📌 Noticias importantes de ayer', [[gn[0].q, frase('nota_in', T.nota_in)], ...gn.map(x => [x.q, x.t, x.cara || undefined])]);
     else if (d.nota) { const q = turno; turno = otro(turno); nota('📌 Noticias importantes de ayer', [[q, frase('nota_in', T.nota_in)], [otro(q), d.nota]]); }
     if (titulares.length === 0) nota('😴 No pasó nada', frase('nada', T.nada));
     if (d.rico) dos(`💵 ${d.rico.nombre} es quien más billetes tiene`, llenar(frase('rico_in', T.rico_in), { n: d.rico.nombre, b: fmt(d.rico.billetes) }), reaccion('rico_j', NEUTRO, T.rico_j, {}), d.rico.id);
@@ -3766,7 +3779,7 @@ const TV = (() => {
   function fin() {
     $$('#m-tv .tv-host').forEach(h => h.classList.remove('habla'));
     mostrarCara(null);
-    $('#tv-texto').textContent = ' ¡Gracias por ver El Noticierazo! Mañana a las 8 hay edición nueva.';
+    $('#tv-texto').textContent = ' ¡Gracias por ver El Noticierazo! Mañana a las 9 hay edición nueva.';
     $('#tv-quien').textContent = '';
     $('#tv-pausa').textContent = '🔁'; pausa = true;
     $('#tv-pausa').onclick = () => { $('#tv-pausa').onclick = alternarPausa; pausa = false; $('#tv-pausa').textContent = '⏸️'; i = 0; decir(); };
@@ -3782,6 +3795,33 @@ const TV = (() => {
 })();
 
 $('#c-tv').onclick = () => TV.abrir();
+
+/* ---------- el reportero: los habitantes le cuentan noticias para el noticiero ---------- */
+function abrirReportero() {
+  if (est?.yo.rol !== 'jugador') return;
+  $('#rep-caja').innerHTML = `<div class="folio"><span>🎤 El reportero del Noticierazo</span><span>Exclusiva</span></div>
+    <div class="rep-cab"><div class="rep-mono">🧑‍💼🎤</div><p>¿Qué pasó hoy en la casa (o en la oficina)? Cuéntamelo y a lo mejor lo dicen <b>Elber y Rosa</b> en el noticiero de mañana a las 9.</p></div>
+    <textarea class="in" id="rep-txt" rows="4" maxlength="500" placeholder="Ej. Hoy Fulano llegó con corte de pelo nuevo y nadie le dijo nada…"></textarea>
+    <p class="ayuda" style="margin-top:6px">Le llega a la producción <b>con tu nombre</b>; ellos deciden si sale y cómo. En el noticiero no dicen quién lo contó.</p>
+    <div class="error hidden" id="rep-error"></div>
+    <div style="display:grid;gap:8px;margin-top:10px"><button class="btn" id="rep-env">📨 Mandar al reportero</button><button class="link" id="rep-x" style="justify-self:center">Cerrar</button></div>`;
+  $('#rep-x').onclick = () => $('#m-reportero').classList.add('hidden');
+  $('#rep-env').onclick = async () => {
+    const t = $('#rep-txt').value.trim();
+    if (t.length < 3) return mostrarError($('#rep-error'), 'Cuéntale un poquito más al reportero');
+    $('#rep-env').disabled = true;
+    try {
+      await rpc('contar_reportero', { p_token: token, p_texto: t });
+      $('#rep-caja').innerHTML = `<div style="text-align:center;padding:8px 0"><div style="font-size:3rem">🎤✅</div><h2>¡Exclusiva recibida!</h2>
+        <p>Ya le llegó a la producción. Si les gusta, la vas a oír mañana en El Noticierazo.</p><button class="btn" id="rep-ok" style="margin-top:12px">Va</button></div>`;
+      $('#rep-ok').onclick = () => $('#m-reportero').classList.add('hidden');
+      SFX.tocar('swish');
+    } catch (e) { $('#rep-env').disabled = false; mostrarError($('#rep-error'), e); }
+  };
+  $('#m-reportero').classList.remove('hidden');
+  setTimeout(() => $('#rep-txt')?.focus(), 80);
+}
+$('#c-reportero').onclick = abrirReportero;
 
 /* ---------- apuestas ---------- */
 const AP_TXT = {
@@ -5016,6 +5056,10 @@ async function cargarAdmin(silencioso) {
       const n = data?.length || 0;
       $('[data-at=ojo]').textContent = n ? `Ojo 👁️ (${n})` : 'Ojo 👁️';
     });
+    sb.from('reportajes').select('id').eq('usado', false).then(({ data }) => {
+      const n = data?.length || 0;
+      $('[data-at=noticiero]').textContent = n ? `Noticiero 📺 (${n})` : 'Noticiero 📺';
+    });
     [adm.cfg, adm.jug] = await Promise.all([
       q(sb.from('config').select('*').eq('id', 1).single()),
       q(sb.from('jugadores').select('id,nombre,rol,estado,semana_eliminado,fallos,bloqueado_hasta,foto,frase,creado,billetes').order('creado')),
@@ -5348,16 +5392,25 @@ async function adminExtras(C, seccion) {
   const recs = await q(sb.from('practicas').select('*').order('mejor', { ascending: false })).catch(() => []);
   const hoyMX = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
   const notasTv = await q(sb.from('noticiero_notas').select('*').order('dia', { ascending: false })).then(x => x.slice(0, 14)).catch(() => []);
-  if (!adm.tvnDia || (adm.tvnDia < hoyMX && !notasTv.some(x => x.dia === adm.tvnDia))) adm.tvnDia = hoyMX;
-  const tvnDia = adm.tvnDia, notaHoy = notasTv.find(x => x.dia === tvnDia);
+  const reportajes = await q(sb.from('reportajes').select('*').order('id', { ascending: false })).then(x => x.slice(0, 40)).catch(() => []);
+  // Cada nota es para un noticiero: "dia" es el día que cuenta y sale al día siguiente a las 9 a.m.
+  const diaMas = (dia, n) => { const x = new Date(dia + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
+  const aireDia = TV.diaEdicion(), sigDia = diaMas(aireDia, 1);         // el último que ya salió y el siguiente
+  if (!adm.tvnDia || adm.tvnDia <= aireDia) adm.tvnDia = sigDia;
+  const tvnDia = adm.tvnDia, notaHoy = adm.tvnNueva ? null : notasTv.find(x => x.dia === tvnDia);
+  adm.tvnNueva = false;
+  const habCasa = adm.jug.filter(j => j.rol === 'jugador').sort((a, b) => a.nombre.localeCompare(b.nombre));
   // la nota como guion: [{q:'e'|'a', t}] (las notas viejas de puro texto las dice Rosa)
   const bloquesNota = notaHoy ? (Array.isArray(notaHoy.guion) && notaHoy.guion.length ? notaHoy.guion : [{ q: 'a', t: notaHoy.texto }]) : [{ q: 'e', t: '' }];
   const LOC = { e: 'Elber Galarga', a: 'Rosa Melano' };
-  const bloqueHtml = b => `<div class="tvn-bloque"><div class="tvn-loc">${['e', 'a'].map(q => `<button type="button" data-loc="${q}" class="${b.q === q ? 'on' : ''}">🎙️ ${LOC[q].split(' ')[0]}</button>`).join('')}
+  const caraChip = id => id ? `<span class="tvn-cara">📸 Sale ${esc(nombreDe(id))} <button type="button" class="tvn-sin-cara" aria-label="Quitar cara">✕</button></span>` : '';
+  const bloqueHtml = b => `<div class="tvn-bloque" data-cara="${esc(b.cara || '')}"><div class="tvn-loc">${['e', 'a'].map(q => `<button type="button" data-loc="${q}" class="${b.q === q ? 'on' : ''}">🎙️ ${LOC[q].split(' ')[0]}</button>`).join('')}
+      <select class="tvn-hab" aria-label="Poner a un habitante"><option value="">👤 Habitante</option>${habCasa.map(j => `<option value="${j.id}">${esc(j.nombre)}</option>`).join('')}</select>
       <button type="button" class="mini tvn-quitar" aria-label="Quitar">✕</button></div>
-      <textarea class="in" rows="2" maxlength="400" placeholder="Lo que dice ${b.q === 'e' ? 'Elber' : 'Rosa'}…">${esc(b.t || '')}</textarea></div>`;
+      <textarea class="in" rows="2" maxlength="400" placeholder="Lo que dice ${b.q === 'e' ? 'Elber' : 'Rosa'}…">${esc(b.t || '')}</textarea><div class="tvn-cara-caja">${caraChip(b.cara)}</div></div>`;
   const diaNota = dia => { const t = new Date(dia + 'T12:00:00Z').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' }); return t.charAt(0).toUpperCase() + t.slice(1); };
-  const manana = dia => { const x = new Date(dia + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + 1); return diaNota(x.toISOString().slice(0, 10)).toLowerCase(); };
+  const manana = dia => diaNota(diaMas(dia, 1)).toLowerCase();       // la fecha en que sale ese noticiero
+  const opcionesDia = actual => [...Array(7).keys()].map(k => diaMas(sigDia, k)).map(dd => `<option value="${dd}" ${dd === actual ? 'selected' : ''}>📺 ${esc(diaNota(diaMas(dd, 1)))}, 9 a.m.${dd === sigDia ? ' (el siguiente)' : ''}</option>`).join('');
   const JUEGOS_REC = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy (clásico)', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo' };
   const ahora = Date.now();
   const estadoEnc = e => +new Date(e.abre) > ahora ? `Programada: abre ${fmtFecha(e.abre)}` : +new Date(e.cierra) > ahora ? `Abierta hasta ${fmtFecha(e.cierra)}` : 'Cerrada';
@@ -5402,19 +5455,27 @@ async function adminExtras(C, seccion) {
       ${chatMsgs.map(m => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>${esc(nombreDe(m.jugador_id))}</b>
         <small style="white-space:normal">${esc(m.texto)} · ${esc(fechaCorta(m.creado))}</small></div><button class="mini" data-chat-del="${m.id}">Borrar</button></div>`).join('') || '<p class="ayuda">Todavía no hay mensajes.</p>'}</div>
     <form class="adm-caja" data-sec="noticiero" id="tvn-form"><h3>📺 El Noticierazo</h3>
-      <p class="ayuda">Cada mañana a las 8 sale el noticiero con lo que pasó el día anterior (y llega aviso al celular). Lo que escribas aquí lo leen Elber y Rosa como <b>"noticias importantes que ocurrieron ayer"</b> en el noticiero de <b>mañana</b>.</p>
-      <p class="campo" style="font-weight:700;margin-top:10px">${tvnDia === hoyMX ? 'Noticias importantes de hoy' : `Editando la nota del ${esc(diaNota(tvnDia).toLowerCase())}`}
-        <small style="display:block;font-weight:500;color:#6A6496">Salen en el noticiero del ${esc(manana(tvnDia))}. Elige quién lo dice y escribe; con «Agregar locutor» le sigues el diálogo.</small></p>
-      ${tvnDia !== hoyMX ? '<button type="button" class="mini" id="tvn-hoy" style="margin-bottom:8px">← Volver a la nota de hoy</button>' : ''}
+      <p class="ayuda">Cada mañana a las <b>9</b> sale el noticiero con lo que pasó el día anterior (y llega aviso al celular). Lo que escribas aquí lo leen Elber y Rosa como <b>"noticias importantes que ocurrieron ayer"</b>. Lo puedes cambiar mientras ese noticiero no haya salido.</p>
+      <p class="campo" style="font-weight:700;margin-top:10px">${notaHoy ? 'Editando las noticias' : 'Noticias para el siguiente noticiero'}
+        <small style="display:block;font-weight:500;color:#6A6496">Elige quién lo dice y escribe. Con «👤 Habitante» pones su nombre y sale su cara en ese momento. Con «Agregar locutor» le sigues el diálogo.</small></p>
+      <label class="campo" for="tvn-dia">¿En qué noticiero sale?</label>
+      <select class="in" id="tvn-dia">${opcionesDia(tvnDia)}</select>
+      ${tvnDia !== sigDia || notaHoy ? '<button type="button" class="mini" id="tvn-hoy" style="margin:8px 0 0">← Escribir una nota nueva para el siguiente</button>' : ''}
       <div id="tvn-bloques">${bloquesNota.map(bloqueHtml).join('')}</div>
       <button type="button" class="btn sec" id="tvn-mas" style="margin-top:8px">➕ Agregar locutor</button>
-      <div class="adm-acciones"><button class="btn">${notaHoy ? 'Guardar cambios' : 'Guardar nota'}</button><button type="button" class="btn sec" id="tvn-ver">Ver el noticiero de hoy</button><button type="button" class="btn sec" id="tvn-manana">👀 Ver el de mañana (cómo va)</button>${notaHoy ? '<button type="button" class="mini" id="tvn-del">Borrar nota</button>' : ''}</div>
+      <div class="adm-acciones"><button class="btn">${notaHoy ? 'Guardar cambios' : 'Guardar nota'}</button><button type="button" class="btn sec" id="tvn-ver">Ver el último noticiero</button><button type="button" class="btn sec" id="tvn-manana">👀 Ver el siguiente (cómo va)</button>${notaHoy ? '<button type="button" class="mini" id="tvn-del">Borrar nota</button>' : ''}</div>
       <p style="margin:14px 0 4px;font-weight:700">Notas guardadas</p>
-      ${notasTv.map(n => { const ya = n.dia < hoyMX;
-        return `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>${esc(diaNota(n.dia))}</b>
-          <small style="white-space:normal;display:block">${Array.isArray(n.guion) && n.guion.length ? n.guion.map(x => `<b>${x.q === 'e' ? 'Elber' : 'Rosa'}:</b> ${esc(x.t)}`).join('<br>') : esc(n.texto)}</small><small style="display:block;color:${ya ? '#8E88B5' : '#1E8E5A'};font-weight:600">${ya ? `Ya salió en el noticiero del ${esc(manana(n.dia))}` : `Sale en el noticiero del ${esc(manana(n.dia))}`}</small></div>
-          <button type="button" class="mini" data-tvn-edit="${n.dia}">Editar</button><button type="button" class="mini" data-tvn-del="${n.dia}">Borrar</button></div>`; }).join('') || '<p class="ayuda">Todavía no hay notas.</p>'}
+      ${notasTv.map(n => { const ya = n.dia <= aireDia;
+        return `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>📺 Noticiero del ${esc(manana(n.dia))}</b>
+          <small style="white-space:normal;display:block">${Array.isArray(n.guion) && n.guion.length ? n.guion.map(x => `<b>${x.q === 'e' ? 'Elber' : 'Rosa'}:</b> ${esc(x.t)}${x.cara ? ` <i>(📸 ${esc(nombreDe(x.cara))})</i>` : ''}`).join('<br>') : esc(n.texto)}</small><small style="display:block;color:${ya ? '#8E88B5' : '#1E8E5A'};font-weight:600">${ya ? '✔ Ya salió: ya no se puede cambiar' : 'Todavía no sale: la puedes cambiar'}</small></div>
+          ${ya ? '' : `<button type="button" class="mini" data-tvn-edit="${n.dia}">Editar</button><button type="button" class="mini" data-tvn-del="${n.dia}">Borrar</button>`}</div>`; }).join('') || '<p class="ayuda">Todavía no hay notas.</p>'}
     </form>
+    <div class="adm-caja" data-sec="noticiero"><h3>🎤 Lo que le contaron al reportero</h3>
+      <p class="ayuda">Los habitantes le cuentan noticias al reportero y te llegan aquí con su nombre. Con «Usar» se agregan a las noticias de arriba para que las acomodes.</p>
+      ${reportajes.map(r => `<div class="adm-fila" style="align-items:flex-start;${r.usado ? 'opacity:.55' : ''}"><div class="info"><b>${esc(nombreDe(r.jugador_id))}</b>
+        <small style="white-space:normal;display:block">${esc(r.texto)}</small><small style="display:block">${esc(fmtFecha(r.creado))}${r.usado ? ' · ✔ Usada' : ''}</small></div>
+        <button type="button" class="mini" data-rep-usar="${r.id}">${r.usado ? 'Usar otra vez' : '➕ Usar'}</button><button type="button" class="mini" data-rep-del="${r.id}">Borrar</button></div>`).join('') || '<p class="ayuda">Todavía nadie le ha contado nada al reportero.</p>'}
+    </div>
     <form class="adm-caja" data-sec="records" id="rec-form"><h3>Récords de los juegos</h3>
       <p class="ayuda">Para corregir o poner a mano el récord de alguien (por ejemplo, si se le cerró la app y no se guardó). El número que pongas queda como su mejor puntaje.</p>
       <label class="campo" for="rec-juego">Juego</label>
@@ -5490,7 +5551,17 @@ async function adminExtras(C, seccion) {
         $$('[data-loc]', bl).forEach(x => x.classList.toggle('on', x === b));
         $('textarea', bl).placeholder = `Lo que dice ${b.dataset.loc === 'e' ? 'Elber' : 'Rosa'}…`;
       });
-      $('.tvn-quitar', bl).onclick = () => { if ($$('.tvn-bloque', cajaB).length > 1) bl.remove(); else $('textarea', bl).value = ''; };
+      $('.tvn-quitar', bl).onclick = () => { if ($$('.tvn-bloque', cajaB).length > 1) bl.remove(); else { $('textarea', bl).value = ''; bl.dataset.cara = ''; $('.tvn-cara-caja', bl).innerHTML = ''; } };
+      // poner a un habitante: su nombre donde va el cursor y su cara en pantalla en ese momento
+      $('.tvn-hab', bl).onchange = e => {
+        const id = e.target.value; e.target.value = ''; if (!id) return;
+        const ta = $('textarea', bl), nom = nombreDe(id), i = ta.selectionStart ?? ta.value.length, f = ta.selectionEnd ?? i;
+        const antes = ta.value.slice(0, i), sep = antes && !/\s$/.test(antes) ? ' ' : '';
+        ta.value = antes + sep + nom + ' ' + ta.value.slice(f);
+        bl.dataset.cara = id; $('.tvn-cara-caja', bl).innerHTML = caraChip(id); enlazarBloques();
+        adm.tvnSucio = true; ta.focus(); const p = (antes + sep + nom + ' ').length; ta.setSelectionRange(p, p);
+      };
+      const sc = $('.tvn-sin-cara', bl); if (sc) sc.onclick = () => { bl.dataset.cara = ''; $('.tvn-cara-caja', bl).innerHTML = ''; adm.tvnSucio = true; };
     });
   };
   enlazarBloques();
@@ -5503,18 +5574,47 @@ async function adminExtras(C, seccion) {
     enlazarBloques();
     [...$$('.tvn-bloque textarea', cajaB)].pop().focus();
   };
-  $('#tvn-hoy')?.addEventListener('click', () => { adm.tvnDia = hoyMX; cargarAdmin(); });
+  $('#tvn-hoy')?.addEventListener('click', () => { adm.tvnDia = sigDia; adm.tvnNueva = true; cargarAdmin(); });
+  const textoDe = g => g.map(x => `${x.q === 'e' ? 'Elber' : 'Rosa'}: ${x.t}`).join('\n').slice(0, 4000);
   $('#tvn-form').onsubmit = async e => {
     e.preventDefault();
-    const guion = [...$$('.tvn-bloque', cajaB)].map(bl => ({ q: bl.querySelector('[data-loc].on')?.dataset.loc || 'e', t: $('textarea', bl).value.trim() })).filter(x => x.t);
+    const guion = [...$$('.tvn-bloque', cajaB)].map(bl => ({ q: bl.querySelector('[data-loc].on')?.dataset.loc || 'e', t: $('textarea', bl).value.trim(), ...(bl.dataset.cara ? { cara: bl.dataset.cara } : {}) })).filter(x => x.t);
     if (!guion.length) return toast('Escribe al menos lo que dice un locutor');
-    const texto = guion.map(x => `${x.q === 'e' ? 'Elber' : 'Rosa'}: ${x.t}`).join('\n').slice(0, 4000);
+    const destino = $('#tvn-dia').value;
+    if (destino <= aireDia) return toast('Ese noticiero ya salió: elige uno que todavía no salga');
     try {
-      if (notaHoy) await q(sb.from('noticiero_notas').update({ texto, guion }).eq('dia', tvnDia));
-      else await q(sb.from('noticiero_notas').insert({ dia: tvnDia, texto, guion }));
-      toast(`📺 Guardado para el noticiero del ${manana(tvnDia)}`); adm.tvnDia = hoyMX; cargarAdmin();
+      const yaHay = notasTv.find(x => x.dia === destino);
+      if (destino === tvnDia && notaHoy) await q(sb.from('noticiero_notas').update({ texto: textoDe(guion), guion }).eq('dia', destino));
+      else if (yaHay) {
+        // ese noticiero ya tenía noticias: se juntan (primero las que ya estaban)
+        if (!confirm(`El noticiero del ${manana(destino)} ya tiene noticias. ¿Juntamos estas con esas?`)) return;
+        const previo = Array.isArray(yaHay.guion) && yaHay.guion.length ? yaHay.guion : [{ q: 'a', t: yaHay.texto }];
+        const junto = [...previo, ...guion];
+        await q(sb.from('noticiero_notas').update({ texto: textoDe(junto), guion: junto }).eq('dia', destino));
+        if (notaHoy) await q(sb.from('noticiero_notas').delete().eq('dia', tvnDia));
+      } else {
+        await q(sb.from('noticiero_notas').insert({ dia: destino, texto: textoDe(guion), guion }));
+        if (notaHoy) await q(sb.from('noticiero_notas').delete().eq('dia', tvnDia));     // se cambió de noticiero
+      }
+      toast(`📺 Guardado para el noticiero del ${manana(destino)}`); adm.tvnDia = null; adm.tvnSucio = false; cargarAdmin();
     } catch (x) { toast(mensajeError(x)); }
   };
+  // reportero: usar (agrega a las noticias) o borrar
+  $$('[data-rep-usar]').forEach(b => b.onclick = async () => {
+    const r = reportajes.find(x => String(x.id) === b.dataset.repUsar); if (!r) return;
+    const ult = [...$$('.tvn-bloque', cajaB)].pop(), vacio = ult && !$('textarea', ult).value.trim();
+    const q0 = vacio ? (ult.querySelector('[data-loc].on')?.dataset.loc || 'e') : ((ult?.querySelector('[data-loc].on')?.dataset.loc || 'a') === 'e' ? 'a' : 'e');
+    if (vacio) ult.remove();
+    cajaB.insertAdjacentHTML('beforeend', bloqueHtml({ q: q0, t: r.texto }));
+    enlazarBloques(); adm.tvnSucio = true;
+    $('#tvn-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    toast('Agregada a las noticias: acomódala y guarda');
+    try { await q(sb.from('reportajes').update({ usado: true }).eq('id', r.id)); } catch { }
+  });
+  $$('[data-rep-del]').forEach(b => b.onclick = async () => {
+    if (!confirm('¿Borrar lo que le contaron al reportero?')) return;
+    try { await q(sb.from('reportajes').delete().eq('id', b.dataset.repDel)); toast('Borrado'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
+  });
   $('#tvn-ver').onclick = () => TV.abrir();
   $('#tvn-manana').onclick = () => TV.abrir(true);
   $$('[data-tvn-edit]').forEach(b => b.onclick = () => { adm.tvnDia = b.dataset.tvnEdit; cargarAdmin().then?.(() => $('#tvn-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); });
@@ -5524,7 +5624,7 @@ async function adminExtras(C, seccion) {
   });
   $('#tvn-del')?.addEventListener('click', async () => {
     if (!confirm('¿Borrar esta nota?')) return;
-    try { await q(sb.from('noticiero_notas').delete().eq('dia', tvnDia)); toast('Nota borrada'); adm.tvnDia = hoyMX; cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
+    try { await q(sb.from('noticiero_notas').delete().eq('dia', tvnDia)); toast('Nota borrada'); adm.tvnDia = null; cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
   });
   $$('[data-rec-edit]').forEach(b => b.onclick = () => {
     const [id, juego, mejor] = b.dataset.recEdit.split('|');
