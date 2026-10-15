@@ -296,6 +296,10 @@ create table if not exists public.noticiero_notas (
   texto  text not null check (char_length(texto) between 1 and 400),
   creado timestamptz not null default now()
 );
+-- v21: la nota puede ser un guion: qué dice cada locutor, en orden ([{"q":"e"|"a","t":"..."}])
+alter table public.noticiero_notas add column if not exists guion jsonb;
+alter table public.noticiero_notas drop constraint if exists noticiero_notas_texto_check;
+alter table public.noticiero_notas add constraint noticiero_notas_texto_check check (char_length(texto) between 1 and 4000);
 
 -- Predicción secreta: quién gana y quién sale primero
 create table if not exists public.predicciones (
@@ -1435,6 +1439,7 @@ declare
   v_titulo text;
 begin
   yo := public._yo(p_token);
+  if yo.rol <> 'jugador' then raise exception 'PUBLICO_SIN_BILLETES'; end if;      -- v21: el público junta billetes pero no los usa
   select * into c from public.config where id = 1;
   if p_monto is null or p_monto < 0 or (p_monto > 0 and p_monto < 10) then raise exception 'APUESTA_MINIMA'; end if;
   if p_monto > 5000 then raise exception 'APUESTA_MAXIMA'; end if;
@@ -1520,10 +1525,12 @@ begin
   for e in select * from public.encuestas where not liquidada and cierra <= now() for update skip locked loop
     select coalesce(jsonb_agg(n order by i), '[]'::jsonb), coalesce(max(n), 0),
            array_agg(i::text order by i) filter (where n > 0 and n = (select max(n2) from (
-             select (select count(*) from public.encuesta_votos v where v.encuesta_id = e.id and v.opcion = i2)::int n2
+             select (select count(*) from public.encuesta_votos v join public.jugadores j on j.id = v.jugador_id and j.rol = 'jugador'
+                      where v.encuesta_id = e.id and v.opcion = i2)::int n2
                from generate_series(0, jsonb_array_length(e.opciones) - 1) i2) z))
       into v_conteo, v_max, v_gan
-      from (select i, (select count(*) from public.encuesta_votos v where v.encuesta_id = e.id and v.opcion = i)::int n
+      from (select i, (select count(*) from public.encuesta_votos v join public.jugadores j on j.id = v.jugador_id and j.rol = 'jugador'
+                        where v.encuesta_id = e.id and v.opcion = i)::int n
               from generate_series(0, jsonb_array_length(e.opciones) - 1) i) t;
     update public.encuestas set liquidada = true, avisada = true,
            resultado = jsonb_build_object('conteo', v_conteo, 'ganadores', to_jsonb(coalesce(v_gan, '{}'::text[])))
@@ -1730,13 +1737,13 @@ begin
   yo := public._yo(p_token);
   if p_juego not in ('memoria', 'adeudo', 'monster', 'monster2') then raise exception 'JUEGO_INVALIDO'; end if;
   v := least(greatest(coalesce(p_puntaje, 0), 0), case p_juego when 'memoria' then 1000 when 'adeudo' then 20000 else 5000000 end);
-  select coalesce(max(mejor), 0) into v_rec from public.practicas where juego = p_juego;
+  select coalesce(max(p2.mejor), 0) into v_rec from public.practicas p2 join public.jugadores j on j.id = p2.jugador_id and j.rol = 'jugador' where p2.juego = p_juego;
   insert into public.practicas (jugador_id, juego) values (yo.id, p_juego) on conflict do nothing;
   select * into p from public.practicas where jugador_id = yo.id and juego = p_juego for update;
   if p.ultimo_premio is distinct from public._hoy() then
     perform public._mover(yo.id, 100, 'Práctica del día'); v_premio := 100;
   end if;
-  if v > v_rec and v > 0 then
+  if v > v_rec and v > 0 and yo.rol = 'jugador' then        -- el público guarda su mejor marca, pero no cuenta para los récords de la casa
     v_record := true;
     insert into public.sucesos (tipo, jugador_id, dato) values ('record', yo.id, jsonb_build_object('juego', p_juego, 'puntos', v, 'antes', v_rec));
     if p.ultimo_record is distinct from public._hoy() then
@@ -1750,7 +1757,8 @@ begin
   return jsonb_build_object('mejor', greatest(p.mejor, v), 'record', v_record, 'premio', v_premio,
     'premio_dia', case when p.ultimo_premio is distinct from public._hoy() then 100 else 0 end,
     'top', (select coalesce(jsonb_agg(jsonb_build_object('id', t.jugador_id, 'nombre', j.nombre, 'mejor', t.mejor) order by t.mejor desc), '[]'::jsonb)
-              from (select * from public.practicas where juego = p_juego and mejor > 0 order by mejor desc limit 5) t
+              from (select p3.* from public.practicas p3 join public.jugadores j3 on j3.id = p3.jugador_id and j3.rol = 'jugador'
+                     where p3.juego = p_juego and p3.mejor > 0 order by p3.mejor desc limit 5) t
               join public.jugadores j on j.id = t.jugador_id));
 end $$;
 
@@ -1841,6 +1849,7 @@ declare
   t public.tienda;
 begin
   yo := public._yo(p_token);
+  if yo.rol <> 'jugador' then raise exception 'PUBLICO_SIN_BILLETES'; end if;
   select * into t from public.tienda where id = p_item;
   if not found then raise exception 'OPCION_INVALIDA'; end if;
   if p_item = any (yo.compras) then raise exception 'YA_LO_TIENES'; end if;
@@ -1893,7 +1902,7 @@ begin
     'encuestas', (select coalesce(jsonb_agg(jsonb_build_object(
           'id', e.id, 'pregunta', e.pregunta, 'opciones', e.opciones, 'abre', e.abre, 'cierra', e.cierra,
           'abierta', e.abre <= now() and e.cierra > now(),
-          'votos', (select count(*) from public.encuesta_votos v where v.encuesta_id = e.id),
+          'votos', (select count(*) from public.encuesta_votos v join public.jugadores j on j.id = v.jugador_id and j.rol = 'jugador' where v.encuesta_id = e.id),
           'mi_voto', (select v.opcion from public.encuesta_votos v where v.encuesta_id = e.id and v.jugador_id = p_yo),
           'pozo', (select coalesce(sum(monto), 0) from public.apuestas a where a.tipo = 'encuesta' and a.ref = e.id),
           'resultado', case when e.liquidada then e.resultado end) order by e.cierra), '[]'::jsonb)
@@ -1916,7 +1925,7 @@ begin
     'misiones_cumplidas', (select count(*) from public.misiones where semana = c.semana and cumplida is not null),
     'records', (select coalesce(jsonb_agg(jsonb_build_object('juego', r.juego, 'id', r.jugador_id, 'mejor', r.mejor) order by r.juego, r.mejor desc), '[]'::jsonb)
         from (select p.*, row_number() over (partition by p.juego order by p.mejor desc, p.jugador_id) as n
-                from public.practicas p where p.mejor > 0) r where r.n <= 3),
+                from public.practicas p join public.jugadores jj on jj.id = p.jugador_id and jj.rol = 'jugador' where p.mejor > 0) r where r.n <= 3),
     'practicas', (select coalesce(jsonb_agg(jsonb_build_object('id', p.jugador_id, 'juego', p.juego, 'mejor', p.mejor, 'partidas', p.partidas)), '[]'::jsonb)
         from public.practicas p)
   );
@@ -1954,27 +1963,28 @@ begin
     'sucesos', (select coalesce(jsonb_agg(jsonb_build_object('tipo', s.tipo, 'id', s.jugador_id, 'nombre', j.nombre, 'dato', s.dato) order by s.id), '[]'::jsonb)
         from public.sucesos s left join public.jugadores j on j.id = s.jugador_id where s.creado >= v_ini and s.creado < v_fin),
     'compras', (select coalesce(jsonb_agg(jsonb_build_object('id', m.jugador_id, 'nombre', j.nombre, 'cosa', substr(m.concepto, 9)) order by m.id), '[]'::jsonb)
-        from public.movimientos m join public.jugadores j on j.id = m.jugador_id
+        from public.movimientos m join public.jugadores j on j.id = m.jugador_id and j.rol = 'jugador'
        where m.concepto like 'Tienda: %' and m.creado >= v_ini and m.creado < v_fin),
     'misiones', (select coalesce(jsonb_agg(jsonb_build_object('id', x.jugador_id, 'nombre', j.nombre, 'n', x.n) order by x.n desc, j.nombre), '[]'::jsonb)
         from (select jugador_id, count(*)::int as n from public.movimientos
                where concepto = 'Misión secreta cumplida' and creado >= v_ini and creado < v_fin group by jugador_id) x
-        join public.jugadores j on j.id = x.jugador_id),
+        join public.jugadores j on j.id = x.jugador_id and j.rol = 'jugador'),
     'apuestas', (select coalesce(jsonb_agg(jsonb_build_object('id', m.jugador_id, 'nombre', j.nombre, 'monto', m.monto) order by m.monto desc), '[]'::jsonb)
-        from public.movimientos m join public.jugadores j on j.id = m.jugador_id
+        from public.movimientos m join public.jugadores j on j.id = m.jugador_id and j.rol = 'jugador'
        where m.concepto like '¡Ganaste la apuesta%' and m.creado >= v_ini and m.creado < v_fin),
     'encuestas', (select coalesce(jsonb_agg(jsonb_build_object('pregunta', e.pregunta, 'opciones', e.opciones, 'resultado', e.resultado) order by e.cierra), '[]'::jsonb)
         from public.encuestas e where e.liquidada and e.cierra >= v_ini and e.cierra < v_fin),
     'chat', jsonb_build_object(
-        'n', (select count(*) from public.chat where creado >= v_ini and creado < v_fin),
+        'n', (select count(*) from public.chat c join public.jugadores j on j.id = c.jugador_id and j.rol = 'jugador' where c.creado >= v_ini and c.creado < v_fin),
         'top', (select jsonb_build_object('id', c.jugador_id, 'nombre', j.nombre, 'n', count(*))
-                  from public.chat c join public.jugadores j on j.id = c.jugador_id
+                  from public.chat c join public.jugadores j on j.id = c.jugador_id and j.rol = 'jugador'
                  where c.creado >= v_ini and c.creado < v_fin group by c.jugador_id, j.nombre order by count(*) desc limit 1)),
-    'votantes', (select count(distinct votante_id) from public.votos where creado >= v_ini and creado < v_fin),
+    'votantes', (select count(distinct votante_id) from public.votos where not es_publico and creado >= v_ini and creado < v_fin),
     'nuevos', (select coalesce(jsonb_agg(jsonb_build_object('id', id, 'nombre', nombre, 'rol', rol) order by creado), '[]'::jsonb)
-        from public.jugadores where creado >= v_ini and creado < v_fin),
-    'jugaron', (select count(distinct jugador_id) from public.movimientos where concepto = 'Práctica del día' and creado >= v_ini and creado < v_fin),
-    'rico', (select jsonb_build_object('id', id, 'nombre', nombre, 'billetes', billetes) from public.jugadores order by billetes desc, nombre limit 1),
+        from public.jugadores where rol = 'jugador' and creado >= v_ini and creado < v_fin),
+    'jugaron', (select count(distinct m.jugador_id) from public.movimientos m join public.jugadores j on j.id = m.jugador_id and j.rol = 'jugador'
+                 where m.concepto = 'Práctica del día' and m.creado >= v_ini and m.creado < v_fin),
+    'rico', (select jsonb_build_object('id', id, 'nombre', nombre, 'billetes', billetes) from public.jugadores where rol = 'jugador' order by billetes desc, nombre limit 1),
     -- v20: por juego, solo el récord con que terminó el día y quién lo tenía antes
     'records', (select coalesce(jsonb_agg(x.r), '[]'::jsonb) from (
         select jsonb_build_object('juego', g.juego,
@@ -1985,11 +1995,12 @@ begin
                       from public.sucesos s join public.jugadores j on j.id = s.jugador_id
                      where s.tipo = 'record' and s.dato->>'juego' = g.juego and s.creado < v_ini order by s.id desc limit 1),
           'actual', (select jsonb_build_object('id', p.jugador_id, 'nombre', j.nombre, 'puntos', p.mejor)
-                       from public.practicas p join public.jugadores j on j.id = p.jugador_id
+                       from public.practicas p join public.jugadores j on j.id = p.jugador_id and j.rol = 'jugador'
                       where p.juego = g.juego and p.mejor > 0 order by p.mejor desc limit 1)) as r
           from (values (1, 'monster2'), (2, 'monster'), (3, 'memoria'), (4, 'adeudo')) g(o, juego) order by g.o) x
         where x.r->'actual' <> 'null'::jsonb),
-    'nota', (select texto from public.noticiero_notas where dia = v_dia)
+    'nota', (select texto from public.noticiero_notas where dia = v_dia),
+    'nota_guion', (select guion from public.noticiero_notas where dia = v_dia)
   );
 end $$;
 

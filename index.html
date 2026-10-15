@@ -200,6 +200,11 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .pr-top span{background:rgba(255,255,255,.1);border-radius:999px;padding:3px 10px;font-size:.8rem;color:#fff}
 /* El Noticierazo */
 .chip-eco.tv-chip{background:#D7263D;box-shadow:none}
+.tvn-bloque{border:1px solid #D9D4F3;border-radius:12px;padding:8px;margin-top:8px;background:#FFFDF6}
+.tvn-loc{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.tvn-loc button[data-loc]{border:1px solid #C9C3EE;background:#fff;border-radius:999px;padding:5px 12px;font-weight:700;font-size:.85rem;cursor:pointer}
+.tvn-loc button[data-loc].on{background:#1B1440;color:#fff;border-color:#1B1440}
+.tvn-loc .tvn-quitar{margin-left:auto}
 .tv-aviso-card{width:100%;display:flex;align-items:center;gap:12px;text-align:left;border:0;cursor:pointer;margin-top:12px;padding:12px 14px;border-radius:14px;color:#fff;
   background:linear-gradient(135deg,#D7263D,#7A3FB5);box-shadow:0 6px 0 #0E0A26;animation:entra-aviso .4s ease-out}
 .tv-aviso-card .ic{font-size:1.9rem;animation:latido-vivo 1.4s infinite}
@@ -1279,6 +1284,7 @@ const ERRORES = {
   NO_ERES_OBJETIVO: 'Esa misión no era sobre ti. Solo la persona de la misión puede confirmarla.',
   MISION_YA_CUMPLIDA: 'Esa misión ya estaba cumplida.',
   OJO_SOLO_HABITANTES: 'El ojo solo les cuenta chismes a los habitantes de la casa. 👁️',
+  PUBLICO_SIN_BILLETES: 'Como público juntas billetes, pero solo los habitantes pueden usarlos en la tienda y las apuestas.',
   MISION_VENCIDA: 'Esa misión era de una semana pasada.',
   MISION_NO_EXISTE: 'Esa misión ya no existe (quizá se repartieron otras).',
   MISION_YA_PEDIDA: 'Ya le avisaste: falta que confirme.',
@@ -3037,12 +3043,16 @@ function pintarEconomia() {
   TV.pintarBoton();
   CHAT.revisar();
   $('#c-billetes').innerHTML = `💵 <b>${fmt$(est.billetes)}</b>`;
+  const publico = est.yo.rol !== 'jugador';
+  $('#c-tienda').classList.toggle('hidden', publico);
   const g = est.juego;
   // pestaña Billetes: saldo, apuestas y encuestas
   let h = `<div class="juego-card"><h3>💵 Tu saldo <small>No son de verdad 😉</small></h3>
     <div class="display" style="font-size:2.2rem;color:#7CF29A">${fmt$(est.billetes)}</div>
-    <p class="ayuda">Ganas billetes entrando cada día, cumpliendo misiones, jugando y atinándole a las apuestas. Se gastan en la tienda para vestir a tu monito.</p>
-    <div class="fila-btn"><button class="btn chico" data-ver-billetes>Ver mis movimientos</button><button class="btn sec chico" data-ver-tienda>🛍️ Ir a la tienda</button></div></div>`;
+    ${publico ? `<p class="ayuda">Como público juntas billetes entrando cada día y jugando, pero solo los habitantes pueden usarlos (tienda y apuestas).</p>
+    <div class="fila-btn"><button class="btn chico" data-ver-billetes>Ver mis movimientos</button></div></div>`
+    : `<p class="ayuda">Ganas billetes entrando cada día, cumpliendo misiones, jugando y atinándole a las apuestas. Se gastan en la tienda para vestir a tu monito.</p>
+    <div class="fila-btn"><button class="btn chico" data-ver-billetes>Ver mis movimientos</button><button class="btn sec chico" data-ver-tienda>🛍️ Ir a la tienda</button></div></div>`}`;
   h += tarjetaApuestas(g);
   const abiertas = (est.encuestas || []).filter(e => e.abierta);
   h += (est.encuestas || []).map(tarjetaEncuesta).join('');
@@ -3057,7 +3067,7 @@ function pintarEconomia() {
   // botones
   const C = $('#s-casa');
   C.querySelector('[data-ver-billetes]').onclick = abrirBilletes;
-  C.querySelector('[data-ver-tienda]').onclick = () => $('#c-tienda').click();
+  const vt = C.querySelector('[data-ver-tienda]'); if (vt) vt.onclick = () => $('#c-tienda').click();
   $$('#s-casa [data-apostar]').forEach(b => b.onclick = () => abrirApuesta(b.dataset.apostar, b.dataset.ref ? +b.dataset.ref : null));
   $$('#s-casa [data-votar-enc]').forEach(b => b.onclick = async () => {
     try { await rpc('votar_encuesta', { p_token: token, p_id: +b.dataset.votarEnc, p_opcion: +b.dataset.op }); SFX.tocar('clic'); toast('Voto guardado (es anónimo)'); refrescar(); }
@@ -3108,7 +3118,7 @@ function pendientesHoy() {
   }
   const sinVotar = (est.encuestas || []).filter(e => e.abierta && e.mi_voto == null);
   if (sinVotar.length) items.push({ ic: '📊', tx: sinVotar.length === 1 ? 'Hay una encuesta abierta' : `Hay ${sinVotar.length} encuestas abiertas`, sub: 'Vota y apuesta por el resultado', btn: 'Ver', accion: 'billetes' });
-  const apuestas = apuestasAbiertas(g).filter(t => !(est.mis_apuestas || []).some(a => a.tipo === t && a.ref === g.semana));
+  const apuestas = yo.rol !== 'jugador' ? [] : apuestasAbiertas(g).filter(t => !(est.mis_apuestas || []).some(a => a.tipo === t && a.ref === g.semana));
   if (apuestas.length) items.push({ ic: '💰', tx: apuestas.includes('lider') ? '¿Quién será el líder? Apuesta' : '¿Quién sale esta semana? Apuesta', sub: 'Pozo compartido entre los que atinan', btn: 'Apostar', accion: 'billetes' });
   return items;
 }
@@ -3196,7 +3206,7 @@ function tarjetaMonster() {
   let h = `<div class="monster-card"><div class="ed">EDICIÓN ALFA BROTHER · NUEVO</div><h3>MONSTER CRAZY <span style="color:#FFD54A">2.0</span></h3>
     <div class="monster-caras">${caras.map(j => avatar(j, 38)).join('')}<div class="av" style="width:38px;height:38px;background:#050207;font-size:20px">💀</div></div>
     <p>Las caras de tus compañeros salen sobre el monstruo: deslízales el dedo antes de que se acabe el tiempo. <b>Desde la oleada 16 salen círculos negros 💀: si los tocas, pierdes un corazón</b> (y cada 3 oleadas sale uno más).</p>
-    <p style="font-size:.85rem;color:#FFD54A">Tu récord: <b>${mio('monster2').toLocaleString('es-MX')}</b> · La primera partida del día paga $100 y romper el récord de la casa, $200.</p>
+    <p style="font-size:.85rem;color:#FFD54A">Tu récord: <b>${mio('monster2').toLocaleString('es-MX')}</b> · ${est.yo.rol === 'jugador' ? 'La primera partida del día paga $100 y romper el récord de la casa, $200.' : 'Como público, la primera partida del día te da $100, pero tu puntaje no entra a los récords de la casa.'}</p>
     <button class="btn" data-monster="monster2">🎮 Jugar</button></div>`;
   if (monster1Disponible()) h += `<div class="monster-card" style="border-color:#7A3FB5;box-shadow:none"><div class="ed">⏳ SOLO HASTA HOY</div><h3 style="font-size:1.4rem">MONSTER CRAZY</h3>
     <p>La versión de siempre, sin círculos negros. Mañana se retira, pero tu récord se queda guardado en la casa.</p>
@@ -3479,7 +3489,8 @@ const TV = (() => {
       [['a', 'No hubo chisme ayer, banda.'], ['e', 'Eso es lo más raro que ha pasado en esta oficina.']]],
     rico_in: ['Y quien más billetes tiene en la casa es {n}, con {b}.', 'El más millonario de la casa: {n}, con {b} billetes.', '{n} sigue de ricachón con {b} billetes.', 'En la cima de los billetes está {n}: {b}.'],
     rico_j: ['billetes de mentiritas, pero igual ni nos invita un taco.', 'ya anda buscando casa en las Lomas.', 'que se compre algo bonito, porque esa cara no tiene arreglo.', 'el Slim de la oficina.', 'y todavía pide descuento en la tienda.', 'ahí está el que nunca presta.'],
-    nota_in: ['Ojo, banda, que nos llegó nota de la producción:', 'Atención, mensaje de la producción:', 'Nos pasaron un recadito de la producción:', 'La producción manda decir:', 'Último momento, de parte de la producción:'],
+    nota_in: ['Y ahora, noticias importantes que ocurrieron ayer.', 'Pongan atención, banda: noticias importantes de ayer.', 'Noticias importantes que pasaron ayer, raza.', 'Ojo con esto, que son noticias importantes de ayer.',
+      'Ahora sí, las noticias importantes que ocurrieron ayer.', 'Agárrense, que vienen las noticias importantes de ayer.'],
     bien: ['Y bienvenida a {n}, que se registró ayer.', 'Saluden a {n}, que ya llegó a la casa.', 'Se nos unió {n}. ¡Un aplauso, raza!', 'Ojo, que {n} también se apuntó ayer.', 'Y llegó carne fresca: {n}.',
       'Bienvenido, bienvenida, lo que seas, {n}.', 'Pásale, {n}, ya eres de la familia.', '{n} se registró ayer. ¡Ánimo, valiente!'],
     bien_j: ['Pásele, pásele, que aquí nadie muerde… nomás tantito.', 'Ya se la sabe: aquí se paga hasta la entrada.', 'Que se ponga cómodo, pero que no se encariñe, que aquí sacan a cualquiera.',
@@ -3589,7 +3600,10 @@ const TV = (() => {
     if (nuevos.length > 3) dos(`👋 ${nuevos.length} nuevos en la casa`, `Ayer se registraron ${nuevos.length}: ${nuevos.slice(0, -1).map(x => x.nombre).join(', ')} y ${nuevos[nuevos.length - 1].nombre}.`, frase('bien_j', T.bien_j, 3));
     else for (const x of nuevos) dos(`👋 Bienvenida a ${x.nombre}`, llenar(frase('bien', T.bien, 3), { n: x.nombre }) + (x.rol === 'espectador' ? ' Entra como público.' : ''), frase('bien_j', T.bien_j, 3), x.id);
     if (d.jugaron) { const k = d.jugaron; dos(`🎮 ${k} ${k === 1 ? 'se puso' : 'se pusieron'} a jugar`, llenar(frase('jug_in', T.jug_in), { k: k === 1 ? 'una persona' : k, se: k === 1 ? 'se puso' : 'se pusieron' }), reaccion('jug_j', NEUTRO, T.jug_j, {})); }
-    if (d.nota) { const q = turno; turno = otro(turno); nota('🎬 Nota de la producción', [[q, frase('nota_in', T.nota_in)], [otro(q), d.nota]]); }
+    // noticias importantes (las escribe la producción, con lo que dice cada locutor)
+    const gn = (Array.isArray(d.nota_guion) ? d.nota_guion : []).filter(x => x && x.t && (x.q === 'e' || x.q === 'a'));
+    if (gn.length) nota('📌 Noticias importantes de ayer', [[gn[0].q, frase('nota_in', T.nota_in)], ...gn.map(x => [x.q, x.t])]);
+    else if (d.nota) { const q = turno; turno = otro(turno); nota('📌 Noticias importantes de ayer', [[q, frase('nota_in', T.nota_in)], [otro(q), d.nota]]); }
     if (titulares.length === 0) nota('😴 No pasó nada', frase('nada', T.nada));
     if (d.rico) dos(`💵 ${d.rico.nombre} es quien más billetes tiene`, llenar(frase('rico_in', T.rico_in), { n: d.rico.nombre, b: fmt(d.rico.billetes) }), reaccion('rico_j', NEUTRO, T.rico_j, {}), d.rico.id);
     bloque(frase('salida', SALIDAS));
@@ -3767,6 +3781,7 @@ function apuestasAbiertas(g) {
   return t;
 }
 function tarjetaApuestas(g) {
+  if (est.yo.rol !== 'jugador') return '';            // el público no apuesta
   const abiertas = apuestasAbiertas(g);
   const mias = (est.mis_apuestas || []).filter(a => a.tipo !== 'encuesta' && a.ref === g.semana);
   if (!abiertas.length && !mias.length) return '';
@@ -3788,6 +3803,7 @@ function tarjetaApuestas(g) {
 }
 let apSel = null;
 function abrirApuesta(tipo, ref = null) {
+  if (est?.yo.rol !== 'jugador') { toast(ERRORES.PUBLICO_SIN_BILLETES, 4000); return; }
   const g = est.juego;
   let titulo, opciones, previa, pozo;
   if (tipo === 'encuesta') {
@@ -3855,7 +3871,8 @@ function tarjetaEncuesta(e) {
         ${j ? avatar(j, 28) : ''}<span>${esc(o.t)}</span>${e.mi_voto === i ? '<span class="chk">✔ Tu voto</span>' : ''}</button>`;
     }).join('');
     h += `<div class="proximo" data-hasta="${e.cierra}" style="margin-top:10px"><span>Cierra en</span><b class="js-falta">${faltaTexto(new Date(e.cierra) - Date.now())}</b><small>El voto es anónimo</small></div>`;
-    h += `<div class="ap-linea"><span style="font-size:1.4rem">💰</span><div style="min-width:0"><div style="font-weight:700">¿Qué opción va a ganar?</div>
+    if (est.yo.rol !== 'jugador') h += `<p class="ayuda" style="margin-top:8px">👀 Como público puedes votar, pero tu voto no cuenta para el resultado.</p>`;
+    else h += `<div class="ap-linea"><span style="font-size:1.4rem">💰</span><div style="min-width:0"><div style="font-weight:700">¿Qué opción va a ganar?</div>
       <small style="color:#C9C3EE">${mia ? `Apostaste <b>${fmt$(mia.monto)}</b> a “${esc(opTxt(+mia.opcion))}”` : `Pozo: ${fmt$(e.pozo)}`}</small></div>
       <button class="btn chico" data-apostar="encuesta" data-ref="${e.id}">${mia ? 'Cambiar' : 'Apostar'}</button></div>`;
   } else if (e.resultado) {
@@ -4004,7 +4021,7 @@ function tarjetaPractica(juego) {
   return `<div class="monster-card ${e.clase}"><div class="ed">${e.ed}</div><h3>${e.titulo} <span class="pr-ic">${e.icono}</span></h3>
     <p>${esc(p.desc)}</p>
     ${top.length ? `<div class="pr-top">${top.map((r, i) => `<span>${['🥇', '🥈', '🥉'][i]} ${esc(porId(r.id)?.nombre || '?')} <b>${r.mejor.toLocaleString('es-MX')}</b></span>`).join('')}</div>` : ''}
-    <p class="pr-rec">Tu récord: <b>${(mio?.mejor || 0).toLocaleString('es-MX')}</b> · La primera partida del día paga $100 y romper el récord de la casa, $200.</p>
+    <p class="pr-rec">Tu récord: <b>${(mio?.mejor || 0).toLocaleString('es-MX')}</b> · ${est.yo.rol === 'jugador' ? 'La primera partida del día paga $100 y romper el récord de la casa, $200.' : 'Como público, la primera partida del día te da $100, pero tu puntaje no entra a los récords de la casa.'}</p>
     <button class="btn" data-practicar="${juego}">${e.boton}</button></div>`;
 }
 
@@ -4032,6 +4049,7 @@ async function abrirBilletes() {
     <button class="btn sec" id="bi-cerrar" style="margin-top:14px">Cerrar</button>`;
   $('#bi-cerrar').onclick = () => $('#m-billetes').classList.add('hidden');
   $('#bi-tienda').onclick = () => { $('#m-billetes').classList.add('hidden'); abrirTienda(); };
+  if (est.yo.rol !== 'jugador') $('#bi-tienda').classList.add('hidden');
 }
 
 /* ---------- tienda del monito ---------- */
@@ -4039,6 +4057,7 @@ let catalogo = null;
 const TIPOS_TIENDA = [['sombrero', '🎩 Sombreros'], ['lentes', '🕶️ Lentes'], ['color', '🎨 Color'], ['mano', '☕ En la mano'], ['mascota', '🐶 Mascotas'], ['efecto', '✨ Efectos']];
 let tiendaTab = 'sombrero';
 async function abrirTienda() {
+  if (est?.yo.rol !== 'jugador') { toast(ERRORES.PUBLICO_SIN_BILLETES, 4000); return; }
   catalogo = null;                     // siempre los precios más nuevos
   $('#ti-caja').innerHTML = `<div class="folio"><span>Tienda del monito</span><span>${fmt$(est.billetes)}</span></div><p class="ayuda">Cargando…</p>`;
   $('#m-tienda').classList.remove('hidden');
@@ -4977,6 +4996,7 @@ async function cargarAdmin(silencioso) {
   const C = $('#a-contenido');
   // no repintar mientras se escribe en un formulario del panel
   if (silencioso && C.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  if (silencioso && adm.tvnSucio && adm.tab === 'noticiero') return;      // no borrar el guion que se está escribiendo
   try {
     await sb.rpc('admin_tick').catch?.(() => { });
     sb.from('chismes').select('id').eq('pendiente', true).then(({ data }) => {
@@ -5315,7 +5335,14 @@ async function adminExtras(C, seccion) {
   const recs = await q(sb.from('practicas').select('*').order('mejor', { ascending: false })).catch(() => []);
   const hoyMX = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
   const notasTv = await q(sb.from('noticiero_notas').select('*').order('dia', { ascending: false })).then(x => x.slice(0, 14)).catch(() => []);
-  const notaHoy = notasTv.find(x => x.dia === hoyMX);
+  if (!adm.tvnDia || (adm.tvnDia < hoyMX && !notasTv.some(x => x.dia === adm.tvnDia))) adm.tvnDia = hoyMX;
+  const tvnDia = adm.tvnDia, notaHoy = notasTv.find(x => x.dia === tvnDia);
+  // la nota como guion: [{q:'e'|'a', t}] (las notas viejas de puro texto las dice Rosa)
+  const bloquesNota = notaHoy ? (Array.isArray(notaHoy.guion) && notaHoy.guion.length ? notaHoy.guion : [{ q: 'a', t: notaHoy.texto }]) : [{ q: 'e', t: '' }];
+  const LOC = { e: 'Elber Galarga', a: 'Rosa Melano' };
+  const bloqueHtml = b => `<div class="tvn-bloque"><div class="tvn-loc">${['e', 'a'].map(q => `<button type="button" data-loc="${q}" class="${b.q === q ? 'on' : ''}">🎙️ ${LOC[q].split(' ')[0]}</button>`).join('')}
+      <button type="button" class="mini tvn-quitar" aria-label="Quitar">✕</button></div>
+      <textarea class="in" rows="2" maxlength="400" placeholder="Lo que dice ${b.q === 'e' ? 'Elber' : 'Rosa'}…">${esc(b.t || '')}</textarea></div>`;
   const diaNota = dia => { const t = new Date(dia + 'T12:00:00Z').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' }); return t.charAt(0).toUpperCase() + t.slice(1); };
   const manana = dia => { const x = new Date(dia + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + 1); return diaNota(x.toISOString().slice(0, 10)).toLowerCase(); };
   const JUEGOS_REC = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy (clásico)', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo' };
@@ -5362,14 +5389,17 @@ async function adminExtras(C, seccion) {
       ${chatMsgs.map(m => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>${esc(nombreDe(m.jugador_id))}</b>
         <small style="white-space:normal">${esc(m.texto)} · ${esc(fechaCorta(m.creado))}</small></div><button class="mini" data-chat-del="${m.id}">Borrar</button></div>`).join('') || '<p class="ayuda">Todavía no hay mensajes.</p>'}</div>
     <form class="adm-caja" data-sec="noticiero" id="tvn-form"><h3>📺 El Noticierazo</h3>
-      <p class="ayuda">Cada mañana a las 8 sale el noticiero con lo que pasó el día anterior (y llega aviso al celular). Lo que escribas aquí lo leen Elber y Rosa como "nota de la producción" en el noticiero de <b>mañana</b>.</p>
-      <label class="campo" for="tvn-txt">Nota de la producción de hoy</label>
-      <textarea class="in" id="tvn-txt" maxlength="400" rows="3" placeholder="Ej. El viernes hay pizza para el que cumpla sus 5 misiones.">${esc(notaHoy?.texto || '')}</textarea>
+      <p class="ayuda">Cada mañana a las 8 sale el noticiero con lo que pasó el día anterior (y llega aviso al celular). Lo que escribas aquí lo leen Elber y Rosa como <b>"noticias importantes que ocurrieron ayer"</b> en el noticiero de <b>mañana</b>.</p>
+      <p class="campo" style="font-weight:700;margin-top:10px">${tvnDia === hoyMX ? 'Noticias importantes de hoy' : `Editando la nota del ${esc(diaNota(tvnDia).toLowerCase())}`}
+        <small style="display:block;font-weight:500;color:#6A6496">Salen en el noticiero del ${esc(manana(tvnDia))}. Elige quién lo dice y escribe; con «Agregar locutor» le sigues el diálogo.</small></p>
+      ${tvnDia !== hoyMX ? '<button type="button" class="mini" id="tvn-hoy" style="margin-bottom:8px">← Volver a la nota de hoy</button>' : ''}
+      <div id="tvn-bloques">${bloquesNota.map(bloqueHtml).join('')}</div>
+      <button type="button" class="btn sec" id="tvn-mas" style="margin-top:8px">➕ Agregar locutor</button>
       <div class="adm-acciones"><button class="btn">${notaHoy ? 'Guardar cambios' : 'Guardar nota'}</button><button type="button" class="btn sec" id="tvn-ver">Ver el noticiero de hoy</button><button type="button" class="btn sec" id="tvn-manana">👀 Ver el de mañana (cómo va)</button>${notaHoy ? '<button type="button" class="mini" id="tvn-del">Borrar nota</button>' : ''}</div>
       <p style="margin:14px 0 4px;font-weight:700">Notas guardadas</p>
       ${notasTv.map(n => { const ya = n.dia < hoyMX;
         return `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>${esc(diaNota(n.dia))}</b>
-          <small style="white-space:normal;display:block">${esc(n.texto)}</small><small style="display:block;color:${ya ? '#8E88B5' : '#1E8E5A'};font-weight:600">${ya ? `Ya salió en el noticiero del ${esc(manana(n.dia))}` : `Sale en el noticiero del ${esc(manana(n.dia))}`}</small></div>
+          <small style="white-space:normal;display:block">${Array.isArray(n.guion) && n.guion.length ? n.guion.map(x => `<b>${x.q === 'e' ? 'Elber' : 'Rosa'}:</b> ${esc(x.t)}`).join('<br>') : esc(n.texto)}</small><small style="display:block;color:${ya ? '#8E88B5' : '#1E8E5A'};font-weight:600">${ya ? `Ya salió en el noticiero del ${esc(manana(n.dia))}` : `Sale en el noticiero del ${esc(manana(n.dia))}`}</small></div>
           <button type="button" class="mini" data-tvn-edit="${n.dia}">Editar</button><button type="button" class="mini" data-tvn-del="${n.dia}">Borrar</button></div>`; }).join('') || '<p class="ayuda">Todavía no hay notas.</p>'}
     </form>
     <form class="adm-caja" data-sec="records" id="rec-form"><h3>Récords de los juegos</h3>
@@ -5439,32 +5469,49 @@ async function adminExtras(C, seccion) {
     if (!confirm('¿Borrar este mensaje del chat?')) return;
     try { await q(sb.from('chat').delete().eq('id', b.dataset.chatDel)); toast('Mensaje borrado'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
   });
+  // bloques del guion: elegir locutor, quitar y agregar
+  const cajaB = $('#tvn-bloques');
+  const enlazarBloques = () => {
+    $$('.tvn-bloque', cajaB).forEach(bl => {
+      $$('[data-loc]', bl).forEach(b => b.onclick = () => {
+        $$('[data-loc]', bl).forEach(x => x.classList.toggle('on', x === b));
+        $('textarea', bl).placeholder = `Lo que dice ${b.dataset.loc === 'e' ? 'Elber' : 'Rosa'}…`;
+      });
+      $('.tvn-quitar', bl).onclick = () => { if ($$('.tvn-bloque', cajaB).length > 1) bl.remove(); else $('textarea', bl).value = ''; };
+    });
+  };
+  enlazarBloques();
+  adm.tvnSucio = false;
+  $('#tvn-form').addEventListener('input', () => { adm.tvnSucio = true; });
+  $('#tvn-form').addEventListener('click', e => { if (e.target.closest('[data-loc], .tvn-quitar, #tvn-mas')) adm.tvnSucio = true; });
+  $('#tvn-mas').onclick = () => {
+    const ult = [...$$('.tvn-bloque', cajaB)].pop(), qUlt = ult?.querySelector('[data-loc].on')?.dataset.loc || 'a';
+    cajaB.insertAdjacentHTML('beforeend', bloqueHtml({ q: qUlt === 'e' ? 'a' : 'e', t: '' }));   // le toca al otro locutor
+    enlazarBloques();
+    [...$$('.tvn-bloque textarea', cajaB)].pop().focus();
+  };
+  $('#tvn-hoy')?.addEventListener('click', () => { adm.tvnDia = hoyMX; cargarAdmin(); });
   $('#tvn-form').onsubmit = async e => {
     e.preventDefault();
-    const t = $('#tvn-txt').value.trim();
-    if (!t) return toast('Escribe la nota');
+    const guion = [...$$('.tvn-bloque', cajaB)].map(bl => ({ q: bl.querySelector('[data-loc].on')?.dataset.loc || 'e', t: $('textarea', bl).value.trim() })).filter(x => x.t);
+    if (!guion.length) return toast('Escribe al menos lo que dice un locutor');
+    const texto = guion.map(x => `${x.q === 'e' ? 'Elber' : 'Rosa'}: ${x.t}`).join('\n').slice(0, 4000);
     try {
-      if (notaHoy) await q(sb.from('noticiero_notas').update({ texto: t }).eq('dia', hoyMX));
-      else await q(sb.from('noticiero_notas').insert({ dia: hoyMX, texto: t }));
-      toast('📺 Nota guardada para el noticiero de mañana'); cargarAdmin();
+      if (notaHoy) await q(sb.from('noticiero_notas').update({ texto, guion }).eq('dia', tvnDia));
+      else await q(sb.from('noticiero_notas').insert({ dia: tvnDia, texto, guion }));
+      toast(`📺 Guardado para el noticiero del ${manana(tvnDia)}`); adm.tvnDia = hoyMX; cargarAdmin();
     } catch (x) { toast(mensajeError(x)); }
   };
   $('#tvn-ver').onclick = () => TV.abrir();
   $('#tvn-manana').onclick = () => TV.abrir(true);
-  $$('[data-tvn-edit]').forEach(b => b.onclick = async () => {
-    const n = notasTv.find(x => x.dia === b.dataset.tvnEdit);
-    const t = prompt(`Edita la nota del ${diaNota(n.dia)}:`, n.texto);
-    if (t === null) return;
-    if (!t.trim()) return toast('La nota no puede ir vacía (usa Borrar)');
-    try { await q(sb.from('noticiero_notas').update({ texto: t.trim().slice(0, 400) }).eq('dia', n.dia)); toast('Nota actualizada'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
-  });
+  $$('[data-tvn-edit]').forEach(b => b.onclick = () => { adm.tvnDia = b.dataset.tvnEdit; cargarAdmin().then?.(() => $('#tvn-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); });
   $$('[data-tvn-del]').forEach(b => b.onclick = async () => {
     if (!confirm(`¿Borrar la nota del ${diaNota(b.dataset.tvnDel)}?`)) return;
     try { await q(sb.from('noticiero_notas').delete().eq('dia', b.dataset.tvnDel)); toast('Nota borrada'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
   });
   $('#tvn-del')?.addEventListener('click', async () => {
-    if (!confirm('¿Borrar la nota de hoy?')) return;
-    try { await q(sb.from('noticiero_notas').delete().eq('dia', hoyMX)); toast('Nota borrada'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
+    if (!confirm('¿Borrar esta nota?')) return;
+    try { await q(sb.from('noticiero_notas').delete().eq('dia', tvnDia)); toast('Nota borrada'); adm.tvnDia = hoyMX; cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
   });
   $$('[data-rec-edit]').forEach(b => b.onclick = () => {
     const [id, juego, mejor] = b.dataset.recEdit.split('|');
