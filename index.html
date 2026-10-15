@@ -4171,7 +4171,7 @@ const TV = (() => {
     if (caja.dataset.dia === dia && caja.innerHTML) return;
     caja.dataset.dia = dia;
     caja.innerHTML = `<button class="tv-aviso-card"><span class="ic">📺</span><span class="tx"><b>¡Ya salió El Noticierazo!</b><small>Elber Galarga y Rosa Melano te cuentan lo que pasó el ${esc(diaBonito(dia).toLowerCase())}.</small></span><span class="ver">Ver ▶</span></button>`;
-    caja.querySelector('button').onclick = abrir;
+    caja.querySelector('button').onclick = () => abrir();
   }
 
   // ---------- frases que no se repiten de un día a otro ----------
@@ -4606,6 +4606,7 @@ const TV = (() => {
     $('#tv-voz').onclick = () => { conVoz = !conVoz; store.set('ab_tv_voz', conVoz ? '1' : '0'); $('#tv-voz').textContent = conVoz ? '🔊' : '🔇'; parar(); decir(); };
   }
   async function abrir(avance = false) {
+    avance = avance === true;          // solo la vista previa de la producción lo pide; un clic normal nunca
     conVoz = store.get('ab_tv_voz') !== '0';
     $('#m-tv').innerHTML = `<div class="tv-cargando">📺 Sintonizando…</div>`;
     $('#m-tv').classList.remove('hidden');
