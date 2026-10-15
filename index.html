@@ -276,6 +276,134 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .tv-inicio .btn{font-size:1.15rem;padding:14px 28px}
 .tv-aviso{font-size:.8rem;color:#C9C3EE}
 #m-monster{position:fixed;inset:0;z-index:300;background:#0a0510}
+/* ---------- ⚔️ Duelos ---------- */
+.monster-card.pr-duelo{background:radial-gradient(circle at 50% 0%,#5a2a08,#1a0b04 75%);border-color:#ffb02e;box-shadow:0 0 22px rgba(255,170,40,.28)}
+.monster-card.pr-duelo h3{color:#FFC94A;text-shadow:0 0 14px #ff8a00}
+.du-juegos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 4px}
+.du-juegos button{border:1px solid rgba(255,201,74,.45);background:rgba(255,201,74,.1);color:#fff;border-radius:14px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:800;font-size:.86rem;line-height:1.15}
+.du-juegos button span{font-size:1.5rem;line-height:1}
+.du-juegos button:active{transform:scale(.97)}
+.du-marc{margin-top:10px;background:rgba(0,0,0,.28);border-radius:12px;padding:8px 10px;font-size:.86rem}
+.du-marc>b{display:block;color:#FFD54A;margin-bottom:4px}
+.du-marc>div{display:flex;justify-content:space-between;gap:8px;padding:2px 0}
+.du-marc>div.yo{color:#FFD54A;font-weight:800}
+#m-duelo{position:fixed;inset:0;z-index:310;background:radial-gradient(circle at 50% 0%,#3a1458,#120822 70%);color:#fff;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.du-pant{min-height:100%;max-width:480px;margin:0 auto;padding:calc(10px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+.du-centro{align-items:center;text-align:center}
+.du-centro h2{margin:4px 0 0;font-size:1.35rem}
+.du-centro p{margin:0;color:#E7D2FF}
+.du-top{display:grid;grid-template-columns:minmax(38px,auto) 1fr minmax(38px,auto);align-items:center;gap:8px;min-height:40px;width:100%}
+.du-top>b{text-align:center;font:900 1.3rem/1.1 Anton,Impact,sans-serif;letter-spacing:.02em;color:#FFD54A}
+.du-x{width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:1.1rem}
+.du-tit-j{font-size:1.05rem!important}
+.du-rendir{border:0;background:rgba(255,255,255,.1);color:#E7D2FF;border-radius:999px;padding:7px 10px;font-weight:700;font-size:.76rem;line-height:1.1}
+.du-rendir.seguro{background:#D7263D;color:#fff}
+.du-bolsa{font-weight:800;color:#7CF29A;font-size:.9rem;text-align:right}
+.du-juego-chip{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:10px 12px;text-align:left;width:100%;box-sizing:border-box}
+.du-juego-chip>span{font-size:1.7rem;flex:none}
+.du-juego-chip small{display:block;color:#C9C3EE;font-size:.82rem;margin-top:2px}
+.du-apuesta{background:rgba(0,0,0,.25);border-radius:14px;padding:10px 12px}
+.du-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 6px;align-items:center}
+.du-chips button{border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;border-radius:999px;padding:7px 11px;font-weight:700}
+.du-chips button.on{background:#FFD54A;color:#1B1440;border-color:#FFD54A}
+.du-chips button:disabled{opacity:.35}
+.du-chips .in{width:92px;padding:7px 10px;margin:0}
+.du-apuesta small{color:#C9C3EE}
+.du-rivales{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px}
+.du-rival{background:rgba(255,255,255,.06);border:2px solid transparent;border-radius:14px;padding:4px 2px 6px;color:#fff;display:flex;flex-direction:column;align-items:center;gap:2px}
+.du-rival.on{border-color:#FFD54A;background:rgba(255,213,74,.14)}
+.du-rival small{font-size:.66rem;color:#C9C3EE;display:flex;align-items:center;gap:4px}
+.du-rival small i.on{width:7px;height:7px;border-radius:50%;background:#3ddc84;display:inline-block}
+.du-pie{position:sticky;bottom:0;margin-top:auto;padding:10px 0 2px;background:linear-gradient(rgba(18,8,34,0),#120822 30%)}
+.du-pie .btn{width:100%}
+.du-vs{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin-top:8px}
+.du-vs-t{font:900 1.7rem Anton,Impact,sans-serif;color:#ff4d4d;text-shadow:0 0 12px #ff2020;align-self:center}
+.du-reloj{font:900 2.6rem Anton,Impact,sans-serif;color:#FFD54A}
+.du-reloj.chico{font-size:1.4rem}
+.du-nota{font-size:.85rem;color:#C9C3EE!important}
+.du-ap-grande{font-size:1.02rem}
+.du-ap-grande b{color:#7CF29A}
+.du-falta{color:#ff8a8a!important;font-weight:700}
+.du-btn-sec{color:#fff!important;background:rgba(255,255,255,.12)!important;box-shadow:none!important;width:100%}
+.du-centro>.btn{width:100%}
+.du-ring{display:flex;justify-content:space-around;align-items:flex-end;background:rgba(0,0,0,.25);border-radius:16px;padding:4px 8px 6px}
+.du-lado{display:flex;flex-direction:column;align-items:center;min-width:96px}
+.du-info{font-weight:800;font-size:.86rem;color:#FFD54A;min-height:1.2em}
+.du-zona{flex:1;display:flex;flex-direction:column;gap:12px}
+.du-cuenta{position:fixed;inset:0;z-index:5;display:none;place-items:center;font:900 8rem Anton,Impact,sans-serif;color:#FFD54A;text-shadow:0 0 30px #ff2020;pointer-events:none;background:rgba(10,4,20,.5)}
+.du-cuenta.on{display:grid;animation:du-pulso .6s}
+@keyframes du-pulso{from{transform:scale(1.5);opacity:.2}to{transform:scale(1);opacity:1}}
+.du-msg{text-align:center;font-weight:700;min-height:1.4em;color:#E7D2FF;margin:0}
+.du-barra{background:rgba(255,255,255,.15);margin:0}
+.du-barra i{background:#FFD54A}
+.du-marcador{text-align:center;font:900 2.6rem/1 Anton,Impact,sans-serif;color:#fff}
+.du-marcador small{color:#ff4d4d}
+.du-ronda{text-align:center;color:#C9C3EE;font-weight:700;margin-top:-6px}
+.ppt-manos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ppt-manos button{border:0;border-radius:18px;background:#2a1748;box-shadow:0 5px 0 #0c0518;color:#fff;padding:14px 0 10px;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:800}
+.ppt-manos button span{font-size:2.7rem;line-height:1}
+.ppt-manos button.on{background:#FFD54A;color:#1B1440}
+.ppt-manos button:disabled:not(.on){opacity:.35}
+.ppt-manos button:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 #0c0518}
+.du-j-ppt .mm-burbuja,.du-j-calculo .mm-burbuja{font-size:calc(var(--t)*.62)}
+.globos{display:flex;justify-content:space-around;align-items:flex-end;min-height:330px;padding-top:20px}
+.globo-col{display:flex;flex-direction:column;align-items:center}
+.globo-col small{font-weight:800;color:#FFD54A}
+.globo-hilo{position:relative;display:flex;justify-content:center;margin-bottom:-14px;margin-left:34px}
+.globo{font-size:58px;line-height:1;transform-origin:50% 95%;transition:transform .08s;transform:scale(.7)}
+.globo.tenso{animation:globo-tiembla .12s linear infinite}
+.globo.pum{animation:globo-pum .5s ease-out forwards;transform:none}
+@keyframes globo-tiembla{50%{translate:1.5px 0}}
+@keyframes globo-pum{0%{scale:1.6}40%{scale:2.6}100%{scale:2;opacity:.85}}
+.tap-zona{border:0;border-radius:22px;background:linear-gradient(#ff5c8a,#d7263d);box-shadow:0 7px 0 #7a1022;color:#fff;font:900 1.9rem Anton,Impact,sans-serif;padding:36px 0;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.tap-zona:active:not(:disabled){transform:translateY(4px);box-shadow:0 3px 0 #7a1022}
+.tap-zona:disabled{filter:grayscale(.8);opacity:.55}
+.calc-top{display:flex;justify-content:space-between;font-weight:800;color:#C9C3EE}
+.calc-op{text-align:center;font:900 2.6rem Anton,Impact,sans-serif;letter-spacing:.02em;background:rgba(0,0,0,.28);border-radius:16px;padding:16px 8px}
+.calc-op b{color:#FFD54A;min-width:2ch;display:inline-block;border-bottom:3px solid #FFD54A}
+.calc-listo{color:#7CF29A}
+.teclado-du{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.teclado-du button{border:0;border-radius:14px;background:#2a1748;box-shadow:0 4px 0 #0c0518;color:#fff;font:800 1.6rem system-ui,sans-serif;padding:12px 0;touch-action:manipulation}
+.teclado-du button.ok{background:#1e8e5a;box-shadow:0 4px 0 #0e4d30}
+.teclado-du button:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 #0c0518}
+.teclado-du button:disabled{opacity:.4}
+.calc-lista{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-size:.86rem;width:100%;text-align:left;background:rgba(0,0,0,.25);border-radius:12px;padding:8px 10px;box-sizing:border-box}
+.calc-lista .bien{color:#7CF29A}
+.calc-lista .mal{color:#ff9a9a}
+.calc-lista s{opacity:.8}
+.cam-pistas{display:grid;gap:6px;background:rgba(0,0,0,.25);border-radius:14px;padding:8px 10px}
+.cam-pista{display:flex;align-items:center;gap:8px}
+.cam-pista small{width:62px;font-weight:700;color:#C9C3EE;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cam-dots{flex:1;display:flex;justify-content:space-between;align-items:center}
+.cam-dots i{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center;font-style:normal;font-size:.72rem;font-weight:800}
+.cam-dots i.ya{background:#1e8e5a}
+.cam-dots i.aqui{background:#FFD54A;color:#1B1440;box-shadow:0 0 0 3px rgba(255,213,74,.35)}
+.cam-escena{position:relative;flex:1;min-height:340px;border-radius:18px;overflow:hidden;background:linear-gradient(#183a2a,#2f6b3e 60%,#3c7d47)}
+.cam-svg{position:absolute;inset:0;width:100%;height:100%}
+.cam-svg path{fill:none;stroke:#c9a46a;stroke-width:13;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.85}
+.cam-fase{position:absolute;top:10px;left:0;right:0;text-align:center;font:900 1.3rem Anton,Impact,sans-serif;color:#FFD54A;text-shadow:0 2px 0 rgba(0,0,0,.4)}
+.cam-otro{position:absolute;top:40px;left:10%;transform:translateX(-50%);transition:left .4s;opacity:.85}
+.cam-lado{position:absolute;top:30%;border:0;border-radius:14px;background:rgba(10,4,20,.65);color:#fff;font-weight:800;padding:12px 14px;font-size:1rem;box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.cam-lado.izq{left:8px}
+.cam-lado.der{right:8px}
+.cam-lado:disabled{opacity:.45}
+.cam-mono{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);transition:left .45s ease-in,bottom .45s ease-in}
+.cam-mono.va-0{left:23%;bottom:42%}
+.cam-mono.va-1{left:77%;bottom:42%}
+.cam-mono.cae{animation:cam-cae .9s ease-in forwards}
+@keyframes cam-cae{0%{transform:translateX(-50%)}25%{transform:translateX(-50%) translateY(-14px)}100%{transform:translateX(-50%) translateY(90px) rotate(220deg) scale(.4);opacity:0}}
+.cam-trampa{position:absolute;top:34%;font-size:64px;transform:translate(-50%,-50%) scale(0);transition:transform .25s cubic-bezier(.3,1.6,.6,1);pointer-events:none}
+.cam-trampa.on{transform:translate(-50%,-50%) scale(1)}
+.cam-bloq{position:absolute;inset:0;display:grid;place-items:center;background:rgba(10,4,20,.5);font:900 5rem Anton,Impact,sans-serif;color:#ff4d4d;text-shadow:0 0 18px #000}
+.du-titulo{font:900 2.6rem/1 Anton,Impact,sans-serif!important;letter-spacing:.03em;margin-top:8px!important}
+.du-titulo.gana{color:#FFD54A;text-shadow:0 0 18px #ff8a00}
+.du-titulo.pierde{color:#ff6b6b}
+.du-dinero{font:900 1.6rem Anton,Impact,sans-serif;color:#E7D2FF!important}
+.du-dinero.gana{color:#7CF29A!important}
+.du-dinero.pierde{color:#ff8a8a!important}
+.du-det{font-size:.95rem}
+.du-botones{display:grid;gap:10px;width:100%;margin-top:8px}
+
 #m-monster iframe{width:100%;height:100%;border:0;display:block}
 
 /* Votación */
@@ -1058,6 +1186,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
   </nav>
 </section>
 <div id="m-monster" class="hidden"></div>
+<div id="m-duelo" class="hidden" role="dialog" aria-label="Duelo"></div>
 <div id="m-tv" class="hidden"></div>
 
 <!-- ============================ PANTALLA: CONFESIONARIO (votar) -->
@@ -1309,6 +1438,15 @@ const ERRORES = {
   SIN_CANDIDATOS: 'No hay candidatos para eliminar.',
   SIN_AVISOS: 'Primero activa los avisos del juego en este celular (🔔 Activar avisos, abajo en la casa).',
   SIN_BILLETES: 'No te alcanzan los billetes.',
+  DUELO_SOLO_HABITANTES: 'Los duelos son solo para los habitantes de la casa.',
+  DUELO_RIVAL_INVALIDO: 'Solo puedes retar a otro habitante de la casa.',
+  DUELO_APUESTA: 'La apuesta debe ser de $0 a $5,000.',
+  DUELO_YA_TIENES: 'Ya tienes un duelo pendiente. Termínalo primero.',
+  DUELO_RIVAL_OCUPADO: 'Esa persona ya está en otro duelo. Espera tantito.',
+  DUELO_ESPERA: 'Te acaban de decir que no. Dale un minutito antes de volver a retar.',
+  DUELO_NO_EXISTE: 'Ese duelo ya no existe.',
+  DUELO_YA_NO: 'Ese reto ya no está disponible (se canceló o se acabó el tiempo).',
+  DUELO_RIVAL_SIN_BILLETES: 'Quien te retó ya no tiene billetes para esa apuesta. Se canceló el duelo.',
   APUESTA_MINIMA: 'La apuesta mínima es de $10.',
   APUESTA_MAXIMA: 'La apuesta máxima es de $5,000.',
   APUESTAS_CERRADAS: 'Las apuestas ya cerraron.',
@@ -1423,6 +1561,10 @@ const SFX = (() => {
     buzzer() { tono({ f: 140, d: .38, tipo: 'sawtooth', v: .14, filtro: 1200 }); tono({ f: 148, d: .38, tipo: 'sawtooth', v: .14, filtro: 1200 }); },
     tic() { tono({ f: 2600, d: .03, tipo: 'square', v: .05 }); },
     tac() { tono({ f: 1700, d: .03, tipo: 'square', v: .05 }); },
+    // duelos: inflar el globo (más agudo mientras más se llena), reventarlo y caerse en el camino
+    inflar(f = 0) { tono({ f: 300 + f * 700, f2: 360 + f * 760, d: .06, tipo: 'triangle', v: .07 }); },
+    pop() { ruido({ d: .18, v: .55, filtro: 2600 }); tono({ f: 220, f2: 60, d: .2, v: .3 }); },
+    caida() { tono({ f: 880, f2: 110, d: .7, tipo: 'triangle', v: .16 }); ruido({ t: .62, d: .18, v: .4, filtro: 500 }); },
     // papel volteándose
     swish() { ruido({ d: .2, v: .18, filtro: 1500, tipo: 'bandpass', q: .8, barrido: 6000 }); },
     // aviso de cambio de fase
@@ -1793,6 +1935,7 @@ async function refrescar() {
 
   revisarEconomia();
   if (pantalla === 's-casa') pintarCasa();
+  DUELO.revisar();
 
   const libre = !galaAbierta && pantalla === 's-casa' && $('#admin').classList.contains('hidden') && $('#m-tuto').classList.contains('hidden') && $('#m-bienvenida').classList.contains('hidden');
   // anuncio del líder con lluvia de billetes
@@ -2875,6 +3018,7 @@ const SALA = (() => {
     else if (m.tipo === 'ppt') jugarPPT(m.a, m.b, m.ja, m.jb);
     else if (m.tipo === 'chat') CHAT.cargar();
     else if (m.tipo === 'mision' && m.a === miId) refrescar();   // alguien me pide confirmar (o ya contestaron la mía)
+    else if (m.tipo === 'duelo') DUELO.recibir(m);               // retos y jugadas de los duelos
     else if (m.tipo === 'reto') {
       const B = actores.get(m.b), A = actores.get(m.a);
       if (B?.enSala) congelar(B, m.x, m.y, Date.now() + Math.min(m.dur || 0, 15000), A ? A.x < m.x : undefined);
@@ -2922,7 +3066,9 @@ const SALA = (() => {
   }
   const avisarChat = () => mandar({ tipo: 'chat' });
   const avisarMision = a => mandar({ tipo: 'mision', a });
-  return { sincronizar, conectar, desconectar, miEmoji, enviarEmoji, retar, puedeRetar, soyActor, avisarChat, avisarMision, irAPuerta, irATele, enVivo: () => vivo, despertar };
+  const mandarDuelo = m => mandar({ tipo: 'duelo', ...m });
+  const enLinea = id => online.has(id);
+  return { sincronizar, conectar, desconectar, miEmoji, enviarEmoji, retar, puedeRetar, soyActor, avisarChat, avisarMision, mandarDuelo, enLinea, irAPuerta, irATele, enVivo: () => vivo, despertar };
 })();
 
 /* =====================================================================
@@ -2959,7 +3105,7 @@ function expresar(els, cara, pose = '', ms = 1400, despues = null) {
     if (pose) el.classList.add(pose);
     clearTimeout(el._t);
     if (ms) el._t = setTimeout(() => {
-      el.classList.remove(pose);
+      if (pose) el.classList.remove(pose);
       if (despues !== null) poner(typeof despues === 'function' ? despues(el) : despues);
     }, ms);
   }
@@ -3106,7 +3252,7 @@ function pintarEconomia() {
   $('#c-misiones').innerHTML = tarjetaMision(g) || `<div class="juego-card"><p>${g.semana === 0 ? 'Las misiones secretas empiezan cuando abra la casa (semana 1).' : 'Esta semana no hay misiones.'}</p>
     <p class="ayuda">Cada semana cada habitante recibe 5 misiones secretas sobre sus compañeros. Las que cumplas te dan billetes y cuentan la mitad para ser líder la semana siguiente.</p></div>`;
   // pestaña Jugar: Monster Crazy y las prácticas con sus récords
-  $('#c-jugar').innerHTML = tarjetaMonster() + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
+  $('#c-jugar').innerHTML = tarjetaDuelos() + tarjetaMonster() + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
   // botones
   const C = $('#s-casa');
   C.querySelector('[data-ver-billetes]').onclick = abrirBilletes;
@@ -3123,6 +3269,7 @@ function pintarEconomia() {
   $$('#c-jugar [data-practicar]').forEach(b => b.onclick = () => abrirPractica(b.dataset.practicar));
   ['#c-dinero', '#c-misiones', '#c-jugar'].forEach(sel => plegarTarjetas($(sel)));
   $$('#c-jugar [data-monster]').forEach(b => b.onclick = () => MONSTER.abrir(b.dataset.monster));
+  $$('#c-jugar [data-duelo]').forEach(b => b.onclick = () => DUELO.elegir(b.dataset.duelo));
 }
 
 /* ---------- ¿Qué me toca hoy? (lo primero que ve cada quien) ---------- */
@@ -3323,6 +3470,563 @@ const MONSTER = (() => {
   }
   return { abrir, cerrar, mandarPendiente };
 })();
+/* ---------- ⚔️ Duelos entre habitantes (2 jugadores, con apuesta) ---------- */
+const DUELOS_JUEGOS = {
+  ppt: { nombre: 'Piedra, papel o tijeras', ic: '✊✋✌️', desc: 'Escogen en secreto y se revelan al mismo tiempo. Gana quien gane 2 rondas.' },
+  globo: { nombre: 'Inflar el globo', ic: '🎈', desc: 'Tap tap tap hasta reventar tu globo. El primero que lo revienta gana.' },
+  calculo: { nombre: 'Cálculo rápido', ic: '➕✖️', desc: 'Las mismas 10 operaciones para los dos. Gana quien tenga más buenas; si empatan, el más rápido.' },
+  camino: { nombre: 'El camino correcto', ic: '🛤️', desc: '5 fases: izquierda o derecha. Si te caes, regresas a la fase 1 y pierdes 4 segundos. Gana el primero en llegar a la meta.' },
+};
+function tarjetaDuelos() {
+  const marc = (est.duelos_marcador || []).slice(0, 5);
+  const hab = est.yo.rol === 'jugador';
+  return `<div class="monster-card pr-duelo"><div class="ed">NUEVO · 2 JUGADORES</div><h3>DUELOS <span class="pr-ic">⚔️</span></h3>
+    <p>${hab ? 'Escoge un juego y reta a otro habitante (aunque ya lo hayan sacado de la casa). Ponen la misma apuesta y el que gana se lleva lo de los dos.' : 'Los duelos son solo para los habitantes de la casa. Tú puedes ver el marcador.'}</p>
+    ${hab ? `<div class="du-juegos">${Object.entries(DUELOS_JUEGOS).map(([k, j]) => `<button data-duelo="${k}"><span>${j.ic}</span><b>${j.nombre}</b></button>`).join('')}</div>` : ''}
+    <div class="du-marc"><b>🏆 Marcador de duelos</b>${marc.length ? marc.map((m, i) => `<div class="${m.id === est.yo.id ? 'yo' : ''}"><span>${['🥇', '🥈', '🥉', '4.', '5.'][i]} ${esc(porId(m.id)?.nombre || '?')}</span><span>${m.g} ${m.g === 1 ? 'ganado' : 'ganados'} · ${m.p} ${m.p === 1 ? 'perdido' : 'perdidos'}</span></div>`).join('')
+      : '<div><span style="color:#C9C3EE">Nadie ha jugado todavía. ¡Estrénalo!</span></div>'}</div></div>`;
+}
+const DUELO = (() => {
+  const J = DUELOS_JUEGOS;
+  const MANOS = ['✊', '✋', '✌️'], NOM_MANO = ['Piedra', 'Papel', 'Tijeras'];
+  const TRAMPAS = [['🕳️', '¡Se cayó a un hoyo!'], ['🎹', '¡Le cayó un piano!'], ['🐊', '¡Lo mordió un cocodrilo!'], ['🍌', '¡Se resbaló con una cáscara!'],
+    ['📋', '¡Lo agarró un cobrador!'], ['🐝', '¡Lo persiguieron las abejas!'], ['💩', '¡Pisó una sorpresita!'], ['🌵', '¡Se sentó en un nopal!']];
+  let modo = null;            // null | elegir | esperando | invitacion | juego | resultado | aviso
+  let d = null;               // cómo va el duelo (lo que regresa el servidor)
+  let off = 0;                // diferencia con el reloj del servidor
+  let poll = null, tick = null, juegoK = 'ppt', rivalSel = null, apuesta = 100, ocupado = false, prontoT = null;
+  let G = {};                 // lo del juego en curso
+  const rechazados = new Set();
+  const caja = () => $('#m-duelo');
+  const ahora = () => Date.now() + off;
+  const yoId = () => est?.yo.id;
+  const k = () => d?.yo || 'a', o = () => (d?.yo === 'b' ? 'a' : 'b');
+  const otroId = () => d ? (d.yo === 'b' ? d.reta : d.retado) : null;
+  const yoJ = () => porId(yoId()) || est.yo;
+  const otroJ = () => porId(otroId()) || { id: otroId(), nombre: 'Alguien' };
+  const nomOtro = () => otroJ().nombre;
+  const segs = ms => Math.round(ms / 100) / 10;
+
+  function tomar(v, t0) {
+    if (!v) return;
+    d = v;
+    if (v.ahora) { const t1 = Date.now(); off = Date.parse(v.ahora) - (t0 ? (t0 + t1) / 2 : t1); }
+  }
+  async function ver(id = d?.id) { const t0 = Date.now(); const v = await rpc('ver_duelo', { p_token: token, p_id: id }); tomar(v, t0); return v; }
+  async function jugada(dato) { const t0 = Date.now(); const v = await rpc('jugada_duelo', { p_token: token, p_id: d.id, p_dato: dato }); tomar(v, t0); return v; }
+  const avisar = para => SALA.mandarDuelo({ para, duelo: d?.id, de: yoId() });
+  const progreso = p => SALA.mandarDuelo({ duelo: d?.id, de: yoId(), p });
+  function abrirCaja() { caja().classList.remove('hidden'); document.body.style.overflow = 'hidden'; SFX.pausaParaGala(true); }
+  function limpiar() { clearInterval(poll); clearInterval(tick); clearTimeout(G.cuentaT); clearTimeout(G.t1); clearTimeout(G.t2); poll = tick = null; G = {}; }
+  function cerrar() {
+    limpiar(); modo = null; d = null;
+    caja().classList.add('hidden'); caja().innerHTML = '';
+    document.body.style.overflow = ''; SFX.pausaParaGala(false);
+    refrescar();
+  }
+  const mmDe = sel => caja().querySelector(sel + ' .mm');
+
+  // ---------- 1. escoger a quién retar ----------
+  function elegir(juego) {
+    if (est?.yo.rol !== 'jugador') { toast('Los duelos son solo para los habitantes de la casa.'); return; }
+    if (modo) return;
+    if (est.duelo) { revisar(); if (!modo) toast('Ya tienes un duelo pendiente.'); return; }
+    juegoK = J[juego] ? juego : 'ppt'; rivalSel = null; modo = 'elegir';
+    apuesta = Math.min(100, Math.max(0, est.billetes || 0));
+    pintarElegir(); abrirCaja(); SFX.tocar('swish');
+  }
+  function pintarElegir() {
+    const j = J[juegoK];
+    const rivales = est.jugadores.filter(x => x.rol === 'jugador' && x.id !== yoId())
+      .sort((a, b) => (SALA.enLinea(b.id) - SALA.enLinea(a.id)) || ((a.estado === 'activo' ? 0 : 1) - (b.estado === 'activo' ? 0 : 1)) || a.nombre.localeCompare(b.nombre));
+    caja().innerHTML = `<div class="du-pant">
+      <div class="du-top"><button class="du-x" data-du-x aria-label="Cerrar">✕</button><b>⚔️ ¿A quién desafías?</b><span class="du-x-esp"></span></div>
+      <div class="du-juego-chip"><span>${j.ic}</span><div><b>${j.nombre}</b><small>${j.desc}</small></div></div>
+      <div class="du-apuesta"><b>¿Cuánto apuestan?</b>
+        <div class="du-chips">${[0, 50, 100, 200, 500].map(m => `<button data-ap="${m}" class="${m === apuesta ? 'on' : ''}" ${m > est.billetes ? 'disabled' : ''}>${m ? fmt$(m) : 'Por gusto'}</button>`).join('')}
+          <input class="in" type="number" inputmode="numeric" min="0" max="5000" step="10" id="du-ap" value="${apuesta}" aria-label="Otra cantidad"></div>
+        <small id="du-ap-txt"></small></div>
+      <div class="du-rivales">${rivales.map(x => `<button class="du-rival" data-rival="${x.id}">${monito(x, { tam: 44 })}<small>${SALA.enLinea(x.id) ? '<i class="on"></i>En línea' : x.estado !== 'activo' ? 'Eliminado' : '&nbsp;'}</small></button>`).join('')
+        || '<p style="color:#C9C3EE">Todavía no hay a quién retar.</p>'}</div>
+      <div class="du-pie"><div class="error hidden" id="du-err"></div><button class="btn" id="du-retar" disabled>Escoge a quién retar</button></div></div>`;
+    const txt = () => {
+      $('#du-ap-txt').textContent = apuesta > est.billetes ? `No te alcanza: tienes ${fmt$(est.billetes)}.`
+        : apuesta ? `Cada quien pone ${fmt$(apuesta)} y el que gana se lleva ${fmt$(apuesta * 2)}. Tienes ${fmt$(est.billetes)}.` : 'Sin apuesta: solo por el orgullo (y el marcador).';
+    };
+    txt();
+    $$('#m-duelo [data-ap]').forEach(b => b.onclick = () => {
+      apuesta = +b.dataset.ap; $('#du-ap').value = apuesta;
+      $$('#m-duelo [data-ap]').forEach(x => x.classList.toggle('on', x === b)); txt(); SFX.tocar('clic');
+    });
+    $('#du-ap').oninput = e => {
+      apuesta = Math.max(0, Math.min(5000, Math.floor(+e.target.value || 0)));
+      $$('#m-duelo [data-ap]').forEach(x => x.classList.toggle('on', +x.dataset.ap === apuesta)); txt();
+    };
+    $$('#m-duelo [data-rival]').forEach(b => b.onclick = () => {
+      rivalSel = b.dataset.rival;
+      $$('#m-duelo [data-rival]').forEach(x => { x.classList.toggle('on', x === b); expresar($('.mm', x), x === b ? '⚔️' : '', x === b ? 'festeja' : '', 0); });
+      $('#du-retar').disabled = false; $('#du-retar').textContent = `⚔️ Desafiar a ${porId(rivalSel)?.nombre || ''}`;
+      SFX.tocar('clic');
+    });
+    $('#du-retar').onclick = () => retar();
+    $('[data-du-x]').onclick = cerrar;
+  }
+  async function retar(revancha = false) {
+    if (ocupado || !rivalSel) return;
+    const err = e => revancha ? (toast(mensajeError(e), 4000), cerrar()) : (mostrarError($('#du-err'), e), $('#du-retar') && ($('#du-retar').disabled = false));
+    if (apuesta > (est.billetes || 0)) { err('No te alcanzan los billetes para esa apuesta.'); return; }
+    ocupado = true; if ($('#du-retar')) $('#du-retar').disabled = true;
+    try {
+      const t0 = Date.now();
+      tomar(await rpc('retar_duelo', { p_token: token, p_rival: rivalSel, p_juego: juegoK, p_apuesta: apuesta }), t0);
+      avisar(rivalSel);
+      SFX.tocar('swish');
+      esperando();
+    } catch (e) { err(e); }
+    finally { ocupado = false; }
+  }
+
+  // ---------- 2. quien retó espera ----------
+  function relojReto() {
+    const s = Math.max(0, Math.ceil((Date.parse(d.creado) + 300000 - ahora()) / 1000));
+    const el = $('#du-reloj'); if (el) el.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  }
+  function esperando() {
+    limpiar(); modo = 'esperando';
+    const r = otroJ(), j = J[d.juego];
+    caja().innerHTML = `<div class="du-pant du-centro">
+      <div class="du-top"><span class="du-x-esp"></span><b>⚔️ Duelo</b><span class="du-x-esp"></span></div>
+      <div class="du-vs">${monito(yoJ(), { tam: 64, cara: '😎' })}<span class="du-vs-t">VS</span>${monito(r, { tam: 64, cara: '🤔' })}</div>
+      <h2>Esperando a que ${esc(r.nombre)} acepte…</h2>
+      <p>${j.ic} <b>${esc(j.nombre)}</b> · ${d.apuesta ? `${fmt$(d.apuesta)} cada quien` : 'por gusto'}</p>
+      <div class="du-reloj" id="du-reloj"></div>
+      <p class="du-nota">Ya le llegó el aviso. Si no contesta en 5 minutos, el reto se cancela solo.</p>
+      <button class="btn sec du-btn-sec" id="du-cancelar">Cancelar el reto</button></div>`;
+    $('#du-cancelar').onclick = async () => {
+      $('#du-cancelar').disabled = true;
+      try { await rpc('cancelar_duelo', { p_token: token, p_id: d.id }); avisar(otroId()); } catch { }
+      cerrar();
+    };
+    relojReto(); tick = setInterval(relojReto, 500);
+    poll = setInterval(revisarEspera, 2000);
+  }
+  async function revisarEspera() {
+    if (modo !== 'esperando') return;
+    try { await ver(); } catch { return; }
+    if (modo !== 'esperando') return;
+    if (d.estado === 'jugando') return empezar();
+    if (d.estado === 'pendiente') return;
+    const r = nomOtro();
+    if (d.estado === 'rechazado') aviso(`${r} no aceptó el duelo`, '😒');
+    else if (d.estado === 'caducado') aviso(`${r} no contestó a tiempo`, '😴');
+    else aviso('Se canceló el duelo', '🤷');
+  }
+  function aviso(msg, cara, quien = otroJ()) {
+    limpiar(); modo = 'aviso';
+    caja().innerHTML = `<div class="du-pant du-centro"><div class="du-top"><span class="du-x-esp"></span><b>⚔️ Duelo</b><span class="du-x-esp"></span></div>
+      <div class="du-vs">${monito(quien, { tam: 72, cara, clase: 'triste' })}</div><h2>${esc(msg)}</h2>
+      <button class="btn" id="du-ok">Ok</button></div>`;
+    $('#du-ok').onclick = cerrar;
+    SFX.tocar('buzzer');
+  }
+
+  // ---------- 3. al retado le llega la invitación ----------
+  function invitacion(x) {
+    limpiar(); modo = 'invitacion';
+    tomar({ ...x, yo: 'b' });
+    const r = otroJ(), j = J[d.juego], alcanza = (est.billetes || 0) >= d.apuesta;
+    caja().innerHTML = `<div class="du-pant du-centro du-inv">
+      <div class="du-top"><span class="du-x-esp"></span><b>⚔️ ¡Te retaron!</b><span class="du-x-esp"></span></div>
+      <div class="du-vs">${monito(r, { tam: 76, cara: '⚔️', clase: 'festeja' })}</div>
+      <h2>¡${esc(r.nombre)} te reta a un duelo!</h2>
+      <div class="du-juego-chip"><span>${j.ic}</span><div><b>${esc(j.nombre)}</b><small>${esc(j.desc)}</small></div></div>
+      <p class="du-ap-grande">${d.apuesta ? `Apuestan <b>${fmt$(d.apuesta)}</b> cada quien.<br>El que gana se lleva <b>${fmt$(d.apuesta * 2)}</b>.` : 'Sin apuesta: es por puro orgullo.'}</p>
+      ${alcanza ? '' : `<p class="du-falta">No te alcanzan los billetes: tienes ${fmt$(est.billetes)}.</p>`}
+      <div class="du-reloj chico" id="du-reloj"></div>
+      <div class="error hidden" id="du-err"></div>
+      <div class="mis-botones"><button class="btn" id="du-si" ${alcanza ? '' : 'disabled'}>⚔️ ¡Acepto!</button><button class="btn falso" id="du-no">Ahorita no</button></div></div>`;
+    $('#du-si').onclick = () => responder(true);
+    $('#du-no').onclick = () => responder(false);
+    relojReto(); tick = setInterval(relojReto, 500);
+    poll = setInterval(async () => {
+      if (modo !== 'invitacion' || ocupado) return;
+      try { await ver(); } catch { return; }
+      if (modo === 'invitacion' && d.estado !== 'pendiente') aviso(d.estado === 'caducado' ? 'Se acabó el tiempo para aceptar' : `${nomOtro()} canceló el reto`, '🤷');
+    }, 3000);
+    abrirCaja();
+    SFX.tocar('timbre');
+    if (navigator.vibrate) navigator.vibrate([60, 80, 60]);
+  }
+  async function responder(ok) {
+    if (ocupado) return; ocupado = true;
+    $('#du-si').disabled = $('#du-no').disabled = true;
+    try {
+      const t0 = Date.now();
+      tomar(await rpc('responder_duelo', { p_token: token, p_id: d.id, p_ok: ok }), t0);
+      avisar(d.reta);
+      if (!ok) { rechazados.add(d.id); cerrar(); toast('Le avisamos que ahorita no 😅'); return; }
+      empezar();
+    } catch (e) {
+      mostrarError($('#du-err'), e);
+      if (/DUELO_YA_NO|DUELO_RIVAL_SIN_BILLETES|DUELO_NO_EXISTE/.test(String(e?.message))) setTimeout(cerrar, 2500);
+      else $('#du-si').disabled = $('#du-no').disabled = false;
+    } finally { ocupado = false; }
+  }
+
+  // ---------- 4. el duelo ----------
+  function empezar() {
+    limpiar(); modo = 'juego';
+    const j = J[d.juego];
+    caja().innerHTML = `<div class="du-pant du-juego du-j-${d.juego}">
+      <div class="du-top"><button class="du-rendir" id="du-rendir">🏳️ Rendirme</button><b class="du-tit-j">${esc(j.nombre)}</b><span class="du-bolsa">${d.apuesta ? '💵 ' + fmt$(d.apuesta * 2) : ''}</span></div>
+      <div class="du-ring"><div class="du-lado yo">${monito(yoJ(), { tam: 46 })}<div class="du-info" id="du-info-yo"></div></div>
+        <span class="du-vs-t">VS</span><div class="du-lado otro">${monito(otroJ(), { tam: 46 })}<div class="du-info" id="du-info-otro"></div></div></div>
+      <div class="du-zona" id="du-zona"></div></div>
+      <div class="du-cuenta" id="du-cuenta"></div>`;
+    G.mYo = mmDe('.du-lado.yo'); G.mOtro = mmDe('.du-lado.otro');
+    const r = $('#du-rendir');
+    r.onclick = async () => {
+      if (!r.classList.contains('seguro')) { r.classList.add('seguro'); r.textContent = '¿Seguro? Toca otra vez'; clearTimeout(G.rT); G.rT = setTimeout(() => { r.classList.remove('seguro'); r.textContent = '🏳️ Rendirme'; }, 3000); return; }
+      r.disabled = true;
+      try { await jugada({ rendir: true }); avisar(otroId()); } catch (e) { toast(mensajeError(e)); r.disabled = false; return; }
+      resultado();
+    };
+    ({ ppt: jPPT, globo: jGlobo, calculo: jCalculo, camino: jCamino })[d.juego]();
+    abrirCaja();
+    cuenta().then(() => { if (modo === 'juego') G.arranca?.(); });
+    poll = setInterval(sincronizar, 1100);
+  }
+  // 3, 2, 1… ¡YA! (con la hora del servidor, para que a los dos les arranque igual)
+  function cuenta() {
+    return new Promise(res => {
+      const el = $('#du-cuenta'); let ult = null;
+      const f = () => {
+        if (modo !== 'juego') return;
+        const s = Math.ceil((Date.parse(d.inicio) - ahora()) / 1000);
+        if (s <= 0) {
+          if (ult !== null) { el.textContent = '¡YA!'; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); SFX.tocar('tadan'); setTimeout(() => el.classList.remove('on'), 650); }
+          res(); return;
+        }
+        if (s !== ult) { ult = s; el.textContent = s; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); SFX.tocar('tic'); }
+        G.cuentaT = setTimeout(f, 100);
+      };
+      f();
+    });
+  }
+  let sincronizando = false;
+  async function sincronizar() {
+    if (modo !== 'juego' || sincronizando) return;
+    sincronizando = true;
+    try { await ver(); } catch { return; } finally { sincronizando = false; }
+    alVer();
+  }
+  function alVer() {
+    if (modo !== 'juego') return;
+    G.al?.(d);
+    if (d.estado === 'terminado' && !G.animando) resultado();
+  }
+  const info = (quien, txt) => { const el = $('#du-info-' + quien); if (el) el.innerHTML = txt; };
+
+  // ✊✋✌️ Piedra, papel o tijeras: 2 rondas ganadas
+  function jPPT() {
+    const z = $('#du-zona');
+    z.innerHTML = `<div class="du-marcador" id="ppt-marc"></div><div class="du-ronda" id="ppt-ronda"></div>
+      <div class="barra du-barra"><i id="ppt-barra" style="width:100%"></i></div>
+      <div class="ppt-manos">${MANOS.map((m, i) => `<button data-mano="${i}" disabled><span>${m}</span><small>${NOM_MANO[i]}</small></button>`).join('')}</div>
+      <p class="du-msg" id="ppt-msg">Escoge en secreto. Tienes 7 segundos.</p>`;
+    G.vistas = d.datos.rondas.length;
+    const marc = () => { $('#ppt-marc').innerHTML = `${d.datos['g' + k()]} <small>–</small> ${d.datos['g' + o()]}`; info('yo', `${d.datos['g' + k()]} ${d.datos['g' + k()] === 1 ? 'ronda' : 'rondas'}`); info('otro', `${d.datos['g' + o()]} ${d.datos['g' + o()] === 1 ? 'ronda' : 'rondas'}`); };
+    const botones = on => $$('#du-zona [data-mano]').forEach(b => { b.disabled = !on; if (on) b.classList.remove('on'); });
+    const nueva = () => {
+      G.ronda = d.datos.rondas.length; G.elegida = null; G.animando = false;
+      marc();
+      $('#ppt-ronda').textContent = `Ronda ${G.ronda + 1}`;
+      $('#ppt-msg').textContent = 'Escoge en secreto. Tienes 7 segundos.';
+      expresar(G.mYo, '', '', 0); expresar(G.mOtro, '🤔', '', 0);
+      botones(true);
+      G.limite = Date.now() + 7000;
+      clearInterval(tick); tick = setInterval(() => {
+        const q = Math.max(0, G.limite - Date.now());
+        const b = $('#ppt-barra'); if (b) b.style.width = (q / 70) + '%';
+        if (q <= 0 && G.elegida === null) { const m = Math.floor(Math.random() * 3); $('#ppt-msg').textContent = `Se te acabó el tiempo: te tocó ${NOM_MANO[m].toLowerCase()}`; elegirMano(m); }
+      }, 100);
+    };
+    const elegirMano = async m => {
+      if (G.elegida !== null || modo !== 'juego') return;
+      G.elegida = m; clearInterval(tick);
+      botones(false); $(`#du-zona [data-mano="${m}"]`).classList.add('on');
+      expresar(G.mYo, MANOS[m], '', 0);
+      if (!/acabó/.test($('#ppt-msg').textContent)) $('#ppt-msg').textContent = `Esperando a ${nomOtro()}…`;
+      SFX.tocar('clic');
+      try { await jugada({ ronda: G.ronda, mano: m }); avisar(otroId()); } catch { }
+      alVer();
+    };
+    $$('#du-zona [data-mano]').forEach(b => b.onclick = () => elegirMano(+b.dataset.mano));
+    G.al = v => {
+      const rs = v.datos.rondas || [];
+      if (rs.length > G.vistas) {
+        const r = rs[G.vistas]; G.vistas++;
+        G.animando = true; clearInterval(tick); botones(false);
+        const mia = r[k()], suya = r[o()];
+        expresar(G.mYo, MANOS[mia], '', 0); expresar(G.mOtro, MANOS[suya], '', 0);
+        const res = r.g === '' ? 'empate' : r.g === k() ? 'gano' : 'pierdo';
+        G.t1 = setTimeout(() => {
+          if (res === 'gano') { expresar(G.mYo, MANOS[mia], 'festeja', 1500); expresar(G.mOtro, MANOS[suya], 'triste', 1500); SFX.tocar('caja'); }
+          else if (res === 'pierdo') { expresar(G.mOtro, MANOS[suya], 'festeja', 1500); expresar(G.mYo, MANOS[mia], 'triste', 1500); SFX.tocar('buzzer'); }
+          else SFX.tocar('swish');
+          $('#ppt-msg').textContent = res === 'empate' ? `¡Empate! Los dos sacaron ${NOM_MANO[mia].toLowerCase()}. Otra vez.`
+            : res === 'gano' ? `¡Ganaste la ronda! ${NOM_MANO[mia]} le gana a ${NOM_MANO[suya].toLowerCase()}.` : `${nomOtro()} ganó la ronda: ${NOM_MANO[suya].toLowerCase()} le gana a ${NOM_MANO[mia].toLowerCase()}.`;
+          marc();
+        }, 350);
+        G.t2 = setTimeout(() => {
+          G.animando = false;
+          if (d.estado === 'terminado') resultado(); else if (d.datos.rondas.length > G.vistas) G.al(d); else nueva();
+        }, 2300);
+      } else if (!G.animando && v.datos.pend?.[o()]) expresar(G.mOtro, '✅', '', 0);
+    };
+    G.arranca = () => {
+      // si regresaste a media ronda y ya habías escogido, se espera a la otra persona
+      nueva();
+      if (d.datos.pend?.[k()]) { G.elegida = -1; clearInterval(tick); botones(false); $('#ppt-msg').textContent = `Esperando a ${nomOtro()}…`; }
+    };
+    marc(); $('#ppt-ronda').textContent = 'Ronda 1'; expresar(G.mOtro, '🤔', '', 0);
+  }
+
+  // 🎈 Inflar el globo: el primero que lo revienta gana
+  function jGlobo() {
+    const z = $('#du-zona');
+    caja().querySelector('.du-ring').classList.add('hidden');
+    G.taps = d.datos.taps || 40; G.n = 0; G.otro = 0; G.ult = 0; G.activo = false; G.envT = 0;
+    z.innerHTML = `<div class="globos">
+        <div class="globo-col"><div class="globo-hilo"><div class="globo" id="g-yo">🎈</div></div>${monito(yoJ(), { tam: 54 })}<small id="g-yo-n">0%</small></div>
+        <div class="globo-col"><div class="globo-hilo"><div class="globo otro" id="g-otro">🎈</div></div>${monito(otroJ(), { tam: 54 })}<small id="g-otro-n">0%</small></div></div>
+      <p class="du-msg" id="g-msg">Cuando diga ¡YA!, pícale como loco al botón.</p>
+      <button class="tap-zona" id="g-tap" disabled>¡TAP TAP TAP! 🎈</button>`;
+    const [mY, mO] = $$('#du-zona .globo-col .mm'); G.mYo = mY; G.mOtro = mO;
+    const pinta = (quien, n) => {
+      const el = $(quien === 'yo' ? '#g-yo' : '#g-otro'); if (!el || el.classList.contains('pum')) return;
+      const f = Math.min(1, n / G.taps);
+      el.style.transform = `scale(${(0.7 + f * 1.9).toFixed(3)})`;
+      el.classList.toggle('tenso', f > .8);
+      $(quien === 'yo' ? '#g-yo-n' : '#g-otro-n').textContent = Math.round(f * 100) + '%';
+    };
+    const pum = quien => {
+      const el = $(quien === 'yo' ? '#g-yo' : '#g-otro'); if (!el || el.classList.contains('pum')) return;
+      el.textContent = '💥'; el.style.transform = ''; el.classList.add('pum');
+      SFX.tocar('pop');
+      expresar(quien === 'yo' ? G.mYo : G.mOtro, '😆', 'festeja', 1500);
+      expresar(quien === 'yo' ? G.mOtro : G.mYo, '😱', 'susto', 1500);
+    };
+    const tap = async e => {
+      e.preventDefault();
+      if (!G.activo) return;
+      const t = performance.now();
+      if (t - G.ult < 55) return;          // máximo ~18 taps por segundo (nada de trampas con varios dedos)
+      G.ult = t; G.n++;
+      pinta('yo', G.n);
+      SFX.tocar('inflar', G.n / G.taps);
+      if (t - G.envT > 150 || G.n >= G.taps) { G.envT = t; progreso(G.n); }
+      if (G.n >= G.taps) {
+        G.activo = false; $('#g-tap').disabled = true; pum('yo');
+        $('#g-msg').textContent = '¡Lo reventaste! Viendo quién fue primero…';
+        G.animando = true;
+        try { await jugada({ fin: true }); avisar(otroId()); } catch { }
+        setTimeout(() => { G.animando = false; alVer(); }, 900);
+      }
+    };
+    $('#g-tap').addEventListener('pointerdown', tap);
+    G.prog = p => { G.otro = Math.max(G.otro, p); pinta('otro', G.otro); if (G.otro >= G.taps) pum('otro'); };
+    G.arranca = () => { G.activo = true; $('#g-tap').disabled = false; $('#g-msg').textContent = '¡Dale, dale, dale!'; };
+  }
+
+  // ➕ Cálculo rápido: 10 operaciones, gana quien tenga más buenas (y si empatan, el más rápido)
+  function jCalculo() {
+    const z = $('#du-zona');
+    G.ops = d.datos.ops || []; G.i = 0; G.resp = []; G.ent = ''; G.entregado = !!d.res_yo; G.lim = Date.parse(d.inicio) + 90000; G.otroN = 0;
+    z.innerHTML = `<div class="calc-top"><span id="c-num"></span><span id="c-seg">90 s</span></div>
+      <div class="barra du-barra"><i id="c-barra" style="width:100%"></i></div>
+      <div class="calc-op" id="c-op"></div>
+      <div class="teclado-du">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button data-t="${n}">${n}</button>`).join('')}<button data-t="b" aria-label="Borrar">⌫</button><button data-t="0">0</button><button data-t="ok" class="ok">✔</button></div>
+      <p class="du-msg" id="c-msg">Escribe el resultado y dale ✔. Al final se ve quién tuvo más buenas.</p>`;
+    const pinta = () => {
+      if (G.entregado) return;
+      $('#c-num').textContent = `Operación ${Math.min(G.i + 1, G.ops.length)} de ${G.ops.length}`;
+      $('#c-op').innerHTML = `${esc(G.ops[G.i]?.t || '')} = <b>${G.ent || '?'}</b>`;
+      info('yo', `${G.i}/${G.ops.length}`);
+    };
+    const espera = () => {
+      $('#c-op').innerHTML = '<span class="calc-listo">¡Listo! ✍️</span>';
+      $$('#du-zona [data-t]').forEach(b => b.disabled = true);
+      $('#c-msg').textContent = d.res_otro?.listo ? 'Calificando…' : `Esperando a que ${nomOtro()} termine…`;
+      info('yo', '¡Terminó!');
+    };
+    const entregar = async () => {
+      if (G.entregado) return; G.entregado = true;
+      while (G.resp.length < G.ops.length) G.resp.push(null);
+      espera(); progreso(G.ops.length);
+      try { await jugada({ resp: G.resp }); avisar(otroId()); } catch { G.entregado = false; }
+      alVer();
+    };
+    const tecla = t => {
+      if (!G.activo || G.entregado) return;
+      if (t === 'b') G.ent = G.ent.slice(0, -1);
+      else if (t === 'ok') {
+        if (G.ent === '') return;
+        G.resp.push(+G.ent); G.ent = ''; G.i++;
+        expresar(G.mYo, '✍️', '', 600, '');
+        SFX.tocar('clic'); progreso(G.i);
+        if (G.i >= G.ops.length) { entregar(); return; }
+      } else if (G.ent.length < 4) G.ent += t;
+      SFX.tocar('tic'); pinta();
+    };
+    $$('#du-zona [data-t]').forEach(b => b.onclick = () => tecla(b.dataset.t));
+    G.tecla = e => { if (modo !== 'juego' || d?.juego !== 'calculo') return; if (/^[0-9]$/.test(e.key)) tecla(e.key); else if (e.key === 'Backspace') tecla('b'); else if (e.key === 'Enter') tecla('ok'); };
+    G.prog = p => { G.otroN = Math.max(G.otroN, p); info('otro', G.otroN >= G.ops.length ? '¡Terminó!' : `${G.otroN}/${G.ops.length}`); };
+    G.al = v => { if (v.res_otro?.listo) G.prog(G.ops.length); if (G.entregado) espera(); };
+    G.arranca = () => {
+      if (G.entregado) { espera(); return; }
+      G.activo = true; pinta();
+      clearInterval(tick); tick = setInterval(() => {
+        const q = Math.max(0, G.lim - ahora());
+        $('#c-seg').textContent = Math.ceil(q / 1000) + ' s';
+        $('#c-barra').style.width = (q / 900) + '%';
+        if (q <= 0) { clearInterval(tick); if (!G.entregado) { $('#c-msg').textContent = '¡Se acabó el tiempo!'; entregar(); } }
+      }, 250);
+    };
+    $('#c-op').innerHTML = '¿Listo?'; info('yo', '0/10'); info('otro', '0/10');
+  }
+
+  // 🛤️ El camino correcto: 5 fases, si te caes regresas a la fase 1 y esperas 4 segundos
+  function jCamino() {
+    const z = $('#du-zona');
+    caja().querySelector('.du-ring').classList.add('hidden');
+    G.f = d.datos['f' + k()] || 0; G.fo = d.datos['f' + o()] || 0; G.esperando = false; G.bloq = 0;
+    z.innerHTML = `<div class="cam-pistas">
+        <div class="cam-pista"><small>Tú</small><div class="cam-dots" id="cam-yo"></div></div>
+        <div class="cam-pista"><small>${esc(nomOtro())}</small><div class="cam-dots" id="cam-otro"></div></div></div>
+      <div class="cam-escena" id="cam-esc">
+        <svg class="cam-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M50 100 L50 66 Q50 56 22 44 L18 0" /><path d="M50 66 Q50 56 78 44 L82 0" /></svg>
+        <div class="cam-fase" id="cam-fase"></div>
+        <div class="cam-otro">${monito(otroJ(), { tam: 26, nombre: false })}</div>
+        <button class="cam-lado izq" data-lado="0" disabled>⬅️ Izquierda</button>
+        <button class="cam-lado der" data-lado="1" disabled>Derecha ➡️</button>
+        <div class="cam-mono" id="cam-mono">${monito(yoJ(), { tam: 50, nombre: false })}</div>
+        <div class="cam-trampa" id="cam-trampa"></div>
+        <div class="cam-bloq hidden" id="cam-bloq"></div>
+      </div>
+      <p class="du-msg" id="cam-msg">Uno de los dos caminos es el bueno. ¡Escoge!</p>`;
+    G.mYo = $('#cam-mono .mm'); G.mOtro = $('.cam-otro .mm');
+    const dots = (sel, f) => { const el = $(sel); if (el) el.innerHTML = [0, 1, 2, 3, 4].map(i => `<i class="${i < f ? 'ya' : i === f ? 'aqui' : ''}">${i < f ? '✓' : i + 1}</i>`).join('') + `<i class="${f >= 5 ? 'ya' : ''}">🏁</i>`; };
+    const pinta = () => {
+      dots('#cam-yo', G.f); dots('#cam-otro', G.fo);
+      $('#cam-fase').textContent = G.f >= 5 ? '¡Meta!' : `Fase ${G.f + 1} de 5${G.f === 4 ? ' · ¡la última!' : ''}`;
+      const otro = $('.cam-otro'); if (otro) otro.style.left = (10 + G.fo * 18) + '%';
+    };
+    const botones = on => $$('#cam-esc [data-lado]').forEach(b => b.disabled = !on);
+    const elegirLado = async lado => {
+      if (!G.activo || G.esperando || Date.now() < G.bloq) return;
+      G.esperando = true; botones(false);
+      const mono = $('#cam-mono'); mono.className = 'cam-mono va-' + lado;
+      SFX.tocar('swish');
+      const antes = G.f, caidas = d.datos['c' + k()] || 0;
+      let v = null;
+      try { v = await jugada({ fase: antes, lado }); progreso(v.datos['f' + k()] ?? antes); avisar(otroId()); } catch { }
+      setTimeout(() => {
+        if (modo !== 'juego') return;
+        const nf = d.datos['f' + k()] ?? antes;
+        if (d.estado === 'terminado' && d.ganador === yoId()) { G.f = 5; pinta(); expresar(G.mYo, '🏆', 'festeja', 0); G.animando = true; setTimeout(() => { G.animando = false; resultado(); }, 1100); return; }
+        if (nf > antes) {
+          G.f = nf; pinta(); expresar(G.mYo, '😎', 'festeja', 700, '');
+          $('#cam-msg').textContent = ['¡Bien! Ese era.', '¡Eso! Sigue así.', '¡Pasaste!', '¡Vas volando!'][antes % 4];
+          SFX.tocar('caja');
+          setTimeout(() => { mono.className = 'cam-mono'; G.esperando = false; botones(true); }, 450);
+        } else if ((d.datos['c' + k()] || 0) > caidas) {
+          const [emo, txt] = TRAMPAS[Math.floor(Math.random() * TRAMPAS.length)];
+          const tr = $('#cam-trampa'); tr.textContent = emo; tr.style.left = lado ? '76%' : '24%'; tr.classList.add('on');
+          expresar(G.mYo, '😱', 'susto', 0);
+          mono.classList.add('cae');
+          SFX.tocar('caida');
+          $('#cam-msg').textContent = `${txt} Regresas a la fase 1.`;
+          G.f = 0; pinta();
+          const hasta = Date.now() + 4000; G.bloq = hasta;
+          const bl = $('#cam-bloq'); bl.classList.remove('hidden');
+          const cd = setInterval(() => {
+            const s = Math.ceil((hasta - Date.now()) / 1000);
+            if (s > 0) { bl.textContent = s; return; }
+            clearInterval(cd); bl.classList.add('hidden'); tr.classList.remove('on');
+            mono.className = 'cam-mono'; expresar(G.mYo, '', '', 0);
+            G.esperando = false; if (modo === 'juego') { botones(true); $('#cam-msg').textContent = 'Otra vez desde el principio. ¡Tú puedes!'; }
+          }, 200);
+          bl.textContent = 4;
+        } else { mono.className = 'cam-mono'; G.esperando = false; botones(true); }
+      }, 480);
+    };
+    $$('#cam-esc [data-lado]').forEach(b => b.onclick = () => elegirLado(+b.dataset.lado));
+    G.prog = p => { if (p !== G.fo) { if (p < G.fo) expresar(G.mOtro, '😵', 'susto', 900, ''); G.fo = p; pinta(); } };
+    G.al = v => G.prog(v.datos['f' + o()] || 0);
+    G.arranca = () => { G.activo = true; botones(true); };
+    pinta();
+  }
+
+  // ---------- 5. resultado ----------
+  function resultado() {
+    if (modo === 'resultado') return;
+    limpiar(); modo = 'resultado';
+    const gane = d.ganador === yoId(), empate = !d.ganador, r = otroJ(), j = J[d.juego];
+    let det = '';
+    if (d.juego === 'ppt') det = `<p class="du-det">Rondas: <b>${d.datos['g' + k()] || 0} – ${d.datos['g' + o()] || 0}</b></p>`;
+    else if (d.juego === 'camino') { const c1 = d.datos['c' + k()] || 0, c2 = d.datos['c' + o()] || 0; det = `<p class="du-det">Te caíste ${c1} ${c1 === 1 ? 'vez' : 'veces'} · ${esc(r.nombre)} se cayó ${c2} ${c2 === 1 ? 'vez' : 'veces'}</p>`; }
+    else if (d.juego === 'calculo') {
+      const a = d.res_yo, b = d.res_otro && !d.res_otro.listo ? d.res_otro : null;
+      det = `<p class="du-det">${a ? `Tú: <b>${a.ok} buenas</b> en ${segs(a.ms)} s` : 'Tú no entregaste'} · ${b ? `${esc(r.nombre)}: <b>${b.ok} buenas</b> en ${segs(b.ms)} s` : `${esc(r.nombre)} no entregó`}</p>`;
+      if (a && d.datos.ops?.[0]?.r !== undefined) det += `<div class="calc-lista">${d.datos.ops.map((op, i) => { const mi = a.resp?.[i]; const bien = mi !== null && mi !== undefined && +mi === +op.r; return `<span class="${bien ? 'bien' : 'mal'}">${esc(op.t)} = ${op.r}${bien ? ' ✓' : ` <s>${mi ?? '—'}</s>`}</span>`; }).join('')}</div>`;
+    }
+    if (d.datos?.rindio) det = `<p class="du-det">🏳️ ${d.datos.rindio === k() ? 'Te rendiste' : `${esc(r.nombre)} se rindió`}.</p>`;
+    const dinero = empate ? (d.apuesta ? 'Te devolvimos tu apuesta.' : '') : gane ? (d.apuesta ? `+${fmt$(d.apuesta * 2)}` : '¡Puro orgullo!') : (d.apuesta ? `−${fmt$(d.apuesta)}` : 'No perdiste billetes… solo la dignidad.');
+    caja().innerHTML = `<div class="du-pant du-centro">
+      <div class="du-top"><span class="du-x-esp"></span><b class="du-tit-j">${j.ic} ${esc(j.nombre)}</b><span class="du-x-esp"></span></div>
+      <div class="du-vs">${monito(yoJ(), { tam: 72, cara: gane ? '🏆' : empate ? '🤝' : '😭', clase: gane ? 'festeja' : empate ? '' : 'triste' })}<span class="du-vs-t">VS</span>${monito(r, { tam: 72, cara: gane ? '😭' : empate ? '🤝' : '🏆', clase: gane ? 'triste' : empate ? '' : 'festeja' })}</div>
+      <h2 class="du-titulo ${gane ? 'gana' : empate ? '' : 'pierde'}">${gane ? '¡GANASTE!' : empate ? '¡EMPATE!' : 'PERDISTE'}</h2>
+      ${dinero ? `<p class="du-dinero ${gane ? 'gana' : empate ? '' : 'pierde'}">${dinero}</p>` : ''}
+      ${det}
+      <div class="du-botones"><button class="btn" id="du-revancha">⚔️ Revancha</button><button class="btn sec du-btn-sec" id="du-salir">Salir</button></div></div>`;
+    if (gane) { SFX.tocar('fanfarria'); if (d.apuesta) lluviaBilletes(18); } else if (!empate) SFX.tocar('buzzer');
+    $('#du-salir').onclick = cerrar;
+    $('#du-revancha').onclick = async () => {
+      $('#du-revancha').disabled = true;
+      juegoK = d.juego; rivalSel = otroId(); apuesta = d.apuesta;
+      try { est = await rpc('estado', { p_token: token }); } catch { }
+      retar(true);
+    };
+    refrescar();
+  }
+
+  // ---------- avisos (en vivo y cada que se actualiza el estado) ----------
+  function recibir(m) {
+    if (m.de === yoId()) return;
+    if (d && m.duelo === d.id) {
+      if (m.p != null) { if (modo === 'juego') G.prog?.(m.p); return; }
+      clearTimeout(prontoT);
+      prontoT = setTimeout(() => { if (modo === 'esperando') revisarEspera(); else if (modo === 'juego') sincronizar(); }, 120);
+    } else if (m.para === yoId() && !modo) refrescar();
+  }
+  // Se llama después de cada estado(): abre la invitación, la espera o el juego si quedaron pendientes
+  function revisar() {
+    const x = est?.duelo;
+    if (modo || !x || pantalla !== 's-casa' || galaAbierta) return;
+    if (x.estado === 'pendiente' && x.retado === yoId()) { if (!rechazados.has(x.id)) invitacion(x); }
+    else if (x.estado === 'pendiente' && x.reta === yoId()) { tomar({ ...x, yo: 'a' }); abrirCaja(); esperando(); }
+    else if (x.estado === 'jugando') {
+      modo = 'cargando';
+      ver(x.id).then(() => { modo = null; if (d.estado === 'jugando') empezar(); else if (d.estado === 'terminado') { abrirCaja(); resultado(); } })
+        .catch(() => { modo = null; });
+    }
+  }
+  document.addEventListener('keydown', e => G.tecla?.(e));
+  return { elegir, revisar, recibir, abierto: () => !!modo };
+})();
+
 
 /* =====================================================================
    EL NOTICIERAZO ALFA — el resumen del día anterior con dos presentadores
@@ -3547,6 +4251,17 @@ const TV = (() => {
       [['a', 'Ayer estuvo más tranquilo que domingo en la tarde.'], ['e', 'Nadie hizo nada, Rosa. Ni nosotros.']],
       [['e', 'Día flojo en la casa, raza.'], ['a', 'Flojo como tú, Elber, que ni te levantas temprano.']],
       [['a', 'No hubo chisme ayer, banda.'], ['e', 'Eso es lo más raro que ha pasado en esta oficina.']]],
+    // ⚔️ duelos: {g} ganó, {p} perdió, {j} el juego, {m} lo que se llevó
+    duelo_in: ['Hubo duelo en la casa: {g} le ganó a {p} en {j}{m}.', '{g} se puso los guantes y le ganó a {p} en {j}{m}.', 'Duelazo: {g} contra {p} en {j}, y ganó {g}{m}.',
+      '{p} perdió un duelo contra {g} en {j}{m}.', 'En los duelos de ayer, {g} le pasó por encima a {p} en {j}{m}.', '¡Tómala! {g} venció a {p} en {j}{m}.',
+      'Ni las manos metió {p}: {g} le ganó en {j}{m}.', '{g} le dio una arrastrada a {p} en {j}{m}.'],
+    duelo_j: ['{p} ya pidió la revancha, y con razón.', 'eso no fue duelo, fue velorio.', '{p}, ya ni llores, que hay más días que longanizas.', 'y {g} ya anda presumiéndolo en el chat.',
+      'aquí se viene a chambear, no a jugar… pero qué buen duelo.', '{p} dice que se le trabó el celular. Ajá.', 'a {p} le van a tener que hacer una colecta.', 'con esa mano, {g} debería cobrar la cartera vencida.'],
+    duelos_n: ['Y en total hubo {k} duelos ayer.', 'Fueron {k} duelos en un solo día, banda.', 'La casa amaneció con {k} duelos.', '{k} duelos ayer: esto ya parece arena de lucha libre.'],
+    rey_in: ['{n} anduvo de pleito ayer y ganó {k} duelos.', 'El rey de los duelos de ayer: {n}, con {k} victorias.', '{n} no perdonó a nadie: {k} duelos ganados.',
+      'Nadie pudo con {n}: ganó {k} duelos ayer.', 'Ojo con {n}, que ayer ganó {k} duelos.', '{n} se aventó {k} duelos ganados en un solo día.'],
+    rey_j: ['ya hasta cobra por dejarse retar.', 'que alguien le baje, por favor.', 'ya parece campeón de lucha libre.', 'mejor ni lo reten, que sale caro.',
+      'así de bravo debería cobrar.', 'ya le están haciendo su cinturón de campeón.', 'trae la mano bien caliente.', 'aguas, que viene por todos.'],
     rico_in: ['Y quien más billetes tiene en la casa es {n}, con {b}.', 'El más millonario de la casa: {n}, con {b} billetes.', '{n} sigue de ricachón con {b} billetes.', 'En la cima de los billetes está {n}: {b}.'],
     rico_j: ['billetes de mentiritas, pero igual ni nos invita un taco.', 'ya anda buscando casa en las Lomas.', 'que se compre algo bonito, porque esa cara no tiene arreglo.', 'el Slim de la oficina.', 'y todavía pide descuento en la tienda.', 'ahí está el que nunca presta.'],
     nota_in: ['Y ahora, noticias importantes que ocurrieron ayer.', 'Pongan atención, banda: noticias importantes de ayer.', 'Noticias importantes que pasaron ayer, raza.', 'Ojo con esto, que son noticias importantes de ayer.',
@@ -3572,7 +4287,7 @@ const TV = (() => {
   };
   // Groserías con naturalidad: salen sobre todo en las noticias fuertes (alguien ganó, salió, le quitaron el récord…),
   // de vez en cuando en las demás, nunca en dos reacciones seguidas y sin pasarse de unas 4 por programa (contando saludos y albures).
-  const FUERTES = new Set(['gana_j', 'elim_j', 'salva_j', 'lider_j', 'rec_quita_j', 'rec_nuevo_j']);
+  const FUERTES = new Set(['gana_j', 'elim_j', 'salva_j', 'lider_j', 'rec_quita_j', 'rec_nuevo_j', 'duelo_j']);
   const GRX = /\bwey\b|no mam|no ching|no jod|no friegu|a huevo|qu[ée] pedo|uta madre|chingue su madre/i;
   function groserias(L) {
     const r = rng(diaN * 7919 + 13);
@@ -3672,6 +4387,14 @@ const TV = (() => {
     }
     // apuestas, tienda, chat, votos, nuevos y juegos
     const ap = d.apuestas || [];
+    const du = d.duelos || {};
+    if (du.n && du.mayor) {
+      const c = { g: du.mayor.gn, p: du.mayor.pn, j: DUELOS_JUEGOS[du.mayor.juego]?.nombre.toLowerCase() || 'un duelo',
+        m: du.mayor.apuesta ? `. ${du.mayor.gn} se llevó ${fmt(du.mayor.apuesta * 2)} billetes` : ', sin apostar nada, puro orgullo' };
+      dos(`⚔️ ${du.mayor.gn} le ganó un duelo a ${du.mayor.pn}`, llenar(frase('duelo_in', T.duelo_in), c) + (du.n > 1 ? ' ' + llenar(frase('duelos_n', T.duelos_n), { k: du.n }) : ''),
+        reaccion('duelo_j', BIEN, T.duelo_j, c), du.mayor.g);
+      if (du.rey) dos(`🥊 ${du.rey.nombre} ganó ${du.rey.n} duelos`, llenar(frase('rey_in', T.rey_in), { n: du.rey.nombre, k: du.rey.n }), reaccion('rey_j', NEUTRO, T.rey_j, {}), du.rey.id);
+    }
     if (ap.length) dos(`💰 ${ap[0].nombre} ganó ${fmt$(ap[0].monto)} en apuestas`, llenar(frase('ap_in', T.ap_in), { n: ap[0].nombre, m: fmt(ap[0].monto) }), reaccion('ap_j', NEUTRO, T.ap_j, {}), ap[0].id);
     const com = d.compras || [];
     if (com.length) { const c = com[com.length - 1];

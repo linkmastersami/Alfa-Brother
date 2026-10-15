@@ -310,6 +310,24 @@ create table if not exists public.reportajes (
   creado     timestamptz not null default now()
 );
 
+-- v24: duelos entre habitantes (2 jugadores, con apuesta: el que gana se lleva lo de los dos)
+create table if not exists public.duelos (
+  id       bigint generated always as identity primary key,
+  juego    text not null check (juego in ('ppt', 'globo', 'calculo', 'camino')),
+  reta     uuid not null references public.jugadores(id) on delete cascade,     -- quien desafía
+  retado   uuid not null references public.jugadores(id) on delete cascade,
+  apuesta  int  not null default 0 check (apuesta between 0 and 5000),
+  estado   text not null default 'pendiente' check (estado in ('pendiente', 'rechazado', 'caducado', 'cancelado', 'jugando', 'terminado')),
+  datos    jsonb not null default '{}'::jsonb,     -- operaciones, el camino, las manos de cada ronda…
+  res_a    jsonb,                                  -- resultado de quien retó (cálculo)
+  res_b    jsonb,                                  -- resultado del retado
+  ganador  uuid references public.jugadores(id) on delete set null,
+  creado   timestamptz not null default now(),
+  inicio   timestamptz,
+  fin      timestamptz
+);
+create index if not exists duelos_activos on public.duelos (estado) where estado in ('pendiente', 'jugando');
+
 -- Predicción secreta: quién gana y quién sale primero
 create table if not exists public.predicciones (
   jugador_id  uuid primary key references public.jugadores(id) on delete cascade,
@@ -332,7 +350,7 @@ do $$
 declare t text;
 begin
   foreach t in array array['config','jugadores','sesiones','trivia','intentos','votos','historial','admins','predicciones','chismes','push_subs','push_ajustes',
-                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda','push_produccion','anuncios','chat','sucesos','noticiero_notas','reportajes'] loop
+                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda','push_produccion','anuncios','chat','sucesos','noticiero_notas','reportajes','duelos'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists admin_todo on public.%I', t);
     execute format('create policy admin_todo on public.%I for all to authenticated using (public.es_admin()) with check (public.es_admin())', t);
@@ -535,7 +553,7 @@ begin
     'misiones_previas', (select count(*) from public.misiones m
         where m.semana = c.semana - 1 and m.jugador_id = yo.id and m.cumplida is not null),
     'galas', (select coalesce(jsonb_agg(h.semana order by h.semana desc), '[]'::jsonb) from public.historial h)
-  ) || public._economia(yo.id, v_bono);
+  ) || public._economia(yo.id, v_bono) || public._duelos_estado(yo.id);
 end $$;
 
 create or replace function public.fotos(p_token uuid)
@@ -1144,6 +1162,7 @@ begin
   delete from public.sucesos where true;
   delete from public.practicas where true;
   delete from public.encuestas where liquidada;
+  delete from public.duelos where true;
   update public.jugadores set billetes = 2000, ultimo_bono = null where true;
   update public.config set semana = 0, fase = 'registro', prueba = null, lider_id = null, eliminado_id = null,
          empatados = '{}', gala_revelada = false, es_final = false, terminado = false, aviso_voto = null, actualizado = now() where id = 1;
@@ -1283,6 +1302,7 @@ begin
   perform public._recordatorios();
   perform public._encuestas();
   begin perform public._noticiero_aviso(); exception when others then null; end;
+  begin perform public._cerrar_duelos(); exception when others then null; end;
 end $$;
 
 do $$ begin
@@ -2011,6 +2031,17 @@ begin
                       where p.juego = g.juego and p.mejor > 0 order by p.mejor desc limit 1)) as r
           from (values (1, 'monster2'), (2, 'monster'), (3, 'memoria'), (4, 'adeudo')) g(o, juego) order by g.o) x
         where x.r->'actual' <> 'null'::jsonb),
+    -- v24: duelos del día (solo los que alguien ganó)
+    'duelos', jsonb_build_object(
+        'n', (select count(*) from public.duelos where estado = 'terminado' and ganador is not null and fin >= v_ini and fin < v_fin),
+        'mayor', (select jsonb_build_object('g', d.ganador, 'gn', jg.nombre, 'p', jp.id, 'pn', jp.nombre, 'juego', d.juego, 'apuesta', d.apuesta)
+                    from public.duelos d join public.jugadores jg on jg.id = d.ganador
+                    join public.jugadores jp on jp.id = case when d.ganador = d.reta then d.retado else d.reta end
+                   where d.estado = 'terminado' and d.fin >= v_ini and d.fin < v_fin order by d.apuesta desc, d.fin desc limit 1),
+        'rey', (select jsonb_build_object('id', j.id, 'nombre', j.nombre, 'n', count(*))
+                  from public.duelos d join public.jugadores j on j.id = d.ganador
+                 where d.estado = 'terminado' and d.fin >= v_ini and d.fin < v_fin
+                 group by j.id, j.nombre having count(*) >= 2 order by count(*) desc, j.nombre limit 1)),
     'nota', (select texto from public.noticiero_notas where dia = v_dia),
     'nota_guion', (select guion from public.noticiero_notas where dia = v_dia)
   );
@@ -2043,6 +2074,286 @@ begin
   perform public._avisar('📺 ¡Ya salió El Noticierazo!', 'Elber Galarga y Rosa Melano te cuentan lo que pasó ayer en la casa. 🎙️');
 end $$;
 revoke all on function public._noticiero_aviso() from public, anon, authenticated;
+
+-- ---------------------------------------------------------------------
+--  v24: DUELOS entre habitantes
+--  Piedra, papel o tijeras · Inflar el globo · Cálculo rápido · El camino correcto
+-- ---------------------------------------------------------------------
+create or replace function public._duelo_nombre(p_juego text)
+returns text language sql immutable as $$
+  select case p_juego when 'ppt' then 'Piedra, papel o tijeras' when 'globo' then 'Inflar el globo'
+                      when 'calculo' then 'Cálculo rápido' else 'El camino correcto' end
+$$;
+-- Tiempo máximo de cada juego (después de eso se cierra solo)
+create or replace function public._duelo_limite(p_juego text)
+returns interval language sql immutable as $$
+  select case p_juego when 'ppt' then interval '100 seconds' when 'globo' then interval '60 seconds'
+                      when 'calculo' then interval '100 seconds' else interval '180 seconds' end
+$$;
+
+-- Cierra un duelo: el ganador se lleva lo de los dos; si empatan, a cada quien se le devuelve lo suyo
+create or replace function public._terminar_duelo(p_id bigint, p_ganador uuid)
+returns void language plpgsql security definer set search_path = public as $$
+declare d public.duelos; v_jg text;
+begin
+  select * into d from public.duelos where id = p_id for update;
+  if not found or d.estado <> 'jugando' then return; end if;
+  update public.duelos set estado = 'terminado', fin = now(), ganador = p_ganador where id = d.id;
+  v_jg := public._duelo_nombre(d.juego);
+  if d.apuesta > 0 then
+    if p_ganador is null then
+      perform public._mover(d.reta, d.apuesta, 'Duelo empatado (' || v_jg || '): te devolvemos tu apuesta');
+      perform public._mover(d.retado, d.apuesta, 'Duelo empatado (' || v_jg || '): te devolvemos tu apuesta');
+    else
+      perform public._mover(p_ganador, d.apuesta * 2, '¡Ganaste un duelo! (' || v_jg || ')');
+    end if;
+  end if;
+end $$;
+
+-- Retos que nadie contestó en 5 minutos y duelos que se quedaron a medias
+create or replace function public._cerrar_duelos()
+returns void language plpgsql security definer set search_path = public as $$
+declare d public.duelos; v_g uuid; a int; b int;
+begin
+  update public.duelos set estado = 'caducado', fin = now() where estado = 'pendiente' and creado < now() - interval '5 minutes';
+  for d in select * from public.duelos where estado = 'jugando' and inicio + public._duelo_limite(juego) + interval '10 seconds' < now()
+           for update skip locked loop
+    v_g := null;
+    if d.juego = 'calculo' then             -- el único que entregó gana
+      if d.res_a is not null and d.res_b is null then v_g := d.reta; elsif d.res_b is not null and d.res_a is null then v_g := d.retado; end if;
+    elsif d.juego = 'ppt' then              -- gana quien iba ganando, o quien sí siguió jugando
+      a := coalesce((d.datos->>'ga')::int, 0); b := coalesce((d.datos->>'gb')::int, 0);
+      if a > b then v_g := d.reta; elsif b > a then v_g := d.retado;
+      elsif d.datos->'pend' ? 'a' and not d.datos->'pend' ? 'b' then v_g := d.reta;
+      elsif d.datos->'pend' ? 'b' and not d.datos->'pend' ? 'a' then v_g := d.retado; end if;
+    elsif d.juego = 'camino' then           -- gana quien llegó más lejos
+      a := coalesce((d.datos->>'fa')::int, 0); b := coalesce((d.datos->>'fb')::int, 0);
+      if a > b then v_g := d.reta; elsif b > a then v_g := d.retado; end if;
+    end if;                                 -- en el globo, si nadie lo reventó, empate
+    perform public._terminar_duelo(d.id, v_g);
+  end loop;
+end $$;
+
+-- Lo que ve cada quien de un duelo (sin las respuestas ni el camino mientras se juega)
+create or replace function public._duelo_vista(p_id bigint, p_yo uuid)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare d public.duelos; v jsonb; k text; o text;
+begin
+  select * into d from public.duelos where id = p_id;
+  if not found then return null; end if;
+  k := case when p_yo = d.reta then 'a' else 'b' end; o := case when k = 'a' then 'b' else 'a' end;
+  v := d.datos;
+  if d.estado <> 'terminado' then
+    if v ? 'ops' then v := jsonb_set(v, '{ops}', (select coalesce(jsonb_agg(op - 'r' order by i), '[]'::jsonb) from jsonb_array_elements(v->'ops') with ordinality x(op, i))); end if;
+    v := v - 'camino';
+    if v ? 'pend' then v := jsonb_set(v, '{pend}', (select coalesce(jsonb_object_agg(key, true), '{}'::jsonb) from jsonb_each(v->'pend'))); end if;
+  end if;
+  return jsonb_build_object('id', d.id, 'juego', d.juego, 'reta', d.reta, 'retado', d.retado, 'apuesta', d.apuesta, 'estado', d.estado,
+    'datos', v, 'yo', k, 'ganador', d.ganador, 'creado', d.creado, 'inicio', d.inicio, 'fin', d.fin, 'ahora', now(),
+    'res_yo', case when k = 'a' then d.res_a else d.res_b end,
+    'res_otro', case when d.estado = 'terminado' then (case when o = 'a' then d.res_a else d.res_b end)
+                     when (case when o = 'a' then d.res_a else d.res_b end) is not null then '{"listo":true}'::jsonb end);
+end $$;
+
+-- Para estado(): mi duelo pendiente o en juego, y el marcador de duelos de la temporada
+create or replace function public._duelos_estado(p_yo uuid)
+returns jsonb language sql stable security definer set search_path = public as $$
+  select jsonb_build_object(
+    'duelo', (select jsonb_build_object('id', d.id, 'juego', d.juego, 'reta', d.reta, 'retado', d.retado, 'apuesta', d.apuesta,
+                'estado', d.estado, 'creado', d.creado, 'inicio', d.inicio, 'ahora', now())
+                from public.duelos d where p_yo in (d.reta, d.retado) and d.estado in ('pendiente', 'jugando') order by d.id desc limit 1),
+    'duelos_marcador', (select coalesce(jsonb_agg(jsonb_build_object('id', x.id, 'g', x.g, 'p', x.p) order by x.g desc, x.p), '[]'::jsonb) from (
+        select j.id, count(*) filter (where d.ganador = j.id) as g, count(*) filter (where d.ganador is not null and d.ganador <> j.id) as p
+          from public.jugadores j join public.duelos d on j.id in (d.reta, d.retado) and d.estado = 'terminado'
+         where j.rol = 'jugador' group by j.id) x where x.g + x.p > 0))
+$$;
+
+-- Desafiar a otro habitante (aunque esté eliminado)
+create or replace function public.retar_duelo(p_token uuid, p_rival uuid, p_juego text, p_apuesta int)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare yo public.jugadores; r public.jugadores; v_id bigint;
+begin
+  yo := public._yo(p_token);
+  if yo.rol <> 'jugador' then raise exception 'DUELO_SOLO_HABITANTES'; end if;
+  select * into r from public.jugadores where id = p_rival;
+  if not found or r.rol <> 'jugador' or r.id = yo.id then raise exception 'DUELO_RIVAL_INVALIDO'; end if;
+  if p_juego is null or p_juego not in ('ppt', 'globo', 'calculo', 'camino') then raise exception 'OPCION_INVALIDA'; end if;
+  if p_apuesta is null or p_apuesta < 0 or p_apuesta > 5000 then raise exception 'DUELO_APUESTA'; end if;
+  if p_apuesta > yo.billetes then raise exception 'SIN_BILLETES'; end if;
+  perform public._cerrar_duelos();
+  if exists (select 1 from public.duelos where estado in ('pendiente', 'jugando') and yo.id in (reta, retado)) then raise exception 'DUELO_YA_TIENES'; end if;
+  if exists (select 1 from public.duelos where estado in ('pendiente', 'jugando') and r.id in (reta, retado)) then raise exception 'DUELO_RIVAL_OCUPADO'; end if;
+  if exists (select 1 from public.duelos where reta = yo.id and retado = r.id and estado = 'rechazado' and fin > now() - interval '1 minute') then
+    raise exception 'DUELO_ESPERA';
+  end if;
+  insert into public.duelos (juego, reta, retado, apuesta) values (p_juego, yo.id, r.id, p_apuesta) returning id into v_id;
+  perform public._avisar('⚔️ ¡Te retaron a un duelo!', format('%s te reta a %s%s. Tienes 5 minutos para aceptar.', yo.nombre,
+    public._duelo_nombre(p_juego), case when p_apuesta > 0 then format(' por $%s', p_apuesta) else '' end), array[r.id]);
+  return public._duelo_vista(v_id, yo.id);
+end $$;
+
+-- Quien retó se arrepiente antes de que le contesten
+create or replace function public.cancelar_duelo(p_token uuid, p_id bigint)
+returns void language plpgsql security definer set search_path = public as $$
+declare yo public.jugadores;
+begin
+  yo := public._yo(p_token);
+  update public.duelos set estado = 'cancelado', fin = now() where id = p_id and reta = yo.id and estado = 'pendiente';
+end $$;
+
+-- El retado acepta (se cobra la apuesta a los dos y arranca en 5 segundos) o rechaza
+create or replace function public.responder_duelo(p_token uuid, p_id bigint, p_ok boolean)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  yo public.jugadores;
+  d public.duelos;
+  v_reta text;
+  v_datos jsonb;
+  v_ops jsonb := '[]'::jsonb;
+  i int; t int; a int; b int;
+begin
+  yo := public._yo(p_token);
+  perform public._cerrar_duelos();
+  select * into d from public.duelos where id = p_id for update;
+  if not found or d.retado <> yo.id then raise exception 'DUELO_NO_EXISTE'; end if;
+  if d.estado <> 'pendiente' then return jsonb_build_object('error', 'DUELO_YA_NO'); end if;   -- sin excepción: así se guarda que caducó
+  v_reta := (select nombre from public.jugadores where id = d.reta);
+  if not coalesce(p_ok, false) then
+    update public.duelos set estado = 'rechazado', fin = now() where id = d.id;
+    perform public._avisar('⚔️ Duelo rechazado', format('%s no aceptó tu duelo de %s.', yo.nombre, public._duelo_nombre(d.juego)), array[d.reta]);
+    return public._duelo_vista(d.id, yo.id);
+  end if;
+  if yo.billetes < d.apuesta then raise exception 'SIN_BILLETES'; end if;
+  if (select billetes from public.jugadores where id = d.reta) < d.apuesta then
+    update public.duelos set estado = 'cancelado', fin = now() where id = d.id;
+    return jsonb_build_object('error', 'DUELO_RIVAL_SIN_BILLETES');
+  end if;
+  perform public._mover(d.reta, -d.apuesta, format('Apuesta de duelo contra %s (%s)', yo.nombre, public._duelo_nombre(d.juego)));
+  perform public._mover(yo.id, -d.apuesta, format('Apuesta de duelo contra %s (%s)', v_reta, public._duelo_nombre(d.juego)));
+  if d.juego = 'calculo' then
+    for i in 1..10 loop
+      t := floor(random() * 4);
+      if t = 0 then a := 10 + floor(random() * 90); b := 10 + floor(random() * 90); v_ops := v_ops || jsonb_build_object('t', a || ' + ' || b, 'r', a + b);
+      elsif t = 1 then a := 20 + floor(random() * 80); b := 1 + floor(random() * (a - 1)); v_ops := v_ops || jsonb_build_object('t', a || ' − ' || b, 'r', a - b);
+      elsif t = 2 then a := 2 + floor(random() * 11); b := 2 + floor(random() * 11); v_ops := v_ops || jsonb_build_object('t', a || ' × ' || b, 'r', a * b);
+      else b := 2 + floor(random() * 11); a := b * (2 + floor(random() * 11)); v_ops := v_ops || jsonb_build_object('t', a || ' ÷ ' || b, 'r', a / b);
+      end if;
+    end loop;
+    v_datos := jsonb_build_object('ops', v_ops);
+  elsif d.juego = 'camino' then
+    v_datos := jsonb_build_object('camino', (select jsonb_agg(floor(random() * 2)::int) from generate_series(1, 5)), 'fa', 0, 'fb', 0, 'ca', 0, 'cb', 0);
+  elsif d.juego = 'globo' then
+    v_datos := jsonb_build_object('taps', 40);
+  else
+    v_datos := jsonb_build_object('rondas', '[]'::jsonb, 'ga', 0, 'gb', 0, 'pend', '{}'::jsonb);
+  end if;
+  update public.duelos set estado = 'jugando', inicio = now() + interval '5 seconds', datos = v_datos where id = d.id;
+  perform public._avisar('⚔️ ¡Aceptaron tu duelo!', format('%s aceptó tu reto de %s. ¡Entra ya, que ya empieza!', yo.nombre, public._duelo_nombre(d.juego)), array[d.reta]);
+  return public._duelo_vista(d.id, yo.id);
+end $$;
+
+-- Ver cómo va un duelo
+create or replace function public.ver_duelo(p_token uuid, p_id bigint)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare yo public.jugadores;
+begin
+  yo := public._yo(p_token);
+  perform public._cerrar_duelos();
+  if not exists (select 1 from public.duelos where id = p_id and yo.id in (reta, retado)) then raise exception 'DUELO_NO_EXISTE'; end if;
+  return public._duelo_vista(p_id, yo.id);
+end $$;
+
+-- Una jugada dentro del duelo
+--   ppt:     {"ronda": n, "mano": 0 piedra | 1 papel | 2 tijeras}
+--   globo:   {"fin": true}               (ya lo reventé)
+--   calculo: {"resp": [10 números]}      (mis respuestas)
+--   camino:  {"fase": n, "lado": 0 izquierda | 1 derecha}
+--   todos:   {"rendir": true}
+create or replace function public.jugada_duelo(p_token uuid, p_id bigint, p_dato jsonb)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  yo public.jugadores;
+  d public.duelos;
+  k text; o text;
+  n int; m int; ma int; mb int; ga int; gb int;
+  v jsonb; w text;
+begin
+  yo := public._yo(p_token);
+  select * into d from public.duelos where id = p_id for update;
+  if not found or yo.id not in (d.reta, d.retado) then raise exception 'DUELO_NO_EXISTE'; end if;
+  k := case when yo.id = d.reta then 'a' else 'b' end; o := case when k = 'a' then 'b' else 'a' end;
+  if d.estado <> 'jugando' or now() < d.inicio then return public._duelo_vista(d.id, yo.id); end if;
+  if coalesce((p_dato->>'rendir')::boolean, false) then
+    update public.duelos set datos = datos || jsonb_build_object('rindio', k) where id = d.id;
+    perform public._terminar_duelo(d.id, case when k = 'a' then d.retado else d.reta end);
+    return public._duelo_vista(d.id, yo.id);
+  end if;
+
+  if d.juego = 'globo' then
+    if coalesce((p_dato->>'fin')::boolean, false) and now() >= d.inicio + interval '2 seconds' then
+      perform public._terminar_duelo(d.id, yo.id);
+    end if;
+
+  elsif d.juego = 'calculo' then
+    if (case when k = 'a' then d.res_a else d.res_b end) is null then
+      select count(*) into n from jsonb_array_elements(d.datos->'ops') with ordinality x(op, i)
+       where (p_dato->'resp'->>(i::int - 1)) is not null and (p_dato->'resp'->>(i::int - 1)) = (op->>'r');
+      v := jsonb_build_object('ok', n, 'ms', floor(extract(epoch from now() - d.inicio) * 1000)::int,
+                              'resp', coalesce(p_dato->'resp', '[]'::jsonb));
+      if k = 'a' then update public.duelos set res_a = v where id = d.id; d.res_a := v;
+      else update public.duelos set res_b = v where id = d.id; d.res_b := v; end if;
+      if d.res_a is not null and d.res_b is not null then
+        ma := (d.res_a->>'ok')::int; mb := (d.res_b->>'ok')::int;
+        perform public._terminar_duelo(d.id, case
+          when ma > mb then d.reta when mb > ma then d.retado
+          when (d.res_a->>'ms')::int < (d.res_b->>'ms')::int then d.reta
+          when (d.res_b->>'ms')::int < (d.res_a->>'ms')::int then d.retado end);
+      end if;
+    end if;
+
+  elsif d.juego = 'camino' then
+    if now() < coalesce((d.datos->>('bloq' || k))::timestamptz, '-infinity'::timestamptz) then return public._duelo_vista(d.id, yo.id); end if;
+    n := coalesce((d.datos->>('f' || k))::int, 0);
+    if (p_dato->>'fase')::int is distinct from n then return public._duelo_vista(d.id, yo.id); end if;
+    if (p_dato->>'lado')::int = (d.datos->'camino'->>n)::int then
+      d.datos := d.datos || jsonb_build_object('f' || k, n + 1, 'ult' || k, 'ok');
+      update public.duelos set datos = d.datos where id = d.id;
+      if n + 1 >= 5 then perform public._terminar_duelo(d.id, yo.id); end if;
+    else            -- se cayó: regresa a la fase 1 y espera 4 segundos
+      d.datos := d.datos || jsonb_build_object('f' || k, 0, 'ult' || k, 'cae', 'bloq' || k, now() + interval '4 seconds',
+                                               'c' || k, coalesce((d.datos->>('c' || k))::int, 0) + 1);
+      update public.duelos set datos = d.datos where id = d.id;
+    end if;
+
+  elsif d.juego = 'ppt' then
+    n := jsonb_array_length(d.datos->'rondas');
+    m := (p_dato->>'mano')::int;
+    if (p_dato->>'ronda')::int is distinct from n or m is null or m not between 0 and 2 or d.datos->'pend' ? k then
+      return public._duelo_vista(d.id, yo.id);
+    end if;
+    v := d.datos->'pend' || jsonb_build_object(k, m);
+    if v ? 'a' and v ? 'b' then
+      ma := (v->>'a')::int; mb := (v->>'b')::int;
+      w := case when ma = mb then '' when (ma - mb + 3) % 3 = 1 then 'a' else 'b' end;    -- papel le gana a piedra, etc.
+      ga := (d.datos->>'ga')::int + case when w = 'a' then 1 else 0 end;
+      gb := (d.datos->>'gb')::int + case when w = 'b' then 1 else 0 end;
+      d.datos := d.datos || jsonb_build_object('rondas', d.datos->'rondas' || jsonb_build_array(jsonb_build_object('a', ma, 'b', mb, 'g', w)),
+                                               'ga', ga, 'gb', gb, 'pend', '{}'::jsonb);
+      update public.duelos set datos = d.datos where id = d.id;
+      if ga >= 2 then perform public._terminar_duelo(d.id, d.reta);
+      elsif gb >= 2 then perform public._terminar_duelo(d.id, d.retado);
+      elsif n + 1 >= 9 then perform public._terminar_duelo(d.id, case when ga > gb then d.reta when gb > ga then d.retado end);
+      end if;
+    else
+      update public.duelos set datos = jsonb_set(d.datos, '{pend}', v) where id = d.id;
+    end if;
+  end if;
+  return public._duelo_vista(d.id, yo.id);
+end $$;
+revoke all on function public._terminar_duelo(bigint, uuid) from public, anon, authenticated;
+revoke all on function public._cerrar_duelos() from public, anon, authenticated;
+revoke all on function public._duelo_vista(bigint, uuid) from public, anon, authenticated;
+revoke all on function public._duelos_estado(uuid) from public, anon, authenticated;
 
 -- Las funciones internas no se pueden llamar directo desde el celular
 revoke all on function public._iniciar_semana(text)  from public, anon, authenticated;
