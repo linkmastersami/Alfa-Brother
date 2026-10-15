@@ -200,10 +200,23 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .pr-top span{background:rgba(255,255,255,.1);border-radius:999px;padding:3px 10px;font-size:.8rem;color:#fff}
 /* El Noticierazo */
 .chip-eco.tv-chip{background:#D7263D;box-shadow:none}
-.chip-eco.rep-chip{background:#7A3FB5;box-shadow:none}
-.rep-cab{display:flex;gap:12px;align-items:center;margin:4px 0 10px}
-.rep-mono{font-size:2.4rem;flex:none}
-.rep-cab p{margin:0}
+.rep-intro{display:flex;gap:12px;align-items:center;margin:4px 0 10px}
+.rep-intro .ic{font-size:2.4rem;flex:none}
+.rep-intro p{margin:0}
+/* el reportero de la sala (arriba a la derecha, junto al reloj) */
+.reportero{position:absolute;left:89%;top:39%;transform:translate(-50%,-100%);display:flex;align-items:flex-end;cursor:pointer;z-index:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.3))}
+.rep-mono{position:relative;display:flex;flex-direction:column;align-items:center;width:calc(var(--u)*12)}
+.rep-cara{font-size:calc(var(--u)*9.4);line-height:1;animation:rep-mira 3.2s ease-in-out infinite}
+.rep-cuerpo{width:calc(var(--u)*9);height:calc(var(--u)*11.4);margin-top:calc(var(--u)*-.8);overflow:visible}
+.rep-cuerpo line{stroke:#FFFDF6;stroke-width:3.4;stroke-linecap:round}
+.rep-mic{position:absolute;top:calc(var(--u)*9.6);right:calc(var(--u)*-.6);font-size:calc(var(--u)*5);transform:rotate(-20deg)}
+.rep-cam{font-size:calc(var(--u)*6.8);margin-right:calc(var(--u)*-1.5);margin-bottom:calc(var(--u)*4);transform:scaleX(-1)}
+.rep-burb{position:absolute;bottom:100%;right:0;margin-bottom:calc(var(--u)*.6);background:#FFFDF6;color:#1B1440;font-weight:800;font-size:calc(var(--u)*2.5);white-space:nowrap;border-radius:999px;padding:calc(var(--u)*.4) calc(var(--u)*1.4);
+  box-shadow:0 2px 4px rgba(0,0,0,.3);animation:rep-burb 6s ease-in-out infinite}
+@keyframes rep-mira{0%,100%{transform:rotate(0)}50%{transform:rotate(-8deg)}}
+@keyframes rep-burb{0%,55%,100%{opacity:0;transform:scale(.6)}62%,90%{opacity:1;transform:none}}
+.sala.llama-rep .reportero{animation:llama 1.1s ease-in-out infinite}
+.sala.no-rep .rep-burb{display:none}
 .tvn-bloque{border:1px solid #D9D4F3;border-radius:12px;padding:8px;margin-top:8px;background:#FFFDF6}
 .tvn-loc{display:flex;gap:6px;margin-bottom:6px;align-items:center}
 .tvn-loc button[data-loc]{white-space:nowrap;border:1px solid #C9C3EE;background:#fff;border-radius:999px;padding:5px 9px;font-weight:700;font-size:.85rem;cursor:pointer}
@@ -941,7 +954,6 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
     <button class="chip-eco" id="c-tienda">🛍️ Tienda</button>
     <button class="chip-eco" id="c-notis" aria-label="Notificaciones">🔔<span class="badge hidden" id="c-notis-n"></span></button>
     <button class="chip-eco tv-chip" id="c-tv" aria-label="El Noticierazo">📺 Noticiero<span class="punto hidden"></span></button>
-    <button class="chip-eco rep-chip hidden" id="c-reportero" aria-label="Contarle al reportero">🎤 Reportero</button>
   </div>
 
   <!-- pestaña Casa -->
@@ -995,11 +1007,14 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
         <g class="silla"><rect x="53.8" y="75.4" width="6.4" height="1.2" rx=".4" fill="#B5541F"/><rect x="53.8" y="69" width="1.2" height="7" rx=".4" fill="#8A3F17"/><rect x="54.2" y="76.4" width=".8" height="2.6" fill="#8A3F17"/><rect x="59" y="76.4" width=".8" height="2.6" fill="#8A3F17"/></g><g class="silla"><rect x="89.8" y="75.4" width="6.4" height="1.2" rx=".4" fill="#B5541F"/><rect x="95" y="69" width="1.2" height="7" rx=".4" fill="#8A3F17"/><rect x="90.2" y="76.4" width=".8" height="2.6" fill="#8A3F17"/><rect x="95" y="76.4" width=".8" height="2.6" fill="#8A3F17"/></g>
         <g class="mesita"><ellipse cx="30" cy="121" rx="3.4" ry=".9" fill="#1B1440" opacity=".35"/><rect x="29.2" y="117.6" width="1.6" height="3.4" fill="#8A3F17"/><rect x="24.8" y="116" width="10.4" height="1.9" rx=".8" fill="#E08A3C"/><rect x="27.4" y="114.4" width="2.2" height="1.6" rx=".4" fill="#FFFDF6"/><circle cx="32" cy="115.2" r=".9" fill="#FFD54A"/></g><g class="silla"><rect x="17.8" y="117.4" width="6.4" height="1.2" rx=".4" fill="#B5541F"/><rect x="17.8" y="111" width="1.2" height="7" rx=".4" fill="#8A3F17"/><rect x="18.2" y="118.4" width=".8" height="2.6" fill="#8A3F17"/><rect x="23" y="118.4" width=".8" height="2.6" fill="#8A3F17"/></g><g class="silla"><rect x="35.8" y="117.4" width="6.4" height="1.2" rx=".4" fill="#B5541F"/><rect x="41" y="111" width="1.2" height="7" rx=".4" fill="#8A3F17"/><rect x="36.2" y="118.4" width=".8" height="2.6" fill="#8A3F17"/><rect x="41" y="118.4" width=".8" height="2.6" fill="#8A3F17"/></g>
         <g class="mesita"><ellipse cx="72" cy="137" rx="3.4" ry=".9" fill="#1B1440" opacity=".35"/><rect x="71.2" y="133.6" width="1.6" height="3.4" fill="#8A3F17"/><rect x="66.8" y="132" width="10.4" height="1.9" rx=".8" fill="#E08A3C"/><rect x="69.4" y="130.4" width="2.2" height="1.6" rx=".4" fill="#FFFDF6"/><circle cx="74" cy="131.2" r=".9" fill="#FFD54A"/></g><g class="silla"><rect x="59.8" y="133.4" width="6.4" height="1.2" rx=".4" fill="#B5541F"/><rect x="59.8" y="127" width="1.2" height="7" rx=".4" fill="#8A3F17"/><rect x="60.2" y="134.4" width=".8" height="2.6" fill="#8A3F17"/><rect x="65" y="134.4" width=".8" height="2.6" fill="#8A3F17"/></g><g class="silla"><rect x="77.8" y="133.4" width="6.4" height="1.2" rx=".4" fill="#B5541F"/><rect x="83" y="127" width="1.2" height="7" rx=".4" fill="#8A3F17"/><rect x="78.2" y="134.4" width=".8" height="2.6" fill="#8A3F17"/><rect x="83" y="134.4" width=".8" height="2.6" fill="#8A3F17"/></g>
-        <!-- planta -->
-        <path d="M92 50 q-6 -8 -2 -14 M92 50 q4 -9 1 -15 M92 50 q7 -5 5 -12" stroke="#1E8E5A" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <rect x="88.5" y="49" width="7" height="7" rx="1" fill="#B5541F"/>
       </svg>
       <div class="sala-actores" id="sala-actores"></div>
+      <div class="reportero" id="reportero" role="button" aria-label="Contarle una noticia al reportero">
+        <span class="rep-cam" aria-hidden="true">🎥</span>
+        <div class="rep-mono"><span class="rep-burb">¡Cuéntame!</span><div class="rep-cara">🧑‍💼</div>
+          <svg class="rep-cuerpo" viewBox="0 0 40 52" aria-hidden="true"><line x1="20" y1="2" x2="20" y2="25"/><line x1="20" y1="7" x2="9" y2="19"/><line x1="20" y1="7" x2="30" y2="13"/><line x1="20" y1="25" x2="12" y2="49"/><line x1="20" y1="25" x2="28" y2="49"/></svg>
+          <span class="rep-mic" aria-hidden="true">🎤</span></div>
+      </div>
       <div class="sala-vivo" id="sala-vivo" title="Conectados ahora"></div>
       <div class="puerta-aviso hidden" id="puerta-aviso">¡Vota!</div>
     </div>
@@ -2402,7 +2417,7 @@ document.addEventListener('click', e => {
 const SALA = (() => {
   const T = 9000;                         // duración de cada "turno" de los que caminan solos
   const PUERTA = [12, 56], PANTALLA = [50, 24];
-  const SPOTS = [[14, 66], [30, 66], [48, 62], [76, 62], [92, 64], [8, 84], [24, 82], [44, 82], [50, 92], [92, 92],
+  const SPOTS = [[14, 66], [30, 66], [48, 62], [74, 62], [84, 76], [8, 84], [24, 82], [44, 82], [50, 92], [92, 92],
     [12, 100], [34, 98], [56, 100], [76, 98], [88, 108], [8, 112], [52, 112], [66, 114], [90, 120], [12, 132],
     [46, 128], [52, 140], [24, 142], [40, 146], [88, 146], [94, 130], [70, 104]];
   // Asientos: el sillón y las sillas del comedor. izq = hacia dónde mira; en la mesa, a veces comen.
@@ -2593,10 +2608,12 @@ const SALA = (() => {
     caja.classList.toggle('llama-puerta', meToca);
     caja.classList.toggle('llama-tele', !store.get('ab_vio_ojo') && est.yo.rol === 'jugador');
     caja.classList.toggle('llama-reloj', !store.get('ab_vio_reloj'));
+    caja.classList.toggle('llama-rep', !store.get('ab_vio_rep') && est.yo.rol === 'jugador');
+    caja.classList.toggle('no-rep', est.yo.rol !== 'jugador');
     pintarBarra();
     $('#sala-ayuda').textContent = soyActor()
-      ? 'Toca el piso para caminar · a alguien para ver su ficha · la puerta roja para votar · la tele para escuchar al ojo · el reloj para ver la agenda'
-      : est.yo.rol === 'jugador' ? 'Toca a alguien para ver su ficha · la puerta roja para votar · la tele para escuchar al ojo · el reloj para ver la agenda'
+      ? 'Toca el piso para caminar · a alguien para ver su ficha · la puerta roja para votar · la tele para escuchar al ojo · el reloj para ver la agenda · al reportero para contarle una noticia'
+      : est.yo.rol === 'jugador' ? 'Toca a alguien para ver su ficha · la puerta roja para votar · la tele para escuchar al ojo · el reloj para ver la agenda · al reportero para contarle una noticia'
       : 'Toca a alguien para ver su ficha · la puerta roja para votar · el reloj para ver la agenda';
     despertar();
   }
@@ -3071,7 +3088,6 @@ function pintarEconomia() {
   $('#c-billetes').innerHTML = `💵 <b>${fmt$(est.billetes)}</b>`;
   const publico = est.yo.rol !== 'jugador';
   $('#c-tienda').classList.toggle('hidden', publico);
-  $('#c-reportero').classList.toggle('hidden', publico);
   const g = est.juego;
   // pestaña Billetes: saldo, apuestas y encuestas
   let h = `<div class="juego-card"><h3>💵 Tu saldo <small>No son de verdad 😉</small></h3>
@@ -3800,9 +3816,8 @@ $('#c-tv').onclick = () => TV.abrir();
 function abrirReportero() {
   if (est?.yo.rol !== 'jugador') return;
   $('#rep-caja').innerHTML = `<div class="folio"><span>🎤 El reportero del Noticierazo</span><span>Exclusiva</span></div>
-    <div class="rep-cab"><div class="rep-mono">🧑‍💼🎤</div><p>¿Qué pasó hoy en la casa (o en la oficina)? Cuéntamelo y a lo mejor lo dicen <b>Elber y Rosa</b> en el noticiero de mañana a las 9.</p></div>
+    <div class="rep-intro"><div class="ic">🧑‍💼🎤</div><p>¿Qué pasó hoy en la casa (o en la oficina)? Cuéntamelo y a lo mejor lo dicen <b>Elber y Rosa</b> en el noticiero de mañana a las 9. <b>En el noticiero sale de forma anónima.</b></p></div>
     <textarea class="in" id="rep-txt" rows="4" maxlength="500" placeholder="Ej. Hoy Fulano llegó con corte de pelo nuevo y nadie le dijo nada…"></textarea>
-    <p class="ayuda" style="margin-top:6px">Le llega a la producción <b>con tu nombre</b>; ellos deciden si sale y cómo. En el noticiero no dicen quién lo contó.</p>
     <div class="error hidden" id="rep-error"></div>
     <div style="display:grid;gap:8px;margin-top:10px"><button class="btn" id="rep-env">📨 Mandar al reportero</button><button class="link" id="rep-x" style="justify-self:center">Cerrar</button></div>`;
   $('#rep-x').onclick = () => $('#m-reportero').classList.add('hidden');
@@ -3813,7 +3828,7 @@ function abrirReportero() {
     try {
       await rpc('contar_reportero', { p_token: token, p_texto: t });
       $('#rep-caja').innerHTML = `<div style="text-align:center;padding:8px 0"><div style="font-size:3rem">🎤✅</div><h2>¡Exclusiva recibida!</h2>
-        <p>Ya le llegó a la producción. Si les gusta, la vas a oír mañana en El Noticierazo.</p><button class="btn" id="rep-ok" style="margin-top:12px">Va</button></div>`;
+        <p>Si se arma la nota, la vas a oír mañana en El Noticierazo.</p><button class="btn" id="rep-ok" style="margin-top:12px">Va</button></div>`;
       $('#rep-ok').onclick = () => $('#m-reportero').classList.add('hidden');
       SFX.tocar('swish');
     } catch (e) { $('#rep-env').disabled = false; mostrarError($('#rep-error'), e); }
@@ -3821,7 +3836,13 @@ function abrirReportero() {
   $('#m-reportero').classList.remove('hidden');
   setTimeout(() => $('#rep-txt')?.focus(), 80);
 }
-$('#c-reportero').onclick = abrirReportero;
+// el monito del reportero en la sala
+$('#reportero').addEventListener('click', e => {
+  e.stopPropagation();
+  if (est?.yo.rol !== 'jugador') { toast('🎤 El reportero solo entrevista a los habitantes de la casa.', 3500); return; }
+  store.set('ab_vio_rep', '1'); SALA.sincronizar();
+  abrirReportero();
+});
 
 /* ---------- apuestas ---------- */
 const AP_TXT = {
