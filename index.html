@@ -188,6 +188,16 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .monster-caras .av{border:2px solid #fff;margin-left:-8px;box-shadow:0 0 10px rgba(255,40,40,.6)}
 .monster-caras .av:first-child{margin-left:0}
 .monster-card .btn{width:100%;font-size:1.1rem}
+.monster-card.pr-memoria{background:radial-gradient(circle at 50% 0%,#14466e,#081627 75%);border-color:#3fa7ff;box-shadow:0 0 22px rgba(60,160,255,.25)}
+.monster-card.pr-memoria h3{color:#7cc6ff;text-shadow:0 0 14px #2a8cff}
+.monster-card.pr-memoria .btn{background:#2a7fd6;box-shadow:0 5px 0 #154a80}
+.monster-card.pr-adeudo{background:radial-gradient(circle at 50% 0%,#145a36,#06180e 75%);border-color:#3ddc84;box-shadow:0 0 22px rgba(60,220,130,.25)}
+.monster-card.pr-adeudo h3{color:#7CF29A;text-shadow:0 0 14px #1e8e5a}
+.monster-card.pr-adeudo .btn{background:#1e8e5a;box-shadow:0 5px 0 #0e4d30}
+.monster-card .pr-ic{font-size:1.4rem;text-shadow:none}
+.monster-card .pr-rec{font-size:.85rem;color:#FFD54A}
+.pr-top{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.pr-top span{background:rgba(255,255,255,.1);border-radius:999px;padding:3px 10px;font-size:.8rem;color:#fff}
 #m-monster{position:fixed;inset:0;z-index:300;background:#0a0510}
 #m-monster iframe{width:100%;height:100%;border:0;display:block}
 
@@ -2983,7 +2993,7 @@ function pintarEconomia() {
   $('#c-misiones').innerHTML = tarjetaMision(g) || `<div class="juego-card"><p>${g.semana === 0 ? 'Las misiones secretas empiezan cuando abra la casa (semana 1).' : 'Esta semana no hay misiones.'}</p>
     <p class="ayuda">Cada semana cada habitante recibe 5 misiones secretas sobre sus compañeros. Las que cumplas te dan billetes y cuentan la mitad para ser líder la semana siguiente.</p></div>`;
   // pestaña Jugar: Monster Crazy y las prácticas con sus récords
-  $('#c-jugar').innerHTML = tarjetaMonster() + tarjetaRecords();
+  $('#c-jugar').innerHTML = tarjetaMonster() + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
   // botones
   const C = $('#s-casa');
   C.querySelector('[data-ver-billetes]').onclick = abrirBilletes;
@@ -3436,8 +3446,22 @@ function tarjetaRecords() {
   };
   return `<div class="juego-card"><h3>🏆 Récords de la casa <small>Juegos y prácticas</small></h3>
     <div class="record-cols">${col('monster2', 'Monster Crazy 2.0')}${col('monster', 'Monster Crazy (clásico)')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}</div>
-    <div class="fila-btn"><button class="btn chico" data-practicar="memoria">Practicar memoria</button><button class="btn chico" data-practicar="adeudo">Practicar adeudo</button></div>
-    <p class="ayuda" style="margin-top:6px">Practica las pruebas del líder. La primera partida de cada juego al día paga $100 y romper un récord de la casa, $200.</p></div>`;
+    <p class="ayuda" style="margin-top:6px">La primera partida de cada juego al día paga $100 y romper un récord de la casa, $200.</p></div>`;
+}
+// Las prácticas de las pruebas del líder, cada una en su tarjeta (con el mismo estilo que Monster Crazy)
+const ESTILO_PRACTICA = {
+  memoria: { clase: 'pr-memoria', ed: 'PRÁCTICA · PRUEBA DEL LÍDER', titulo: 'MEMORIA DE EXPEDIENTES', icono: '🗂️', boton: '🗂️ Practicar' },
+  adeudo: { clase: 'pr-adeudo', ed: 'PRÁCTICA · PRUEBA DEL LÍDER', titulo: 'CALCULA EL ADEUDO', icono: '🧮', boton: '🧮 Practicar' },
+};
+function tarjetaPractica(juego) {
+  const e = ESTILO_PRACTICA[juego], p = PRUEBAS[juego];
+  const mio = (est.practicas || []).find(x => x.id === est.yo.id && x.juego === juego);
+  const top = (est.records || []).filter(r => r.juego === juego);
+  return `<div class="monster-card ${e.clase}"><div class="ed">${e.ed}</div><h3>${e.titulo} <span class="pr-ic">${e.icono}</span></h3>
+    <p>${esc(p.desc)}</p>
+    ${top.length ? `<div class="pr-top">${top.map((r, i) => `<span>${['🥇', '🥈', '🥉'][i]} ${esc(porId(r.id)?.nombre || '?')} <b>${r.mejor.toLocaleString('es-MX')}</b></span>`).join('')}</div>` : ''}
+    <p class="pr-rec">Tu récord: <b>${(mio?.mejor || 0).toLocaleString('es-MX')}</b> · La primera partida del día paga $100 y romper el récord de la casa, $200.</p>
+    <button class="btn" data-practicar="${juego}">${e.boton}</button></div>`;
 }
 
 /* ---------- mis billetes ---------- */
