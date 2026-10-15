@@ -3373,8 +3373,14 @@ const TV = (() => {
 
   // ---------- el guion ----------
   // Exclamaciones para armar las reacciones
-  const BIEN = ['¡A huevo!', '¡Órale!', '¡Fierro!', '¡Ándale!', '¡No, pues wow!', '¡Uff!', '¡Qué chulada!', '¡Eso, mi gente!'];
-  const MAL = ['¡Chale!', 'Híjole,', 'Uy,', 'Ay, nanita,', 'Ni modo,', '¡Qué oso!', '¡Ay, güey!', 'Ah, caray,'];
+  const BIEN = ['¡Bravo!', '¡Órale!', '¡Fierro!', '¡Ándale!', '¡No, pues wow!', '¡Uff!', '¡Qué chulada!', '¡Eso, mi gente!'];
+  const MAL = ['¡Chale!', 'Híjole,', 'Uy,', 'Ay, nanita,', 'Ni modo,', '¡Qué oso!', '¡Ay, mamá!', 'Ah, caray,'];
+  // Groserías: salen poquito, nomás 1 o 2 por programa (sustituyen la exclamación de alguna reacción)
+  const GROSERAS = {
+    bien: ['¡A huevo!', '¡No mames!', '¡Órale, wey!', '¡No friegues!', '¡No jodas!', '¡No chingues!', '¡A huevo, wey!'],
+    mal: ['¡Chingue su madre!', '¡Uta madre!', '¡No mames!', '¡No chingues!', '¡No jodas!', '¡Ay, wey!', '¡No friegues!', '¡Ah, qué pedo!'],
+    neutro: ['¡¿Qué pedo?!', '¡No mames!', '¡No friegues!', '¡No chingues!', '¡No jodas!', 'Neta, wey,', 'Oye, wey,', '¡Uta madre!'],
+  };
   const NEUTRO = ['Neta,', 'Pues sí,', 'Fíjate,', 'Ojo,', 'Ya ves,', 'Oye,', 'Te digo,', 'Mira nomás,'];
 
   // Saludos: quién abre el programa
@@ -3542,17 +3548,40 @@ const TV = (() => {
   };
   // una noticia: Elber o Rosa la dice (entrada) y el otro reacciona (exclamación + chiste)
   // (sin repetir la misma exclamación dos veces en el mismo programa)
-  let exclUsadas = new Set();
+  let exclUsadas = new Set(), reacs = [];
   const reaccion = (clave, exclam, chistes, c, paso) => {
     const lista = prod(exclam, chistes);
     let t = frase(clave, lista, paso);
     for (let k = 0; k < exclam.length && exclUsadas.has(exclam.find(x => t.startsWith(x + ' '))); k++) t = frase(clave, lista, paso);
-    exclUsadas.add(exclam.find(x => t.startsWith(x + ' ')));
-    return llenar(t, c);
+    const ex = exclam.find(x => t.startsWith(x + ' '));
+    exclUsadas.add(ex);
+    t = llenar(t, c);
+    reacs.push({ t, ex, tono: exclam === BIEN ? 'bien' : exclam === MAL ? 'mal' : 'neutro' });
+    return t;
   };
+  // pone 1 o 2 groserías en el programa: en lugar de la exclamación de alguna reacción
+  function groserias(L) {
+    const r = rng(diaN * 7919 + 13);
+    const k = reacs.length >= 3 && r() < 0.5 ? 2 : 1;
+    const usadas = new Set();
+    const toca = tono => { let g = frase('grosera_' + tono, GROSERAS[tono]); for (let j = 0; j < 8 && usadas.has(g); j++) g = frase('grosera_' + tono, GROSERAS[tono]); usadas.add(g); return g; };
+    if (!reacs.length) {                       // día sin reacciones: la suelta al despedirse
+      const ln = L.find(x => x.salida); if (ln) ln.t = frase('grosera_nada', ['¡Qué pedo, banda!', '¡Uta madre, ni un chisme!', '¡No mames, qué día tan aburrido!', '¡No friegues, puro silencio!', '¡No jodas, ni una nota!', '¡A huevo, mañana sí hay chisme!']) + ' ' + ln.t;
+      return;
+    }
+    // una en la primera mitad y otra en la segunda, para que no salgan juntas
+    const mitad = Math.ceil(reacs.length / 2);
+    const elegidas = k === 1 ? [Math.floor(r() * reacs.length)] : [Math.floor(r() * mitad), mitad + Math.floor(r() * (reacs.length - mitad))];
+    for (const ix of elegidas) {
+      const re = reacs[ix]; if (!re?.ex) continue;
+      const ln = L.find(x => x.t.includes(re.t)); if (!ln) continue;
+      const nuevo = toca(re.tono) + re.t.slice(re.ex.length);
+      ln.t = ln.t.replace(re.t, nuevo);
+    }
+  }
 
   function guion() {
-    diaN = Math.floor(Date.parse(d.dia + 'T12:00:00Z') / 864e5); usos = {}; exclUsadas = new Set();
+    diaN = Math.floor(Date.parse(d.dia + 'T12:00:00Z') / 864e5); usos = {}; exclUsadas = new Set(); reacs = [];
     const L = [], titulares = [];
     const di = (q, t, cara) => L.push({ q, t, cara });
     const bloque = b => b.forEach(([q, t]) => di(q, t));
@@ -3649,7 +3678,10 @@ const TV = (() => {
     else if (d.nota) { const q = turno; turno = otro(turno); nota('📌 Noticias importantes de ayer', [[q, frase('nota_in', T.nota_in)], [otro(q), d.nota]]); }
     if (titulares.length === 0) nota('😴 No pasó nada', frase('nada', T.nada));
     if (d.rico) dos(`💵 ${d.rico.nombre} es quien más billetes tiene`, llenar(frase('rico_in', T.rico_in), { n: d.rico.nombre, b: fmt(d.rico.billetes) }), reaccion('rico_j', NEUTRO, T.rico_j, {}), d.rico.id);
+    const ini = L.length;
     bloque(frase('salida', SALIDAS));
+    L[ini].salida = true;
+    groserias(L);
     return { lineas: L, titulares };
   }
 
