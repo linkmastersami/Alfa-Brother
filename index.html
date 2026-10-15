@@ -295,6 +295,9 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .du-top{display:grid;grid-template-columns:minmax(38px,auto) 1fr minmax(38px,auto);align-items:center;gap:8px;min-height:40px;width:100%}
 .du-top>b{text-align:center;font:900 1.3rem/1.1 Anton,Impact,sans-serif;letter-spacing:.02em;color:#FFD54A}
 .du-x{width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:1.1rem}
+.mm-cab.emo{font-family:system-ui,sans-serif;font-size:calc(var(--t)*.62)}
+.du-rival.du-bot{border-style:dashed;border-color:rgba(255,213,74,.45)}
+.du-rival.du-bot.on{border-style:solid;border-color:#FFD54A}
 .du-tit-j{font-size:1.05rem!important}
 .du-rendir{border:0;background:rgba(255,255,255,.1);color:#E7D2FF;border-radius:999px;padding:7px 10px;font-weight:700;font-size:.76rem;line-height:1.1}
 .du-rendir.seguro{background:#D7263D;color:#fff}
@@ -401,6 +404,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .du-dinero{font:900 1.6rem Anton,Impact,sans-serif;color:#E7D2FF!important}
 .du-dinero.gana{color:#7CF29A!important}
 .du-dinero.pierde{color:#ff8a8a!important}
+.du-dinero.chico{font:700 1rem system-ui,sans-serif}
 .du-det{font-size:.95rem}
 .du-botones{display:grid;gap:10px;width:100%;margin-top:8px}
 
@@ -3081,12 +3085,12 @@ const CUERPO_MM = `<svg class="mm-cuerpo" viewBox="0 0 40 52" aria-hidden="true"
 function monito(j, { cara = '', tam = 48, nombre = true, clase = '', estilo = null } = {}) {
   const e = estilo || porId(j.id)?.estilo || j.estilo || {};
   const f = fotos[j.id];
-  const ini = esc(String(j.nombre || '?').trim().charAt(0).toUpperCase());
+  const ini = j.emoji || esc(String(j.nombre || '?').trim().charAt(0).toUpperCase());
   return `<div class="mm ${clase}${e.color === 'arcoiris' ? ' arcoiris' : ''}" data-mm="${j.id}" style="--t:${tam}px;${e.color ? `--linea:${colorLinea(e.color)};` : ''}">
     ${e.efecto ? `<span class="mm-efecto"><i>${e.efecto}</i><i>${e.efecto}</i><i>${e.efecto}</i></span>` : ''}
     <span class="mm-burbuja ${cara ? 'on' : ''}">${cara}</span>
     ${e.sombrero ? `<span class="mm-sombrero">${e.sombrero}</span>` : ''}
-    <div class="mm-cab" style="background:${colorDe(j.nombre)}">${f ? `<img src="${f}" alt="">` : ini}</div>
+    <div class="mm-cab${j.emoji ? ' emo' : ''}" style="background:${j.color || colorDe(j.nombre)}">${f ? `<img src="${f}" alt="">` : ini}</div>
     ${e.lentes ? `<span class="mm-lentes">${e.lentes}</span>` : ''}
     ${CUERPO_MM}
     ${e.mano ? `<span class="mm-mano">${e.mano}</span>` : ''}
@@ -3481,7 +3485,7 @@ function tarjetaDuelos() {
   const marc = (est.duelos_marcador || []).slice(0, 5);
   const hab = est.yo.rol === 'jugador';
   return `<div class="monster-card pr-duelo"><div class="ed">NUEVO · 2 JUGADORES</div><h3>DUELOS <span class="pr-ic">⚔️</span></h3>
-    <p>${hab ? 'Escoge un juego y reta a otro habitante (aunque ya lo hayan sacado de la casa). Ponen la misma apuesta y el que gana se lleva lo de los dos.' : 'Los duelos son solo para los habitantes de la casa. Tú puedes ver el marcador.'}</p>
+    <p>${hab ? 'Escoge un juego y reta a otro habitante (aunque ya lo hayan sacado de la casa). Ponen la misma apuesta y el que gana se lleva lo de los dos. ¿Quieres practicar? Escoge al Reportero 🧑‍💼: con él no se gana ni se pierde nada.' : 'Los duelos son solo para los habitantes de la casa. Tú puedes ver el marcador.'}</p>
     ${hab ? `<div class="du-juegos">${Object.entries(DUELOS_JUEGOS).map(([k, j]) => `<button data-duelo="${k}"><span>${j.ic}</span><b>${j.nombre}</b></button>`).join('')}</div>` : ''}
     <div class="du-marc"><b>🏆 Marcador de duelos</b>${marc.length ? marc.map((m, i) => `<div class="${m.id === est.yo.id ? 'yo' : ''}"><span>${['🥇', '🥈', '🥉', '4.', '5.'][i]} ${esc(porId(m.id)?.nombre || '?')}</span><span>${m.g} ${m.g === 1 ? 'ganado' : 'ganados'} · ${m.p} ${m.p === 1 ? 'perdido' : 'perdidos'}</span></div>`).join('')
       : '<div><span style="color:#C9C3EE">Nadie ha jugado todavía. ¡Estrénalo!</span></div>'}</div></div>`;
@@ -3503,7 +3507,8 @@ const DUELO = (() => {
   const k = () => d?.yo || 'a', o = () => (d?.yo === 'b' ? 'a' : 'b');
   const otroId = () => d ? (d.yo === 'b' ? d.reta : d.retado) : null;
   const yoJ = () => porId(yoId()) || est.yo;
-  const otroJ = () => porId(otroId()) || { id: otroId(), nombre: 'Alguien' };
+  const BOT = { id: 'bot', nombre: 'Reportero', emoji: '🧑‍💼', color: '#3a2a6e' };
+  const otroJ = () => d?.bot ? BOT : porId(otroId()) || { id: otroId(), nombre: 'Alguien' };
   const nomOtro = () => otroJ().nombre;
   const segs = ms => Math.round(ms / 100) / 10;
 
@@ -3512,12 +3517,12 @@ const DUELO = (() => {
     d = v;
     if (v.ahora) { const t1 = Date.now(); off = Date.parse(v.ahora) - (t0 ? (t0 + t1) / 2 : t1); }
   }
-  async function ver(id = d?.id) { const t0 = Date.now(); const v = await rpc('ver_duelo', { p_token: token, p_id: id }); tomar(v, t0); return v; }
-  async function jugada(dato) { const t0 = Date.now(); const v = await rpc('jugada_duelo', { p_token: token, p_id: d.id, p_dato: dato }); tomar(v, t0); return v; }
-  const avisar = para => SALA.mandarDuelo({ para, duelo: d?.id, de: yoId() });
-  const progreso = p => SALA.mandarDuelo({ duelo: d?.id, de: yoId(), p });
+  async function ver(id = d?.id) { if (d?.bot) return d; const t0 = Date.now(); const v = await rpc('ver_duelo', { p_token: token, p_id: id }); tomar(v, t0); return v; }
+  async function jugada(dato) { if (d?.bot) return jugadaBot(dato); const t0 = Date.now(); const v = await rpc('jugada_duelo', { p_token: token, p_id: d.id, p_dato: dato }); tomar(v, t0); return v; }
+  const avisar = para => d?.bot || SALA.mandarDuelo({ para, duelo: d?.id, de: yoId() });
+  const progreso = p => d?.bot || SALA.mandarDuelo({ duelo: d?.id, de: yoId(), p });
   function abrirCaja() { caja().classList.remove('hidden'); document.body.style.overflow = 'hidden'; SFX.pausaParaGala(true); }
-  function limpiar() { clearInterval(poll); clearInterval(tick); clearTimeout(G.cuentaT); clearTimeout(G.t1); clearTimeout(G.t2); poll = tick = null; G = {}; }
+  function limpiar() { clearInterval(poll); clearInterval(tick); clearTimeout(G.cuentaT); clearTimeout(G.t1); clearTimeout(G.t2); clearTimeout(G.botT); clearTimeout(G.botT2); poll = tick = null; G = {}; }
   function cerrar() {
     limpiar(); modo = null; d = null;
     caja().classList.add('hidden'); caja().innerHTML = '';
@@ -3546,7 +3551,7 @@ const DUELO = (() => {
         <div class="du-chips">${[0, 50, 100, 200, 500].map(m => `<button data-ap="${m}" class="${m === apuesta ? 'on' : ''}" ${m > est.billetes ? 'disabled' : ''}>${m ? fmt$(m) : 'Por gusto'}</button>`).join('')}
           <input class="in" type="number" inputmode="numeric" min="0" max="5000" step="10" id="du-ap" value="${apuesta}" aria-label="Otra cantidad"></div>
         <small id="du-ap-txt"></small></div>
-      <div class="du-rivales">${rivales.map(x => `<button class="du-rival" data-rival="${x.id}">${monito(x, { tam: 44 })}<small>${SALA.enLinea(x.id) ? '<i class="on"></i>En línea' : x.estado !== 'activo' ? 'Eliminado' : '&nbsp;'}</small></button>`).join('')
+      <div class="du-rivales"><button class="du-rival du-bot" data-rival="bot">${monito(BOT, { tam: 44 })}<small>🎤 Práctica</small></button>${rivales.map(x => `<button class="du-rival" data-rival="${x.id}">${monito(x, { tam: 44 })}<small>${SALA.enLinea(x.id) ? '<i class="on"></i>En línea' : x.estado !== 'activo' ? 'Eliminado' : '&nbsp;'}</small></button>`).join('')
         || '<p style="color:#C9C3EE">Todavía no hay a quién retar.</p>'}</div>
       <div class="du-pie"><div class="error hidden" id="du-err"></div><button class="btn" id="du-retar" disabled>Escoge a quién retar</button></div></div>`;
     const txt = () => {
@@ -3564,8 +3569,10 @@ const DUELO = (() => {
     };
     $$('#m-duelo [data-rival]').forEach(b => b.onclick = () => {
       rivalSel = b.dataset.rival;
-      $$('#m-duelo [data-rival]').forEach(x => { x.classList.toggle('on', x === b); expresar($('.mm', x), x === b ? '⚔️' : '', x === b ? 'festeja' : '', 0); });
-      $('#du-retar').disabled = false; $('#du-retar').textContent = `⚔️ Desafiar a ${porId(rivalSel)?.nombre || ''}`;
+      $$('#m-duelo [data-rival]').forEach(x => { x.classList.toggle('on', x === b); expresar($('.mm', x), x === b ? (rivalSel === 'bot' ? '🎤' : '⚔️') : '', x === b ? 'festeja' : '', 0); });
+      $('#du-retar').disabled = false;
+      $('#du-retar').textContent = rivalSel === 'bot' ? '🎤 Practicar contra el Reportero' : `⚔️ Desafiar a ${porId(rivalSel)?.nombre || ''}`;
+      $('.du-apuesta').classList.toggle('hidden', rivalSel === 'bot');
       SFX.tocar('clic');
     });
     $('#du-retar').onclick = () => retar();
@@ -3573,6 +3580,7 @@ const DUELO = (() => {
   }
   async function retar(revancha = false) {
     if (ocupado || !rivalSel) return;
+    if (rivalSel === 'bot') { practicar(juegoK); return; }
     const err = e => revancha ? (toast(mensajeError(e), 4000), cerrar()) : (mostrarError($('#du-err'), e), $('#du-retar') && ($('#du-retar').disabled = false));
     if (apuesta > (est.billetes || 0)) { err('No te alcanzan los billetes para esa apuesta.'); return; }
     ocupado = true; if ($('#du-retar')) $('#du-retar').disabled = true;
@@ -3693,7 +3701,7 @@ const DUELO = (() => {
     };
     ({ ppt: jPPT, globo: jGlobo, calculo: jCalculo, camino: jCamino })[d.juego]();
     abrirCaja();
-    cuenta().then(() => { if (modo === 'juego') G.arranca?.(); });
+    cuenta().then(() => { if (modo === 'juego') { G.arranca?.(); if (d.bot) botArranca(); } });
     poll = setInterval(sincronizar, 1100);
   }
   // 3, 2, 1… ¡YA! (con la hora del servidor, para que a los dos les arranque igual)
@@ -3969,6 +3977,116 @@ const DUELO = (() => {
     pinta();
   }
 
+  // ---------- 🎤 práctica contra el Reportero: todo pasa en el celular, no se gana ni se pierde nada ----------
+  const rand = n => Math.floor(Math.random() * n);
+  const alAzar = (a, b) => a + Math.random() * (b - a);
+  function datosBot(juego) {
+    if (juego === 'calculo') {
+      const ops = [];
+      for (let i = 0; i < 10; i++) {
+        const t = rand(4); let a, b;
+        if (t === 0) { a = 10 + rand(90); b = 10 + rand(90); ops.push({ t: `${a} + ${b}`, r: a + b }); }
+        else if (t === 1) { a = 20 + rand(80); b = 1 + rand(a - 1); ops.push({ t: `${a} − ${b}`, r: a - b }); }
+        else if (t === 2) { a = 2 + rand(11); b = 2 + rand(11); ops.push({ t: `${a} × ${b}`, r: a * b }); }
+        else { b = 2 + rand(11); a = b * (2 + rand(11)); ops.push({ t: `${a} ÷ ${b}`, r: a / b }); }
+      }
+      return { ops };
+    }
+    if (juego === 'camino') return { camino: [0, 0, 0, 0, 0].map(() => rand(2)), fa: 0, fb: 0, ca: 0, cb: 0 };
+    if (juego === 'globo') return { taps: 40 };
+    return { rondas: [], ga: 0, gb: 0, pend: {} };
+  }
+  function practicar(juego) {
+    limpiar(); off = 0;
+    d = { id: 'bot', bot: true, juego, reta: yoId(), retado: 'bot', apuesta: 0, estado: 'jugando', yo: 'a', datos: datosBot(juego), ganador: null,
+      inicio: new Date(Date.now() + 3600).toISOString(), res_yo: null, res_otro: null };
+    SFX.tocar('swish');
+    empezar();
+  }
+  function finBot(ganador) {
+    if (d.estado !== 'jugando') return;
+    d.estado = 'terminado'; d.ganador = ganador;
+    if (d._botRes) d.res_otro = d._botRes;
+    clearTimeout(G.botT); clearTimeout(G.botT2);
+  }
+  function calcBot() {
+    if (!d.res_yo || !d._botRes) return;
+    const a = d.res_yo, b = d._botRes;
+    finBot(a.ok > b.ok ? yoId() : b.ok > a.ok ? 'bot' : a.ms < b.ms ? yoId() : b.ms < a.ms ? 'bot' : null);
+    alVer();
+  }
+  // El Reportero juega solo (más o menos como una persona: a veces gana, a veces no)
+  function botArranca() {
+    const D = d.datos, sigue = () => d?.bot && d.estado === 'jugando' && modo === 'juego';
+    if (d.juego === 'globo') {
+      const vel = alAzar(110, 170);                 // entre 6 y 9 taps por segundo
+      let n = 0;
+      const paso = () => {
+        if (!sigue()) return;
+        n++; G.prog?.(n);
+        if (n >= D.taps) { finBot('bot'); G.animando = true; setTimeout(() => { G.animando = false; alVer(); }, 900); return; }
+        G.botT2 = setTimeout(paso, vel * alAzar(.7, 1.3));
+      };
+      G.botT2 = setTimeout(paso, alAzar(200, 500));
+    } else if (d.juego === 'calculo') {
+      let i = 0, ok = 0;
+      const paso = rapido => {
+        if (!sigue()) return;
+        if (Math.random() < .8) ok++;
+        i++; G.prog?.(i);
+        if (i >= D.ops.length) { d._botRes = { ok, ms: Date.now() - Date.parse(d.inicio) }; d.res_otro = { listo: true }; calcBot(); return; }
+        G.botT2 = setTimeout(() => paso(rapido), rapido ? 250 : alAzar(3500, 7500));
+      };
+      G.botPaso = paso;
+      G.botT2 = setTimeout(() => paso(false), alAzar(3500, 7500));
+    } else if (d.juego === 'camino') {
+      const sabe = {};                                // lo que ya aprendió de cada fase
+      const paso = () => {
+        if (!sigue()) return;
+        const f = D.fb, lado = sabe[f] ?? rand(2);
+        if (lado === D.camino[f]) {
+          sabe[f] = lado; D.fb = f + 1; G.prog?.(D.fb);
+          if (D.fb >= 5) { finBot('bot'); alVer(); return; }
+          G.botT2 = setTimeout(paso, alAzar(1100, 2300));
+        } else {
+          sabe[f] = 1 - lado; D.fb = 0; D.cb++; G.prog?.(0);
+          G.botT2 = setTimeout(paso, 4000 + alAzar(900, 1900));
+        }
+      };
+      G.botT2 = setTimeout(paso, alAzar(1000, 2000));
+    }
+    // en piedra, papel o tijeras el Reportero escoge cuando tú ya escogiste (ver jugadaBot)
+  }
+  function jugadaBot(dato) {
+    const D = d.datos;
+    if (d.estado !== 'jugando') return d;
+    if (dato.rendir) { D.rindio = 'a'; finBot('bot'); return d; }
+    if (d.juego === 'globo') { if (dato.fin) finBot(yoId()); }
+    else if (d.juego === 'calculo') {
+      if (!d.res_yo) {
+        const ok = D.ops.filter((op, i) => dato.resp?.[i] != null && +dato.resp[i] === op.r).length;
+        d.res_yo = { ok, ms: Date.now() - Date.parse(d.inicio), resp: dato.resp };
+        if (!d._botRes && G.botPaso) { clearTimeout(G.botT2); G.botT2 = setTimeout(() => G.botPaso(true), 600); }   // el Reportero se apura
+        setTimeout(calcBot, 0);
+      }
+    } else if (d.juego === 'camino') {
+      if (dato.fase !== D.fa) return d;
+      if (dato.lado === D.camino[D.fa]) { D.fa++; D.ulta = 'ok'; if (D.fa >= 5) finBot(yoId()); }
+      else { D.fa = 0; D.ca++; D.ulta = 'cae'; }
+    } else if (d.juego === 'ppt') {
+      if (dato.ronda !== D.rondas.length || D.pend.a != null) return d;
+      D.pend.a = dato.mano;
+      G.botT = setTimeout(() => {
+        if (d?.estado !== 'jugando') return;
+        const ma = D.pend.a, mb = rand(3), w = ma === mb ? '' : (ma - mb + 3) % 3 === 1 ? 'a' : 'b';
+        D.rondas.push({ a: ma, b: mb, g: w }); if (w === 'a') D.ga++; if (w === 'b') D.gb++; D.pend = {};
+        if (D.ga >= 2) finBot(yoId()); else if (D.gb >= 2) finBot('bot'); else if (D.rondas.length >= 9) finBot(D.ga > D.gb ? yoId() : D.gb > D.ga ? 'bot' : null);
+        alVer();
+      }, alAzar(500, 1400));
+    }
+    return d;
+  }
+
   // ---------- 5. resultado ----------
   function resultado() {
     if (modo === 'resultado') return;
@@ -3983,18 +4101,19 @@ const DUELO = (() => {
       if (a && d.datos.ops?.[0]?.r !== undefined) det += `<div class="calc-lista">${d.datos.ops.map((op, i) => { const mi = a.resp?.[i]; const bien = mi !== null && mi !== undefined && +mi === +op.r; return `<span class="${bien ? 'bien' : 'mal'}">${esc(op.t)} = ${op.r}${bien ? ' ✓' : ` <s>${mi ?? '—'}</s>`}</span>`; }).join('')}</div>`;
     }
     if (d.datos?.rindio) det = `<p class="du-det">🏳️ ${d.datos.rindio === k() ? 'Te rendiste' : `${esc(r.nombre)} se rindió`}.</p>`;
-    const dinero = empate ? (d.apuesta ? 'Te devolvimos tu apuesta.' : '') : gane ? (d.apuesta ? `+${fmt$(d.apuesta * 2)}` : '¡Puro orgullo!') : (d.apuesta ? `−${fmt$(d.apuesta)}` : 'No perdiste billetes… solo la dignidad.');
+    const dinero = d.bot ? 'Práctica: no se gana ni se pierde nada.' : empate ? (d.apuesta ? 'Te devolvimos tu apuesta.' : '') : gane ? (d.apuesta ? `+${fmt$(d.apuesta * 2)}` : '¡Puro orgullo!') : (d.apuesta ? `−${fmt$(d.apuesta)}` : 'No perdiste billetes… solo la dignidad.');
     caja().innerHTML = `<div class="du-pant du-centro">
       <div class="du-top"><span class="du-x-esp"></span><b class="du-tit-j">${j.ic} ${esc(j.nombre)}</b><span class="du-x-esp"></span></div>
       <div class="du-vs">${monito(yoJ(), { tam: 72, cara: gane ? '🏆' : empate ? '🤝' : '😭', clase: gane ? 'festeja' : empate ? '' : 'triste' })}<span class="du-vs-t">VS</span>${monito(r, { tam: 72, cara: gane ? '😭' : empate ? '🤝' : '🏆', clase: gane ? 'triste' : empate ? '' : 'festeja' })}</div>
       <h2 class="du-titulo ${gane ? 'gana' : empate ? '' : 'pierde'}">${gane ? '¡GANASTE!' : empate ? '¡EMPATE!' : 'PERDISTE'}</h2>
-      ${dinero ? `<p class="du-dinero ${gane ? 'gana' : empate ? '' : 'pierde'}">${dinero}</p>` : ''}
+      ${dinero ? `<p class="du-dinero ${d.bot ? 'chico' : gane ? 'gana' : empate ? '' : 'pierde'}">${dinero}</p>` : ''}
       ${det}
       <div class="du-botones"><button class="btn" id="du-revancha">⚔️ Revancha</button><button class="btn sec du-btn-sec" id="du-salir">Salir</button></div></div>`;
     if (gane) { SFX.tocar('fanfarria'); if (d.apuesta) lluviaBilletes(18); } else if (!empate) SFX.tocar('buzzer');
     $('#du-salir').onclick = cerrar;
     $('#du-revancha').onclick = async () => {
       $('#du-revancha').disabled = true;
+      if (d.bot) { practicar(d.juego); return; }
       juegoK = d.juego; rivalSel = otroId(); apuesta = d.apuesta;
       try { est = await rpc('estado', { p_token: token }); } catch { }
       retar(true);
