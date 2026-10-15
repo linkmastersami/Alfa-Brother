@@ -198,6 +198,49 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .monster-card .pr-rec{font-size:.85rem;color:#FFD54A}
 .pr-top{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
 .pr-top span{background:rgba(255,255,255,.1);border-radius:999px;padding:3px 10px;font-size:.8rem;color:#fff}
+/* El Noticierazo */
+.chip-eco.tv-chip{background:#D7263D;box-shadow:none}
+#m-tv{position:fixed;inset:0;z-index:300;background:#0d0828;color:#fff;display:flex;flex-direction:column;overflow:hidden}
+#m-tv.hidden{display:none}
+.tv-cargando{margin:auto;text-align:center;font-weight:700;padding:24px}
+.tv-top{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 8px}
+.tv-vivo{background:#D7263D;border-radius:6px;padding:2px 8px;font-weight:800;font-size:.75rem;animation:latido-vivo 1.4s infinite}
+@keyframes latido-vivo{50%{opacity:.55}}
+.tv-fecha{flex:1;font-size:.82rem;color:#C9C3EE}
+.tv-x{border:0;background:rgba(255,255,255,.12);color:#fff;width:36px;height:36px;border-radius:50%;font-weight:800;font-size:1rem}
+.tv-escena{position:relative;width:100%;max-width:520px;margin:0 auto}
+.tv-set{display:block;width:100%;height:auto}
+.tv-pantalla{position:absolute;left:34%;width:32%;top:6%;height:44%;background:#1B1440;border:3px solid #FFD54A;border-radius:10px;display:grid;place-items:center;overflow:hidden;box-shadow:0 0 18px rgba(255,213,74,.25)}
+.tv-logo{display:grid;justify-items:center;text-align:center;font-size:1.4rem;line-height:1.1;padding:4px}
+.tv-logo b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:.95rem;color:#FFD54A;letter-spacing:.04em}
+.tv-logo small{font-size:.58rem;color:#C9C3EE}
+.tv-logo.grande{font-size:3rem}
+.tv-logo.grande b{font-size:1.9rem}
+.tv-logo.grande small{font-size:.9rem}
+.tv-cara{display:grid;justify-items:center;gap:2px;animation:entra-cara .35s ease-out}
+.tv-cara .av{box-shadow:0 0 0 3px #FFD54A}
+.tv-cara b{font-size:.72rem;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px}
+@keyframes entra-cara{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.tv-host .tv-boca{transform-box:fill-box;transform-origin:center}
+.tv-host.habla .tv-boca{animation:boca .16s ease-in-out infinite alternate}
+.tv-host.habla .tv-cab{animation:cabecea .5s ease-in-out infinite alternate}
+.tv-host .tv-cab{transform-box:fill-box;transform-origin:50% 100%}
+.tv-ojos{animation:parpadeo-tv 4s infinite;transform-box:fill-box;transform-origin:center}
+#tv-a .tv-ojos{animation-delay:1.7s}
+@keyframes boca{from{transform:scaleY(.4)}to{transform:scaleY(2.4) scaleX(1.1)}}
+@keyframes cabecea{from{transform:rotate(-2deg)}to{transform:rotate(2deg) translateY(-1px)}}
+@keyframes parpadeo-tv{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.tv-sub{max-width:520px;width:calc(100% - 28px);margin:14px auto 0;background:rgba(0,0,0,.55);border-radius:12px;padding:14px 16px;font-size:1.15rem;line-height:1.45;min-height:110px}
+.tv-sub b.el{color:#7cc6ff}
+.tv-sub b.ella{color:#FF8FC4}
+.tv-ctrl{display:flex;justify-content:center;gap:14px;margin:12px 0}
+.tv-ctrl button{border:0;background:rgba(255,255,255,.12);color:#fff;width:52px;height:52px;border-radius:50%;font-size:1.4rem}
+.tv-ticker{margin-top:auto;background:#FFD54A;color:#1B1440;font-weight:800;font-size:.85rem;white-space:nowrap;overflow:hidden;padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+#tv-cinta{display:inline-block;padding-left:100%;animation:cinta 40s linear infinite}
+@keyframes cinta{to{transform:translateX(-100%)}}
+.tv-inicio{position:absolute;inset:0;background:radial-gradient(circle at 50% 30%,#3a2a9a,#0d0828 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:10px}
+.tv-inicio .btn{font-size:1.15rem;padding:14px 28px}
+.tv-aviso{font-size:.8rem;color:#C9C3EE}
 #m-monster{position:fixed;inset:0;z-index:300;background:#0a0510}
 #m-monster iframe{width:100%;height:100%;border:0;display:block}
 
@@ -862,6 +905,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
     <button class="chip-eco dinero" id="c-billetes">💵 <b>$0</b></button>
     <button class="chip-eco" id="c-tienda">🛍️ Tienda</button>
     <button class="chip-eco" id="c-notis" aria-label="Notificaciones">🔔<span class="badge hidden" id="c-notis-n"></span></button>
+    <button class="chip-eco tv-chip" id="c-tv" aria-label="El Noticierazo">📺 Noticiero<span class="punto hidden"></span></button>
   </div>
 
   <!-- pestaña Casa -->
@@ -962,6 +1006,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
   </nav>
 </section>
 <div id="m-monster" class="hidden"></div>
+<div id="m-tv" class="hidden"></div>
 
 <!-- ============================ PANTALLA: CONFESIONARIO (votar) -->
 <section id="s-votar" class="wrap hidden confesionario">
@@ -2975,6 +3020,7 @@ $('#c-notis').onclick = abrirNotis;
 
 function pintarEconomia() {
   pintarAnuncios();
+  TV.pintarBoton();
   CHAT.revisar();
   $('#c-billetes').innerHTML = `💵 <b>${fmt$(est.billetes)}</b>`;
   const g = est.juego;
@@ -3210,6 +3256,278 @@ const MONSTER = (() => {
   }
   return { abrir, cerrar, mandarPendiente };
 })();
+
+/* =====================================================================
+   EL NOTICIERAZO ALFA — el resumen del día anterior con dos presentadores
+   Elber Galarga y Rosa Melano: ñeros, albureros y satíricos. Cada mañana a
+   las 8 sale la edición de ayer. La voz es la del celular (speechSynthesis).
+   ===================================================================== */
+const TV = (() => {
+  const EL = 'Elber Galarga', ELLA = 'Rosa Melano';
+  let d = null, lineas = [], i = 0, sonando = false, pausa = false, conVoz = true, voces = null, guardia = null, sigT = null;
+
+  // ---------- qué edición toca (la de ayer; antes de las 8 a.m., la de antier) ----------
+  const fechaMX = (t = Date.now()) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City', year: 'numeric', month: '2-digit', day: '2-digit' }).format(t);
+  const diaEdicion = () => { const hoy = fechaMX(Date.now() - 8 * 3600e3); const x = new Date(hoy + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() - 1); return x.toISOString().slice(0, 10); };
+  const diaBonito = dia => { const t = new Date(dia + 'T12:00:00Z').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }); return t.charAt(0).toUpperCase() + t.slice(1); };
+  const hayNueva = () => !!est && est.juego.semana > 0 && store.get('ab_tv_visto') !== diaEdicion();
+  function pintarBoton() {
+    const b = $('#c-tv'); if (!b || !est) return;
+    b.querySelector('.punto').classList.toggle('hidden', !hayNueva());
+  }
+
+  // ---------- azar repetible por día (todos ven el mismo programa) ----------
+  let r = Math.random;
+  const sembrar = s => { let h = 2166136261 >>> 0; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } let a = h; r = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
+  const una = arr => arr[Math.floor(r() * arr.length)];
+  const fmt = n => Number(n || 0).toLocaleString('es-MX');
+  const JUEGOS = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo' };
+
+  // ---------- el guion ----------
+  // Albures entre ellos: uno la pone y el otro la remata. Nunca sobre los compañeros.
+  const ENTRADAS = [
+    [['e', '¡Qué hongo, banda de Grupo Alfa! Aquí su compa Elber Galarga, en El Noticierazo.'], ['a', 'Y aquí su comadre Rosa Melano. Elber, te ves bien parado hoy.'], ['e', 'Así me pongo cuando te veo, Rosa: firme como deudor el día de pago.'], ['a', 'Ay sí, firme… si nomás te dura lo que un pagaré sin firma.']],
+    [['a', '¡Buenos días, raza! Rosa Melano al micrófono.'], ['e', 'Y Elber Galarga, que hoy les trae la nota más larga del día.'], ['a', '¿Larga? Ay, Elber, contigo todo es pura promesa y nada de tamaño.'], ['e', 'Tú agárrala y luego me dices, Rosa.']],
+    [['e', '¿Qué rollo, mi gente? Arrancamos El Noticierazo con su servidor, Elber Galarga.'], ['a', 'Y con Rosa Melano. Oye, Elber, ¿me echas la mano con las noticias?'], ['e', 'Te echo la mano y lo que quieras, Rosa.'], ['a', 'Nomás la mano, mi rey, que lo demás se cobra aparte y tú andas sin crédito.']],
+    [['a', '¡Ya llegó su noticiero favorito, banda! Rosa Melano, presente.'], ['e', 'Y Elber Galarga, recién bañadito. Rosa, ¿te gusta el pepino en la ensalada?'], ['a', 'Me encanta, Elber, pero el tuyo no alcanza ni pa’ pico de gallo.'], ['e', 'Ahí te va el chisme entonces, para que te calles.']],
+    [['e', '¡Buenos días, Grupo Alfa! Elber Galarga reportándose desde el estudio.'], ['a', 'Y Rosa Melano. ¿Qué traes en la bolsa, Elber?'], ['e', 'Las noticias calientitas, Rosa. Si quieres, métele la mano.'], ['a', 'Paso, que ahí nomás hay migajas y boletos del metro.']],
+    [['a', '¡Arriba, raza! Abran el ojo que empieza El Noticierazo.'], ['e', 'Con Elber Galarga, que ya se tomó su café y anda bien despierto… de todo.'], ['a', 'Lo único que tienes despierto son las ganas, mi Elber, porque lo demás ni se levanta.'], ['e', 'Ya, ya, que nos ve la producción. ¡Vámonos con las noticias!']],
+  ];
+  const PUENTES = [
+    [['a', 'Y eso no es todo, Elber, ¿qué más tienes?'], ['e', 'Tengo mucho, Rosa, y bien guardadito.'], ['a', 'Pues sácalo, que de tanto guardarlo se te va a echar a perder.']],
+    [['e', 'Rosa, ¿te paso la siguiente?'], ['a', 'Pásamela, pero despacito que luego te tiembla la mano.']],
+    [['a', 'Elber, no te me duermas.'], ['e', 'Despierto y bien atento, Rosa, nomás estoy reuniendo fuerzas.'], ['a', 'Junta todas las que puedas, que con las que tienes no le haces ni cosquillas al chisme.']],
+    [['e', 'Agárrate, Rosa, que viene la buena.'], ['a', 'Siempre dices eso y nomás me dejas esperando.']],
+    [['a', 'A ver, Elber, aviéntate otra.'], ['e', 'Te la aviento, Rosa, pero tú cáchala con las dos manos.'], ['a', 'Con una me sobra, mi vida.']],
+  ];
+  const SALIDAS = [
+    [['a', 'Y hasta aquí El Noticierazo de hoy.'], ['e', 'Se despide Elber Galarga, que se va pero no se raja.'], ['a', 'Y Rosa Melano, que sí se queda pero no se deja. ¡Paguen lo que deben, banda!']],
+    [['e', 'Esto fue todo, raza. Mañana les traemos más.'], ['a', 'Si es que Elber aguanta hasta mañana, porque se cansa rápido.'], ['e', 'Yo aguanto lo que me echen, Rosa. ¡Bye, banda!']],
+    [['a', 'Nos vamos, Grupo Alfa. Cuídense mucho.'], ['e', 'Y ya saben: el que no paga, no juega.'], ['a', 'Y el que juega con Elber, sale perdiendo. ¡Hasta mañana!']],
+  ];
+  function guion() {
+    sembrar(d.dia);
+    const L = [], titulares = [];
+    const di = (q, t, cara) => L.push({ q, t, cara });
+    const bloque = b => b.forEach(([q, t]) => di(q, t));
+    const nota = (titular, partes) => { titulares.push(titular); if (L.length > 6 && r() < .35) bloque(una(PUENTES)); partes.forEach(([q, t, cara]) => di(q, t, cara)); };
+    bloque(una(ENTRADAS));
+    const n = s => s || 'alguien';
+    // galas
+    for (const g of d.galas || []) {
+      if (g.final && g.podio?.length) {
+        const gan = g.podio.filter(x => x.lugar === 1);
+        nota(`🏆 ${gan.map(x => x.nombre).join(' y ')} gana Alfa Brother`, [
+          ['e', `¡Noticia de última hora, banda! Ya hay ganador de Alfa Brother: ${gan.map(x => x.nombre).join(' y ')}.`, gan[0].id],
+          ['a', una(['¡A huevo! Se llevó todo, hasta la dignidad de los demás.', 'Nomás no se le vaya a subir, que todavía debe la tanda.', 'Y los demás, a llorar al baño como todos los lunes.'])]]);
+        continue;
+      }
+      if (g.eliminado_id) {
+        const fila = (g.tabla || []).find(x => x.id === g.eliminado_id);
+        nota(`💀 ${g.eliminado} salió de la casa`, [
+          ['a', `Y la nota que dolió: en la gala sacaron a ${g.eliminado}${fila ? `, con ${fila.puntos} puntos` : ''}.`, g.eliminado_id],
+          ['e', una([`Chale, ${g.eliminado}, te fuiste como cliente moroso: sin avisar y debiendo.`, `Ni modo, ${g.eliminado}. Ahora a ver la casa desde el palco, como el que ve pasar el camión.`, `Pa’ que vean que aquí no perdonamos ni a la mamá de la tanda.`])]]);
+      }
+      if (g.lider_salvado && g.lider) nota(`👑 La corona salvó a ${g.lider}`, [
+        ['e', `Y ojo: a ${g.lider} le llovieron votos, pero la corona de líder lo salvó.`, g.lider_id],
+        ['a', 'Así cualquiera, Elber: con fuero ni quién te toque.']]);
+      if (g.desempate) nota('⚖️ Hubo empate en la gala', [['a', 'Y hubo empate, banda: el líder tuvo que decidir quién se iba.'], ['e', 'Más feo que decidir quién paga la cuenta en la cantina.']]);
+    }
+    // sucesos: semana nueva, líder y récords
+    for (const s of d.sucesos || []) {
+      if (s.tipo === 'semana') nota(`📅 Empezó la semana ${s.dato.semana}`, s.dato.final
+        ? [['a', '¡Agárrense, que ya empezó la gran final!'], ['e', 'Sin prueba y sin líder: aquí puro voto, como en las elecciones del sindicato.']]
+        : [['e', `Arrancó la semana ${s.dato.semana} y la prueba es ${PRUEBAS[s.dato.prueba]?.nombre || 'una sorpresa'}.`], ['a', una(['A ver quién se pone las pilas, que luego andan llorando.', 'Y ya saben: el que se duerme, se lo lleva la corriente… y la gala.'])]]);
+      if (s.tipo === 'lider') nota(`👑 ${n(s.nombre)} es el líder`, [
+        ['e', `El chisme gordo: ${n(s.nombre)} se aventó la prueba y ahora es el líder de la semana.`, s.id],
+        ['a', una([`Ya lo vi pavoneándose con su coronita, ni que fuera el gerente.`, `Felicidades, ${n(s.nombre)}. Disfrútalo, que la corona dura menos que la quincena.`, `Ahora sí, ${n(s.nombre)}, a sentirse la última coca del desierto.`])]]);
+      if (s.tipo === 'record') nota(`🎮 Récord de ${n(s.nombre)} en ${JUEGOS[s.dato.juego] || 'un juego'}`, [
+        ['a', `Récord nuevo en ${JUEGOS[s.dato.juego] || 'los juegos'}: ${n(s.nombre)} hizo ${fmt(s.dato.puntos)} puntos.`, s.id],
+        ['e', una([`Neta, ${n(s.nombre)}, ¿a qué hora trabajas?`, 'Con esos dedos, ya podría marcar a todos los deudores en un minuto.', 'Ese récord no se rompe ni con martillo, banda.'])]]);
+    }
+    // misiones
+    const mis = d.misiones || [];
+    if (mis.length) {
+      const total = mis.reduce((a, x) => a + x.n, 0), top = mis[0];
+      nota(`🕵️ ${total} ${total === 1 ? 'misión cumplida' : 'misiones cumplidas'}`, [
+        ['a', `En misiones secretas hubo movimiento: se ${total === 1 ? 'cumplió una' : `cumplieron ${total}`}.`],
+        ['e', `Y quien más le metió fue ${top.nombre}, con ${top.n}. ${una(['Ese no pierde el tiempo… ni en horario laboral.', 'Más misiones que cobranzas, el muy vago.', 'Cuidado con esa persona, que te saca la sopa sin que te des cuenta.'])}`, top.id]]);
+    }
+    // encuestas
+    for (const e of d.encuestas || []) {
+      const gan = (e.resultado?.ganadores || []).map(k => e.opciones?.[+k]?.t).filter(Boolean);
+      const id = (e.resultado?.ganadores || []).map(k => e.opciones?.[+k]?.id).find(Boolean);
+      if (!gan.length) continue;
+      nota(`📊 ${e.pregunta} → ${gan.join(' y ')}`, [
+        ['e', `La encuesta de ayer: ${e.pregunta}`],
+        ['a', `Y ganó ${gan.join(' y ')}. ${una(['No es por nada, pero todos ya sabíamos.', 'El pueblo ha hablado, y el pueblo es bien criticón.', 'Ni modo, la banda no miente.'])}`, id]]);
+    }
+    // apuestas
+    const ap = d.apuestas || [];
+    if (ap.length) nota(`💰 ${ap[0].nombre} ganó ${fmt$(ap[0].monto)} en apuestas`, [
+      ['a', `En las apuestas, ${ap[0].nombre} se llevó ${fmt(ap[0].monto)} billetes.`, ap[0].id],
+      ['e', una(['Pinche suertudo, que me preste pa’ los tacos.', 'Con esa suerte, que se compre un cachito de la lotería.', 'Y los demás, a llorarle a la quincena.'])]]);
+    // tienda
+    const com = d.compras || [];
+    if (com.length) {
+      const c = com[com.length - 1];
+      nota(`🛍️ ${c.nombre} estrenó ${c.cosa}`, [
+        ['e', `En la tienda, ${c.nombre} se compró ${c.cosa}${com.length > 1 ? `, y hubo ${com.length} compras en total` : ''}.`, c.id],
+        ['a', una(['Se ve que le sobra la lana. Ahorita le hablo pa’ que me pague lo que me debe.', 'Muy guapo su monito, lástima que la cara no se cambia en la tienda.', 'Puro lujo, banda. Luego andan pidiendo prestado pa’ la comida.'])]]);
+    }
+    // chat
+    if (d.chat?.n) nota(`💬 ${d.chat.n} mensajes en el chat`, [
+      ['a', `En el chat de la casa se echaron ${d.chat.n} ${d.chat.n === 1 ? 'mensaje' : 'mensajes'}.`],
+      ...(d.chat.top ? [['e', `Y quien más habló fue ${d.chat.top.nombre}, con ${d.chat.top.n}. ${una(['Ni en la junta habla tanto.', 'Le tienen que cobrar por letra.', 'Tiene más saldo pa’ chismear que pa’ trabajar.'])}`, d.chat.top.id]] : [])]);
+    if (d.votantes) nota(`🗳️ ${d.votantes} pasaron al confesionario`, [
+      ['e', `${d.votantes} ${d.votantes === 1 ? 'persona pasó' : 'personas pasaron'} al confesionario a votar.`],
+      ['a', 'Y ninguno nos quiso decir por quién. Malditos discretos.']]);
+    for (const x of d.nuevos || []) nota(`👋 Bienvenida a ${x.nombre}`, [['a', `Y bienvenida a ${x.nombre}, que se registró ayer${x.rol === 'espectador' ? ' como público' : ''}.`, x.id], ['e', 'Pásele, pásele, que aquí nadie muerde… nomás tantito.']]);
+    if (d.jugaron) nota(`🎮 ${d.jugaron} se pusieron a jugar`, [['e', `${d.jugaron} ${d.jugaron === 1 ? 'se puso' : 'se pusieron'} a jugar en vez de trabajar.`], ['a', 'Yo no los acuso, Elber, pero el jefe sí ve el noticiero.']]);
+    if (d.nota) nota('🎬 Nota de la producción', [['a', 'Ojo, banda, que nos llegó nota de la producción:'], ['e', d.nota]]);
+    if (titulares.length === 0) nota('😴 No pasó nada', [['e', 'Pues ayer en la casa no pasó ni madres, banda.'], ['a', 'Como en la oficina, Elber: mucho café y cero cobranza.']]);
+    if (d.rico) nota(`💵 ${d.rico.nombre} es quien más billetes tiene`, [['e', `Y quien más billetes tiene en la casa es ${d.rico.nombre}, con ${fmt(d.rico.billetes)}.`, d.rico.id], ['a', 'Billetes de mentiritas, pero igual ni nos invita un taco.']]);
+    bloque(una(SALIDAS));
+    return { lineas: L, titulares };
+  }
+
+  // ---------- voces ----------
+  const MASC = /(jorge|juan|diego|carlos|pablo|enrique|raul|raúl|andr[eé]s|miguel|gerardo|alvaro|álvaro|male|hombre|man\b)/i;
+  const FEM = /(paulina|sabina|m[oó]nica|helena|laura|luc[ií]a|elvira|dalia|paloma|marisol|female|mujer|woman|ang[eé]lica|esperanza)/i;
+  function elegirVoces() {
+    if (!('speechSynthesis' in window)) return null;
+    const vs = speechSynthesis.getVoices().filter(v => /^es/i.test(v.lang));
+    if (!vs.length) return null;
+    const orden = v => /MX/i.test(v.lang) ? 0 : /US|419/i.test(v.lang) ? 1 : 2;
+    vs.sort((a, b) => orden(a) - orden(b));
+    const hombre = vs.find(v => MASC.test(v.name)), mujer = vs.find(v => FEM.test(v.name));
+    return { e: hombre || vs[0], a: mujer || vs[0], distintas: !!(hombre && mujer) };
+  }
+  if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => { voces = elegirVoces(); };
+  const sinEmojis = t => t.replace(/\p{Extended_Pictographic}|️/gu, '').replace(/’/g, "'");
+
+  // ---------- la pantalla ----------
+  const SET = `<svg class="tv-set" viewBox="0 0 360 250" aria-hidden="true">
+    <defs><radialGradient id="tvluz" cx="50%" cy="20%" r="80%"><stop offset="0" stop-color="#3a2a9a"/><stop offset="1" stop-color="#0d0828"/></radialGradient></defs>
+    <rect width="360" height="250" fill="url(#tvluz)"/>
+    <g opacity=".18" fill="#FFD54A"><circle cx="40" cy="30" r="3"/><circle cx="320" cy="40" r="3"/><circle cx="70" cy="80" r="2"/><circle cx="300" cy="95" r="2"/></g>
+    <!-- Elber -->
+    <g class="tv-host" id="tv-e">
+      <path d="M48 250 L52 182 Q90 160 128 182 L132 250 Z" fill="#2337A8"/><path d="M90 168 L82 190 L90 230 L98 190 Z" fill="#D7263D"/>
+      <g class="tv-cab"><circle cx="90" cy="128" r="33" fill="#D9A27A"/>
+        <path d="M58 118 Q60 88 92 88 Q118 88 122 112 L58 120 Z" fill="#B01E33"/><path d="M118 110 L146 116 L118 120 Z" fill="#8E1526"/>
+        <g class="tv-ojos"><circle cx="79" cy="128" r="3.6" fill="#1B1440"/><circle cx="101" cy="128" r="3.6" fill="#1B1440"/></g>
+        <path d="M78 141 Q90 136 102 141" stroke="#3b1d12" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <ellipse class="tv-boca" cx="90" cy="149" rx="7" ry="3" fill="#5a1220"/></g>
+    </g>
+    <!-- Rosa -->
+    <g class="tv-host" id="tv-a">
+      <path d="M232 250 L236 182 Q270 162 304 182 L308 250 Z" fill="#E0559A"/>
+      <g class="tv-cab"><path d="M234 128 Q234 86 270 86 Q306 86 306 128 L310 196 L230 196 Z" fill="#3b1d12"/>
+        <circle cx="270" cy="130" r="31" fill="#E8B48A"/>
+        <path d="M240 120 Q246 92 272 94 Q296 96 300 118 Q284 106 268 112 Q252 104 240 120 Z" fill="#3b1d12"/>
+        <circle cx="238" cy="146" r="7" fill="none" stroke="#FFD54A" stroke-width="2.6"/><circle cx="302" cy="146" r="7" fill="none" stroke="#FFD54A" stroke-width="2.6"/>
+        <g class="tv-ojos"><circle cx="259" cy="130" r="3.4" fill="#1B1440"/><circle cx="281" cy="130" r="3.4" fill="#1B1440"/></g>
+        <path d="M254 124 l-5 -3 M286 124 l5 -3" stroke="#1B1440" stroke-width="2" stroke-linecap="round"/>
+        <ellipse class="tv-boca" cx="270" cy="149" rx="7" ry="3" fill="#C2185B"/></g>
+    </g>
+    <!-- escritorio -->
+    <path d="M0 196 L360 196 L360 250 L0 250 Z" fill="#1B1440"/>
+    <rect x="24" y="202" width="312" height="40" rx="6" fill="#D7263D"/>
+    <text x="180" y="229" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="20" fill="#FFD54A" letter-spacing="1">EL NOTICIERAZO ALFA</text>
+    <rect x="76" y="186" width="6" height="14" fill="#555"/><circle cx="79" cy="184" r="5" fill="#222"/>
+    <rect x="278" y="186" width="6" height="14" fill="#555"/><circle cx="281" cy="184" r="5" fill="#222"/>
+  </svg>`;
+  function armar() {
+    const m = $('#m-tv');
+    m.innerHTML = `<div class="tv-top"><span class="tv-vivo">● EN VIVO</span><span class="tv-fecha">${esc(diaBonito(d.dia))}</span><button class="tv-x" aria-label="Cerrar">✕</button></div>
+      <div class="tv-escena">${SET}<div class="tv-pantalla" id="tv-pantalla"><div class="tv-logo">📺<b>EL NOTICIERAZO</b><small>Lo que pasó ayer en la casa</small></div></div></div>
+      <div class="tv-sub" id="tv-sub"><b id="tv-quien"></b><span id="tv-texto"></span></div>
+      <div class="tv-ctrl"><button id="tv-pausa" aria-label="Pausa">⏸️</button><button id="tv-sig" aria-label="Siguiente">⏭️</button><button id="tv-voz" aria-label="Voz">${conVoz ? '🔊' : '🔇'}</button></div>
+      <div class="tv-ticker"><div id="tv-cinta"></div></div>
+      <div class="tv-inicio" id="tv-inicio"><div class="tv-logo grande">📺<b>EL NOTICIERAZO ALFA</b><small>Edición del ${esc(diaBonito(d.dia).toLowerCase())}</small></div>
+        <p>Con <b>${EL}</b> y <b>${ELLA}</b></p><button class="btn" id="tv-play">▶️ Ver el noticiero</button>
+        <p class="tv-aviso">Contenido con albures y lenguaje de barrio. 🔞😂</p></div>`;
+    m.querySelector('.tv-x').onclick = cerrar;
+    $('#tv-play').onclick = empezar;
+    $('#tv-pausa').onclick = alternarPausa;
+    $('#tv-sig').onclick = () => { parar(); siguiente(); };
+    $('#tv-voz').onclick = () => { conVoz = !conVoz; store.set('ab_tv_voz', conVoz ? '1' : '0'); $('#tv-voz').textContent = conVoz ? '🔊' : '🔇'; parar(); decir(); };
+  }
+  async function abrir() {
+    conVoz = store.get('ab_tv_voz') !== '0';
+    $('#m-tv').innerHTML = `<div class="tv-cargando">📺 Sintonizando…</div>`;
+    $('#m-tv').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    SFX.pausaParaGala(true);
+    try { d = await rpc('noticiero', { p_token: token }); }
+    catch (e) { $('#m-tv').innerHTML = `<div class="tv-cargando">No se pudo sintonizar: ${esc(mensajeError(e))}<br><button class="btn" style="margin-top:14px">Cerrar</button></div>`; $('#m-tv .btn').onclick = cerrar; return; }
+    const g = guion(); lineas = g.lineas; i = 0;
+    armar();
+    const cinta = g.titulares.join('   •   ');
+    $('#tv-cinta').textContent = cinta + '   •   ' + cinta;
+    store.set('ab_tv_visto', d.dia); pintarBoton();
+  }
+  function empezar() {
+    $('#tv-inicio').remove();
+    voces = voces || elegirVoces();
+    if (conVoz && 'speechSynthesis' in window) { try { speechSynthesis.cancel(); speechSynthesis.resume(); } catch { } }
+    SFX.tocar('tadan');
+    setTimeout(decir, 700);
+  }
+  function mostrarCara(id) {
+    const p = $('#tv-pantalla'), j = id && porId(id);
+    p.innerHTML = j ? `<div class="tv-cara">${avatar(j, 76)}<b>${esc(j.nombre)}</b></div>` : `<div class="tv-logo">📺<b>EL NOTICIERAZO</b><small>Lo que pasó ayer en la casa</small></div>`;
+  }
+  function decir() {
+    clearTimeout(guardia); clearTimeout(sigT);
+    if (!lineas.length || $('#m-tv').classList.contains('hidden')) return;
+    if (i >= lineas.length) return fin();
+    const l = lineas[i], quien = l.q === 'e' ? EL : ELLA;
+    $('#tv-quien').textContent = quien + ':';
+    $('#tv-quien').className = l.q === 'e' ? 'el' : 'ella';
+    $('#tv-texto').textContent = ' ' + l.t;
+    if (l.cara || i === 0) mostrarCara(l.cara);
+    $$('#m-tv .tv-host').forEach(h => h.classList.toggle('habla', h.id === 'tv-' + l.q));
+    sonando = true;
+    const dura = Math.max(1800, l.t.length * 62);
+    const listo = () => { if (!sonando) return; sonando = false; $$('#m-tv .tv-host').forEach(h => h.classList.remove('habla')); if (!pausa) sigT = setTimeout(siguiente, 380); };
+    if (conVoz && voces && 'speechSynthesis' in window) {
+      const u = new SpeechSynthesisUtterance(sinEmojis(l.t));
+      const v = l.q === 'e' ? voces.e : voces.a;
+      u.voice = v; u.lang = v.lang;
+      u.pitch = voces.distintas ? (l.q === 'e' ? .95 : 1.1) : (l.q === 'e' ? .7 : 1.45);
+      u.rate = l.q === 'e' ? 1.02 : 1.08;
+      u.onend = listo; u.onerror = listo;
+      speechSynthesis.speak(u);
+      guardia = setTimeout(listo, dura * 2.2 + 3000);       // por si el celular no avisa que terminó
+    } else guardia = setTimeout(listo, dura);
+  }
+  function siguiente() { i++; decir(); }
+  function parar() { sonando = false; clearTimeout(guardia); clearTimeout(sigT); try { speechSynthesis.cancel(); } catch { } $$('#m-tv .tv-host').forEach(h => h.classList.remove('habla')); }
+  function alternarPausa() {
+    pausa = !pausa;
+    $('#tv-pausa').textContent = pausa ? '▶️' : '⏸️';
+    if (pausa) parar(); else decir();
+  }
+  function fin() {
+    $$('#m-tv .tv-host').forEach(h => h.classList.remove('habla'));
+    mostrarCara(null);
+    $('#tv-texto').textContent = ' ¡Gracias por ver El Noticierazo! Mañana a las 8 hay edición nueva.';
+    $('#tv-quien').textContent = '';
+    $('#tv-pausa').textContent = '🔁'; pausa = true;
+    $('#tv-pausa').onclick = () => { $('#tv-pausa').onclick = alternarPausa; pausa = false; $('#tv-pausa').textContent = '⏸️'; i = 0; decir(); };
+  }
+  function cerrar() {
+    parar(); pausa = false; lineas = [];
+    $('#m-tv').classList.add('hidden'); $('#m-tv').innerHTML = '';
+    document.body.style.overflow = '';
+    SFX.pausaParaGala(false);
+  }
+  return { abrir, cerrar, pintarBoton, diaEdicion };
+})();
+
+$('#c-tv').onclick = () => TV.abrir();
 
 /* ---------- apuestas ---------- */
 const AP_TXT = {
@@ -4766,6 +5084,8 @@ async function adminExtras(C) {
   ]);
   const chatMsgs = await q(sb.from('chat').select('*').order('id', { ascending: false })).then(x => x.slice(0, 40)).catch(() => []);
   const recs = await q(sb.from('practicas').select('*').order('mejor', { ascending: false })).catch(() => []);
+  const hoyMX = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  const notaHoy = (await q(sb.from('noticiero_notas').select('*').eq('dia', hoyMX)).catch(() => []))[0];
   const JUEGOS_REC = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy (clásico)', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo' };
   const ahora = Date.now();
   const estadoEnc = e => +new Date(e.abre) > ahora ? `Programada: abre ${fmtFecha(e.abre)}` : +new Date(e.cierra) > ahora ? `Abierta hasta ${fmtFecha(e.cierra)}` : 'Cerrada';
@@ -4809,6 +5129,12 @@ async function adminExtras(C) {
       <p class="ayuda">Lo ven solo los habitantes. Aquí puedes leer los últimos mensajes y borrar alguno ofensivo.</p>
       ${chatMsgs.map(m => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>${esc(nombreDe(m.jugador_id))}</b>
         <small style="white-space:normal">${esc(m.texto)} · ${esc(fechaCorta(m.creado))}</small></div><button class="mini" data-chat-del="${m.id}">Borrar</button></div>`).join('') || '<p class="ayuda">Todavía no hay mensajes.</p>'}</div>
+    <form class="adm-caja" id="tvn-form"><h3>📺 El Noticierazo</h3>
+      <p class="ayuda">Cada mañana a las 8 sale el noticiero con lo que pasó el día anterior (y llega aviso al celular). Lo que escribas aquí lo leen Elber y Rosa como "nota de la producción" en el noticiero de <b>mañana</b>.</p>
+      <label class="campo" for="tvn-txt">Nota de la producción de hoy</label>
+      <textarea class="in" id="tvn-txt" maxlength="400" rows="3" placeholder="Ej. El viernes hay pizza para el que cumpla sus 5 misiones.">${esc(notaHoy?.texto || '')}</textarea>
+      <div class="adm-acciones"><button class="btn">Guardar nota</button><button type="button" class="btn sec" id="tvn-ver">Ver el noticiero de hoy</button>${notaHoy ? '<button type="button" class="mini" id="tvn-del">Borrar nota</button>' : ''}</div>
+    </form>
     <form class="adm-caja" id="rec-form"><h3>Récords de los juegos</h3>
       <p class="ayuda">Para corregir o poner a mano el récord de alguien (por ejemplo, si se le cerró la app y no se guardó). El número que pongas queda como su mejor puntaje.</p>
       <label class="campo" for="rec-juego">Juego</label>
@@ -4874,6 +5200,21 @@ async function adminExtras(C) {
   $$('[data-chat-del]').forEach(b => b.onclick = async () => {
     if (!confirm('¿Borrar este mensaje del chat?')) return;
     try { await q(sb.from('chat').delete().eq('id', b.dataset.chatDel)); toast('Mensaje borrado'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
+  });
+  $('#tvn-form').onsubmit = async e => {
+    e.preventDefault();
+    const t = $('#tvn-txt').value.trim();
+    if (!t) return toast('Escribe la nota');
+    try {
+      if (notaHoy) await q(sb.from('noticiero_notas').update({ texto: t }).eq('dia', hoyMX));
+      else await q(sb.from('noticiero_notas').insert({ dia: hoyMX, texto: t }));
+      toast('📺 Nota guardada para el noticiero de mañana'); cargarAdmin();
+    } catch (x) { toast(mensajeError(x)); }
+  };
+  $('#tvn-ver').onclick = () => TV.abrir();
+  $('#tvn-del')?.addEventListener('click', async () => {
+    if (!confirm('¿Borrar la nota de hoy?')) return;
+    try { await q(sb.from('noticiero_notas').delete().eq('dia', hoyMX)); toast('Nota borrada'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
   });
   $$('[data-rec-edit]').forEach(b => b.onclick = () => {
     const [id, juego, mejor] = b.dataset.recEdit.split('|');

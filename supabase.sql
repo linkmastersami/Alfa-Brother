@@ -283,6 +283,20 @@ create table if not exists public.chat (
   creado     timestamptz not null default now()
 );
 
+-- v19: El Noticierazo (resumen del día anterior). Bitácora de lo que pasa y notas de la producción.
+create table if not exists public.sucesos (
+  id         bigint generated always as identity primary key,
+  tipo       text not null,
+  jugador_id uuid references public.jugadores(id) on delete cascade,
+  dato       jsonb not null default '{}'::jsonb,
+  creado     timestamptz not null default now()
+);
+create table if not exists public.noticiero_notas (
+  dia    date primary key,
+  texto  text not null check (char_length(texto) between 1 and 400),
+  creado timestamptz not null default now()
+);
+
 -- Predicción secreta: quién gana y quién sale primero
 create table if not exists public.predicciones (
   jugador_id  uuid primary key references public.jugadores(id) on delete cascade,
@@ -305,7 +319,7 @@ do $$
 declare t text;
 begin
   foreach t in array array['config','jugadores','sesiones','trivia','intentos','votos','historial','admins','predicciones','chismes','push_subs','push_ajustes',
-                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda','push_produccion','anuncios','chat'] loop
+                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda','push_produccion','anuncios','chat','sucesos','noticiero_notas'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists admin_todo on public.%I', t);
     execute format('create policy admin_todo on public.%I for all to authenticated using (public.es_admin()) with check (public.es_admin())', t);
@@ -741,6 +755,7 @@ begin
          es_final = v_final, lider_id = null, eliminado_id = null,
          empatados = '{}', gala_revelada = false, actualizado = now()
    where id = 1;
+  insert into public.sucesos (tipo, dato) values ('semana', jsonb_build_object('semana', c.semana + 1, 'prueba', case when v_final then null else p_prueba end, 'final', v_final));
   -- misiones secretas de la semana nueva
   begin perform public._repartir_misiones(c.semana + 1, false);
   exception when others then null; end;
@@ -782,6 +797,9 @@ begin
          fase = case when c.ag_semana = c.semana and c.ag_voto_ini > now() then 'espera' else 'votacion' end,
          actualizado = now()
    where id = 1;
+  if v_lider is not null then
+    insert into public.sucesos (tipo, jugador_id, dato) values ('lider', v_lider, jsonb_build_object('semana', c.semana, 'prueba', c.prueba));
+  end if;
   perform public._liquidar('lider', c.semana, case when v_lider is null then '{}'::text[] else array[v_lider::text] end,
                            format('líder de la semana %s', c.semana));
   return v_lider;
@@ -1110,6 +1128,7 @@ begin
   delete from public.apuestas where true;
   delete from public.movimientos where true;
   delete from public.misiones where true;
+  delete from public.sucesos where true;
   delete from public.practicas where true;
   delete from public.encuestas where liquidada;
   update public.jugadores set billetes = 2000, ultimo_bono = null where true;
@@ -1250,6 +1269,7 @@ begin
   perform public._avanzar_agenda();
   perform public._recordatorios();
   perform public._encuestas();
+  begin perform public._noticiero_aviso(); exception when others then null; end;
 end $$;
 
 do $$ begin
@@ -1718,6 +1738,7 @@ begin
   end if;
   if v > v_rec and v > 0 then
     v_record := true;
+    insert into public.sucesos (tipo, jugador_id, dato) values ('record', yo.id, jsonb_build_object('juego', p_juego, 'puntos', v, 'antes', v_rec));
     if p.ultimo_record is distinct from public._hoy() then
       perform public._mover(yo.id, 200, 'Nuevo récord de la casa'); v_premio := v_premio + 200;
     end if;
@@ -1900,6 +1921,70 @@ begin
         from public.practicas p)
   );
 end $$;
+
+-- ---------------------------------------------------------------------
+--  v19: EL NOTICIERAZO — lo que pasó ayer, para los presentadores
+-- ---------------------------------------------------------------------
+alter table public.config add column if not exists noticiero_aviso date;
+
+-- La edición de cada día sale a las 8 a.m. y cuenta el día anterior (hora de la Ciudad de México)
+create or replace function public._noticiero_dia()
+returns date language sql stable as $$
+  select ((now() at time zone 'America/Mexico_City') - interval '8 hours')::date - 1
+$$;
+
+create or replace function public.noticiero(p_token uuid)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare
+  v_dia date := public._noticiero_dia();
+  v_ini timestamptz := (v_dia::timestamp) at time zone 'America/Mexico_City';
+  v_fin timestamptz := ((v_dia + 1)::timestamp) at time zone 'America/Mexico_City';
+begin
+  perform public._yo(p_token);
+  return jsonb_build_object(
+    'dia', v_dia,
+    'galas', (select coalesce(jsonb_agg(h.resultados order by h.semana), '[]'::jsonb)
+        from public.historial h where h.creado >= v_ini and h.creado < v_fin),
+    'sucesos', (select coalesce(jsonb_agg(jsonb_build_object('tipo', s.tipo, 'id', s.jugador_id, 'nombre', j.nombre, 'dato', s.dato) order by s.id), '[]'::jsonb)
+        from public.sucesos s left join public.jugadores j on j.id = s.jugador_id where s.creado >= v_ini and s.creado < v_fin),
+    'compras', (select coalesce(jsonb_agg(jsonb_build_object('id', m.jugador_id, 'nombre', j.nombre, 'cosa', substr(m.concepto, 9)) order by m.id), '[]'::jsonb)
+        from public.movimientos m join public.jugadores j on j.id = m.jugador_id
+       where m.concepto like 'Tienda: %' and m.creado >= v_ini and m.creado < v_fin),
+    'misiones', (select coalesce(jsonb_agg(jsonb_build_object('id', x.jugador_id, 'nombre', j.nombre, 'n', x.n) order by x.n desc, j.nombre), '[]'::jsonb)
+        from (select jugador_id, count(*)::int as n from public.movimientos
+               where concepto = 'Misión secreta cumplida' and creado >= v_ini and creado < v_fin group by jugador_id) x
+        join public.jugadores j on j.id = x.jugador_id),
+    'apuestas', (select coalesce(jsonb_agg(jsonb_build_object('id', m.jugador_id, 'nombre', j.nombre, 'monto', m.monto) order by m.monto desc), '[]'::jsonb)
+        from public.movimientos m join public.jugadores j on j.id = m.jugador_id
+       where m.concepto like '¡Ganaste la apuesta%' and m.creado >= v_ini and m.creado < v_fin),
+    'encuestas', (select coalesce(jsonb_agg(jsonb_build_object('pregunta', e.pregunta, 'opciones', e.opciones, 'resultado', e.resultado) order by e.cierra), '[]'::jsonb)
+        from public.encuestas e where e.liquidada and e.cierra >= v_ini and e.cierra < v_fin),
+    'chat', jsonb_build_object(
+        'n', (select count(*) from public.chat where creado >= v_ini and creado < v_fin),
+        'top', (select jsonb_build_object('id', c.jugador_id, 'nombre', j.nombre, 'n', count(*))
+                  from public.chat c join public.jugadores j on j.id = c.jugador_id
+                 where c.creado >= v_ini and c.creado < v_fin group by c.jugador_id, j.nombre order by count(*) desc limit 1)),
+    'votantes', (select count(distinct votante_id) from public.votos where creado >= v_ini and creado < v_fin),
+    'nuevos', (select coalesce(jsonb_agg(jsonb_build_object('id', id, 'nombre', nombre, 'rol', rol) order by creado), '[]'::jsonb)
+        from public.jugadores where creado >= v_ini and creado < v_fin),
+    'jugaron', (select count(distinct jugador_id) from public.movimientos where concepto = 'Práctica del día' and creado >= v_ini and creado < v_fin),
+    'rico', (select jsonb_build_object('id', id, 'nombre', nombre, 'billetes', billetes) from public.jugadores order by billetes desc, nombre limit 1),
+    'nota', (select texto from public.noticiero_notas where dia = v_dia)
+  );
+end $$;
+
+-- A las 8 de la mañana avisa a todos que ya salió la edición (una vez al día)
+create or replace function public._noticiero_aviso()
+returns void language plpgsql security definer set search_path = public as $$
+declare v_hoy date := public._hoy();
+begin
+  if extract(hour from now() at time zone 'America/Mexico_City') <> 8 then return; end if;
+  if (select noticiero_aviso from public.config where id = 1) is not distinct from v_hoy then return; end if;
+  update public.config set noticiero_aviso = v_hoy where id = 1;
+  if (select semana from public.config where id = 1) = 0 then return; end if;
+  perform public._avisar('📺 ¡Ya salió El Noticierazo!', 'Elber Galarga y Rosa Melano te cuentan lo que pasó ayer en la casa. 🎙️');
+end $$;
+revoke all on function public._noticiero_aviso() from public, anon, authenticated;
 
 -- Las funciones internas no se pueden llamar directo desde el celular
 revoke all on function public._iniciar_semana(text)  from public, anon, authenticated;
