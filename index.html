@@ -3410,7 +3410,7 @@ const TV = (() => {
     if (d.chat?.n) nota(`💬 ${d.chat.n} mensajes en el chat`, [
       ['a', `En el chat de la casa se echaron ${d.chat.n} ${d.chat.n === 1 ? 'mensaje' : 'mensajes'}.`],
       ...(d.chat.top ? [['e', `Y quien más habló fue ${d.chat.top.nombre}, con ${d.chat.top.n}. ${una(['Ni en la junta habla tanto.', 'Le tienen que cobrar por letra.', 'Tiene más saldo pa’ chismear que pa’ trabajar.'])}`, d.chat.top.id]] : [])]);
-    if (d.votantes) nota(`🗳️ ${d.votantes} pasaron al confesionario`, [
+    if (d.votantes) nota(`🗳️ ${d.votantes} ${d.votantes === 1 ? 'pasó' : 'pasaron'} al confesionario`, [
       ['e', `${d.votantes} ${d.votantes === 1 ? 'persona pasó' : 'personas pasaron'} al confesionario a votar.`],
       ['a', 'Y ninguno nos quiso decir por quién. Malditos discretos.']]);
     const nuevos = d.nuevos || [];
@@ -3426,7 +3426,7 @@ const TV = (() => {
     else for (const x of nuevos) nota(`👋 Bienvenida a ${x.nombre}`, [
       ['a', sinRepetir('bienvenida', BIENVENIDA)(x.nombre) + (x.rol === 'espectador' ? ' Entra como público.' : ''), x.id],
       ['e', sinRepetir('remate-nuevo', REMATE)]]);
-    if (d.jugaron) nota(`🎮 ${d.jugaron} se pusieron a jugar`, [['e', `${d.jugaron} ${d.jugaron === 1 ? 'se puso' : 'se pusieron'} a jugar en vez de trabajar.`], ['a', 'Yo no los acuso, Elber, pero el jefe sí ve el noticiero.']]);
+    if (d.jugaron) nota(`🎮 ${d.jugaron} ${d.jugaron === 1 ? 'se puso' : 'se pusieron'} a jugar`, [['e', `${d.jugaron} ${d.jugaron === 1 ? 'se puso' : 'se pusieron'} a jugar en vez de trabajar.`], ['a', 'Yo no los acuso, Elber, pero el jefe sí ve el noticiero.']]);
     if (d.nota) nota('🎬 Nota de la producción', [['a', 'Ojo, banda, que nos llegó nota de la producción:'], ['e', d.nota]]);
     if (titulares.length === 0) nota('😴 No pasó nada', [['e', 'Pues ayer en la casa no pasó ni madres, banda.'], ['a', 'Como en la oficina, Elber: mucho café y cero cobranza.']]);
     if (d.rico) nota(`💵 ${d.rico.nombre} es quien más billetes tiene`, [['e', `Y quien más billetes tiene en la casa es ${d.rico.nombre}, con ${fmt(d.rico.billetes)}.`, d.rico.id], ['a', 'Billetes de mentiritas, pero igual ni nos invita un taco.']]);
@@ -3483,13 +3483,13 @@ const TV = (() => {
   </svg>`;
   function armar() {
     const m = $('#m-tv');
-    m.innerHTML = `<div class="tv-top"><span class="tv-vivo">● EN VIVO</span><span class="tv-fecha">${esc(diaBonito(d.dia))}</span><button class="tv-x" aria-label="Cerrar">✕</button></div>
+    m.innerHTML = `<div class="tv-top"><span class="tv-vivo">${d.avance ? '👀 VISTA PREVIA' : '● EN VIVO'}</span><span class="tv-fecha">${esc(diaBonito(d.dia))}</span><button class="tv-x" aria-label="Cerrar">✕</button></div>
       <div class="tv-escena">${SET}<div class="tv-pantalla" id="tv-pantalla"><div class="tv-logo">📺<b>EL NOTICIERAZO</b><small>Lo que pasó ayer en la casa</small></div></div></div>
       <div class="tv-sub" id="tv-sub"><b id="tv-quien"></b><span id="tv-texto"></span></div>
       <div class="tv-ctrl"><button id="tv-pausa" aria-label="Pausa">⏸️</button><button id="tv-sig" aria-label="Siguiente">⏭️</button><button id="tv-voz" aria-label="Voz">${conVoz ? '🔊' : '🔇'}</button></div>
       <div class="tv-ticker"><div id="tv-cinta"></div></div>
       <div class="tv-inicio" id="tv-inicio"><div class="tv-logo grande">📺<b>EL NOTICIERAZO ALFA</b><small>Edición del ${esc(diaBonito(d.dia).toLowerCase())}</small></div>
-        <p>Con <b>${EL}</b> y <b>${ELLA}</b></p><button class="btn" id="tv-play">▶️ Ver el noticiero</button>
+        <p>Con <b>${EL}</b> y <b>${ELLA}</b></p>${d.avance ? '<p class="tv-aviso" style="color:#FFD54A">Vista previa de la producción: así va el noticiero de mañana con lo que ha pasado hoy. Puede cambiar si pasan más cosas.</p>' : ''}<button class="btn" id="tv-play">▶️ Ver el noticiero</button>
         <p class="tv-aviso">Contenido con albures y lenguaje de barrio. 🔞😂</p></div>`;
     m.querySelector('.tv-x').onclick = cerrar;
     $('#tv-play').onclick = empezar;
@@ -3497,19 +3497,19 @@ const TV = (() => {
     $('#tv-sig').onclick = () => { const k = i; parar(); i = k + 1; if (!pausa) decir(); else mostrarLinea(i); };
     $('#tv-voz').onclick = () => { conVoz = !conVoz; store.set('ab_tv_voz', conVoz ? '1' : '0'); $('#tv-voz').textContent = conVoz ? '🔊' : '🔇'; parar(); decir(); };
   }
-  async function abrir() {
+  async function abrir(avance = false) {
     conVoz = store.get('ab_tv_voz') !== '0';
     $('#m-tv').innerHTML = `<div class="tv-cargando">📺 Sintonizando…</div>`;
     $('#m-tv').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     SFX.pausaParaGala(true);
-    try { d = await rpc('noticiero', { p_token: token }); }
+    try { d = await rpc('noticiero', avance ? { p_token: token, p_avance: true } : { p_token: token }); }
     catch (e) { $('#m-tv').innerHTML = `<div class="tv-cargando">No se pudo sintonizar: ${esc(mensajeError(e))}<br><button class="btn" style="margin-top:14px">Cerrar</button></div>`; $('#m-tv .btn').onclick = cerrar; return; }
     const g = guion(); lineas = g.lineas; i = 0;
     armar();
     const cinta = g.titulares.join('   •   ');
     $('#tv-cinta').textContent = cinta + '   •   ' + cinta;
-    store.set('ab_tv_visto', d.dia); pintarBoton();
+    if (!d.avance) { store.set('ab_tv_visto', d.dia); pintarBoton(); }
   }
   function empezar() {
     $('#tv-inicio').remove();
@@ -5199,7 +5199,7 @@ async function adminExtras(C, seccion) {
       <p class="ayuda">Cada mañana a las 8 sale el noticiero con lo que pasó el día anterior (y llega aviso al celular). Lo que escribas aquí lo leen Elber y Rosa como "nota de la producción" en el noticiero de <b>mañana</b>.</p>
       <label class="campo" for="tvn-txt">Nota de la producción de hoy</label>
       <textarea class="in" id="tvn-txt" maxlength="400" rows="3" placeholder="Ej. El viernes hay pizza para el que cumpla sus 5 misiones.">${esc(notaHoy?.texto || '')}</textarea>
-      <div class="adm-acciones"><button class="btn">Guardar nota</button><button type="button" class="btn sec" id="tvn-ver">Ver el noticiero de hoy</button>${notaHoy ? '<button type="button" class="mini" id="tvn-del">Borrar nota</button>' : ''}</div>
+      <div class="adm-acciones"><button class="btn">Guardar nota</button><button type="button" class="btn sec" id="tvn-ver">Ver el noticiero de hoy</button><button type="button" class="btn sec" id="tvn-manana">👀 Ver el de mañana (cómo va)</button>${notaHoy ? '<button type="button" class="mini" id="tvn-del">Borrar nota</button>' : ''}</div>
     </form>
     <form class="adm-caja" data-sec="records" id="rec-form"><h3>Récords de los juegos</h3>
       <p class="ayuda">Para corregir o poner a mano el récord de alguien (por ejemplo, si se le cerró la app y no se guardó). El número que pongas queda como su mejor puntaje.</p>
@@ -5279,6 +5279,7 @@ async function adminExtras(C, seccion) {
     } catch (x) { toast(mensajeError(x)); }
   };
   $('#tvn-ver').onclick = () => TV.abrir();
+  $('#tvn-manana').onclick = () => TV.abrir(true);
   $('#tvn-del')?.addEventListener('click', async () => {
     if (!confirm('¿Borrar la nota de hoy?')) return;
     try { await q(sb.from('noticiero_notas').delete().eq('dia', hoyMX)); toast('Nota borrada'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }

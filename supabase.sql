@@ -1933,16 +1933,22 @@ returns date language sql stable as $$
   select ((now() at time zone 'America/Mexico_City') - interval '8 hours')::date - 1
 $$;
 
-create or replace function public.noticiero(p_token uuid)
+-- p_avance (solo la producción): el noticiero que saldrá la próxima mañana, con lo que va del día
+drop function if exists public.noticiero(uuid);
+create or replace function public.noticiero(p_token uuid, p_avance boolean default false)
 returns jsonb language plpgsql stable security definer set search_path = public as $$
 declare
-  v_dia date := public._noticiero_dia();
+  v_dia date := public._noticiero_dia() + case when p_avance then 1 else 0 end;
   v_ini timestamptz := (v_dia::timestamp) at time zone 'America/Mexico_City';
   v_fin timestamptz := ((v_dia + 1)::timestamp) at time zone 'America/Mexico_City';
 begin
-  perform public._yo(p_token);
+  if p_avance then
+    if not public.es_admin() then raise exception 'NO_AUTORIZADO'; end if;
+  else
+    perform public._yo(p_token);
+  end if;
   return jsonb_build_object(
-    'dia', v_dia,
+    'dia', v_dia, 'avance', p_avance,
     'galas', (select coalesce(jsonb_agg(h.resultados order by h.semana), '[]'::jsonb)
         from public.historial h where h.creado >= v_ini and h.creado < v_fin),
     'sucesos', (select coalesce(jsonb_agg(jsonb_build_object('tipo', s.tipo, 'id', s.jugador_id, 'nombre', j.nombre, 'dato', s.dato) order by s.id), '[]'::jsonb)
