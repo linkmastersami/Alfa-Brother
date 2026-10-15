@@ -1069,7 +1069,12 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
       <button data-at="pruebas" aria-selected="false">Pruebas</button>
       <button data-at="trivia" aria-selected="false">Trivia</button>
       <button data-at="ojo" aria-selected="false">Ojo 👁️</button>
-      <button data-at="extras" aria-selected="false">Extras 💵</button>
+      <button data-at="encuestas" aria-selected="false">Encuestas 📊</button>
+      <button data-at="misiones" aria-selected="false">Misiones 🕵️</button>
+      <button data-at="chat" aria-selected="false">Chat 💬</button>
+      <button data-at="noticiero" aria-selected="false">Noticiero 📺</button>
+      <button data-at="records" aria-selected="false">Récords 🏆</button>
+      <button data-at="billetes" aria-selected="false">Billetes 💵</button>
       <button data-at="habitantes" aria-selected="false">Habitantes</button>
     </div>
     <div id="a-contenido"></div>
@@ -4819,8 +4824,10 @@ async function cargarAdmin(silencioso) {
       q(sb.from('config').select('*').eq('id', 1).single()),
       q(sb.from('jugadores').select('id,nombre,rol,estado,semana_eliminado,fallos,bloqueado_hasta,foto,frase,creado,billetes').order('creado')),
     ]);
-    const vista = { juego: adminJuego, votos: adminVotos, pruebas: adminPruebas, trivia: adminTrivia, ojo: adminOjo, extras: adminExtras, habitantes: adminHabitantes }[adm.tab];
-    await vista(C);
+    const SECCION = ['encuestas', 'misiones', 'chat', 'noticiero', 'records', 'billetes'];
+    const vista = { juego: adminJuego, votos: adminVotos, pruebas: adminPruebas, trivia: adminTrivia, ojo: adminOjo, habitantes: adminHabitantes }[adm.tab];
+    if (SECCION.includes(adm.tab)) await adminExtras(C, adm.tab);
+    else await (vista || adminJuego)(C);
   } catch (e) { C.innerHTML = `<div class="error">${esc(mensajeError(e))}</div>`; }
 }
 
@@ -5131,7 +5138,8 @@ async function adminOjo(C) {
 
 /* ---- Habitantes ---- */
 /* ---- Extras: encuestas, misiones y billetes ---- */
-async function adminExtras(C) {
+// Encuestas, misiones, chat, noticiero, récords y billetes: cada uno en su pestaña del panel
+async function adminExtras(C, seccion) {
   const c = adm.cfg;
   const [encs, votosEnc, apEnc, mis, banco] = await Promise.all([
     q(sb.from('encuestas').select('*').order('abre', { ascending: false })).then(x => x.slice(0, 15)),
@@ -5148,7 +5156,7 @@ async function adminExtras(C) {
   const ahora = Date.now();
   const estadoEnc = e => +new Date(e.abre) > ahora ? `Programada: abre ${fmtFecha(e.abre)}` : +new Date(e.cierra) > ahora ? `Abierta hasta ${fmtFecha(e.cierra)}` : 'Cerrada';
   const ricos = [...adm.jug].sort((a, b) => (b.billetes ?? 0) - (a.billetes ?? 0));
-  C.innerHTML = `<form class="adm-caja" id="en-form"><h3>Encuesta del día</h3>
+  C.innerHTML = `<form class="adm-caja" data-sec="encuestas" id="en-form"><h3>Encuesta del día</h3>
       <p class="ayuda">Sale en la casa a la hora que pongas (y llega aviso al celular). Todos votan en secreto y pueden apostar qué opción gana. Puedes programar todas las que quieras, el mismo día o varias seguidas.</p>
       <label class="campo" for="en-preg">Pregunta</label>
       <input class="in" id="en-preg" maxlength="140" required placeholder="¿Quién es más probable que llegue tarde mañana?">
@@ -5163,7 +5171,7 @@ async function adminExtras(C) {
         <label for="en-dura">Dura</label><select class="in" id="en-dura"><option value="60">1 hora</option><option value="120">2 horas</option><option value="240" selected>4 horas</option><option value="480">8 horas</option><option value="1440">24 horas</option></select>
       </div>
       <div class="adm-acciones"><button class="btn" type="submit">Programar encuesta</button></div></form>
-    <div class="adm-caja"><h3>Encuestas</h3>
+    <div class="adm-caja" data-sec="encuestas"><h3>Encuestas</h3>
       ${encs.map(e => {
         const nv = votosEnc.filter(v => v.encuesta_id === e.id).length, pozo = apEnc.filter(a => a.ref === e.id).reduce((s, a) => s + a.monto, 0);
         const res = e.resultado ? e.resultado.conteo.map((n, i) => `${e.resultado.ganadores.includes(String(i)) ? '🏆 ' : ''}${esc(e.opciones[i]?.t)}: ${n}`).join(' · ') : '';
@@ -5171,29 +5179,29 @@ async function adminExtras(C) {
           <small>${esc(estadoEnc(e))} · ${nv} votos · pozo ${fmt$(pozo)}</small>${res ? `<small style="white-space:normal">${res}</small>` : ''}</div>
           <button class="mini" data-enc-borrar="${e.id}">Borrar</button></div>`;
       }).join('') || '<p class="ayuda">Todavía no hay encuestas.</p>'}</div>
-    <div class="adm-caja"><h3>Misiones de la semana ${c.semana}</h3>
+    <div class="adm-caja" data-sec="misiones"><h3>Misiones de la semana ${c.semana}</h3>
       <p class="ayuda">Todos los habitantes, en la casa o eliminados (el público no): 5 misiones cada quien, con objetivos distintos. Se cumplen cuando quien la hizo toca «Ya la cumplí» y el objetivo confirma que es cierto. Van ${mis.filter(m => m.cumplida).length} de ${mis.length}.</p>
       ${[...mis].sort((a, b) => nombreDe(a.jugador_id).localeCompare(nombreDe(b.jugador_id)) || a.n - b.n).map(m => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>${esc(nombreDe(m.jugador_id))} · ${m.n}</b>
         <small style="white-space:normal">${esc(m.texto)}</small></div><span>${m.cumplida ? '✅' : '⏳'}</span></div>`).join('') || '<p class="ayuda">Las misiones se reparten solas al empezar cada semana.</p>'}
       <div class="adm-acciones"><button class="btn sec chico" id="mis-repartir" ${c.semana ? '' : 'disabled'}>Repartir de nuevo (cambia las que no se han cumplido)</button></div></div>
-    <form class="adm-caja" id="mb-form"><h3>Banco de misiones (${banco.filter(b => b.activa).length} activas)</h3>
+    <form class="adm-caja" data-sec="misiones" id="mb-form"><h3>Banco de misiones (${banco.filter(b => b.activa).length} activas)</h3>
       <p class="ayuda">Escribe <b>{nombre}</b> donde va la persona objetivo. Ej. Haz que {nombre} diga "pagaré".</p>
       <input class="in" id="mb-txt" maxlength="160" placeholder='Haz que {nombre} te cuente un chisme'>
       <div class="adm-acciones"><button class="btn chico" type="submit">Agregar misión</button></div>
       ${banco.map(b => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b style="white-space:normal;font-weight:600;${b.activa ? '' : 'opacity:.5'}">${esc(b.texto)}</b></div>
         <div style="display:flex;flex-direction:column;gap:4px"><button class="mini" type="button" data-mb-act="${b.id}" data-val="${!b.activa}">${b.activa ? '✅ Activa' : 'Activar'}</button>
         <button class="mini" type="button" data-mb-edit="${b.id}">Editar</button><button class="mini" type="button" data-mb-del="${b.id}">Borrar</button></div></div>`).join('')}</form>
-    <div class="adm-caja"><h3>Chat de la casa</h3>
+    <div class="adm-caja" data-sec="chat"><h3>Chat de la casa</h3>
       <p class="ayuda">Lo ven solo los habitantes. Aquí puedes leer los últimos mensajes y borrar alguno ofensivo.</p>
       ${chatMsgs.map(m => `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>${esc(nombreDe(m.jugador_id))}</b>
         <small style="white-space:normal">${esc(m.texto)} · ${esc(fechaCorta(m.creado))}</small></div><button class="mini" data-chat-del="${m.id}">Borrar</button></div>`).join('') || '<p class="ayuda">Todavía no hay mensajes.</p>'}</div>
-    <form class="adm-caja" id="tvn-form"><h3>📺 El Noticierazo</h3>
+    <form class="adm-caja" data-sec="noticiero" id="tvn-form"><h3>📺 El Noticierazo</h3>
       <p class="ayuda">Cada mañana a las 8 sale el noticiero con lo que pasó el día anterior (y llega aviso al celular). Lo que escribas aquí lo leen Elber y Rosa como "nota de la producción" en el noticiero de <b>mañana</b>.</p>
       <label class="campo" for="tvn-txt">Nota de la producción de hoy</label>
       <textarea class="in" id="tvn-txt" maxlength="400" rows="3" placeholder="Ej. El viernes hay pizza para el que cumpla sus 5 misiones.">${esc(notaHoy?.texto || '')}</textarea>
       <div class="adm-acciones"><button class="btn">Guardar nota</button><button type="button" class="btn sec" id="tvn-ver">Ver el noticiero de hoy</button>${notaHoy ? '<button type="button" class="mini" id="tvn-del">Borrar nota</button>' : ''}</div>
     </form>
-    <form class="adm-caja" id="rec-form"><h3>Récords de los juegos</h3>
+    <form class="adm-caja" data-sec="records" id="rec-form"><h3>Récords de los juegos</h3>
       <p class="ayuda">Para corregir o poner a mano el récord de alguien (por ejemplo, si se le cerró la app y no se guardó). El número que pongas queda como su mejor puntaje.</p>
       <label class="campo" for="rec-juego">Juego</label>
       <select class="in" id="rec-juego">${Object.entries(JUEGOS_REC).map(([k, n]) => `<option value="${k}">${n}</option>`).join('')}</select>
@@ -5206,11 +5214,12 @@ async function adminExtras(C) {
         return `<p style="margin:14px 0 4px;font-weight:700">${n}</p>` + (top.map((r, i) => `<div class="adm-fila"><div class="info"><b>${i + 1}. ${esc(nombreDe(r.jugador_id))}</b><small>${r.partidas} ${r.partidas === 1 ? 'partida' : 'partidas'}</small></div>
           <b>${Number(r.mejor).toLocaleString('es-MX')}</b><button type="button" class="mini" data-rec-edit="${r.jugador_id}|${k}|${r.mejor}">Editar</button></div>`).join('') || '<p class="ayuda">Nadie todavía.</p>'); }).join('')}
     </form>
-    <div class="adm-caja"><h3>Billetes Alfa</h3>
+    <div class="adm-caja" data-sec="billetes"><h3>Billetes Alfa</h3>
       <p class="ayuda">Puedes dar premios o quitar billetes (por ejemplo, a quien gane un reto en la oficina).</p>
       ${ricos.map(j => `<div class="adm-fila"><div class="info"><b>${esc(j.nombre)}</b><small>${j.rol === 'espectador' ? 'Público' : j.estado === 'eliminado' ? 'Eliminado' : 'En la casa'}</small></div>
         <b>${fmt$(j.billetes ?? 0)}</b><button class="mini" data-bill="${j.id}">± Ajustar</button></div>`).join('')}</div>`;
 
+  C.querySelectorAll('[data-sec]').forEach(x => x.classList.toggle('hidden', x.dataset.sec !== seccion));
   $('#en-tipo').onchange = e => {
     $('#en-ops').classList.toggle('hidden', e.target.value !== 'propias');
     $('#en-elegir').classList.toggle('hidden', e.target.value !== 'elegir');
