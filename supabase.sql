@@ -1975,6 +1975,20 @@ begin
         from public.jugadores where creado >= v_ini and creado < v_fin),
     'jugaron', (select count(distinct jugador_id) from public.movimientos where concepto = 'Práctica del día' and creado >= v_ini and creado < v_fin),
     'rico', (select jsonb_build_object('id', id, 'nombre', nombre, 'billetes', billetes) from public.jugadores order by billetes desc, nombre limit 1),
+    -- v20: por juego, solo el récord con que terminó el día y quién lo tenía antes
+    'records', (select coalesce(jsonb_agg(x.r), '[]'::jsonb) from (
+        select jsonb_build_object('juego', g.juego,
+          'nuevo', (select jsonb_build_object('id', s.jugador_id, 'nombre', j.nombre, 'puntos', (s.dato->>'puntos')::int)
+                      from public.sucesos s join public.jugadores j on j.id = s.jugador_id
+                     where s.tipo = 'record' and s.dato->>'juego' = g.juego and s.creado >= v_ini and s.creado < v_fin order by s.id desc limit 1),
+          'antes', (select jsonb_build_object('id', s.jugador_id, 'nombre', j.nombre, 'puntos', (s.dato->>'puntos')::int)
+                      from public.sucesos s join public.jugadores j on j.id = s.jugador_id
+                     where s.tipo = 'record' and s.dato->>'juego' = g.juego and s.creado < v_ini order by s.id desc limit 1),
+          'actual', (select jsonb_build_object('id', p.jugador_id, 'nombre', j.nombre, 'puntos', p.mejor)
+                       from public.practicas p join public.jugadores j on j.id = p.jugador_id
+                      where p.juego = g.juego and p.mejor > 0 order by p.mejor desc limit 1)) as r
+          from (values (1, 'monster2'), (2, 'monster'), (3, 'memoria'), (4, 'adeudo')) g(o, juego) order by g.o) x
+        where x.r->'actual' <> 'null'::jsonb),
     'nota', (select texto from public.noticiero_notas where dia = v_dia)
   );
 end $$;

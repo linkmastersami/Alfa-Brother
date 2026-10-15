@@ -3298,139 +3298,301 @@ const TV = (() => {
     caja.querySelector('button').onclick = abrir;
   }
 
-  // ---------- azar repetible por día (todos ven el mismo programa) ----------
-  let r = Math.random;
-  const sembrar = s => { let h = 2166136261 >>> 0; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } let a = h; r = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
-  // elige al azar sin repetir en el mismo programa lo que ya se dijo (mientras queden opciones)
-  const usadas = new Set();
-  const una = arr => { const libres = arr.filter(x => !usadas.has(x)), x = (libres.length ? libres : arr)[Math.floor(r() * (libres.length || arr.length))]; usadas.add(x); return x; };
-  // saca frases de una lista sin repetir (cuando se acaban, vuelve a barajar)
-  const bolsas = new Map();
-  const sinRepetir = (clave, arr) => {
-    let b = bolsas.get(clave);
-    if (!b || !b.length) { b = [...arr]; for (let k = b.length - 1; k > 0; k--) { const j = Math.floor(r() * (k + 1)); [b[k], b[j]] = [b[j], b[k]]; } bolsas.set(clave, b); }
-    return b.pop();
-  };
+  // ---------- frases que no se repiten de un día a otro ----------
+  // Cada lista se baraja siempre igual (según su nombre) y cada día avanza al siguiente elemento:
+  // así nadie oye la misma frase hasta que se acaben todas las de esa lista (todos ven el mismo programa).
+  const hashTxt = s => { let h = 2166136261 >>> 0; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
+  const rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const permCache = new Map();
+  let diaN = 0, usos = {};
+  function frase(clave, lista, paso = 1) {
+    const n = lista.length; if (!n) return '';
+    let p = permCache.get(clave + ':' + n);
+    if (!p) { const r = rng(hashTxt(clave)); p = [...Array(n).keys()]; for (let k = n - 1; k > 0; k--) { const j = Math.floor(r() * (k + 1)); [p[k], p[j]] = [p[j], p[k]]; } permCache.set(clave + ':' + n, p); }
+    const u = usos[clave] = (usos[clave] || 0) + 1;
+    return lista[p[(diaN * paso + u - 1) % n]];
+  }
+  // combina dos listas (exclamación + chiste, entrada + remate…) para tener muchas más frases distintas
+  const prod = (a, b, sep = ' ') => a.flatMap(x => b.map(y => x + sep + y));
+  const llenar = (t, c) => t.replace(/\{(\w+)\}/g, (_, k) => c[k] ?? '');
   const fmt = n => Number(n || 0).toLocaleString('es-MX');
   const JUEGOS = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo' };
 
   // ---------- el guion ----------
-  // Albures entre ellos: uno la pone y el otro la remata. Nunca sobre los compañeros.
-  const ENTRADAS = [
-    [['e', '¡Qué hongo, banda de Grupo Alfa! Aquí su compa Elber Galarga, en El Noticierazo.'], ['a', 'Y aquí su comadre Rosa Melano. Elber, te ves bien parado hoy.'], ['e', 'Así me pongo cuando te veo, Rosa: firme como deudor el día de pago.'], ['a', 'Ay sí, firme… si nomás te dura lo que un pagaré sin firma.']],
-    [['a', '¡Buenos días, raza! Rosa Melano al micrófono.'], ['e', 'Y Elber Galarga, que hoy les trae la nota más larga del día.'], ['a', '¿Larga? Ay, Elber, contigo todo es pura promesa y nada de tamaño.'], ['e', 'Tú agárrala y luego me dices, Rosa.']],
-    [['e', '¿Qué rollo, mi gente? Arrancamos El Noticierazo con su servidor, Elber Galarga.'], ['a', 'Y con Rosa Melano. Oye, Elber, ¿me echas la mano con las noticias?'], ['e', 'Te echo la mano y lo que quieras, Rosa.'], ['a', 'Nomás la mano, mi rey, que lo demás se cobra aparte y tú andas sin crédito.']],
-    [['a', '¡Ya llegó su noticiero favorito, banda! Rosa Melano, presente.'], ['e', 'Y Elber Galarga, recién bañadito. Rosa, ¿te gusta el pepino en la ensalada?'], ['a', 'Me encanta, Elber, pero el tuyo no alcanza ni pa’ pico de gallo.'], ['e', 'Ahí te va el chisme entonces, para que te calles.']],
-    [['e', '¡Buenos días, Grupo Alfa! Elber Galarga reportándose desde el estudio.'], ['a', 'Y Rosa Melano. ¿Qué traes en la bolsa, Elber?'], ['e', 'Las noticias calientitas, Rosa. Si quieres, métele la mano.'], ['a', 'Paso, que ahí nomás hay migajas y boletos del metro.']],
-    [['a', '¡Arriba, raza! Abran el ojo que empieza El Noticierazo.'], ['e', 'Con Elber Galarga, que ya se tomó su café y anda bien despierto… de todo.'], ['a', 'Lo único que tienes despierto son las ganas, mi Elber, porque lo demás ni se levanta.'], ['e', 'Ya, ya, que nos ve la producción. ¡Vámonos con las noticias!']],
+  // Exclamaciones para armar las reacciones
+  const BIEN = ['¡A huevo!', '¡Órale!', '¡Fierro!', '¡Ándale!', '¡No, pues wow!', '¡Uff!', '¡Qué chulada!', '¡Eso, mi gente!'];
+  const MAL = ['¡Chale!', 'Híjole,', 'Uy,', 'Ay, nanita,', 'Ni modo,', '¡Qué oso!', '¡Ay, güey!', 'Ah, caray,'];
+  const NEUTRO = ['Neta,', 'Pues sí,', 'Fíjate,', 'Ojo,', 'Ya ves,', 'Oye,', 'Te digo,', 'Mira nomás,'];
+
+  // Saludos: quién abre el programa
+  const SALUDOS = [
+    [['e', '¡Qué hongo, banda de Grupo Alfa! Aquí su compa Elber Galarga, en El Noticierazo.'], ['a', 'Y aquí su comadre Rosa Melano, lista pa’l chisme.']],
+    [['a', '¡Buenos días, raza! Rosa Melano al micrófono.'], ['e', 'Y Elber Galarga, recién bañadito y perfumado.']],
+    [['e', '¿Qué rollo, mi gente? Arrancamos El Noticierazo.'], ['a', 'Con Elber Galarga y Rosa Melano, los únicos que sí cobran puntual.']],
+    [['a', '¡Arriba, raza! Abran el ojo que empieza El Noticierazo.'], ['e', 'Con su servidor, Elber Galarga, y la reina del barrio, Rosa Melano.']],
+    [['e', '¡Buenos días, Grupo Alfa! Reportándonos desde el estudio.'], ['a', 'Rosa Melano y Elber Galarga, con el chisme más fresco que el bolillo de la mañana.']],
+    [['a', '¡Qué tal, banda! Ya llegó su noticiero favorito.'], ['e', 'El único que les dice la neta aunque duela: El Noticierazo.']],
+    [['e', '¡Ya llegamos, raza! Elber Galarga en la casa.'], ['a', 'Y Rosa Melano en la otra casa, que no somos pareja, ¿eh?']],
+    [['a', '¡Buenos días, deudores y cobradores!'], ['e', 'Aquí El Noticierazo, con Elber Galarga y Rosa Melano.']],
+    [['e', '¡Pónganle volumen, banda, que esto se pone bueno!'], ['a', 'Rosa Melano y Elber Galarga, en vivo y a todo color.']],
+    [['a', '¡Qué onda, Grupo Alfa! Agarren su café que ya empezamos.'], ['e', 'Elber Galarga y Rosa Melano, con todo lo que pasó ayer.']],
+    [['e', '¡Bienvenidos a El Noticierazo, el noticiero más corriente de la oficina!'], ['a', 'Corriente pero honesto, como su servidora, Rosa Melano.']],
+    [['a', '¡Ándale, banda, que ya estamos al aire!'], ['e', 'Con Elber Galarga, el más guapo de la cuadra… según su mamá.']],
+  ];
+  // Albures entre ellos dos: uno la pone y el otro la remata (nunca sobre los compañeros)
+  const ALBURES = [
+    [['e', 'Rosa, hoy te traje la nota más larga del día.'], ['a', '¿Larga? Ay, Elber, contigo todo es pura promesa y nada de tamaño.']],
+    [['a', 'Elber, te ves bien parado hoy.'], ['e', 'Así me pongo cuando te veo, Rosa: firme como deudor el día de pago.'], ['a', 'Firme… si nomás te dura lo que un pagaré sin firma.']],
+    [['e', 'Rosa, ¿me echas la mano con las noticias?'], ['a', 'Nomás la mano, mi rey, que lo demás se cobra aparte y tú andas sin crédito.']],
+    [['e', 'Rosa, ¿te gusta el pepino en la ensalada?'], ['a', 'Me encanta, Elber, pero el tuyo no alcanza ni pa’ pico de gallo.']],
+    [['a', '¿Qué traes en la bolsa, Elber?'], ['e', 'Las noticias calientitas, Rosa. Si quieres, métele la mano.'], ['a', 'Paso, que ahí nomás hay migajas y boletos del metro.']],
+    [['e', 'Ya me tomé mi café y ando bien despierto… de todo.'], ['a', 'Lo único despierto son las ganas, mi Elber, porque lo demás ni se levanta.']],
+    [['a', 'Elber, ¿te late el chorizo con huevo?'], ['e', 'Me late, Rosa, y si quieres te invito el mío.'], ['a', 'Gracias, pero yo desayuno en serio, no botanitas.']],
+    [['e', 'Rosa, ¿te paso el micrófono?'], ['a', 'Pásamelo, que el tuyo ni prende.']],
+    [['a', 'Elber, ¿por qué traes la camisa tan abierta?'], ['e', 'Pa’ que se ventile la mercancía, Rosa.'], ['a', 'Mercancía de tianguis, de la que nadie compra.']],
+    [['e', 'Hoy amanecí con ganas de dar mucho, Rosa.'], ['a', '¿Dar qué? ¿Lástima? Porque eso es lo único que te sobra.']],
+    [['a', 'Elber, ¿ya te cayó la quincena?'], ['e', 'Ya me cayó, Rosa, y bien gordita.'], ['a', 'Lo gordo ha de ser lo único, porque lo demás está flaco.']],
+    [['e', 'Rosa, ¿te gustan los plátanos?'], ['a', 'Me gustan, Elber, pero los machos, no los dominicos como el tuyo.']],
+    [['a', '¿Y esa cara, Elber? Pareces cobrador sin ruta.'], ['e', 'Es que anoche me la pasé en vela, Rosa.'], ['a', 'En vela… y nomás la vela se paró.']],
+    [['e', 'Rosa, te traigo un regalo bien grande.'], ['a', 'Guárdatelo, Elber, que yo no recibo cosas que se ven con lupa.']],
+    [['e', '¿Te acompaño a la tiendita por un refresco, Rosa?'], ['a', 'Gracias, Elber, pero yo los prefiero de dos litros, no de lata chiquita.']],
+    [['a', 'Elber, ¿cómo andas de la presión?'], ['e', 'Alta, Rosa, todo se me sube contigo.'], ['a', 'Lo único que se te sube es el colesterol, papacito.']],
+    [['e', 'Rosa, ¿nos echamos un taco al rato?'], ['a', 'De suadero sí, Elber; de longaniza corta, no, gracias.']],
+    [['a', '¿Ya trajiste el reporte, Elber?'], ['e', 'Lo traigo bien agarrado, Rosa.'], ['a', 'Pues suéltalo, que de tanto apretar se te va a escurrir la noticia.']],
+    [['e', 'Rosa, hoy vengo con todo.'], ['a', '¿Con todo? Pues no se nota, mi Elber; ha de estar escondido.']],
+    [['a', 'Elber, ¿la leche te gusta fría o caliente?'], ['e', 'Como tú me la des, Rosa.'], ['a', 'Yo no doy, yo cobro. Ahí te va la factura.']],
+    [['e', 'Rosa, ¿me guardas un lugarcito atrás de ti?'], ['a', 'Atrás de mí va la fila de los que me deben, y tú ya estás hasta el final.']],
+    [['a', 'Elber, ¿te late el mole?'], ['e', 'Me encanta, Rosa, sobre todo cuando me lo meneas.'], ['a', 'Pues menéate tú, que ya se te pegó a la cazuela.']],
+    [['e', 'Hoy sí traigo el bate bien preparado, Rosa.'], ['a', '¿Bate? Eso es palito de paleta, mi rey.']],
+    [['a', 'Elber, ¿qué haces mañana en la noche?'], ['e', 'Lo que tú quieras, Rosa, yo me acomodo.'], ['a', 'Acomódate el cerebro, que ese sí lo traes chueco.']],
+    [['a', 'Elber, ¿te pongo crema en los tacos?'], ['e', 'Ponle lo que gustes, Rosa, yo me lo como todo.'], ['a', 'Ese es tu problema, que te tragas cualquier cosa.']],
+    [['e', 'Rosa, ¿te lo cuento despacito o de jalón?'], ['a', 'Despacito, Elber, que de jalón ya sé que no duras nada.']],
+    [['a', '¿Te ayudo con el cable, Elber? Lo traes bien enredado.'], ['e', 'Agárralo con confianza, Rosa, que no muerde.'], ['a', 'No muerde porque ni dientes tiene, como tus chistes.']],
+    [['e', 'Rosa, ¿te gustan los camotes?'], ['a', 'Me gustan, Elber, pero de los que llenan, no de los que se pierden en el plato.']],
+    [['a', 'Elber, ¿ya cargaste el celular?'], ['e', 'Lo traigo al cien, Rosa, bien cargadito.'], ['a', 'Lástima que el tuyo dura dos minutos y se apaga.']],
+    [['e', 'Rosa, ¿te echo la mano con la bolsa del mandado?'], ['a', 'Échamela, Elber, pero nomás la mano, que las nalgas ya las traigo yo.']],
+    [['a', 'Elber, ¿por qué tan apretado el pantalón?'], ['e', 'Pa’ que se note lo que traigo, Rosa.'], ['a', 'Pues se nota: se nota que no traes nada.']],
+    [['e', 'Rosa, ¿quieres que te lo meta… en la agenda?'], ['a', 'Métemelo en la agenda, Elber, que en otro lado ni te cabe la idea.']],
+    [['a', 'Elber, ¿qué tal tu fin de semana?'], ['e', 'Movidito, Rosa, me la pasé dando y dando.'], ['a', 'Dando lástima, me contaron.']],
+    [['e', 'Rosa, ¿me pasas el chile? Me gusta picosito.'], ['a', 'Ahí te va, Elber, que el tuyo ni pica ni da sabor.']],
+    [['a', 'Elber, ¿sabes jugar al trompo?'], ['e', 'Soy experto, Rosa, lo enrollo y lo suelto.'], ['a', 'Y cae a los dos segundos sin girar, ya me contaron.']],
+  ];
+  const ARRANQUES = [
+    ['e', 'Ya, ya, que nos ve la producción. ¡Vámonos con las noticias!'], ['a', 'Bueno, ya, vamos a lo que te truje, Chencha.'],
+    ['e', 'Mejor vamos al chisme antes de que me corran.'], ['a', 'Ahí les van las noticias, banda, agárrense.'],
+    ['e', 'Y ahora sí, lo que pasó ayer en la casa.'], ['a', 'Pero bueno, la banda viene por el chisme, no por tus ocurrencias.'],
+    ['e', 'Arrancamos, que el chisme no se cuenta solo.'], ['a', 'Va, pues. Primera noticia, Elber, y no te me trabes.'],
   ];
   const PUENTES = [
     [['a', 'Y eso no es todo, Elber, ¿qué más tienes?'], ['e', 'Tengo mucho, Rosa, y bien guardadito.'], ['a', 'Pues sácalo, que de tanto guardarlo se te va a echar a perder.']],
-    [['e', 'Rosa, ¿te paso la siguiente?'], ['a', 'Pásamela, pero despacito que luego te tiembla la mano.']],
-    [['a', 'Elber, no te me duermas.'], ['e', 'Despierto y bien atento, Rosa, nomás estoy reuniendo fuerzas.'], ['a', 'Junta todas las que puedas, que con las que tienes no le haces ni cosquillas al chisme.']],
+    [['e', 'Rosa, ¿te paso la siguiente?'], ['a', 'Pásamela, pero despacito, que luego te tiembla la mano.']],
+    [['a', 'Elber, no te me duermas.'], ['e', 'Despierto y bien atento, Rosa.'], ['a', 'Atento sí, pero lo demás ya se durmió.']],
     [['e', 'Agárrate, Rosa, que viene la buena.'], ['a', 'Siempre dices eso y nomás me dejas esperando.']],
-    [['a', 'A ver, Elber, aviéntate otra.'], ['e', 'Te la aviento, Rosa, pero tú cáchala con las dos manos.'], ['a', 'Con una me sobra, mi vida.']],
+    [['a', 'A ver, Elber, aviéntate otra.'], ['e', 'Te la aviento, Rosa, pero cáchala con las dos manos.'], ['a', 'Con una me sobra, mi vida.']],
+    [['e', 'Rosa, esta nota está bien dura.'], ['a', 'Lo único duro aquí es tu cabeza, Elber.']],
+    [['a', 'Elber, ¿te traigo agua? Te veo seco.'], ['e', 'Seco no, Rosa, nomás guardando energía.'], ['a', 'Guárdala bien, que ya te queda poquita.']],
+    [['e', '¿Quieres más, Rosa?'], ['a', 'Siempre quiero más, Elber, pero contigo nunca llega.']],
+    [['a', 'Elber, échale ganas que vas bien.'], ['e', 'Contigo al lado, Rosa, siempre voy de subida.'], ['a', 'De subida y de bajada en dos segundos, como elevador de oficina.']],
+    [['a', '¿Ya te cansaste, Elber?'], ['e', 'Nunca, Rosa, yo aguanto toda la jornada.'], ['a', 'Toda la jornada… de cinco minutos.']],
+    [['e', 'Pásame tantito el guion, Rosa.'], ['a', 'Ahí te va, y no lo arrugues como tu camisa.']],
+    [['a', 'Elber, ya párale con los albures.'], ['e', 'No puedo, Rosa, se me salen solitos.'], ['a', 'Como la panza del pantalón.']],
+    [['e', '¿Le seguimos, Rosa?'], ['a', 'Síguele, que hoy amaneciste inspirado… o desvelado.']],
+    [['a', 'Elber, ¿por qué sudas tanto?'], ['e', 'Es que la noticia que sigue está bien caliente, Rosa.'], ['a', 'Caliente estás tú, pero de la calentura, ve al doctor.']],
   ];
   const SALIDAS = [
-    [['a', 'Y hasta aquí El Noticierazo de hoy.'], ['e', 'Se despide Elber Galarga, que se va pero no se raja.'], ['a', 'Y Rosa Melano, que sí se queda pero no se deja. ¡Paguen lo que deben, banda!']],
+    [['a', 'Y hasta aquí El Noticierazo de hoy.'], ['e', 'Se despide Elber Galarga, que se va pero no se raja.'], ['a', 'Y Rosa Melano, que se queda pero no se deja. ¡Paguen lo que deben!']],
     [['e', 'Esto fue todo, raza. Mañana les traemos más.'], ['a', 'Si es que Elber aguanta hasta mañana, porque se cansa rápido.'], ['e', 'Yo aguanto lo que me echen, Rosa. ¡Bye, banda!']],
     [['a', 'Nos vamos, Grupo Alfa. Cuídense mucho.'], ['e', 'Y ya saben: el que no paga, no juega.'], ['a', 'Y el que juega con Elber, sale perdiendo. ¡Hasta mañana!']],
+    [['e', 'Ya se nos acabó el tiempo, banda.'], ['a', 'Como a Elber en todo: se le acaba rapidito.'], ['e', 'Ríete, Rosa, ríete. ¡Nos vemos mañana!']],
+    [['a', 'Esto fue El Noticierazo, el noticiero que sí cobra.'], ['e', 'Mañana a las ocho, aquí mismo.'], ['a', 'Y tú llega temprano, Elber, que hoy llegaste tarde y despeinado.']],
+    [['e', 'Nos despedimos, raza, que hay que ir a chambear.'], ['a', 'Tú ni chambeas, Elber, nomás calientas la silla.'], ['e', 'Alguien tiene que hacerlo, Rosa. ¡Hasta mañana!']],
+    [['a', 'Gracias por vernos, banda bonita.'], ['e', 'Y si no les gustó, quéjense con la producción.'], ['a', 'Que ni nos paga, por cierto. ¡Bye!']],
+    [['e', 'Aquí termina El Noticierazo.'], ['a', 'Vayan a trabajar, que el chisme no paga la renta.'], ['e', 'Pero cómo ayuda, Rosa, cómo ayuda. ¡Hasta mañana!']],
+    [['a', 'Y con esto nos vamos, raza.'], ['e', 'Mañana más chisme, más albures y más carrilla.'], ['a', 'Y menos Elber, si Dios quiere. ¡Bye!']],
+    [['e', 'Se acabó, banda. Pórtense mal.'], ['a', 'Pero cuídense bien. Y paguen la tanda. ¡Hasta mañana!']],
   ];
+
+  // Noticias: entrada × chiste (cada una da decenas de combinaciones)
+  const T = {
+    lider_in: ['El chisme gordo: {n} se aventó la prueba y ahora es líder de la semana.', '¡Tenemos líder! {n} se llevó la corona esta semana.', '{n} ganó la prueba y ya anda con la coronita puesta.',
+      'Nuevo líder en la casa: {n}. Ya pueden empezar a hacerle la barba.', 'La corona de la semana es para {n}.', 'Ojo, banda: {n} es quien manda esta semana.'],
+    lider_j: ['ya lo vi pavoneándose con su coronita, ni que fuera el gerente.', 'que lo disfrute, que la corona dura menos que la quincena.', 'ahora sí se siente la última coca del desierto.',
+      'ya pidió que le digan "jefecito".', 'a ver si con la corona se le quita lo codo.', 'ya ni saluda, el muy creído.', 'esa corona le queda como a mí los tacones: puro sufrimiento.',
+      'que no se le suba, que todavía debe el café.', 'coronita y todo, pero sigue llegando tarde.', 'nomás que no se le caiga, que la tiene prestada.'],
+    elim_in: ['Y la nota que dolió: en la gala sacaron a {n}{pts}.', 'Se nos fue {n} de la casa{pts}.', 'Adiós a {n}: la banda votó y lo mandó al palco{pts}.',
+      'Lágrimas en la casa: {n} quedó eliminado{pts}.', '{n} hizo maletas: la gala no perdonó{pts}.', 'Último aviso de cobranza para {n}: fuera de la casa{pts}.'],
+    elim_j: ['te fuiste como cliente moroso: sin avisar y debiendo.', 'ahora a ver la casa desde el palco, como el que ve pasar el camión.', 'aquí no perdonamos ni a la mamá de la tanda.',
+      'hoy te tocó a ti, mañana a quién sabe.', 'te vamos a extrañar… poquito, pero algo.', 'eso te pasa por no traer tortas.', 'se fue con más votos que deudas, y eso es decir mucho.',
+      'ya le cancelaron hasta el crédito del Oxxo.', 'le dieron baja temporal… definitiva.', 'que no llore, que todavía puede votar desde el palco.'],
+    salva_in: ['Y ojo: a {n} le llovieron votos, pero la corona de líder lo salvó.', '{n} tenía la soga al cuello, pero el liderazgo le sacó la vuelta.', 'A {n} lo querían fuera, pero con corona nadie lo toca.'],
+    salva_j: ['así cualquiera: con fuero ni quién te toque.', 'suerte de principiante, la semana que entra no se salva.', 'esa corona vale más que su sueldo.', 'que dé gracias, porque la banda lo traía en la mira.',
+      'como diputado: lo agarraron y se salió con la suya.', 'a la próxima no hay corona que lo salve.'],
+    emp: [[['a', 'Y hubo empate, banda: el líder tuvo que decidir quién se iba.'], ['e', 'Más feo que decidir quién paga la cuenta en la cantina.']],
+      [['e', 'Hubo empate en la gala y el líder tuvo que escoger.'], ['a', 'Uy, eso es como elegir entre la suegra y el casero.']],
+      [['a', 'Empate en la gala, raza. Le tocó decidir al líder.'], ['e', 'Ahí se ven los amigos de verdad… y los hipócritas.']],
+      [['e', 'Los votos quedaron parejos y el líder tuvo la última palabra.'], ['a', 'Y seguro escogió a quien le debe dinero, para no pagar.']]],
+    gana_in: ['¡Noticia de última hora, banda! Ya hay ganador de Alfa Brother: {n}.', '¡Se acabó Alfa Brother y el campeón es {n}!', '¡Tenemos ganador: {n} se llevó Alfa Brother!'],
+    gana_j: ['se llevó todo, hasta la dignidad de los demás.', 'nomás no se le vaya a subir, que todavía debe la tanda.', 'y los demás, a llorar al baño como todos los lunes.', 'que invite los tacos, ¿no?',
+      'ahora sí, que le hagan su estatua en la entrada.', 'nadie se lo esperaba… bueno, su mamá sí.'],
+    sem_in: ['Arrancó la semana {s} y la prueba es {p}.', 'Empezó la semana {s}, banda. Toca {p}.', 'Semana {s} en la casa: la prueba del líder es {p}.', 'Nueva semana, la número {s}, con la prueba de {p}.'],
+    sem_j: ['a ver quién se pone las pilas, que luego andan llorando.', 'el que se duerme, se lo lleva la corriente… y la gala.', 'ya vi a varios practicando en horario de trabajo.',
+      'pónganse vivos, que la corona no se gana sola.', 'que gane el mejor… o el más tramposo.', 'ahí se ven en la gala, raza.'],
+    final: [[['a', '¡Agárrense, que ya empezó la gran final!'], ['e', 'Sin prueba y sin líder: aquí puro voto, como en las elecciones del sindicato.']],
+      [['e', '¡Llegamos a la gran final, banda!'], ['a', 'Quedan los más aguantadores. Y Elber, que se coló.']],
+      [['a', 'Ya estamos en la gran final, raza.'], ['e', 'El que junte menos votos gana. O sea, al revés que en la oficina.']]],
+    rec_igual_in: ['{n} sigue con el récord de {juego}: {p} puntos.', 'El récord de {juego} lo mantiene {n}, con {p}.', 'Nadie le quita a {n} el récord de {juego}: {p} puntos.', 'En {juego}, {n} sigue siendo el rey con {p} puntos.'],
+    rec_igual_j: ['ahí sigue, firme como deuda de compadre.', 'nadie se lo ha podido quitar, ni con trampa.', 'a ver quién se anima a tumbarlo.', 'ese récord ya tiene telarañas.',
+      'ya le hicieron altar y todo.', 'el que se lo quite, se gana mi respeto… y un taco.', 'ni con dos cafés lo alcanzan.', 'pura banda que nomás mira, nadie le entra.'],
+    rec_quita_in: ['Malas noticias para {prev}: {n} le quitó el récord de {juego} con {p} puntos.', '¡Golpe de estado en {juego}! {n} le arrebató el récord a {prev}: ahora es de {p}.',
+      '{prev}, ve preparando la revancha: {n} te bajó el récord de {juego} con {p} puntos.', 'Se acabó el reinado de {prev} en {juego}: {n} lo superó con {p}.'],
+    rec_quita_j: ['{prev} ya ni contesta los mensajes, del coraje.', 'eso dolió más que la cuenta de la luz.', 'ahora sí, {prev}, a practicar en vez de trabajar.', '{prev} dice que fue suerte; nosotros decimos que fue paliza.',
+      'así como llega se va: el récord no tiene dueño.', 'pónganle hielito a {prev}, que va a estar ardido toda la semana.', 'y {prev} jurando que nadie lo alcanzaba.', 'qué bonito es ver caer a los creídos.'],
+    rec_mismo_in: ['{n} volvió a romper su propia marca en {juego}: ahora tiene {p} puntos.', '{n} se superó otra vez en {juego} y ya va en {p}.', 'Ni contra sí mismo pierde: {n} subió su récord de {juego} a {p}.', '{n} sigue superando su propia marca en {juego}: {p} puntos.'],
+    rec_mismo_j: ['tal parece que ya se vició.', 'ese ya no sale ni a comer.', 'que alguien le esconda el celular, por favor.', 'compite contra sí mismo porque nadie más le alcanza.',
+      'ya le salieron callos en los dedos.', 'esto ya es adicción, que lo lleven a un grupo.', 'sus clientes esperando el pago, y él jugando.', 'a este paso le van a cobrar renta por usar la app.'],
+    rec_nuevo_in: ['{n} estrenó el récord de {juego} con {p} puntos.', 'Primer récord de {juego}: {n}, con {p}.', '{n} es el primero en dejar marca en {juego}: {p} puntos.'],
+    rec_nuevo_j: ['a ver quién se lo quita.', 'ya puso la vara alta.', 'por algo se empieza.', 'que lo disfrute mientras dure.', 'que lo enmarque, porque no le va a durar.', 'la banda ya está calentando para quitárselo.'],
+    mis_in: ['En misiones secretas hubo movimiento: se {cumplio}.', 'Las misiones secretas estuvieron movidas: se {cumplio}.', 'Del lado de las misiones, ayer se {cumplio}.', 'Misiones secretas: se {cumplio} ayer.'],
+    mis_top: ['Y quien más le metió fue {n}, con {k}.', 'La estrella fue {n}, con {k}.', 'El más misionero fue {n}: {k}.', 'Y {n} se llevó la medalla con {k}.'],
+    mis_j: ['ese no pierde el tiempo… ni en horario laboral.', 'más misiones que cobranzas, el muy vago.', 'cuidado con esa persona, que te saca la sopa sin que te des cuenta.', 'ya le dicen el 007 de la oficina.',
+      'si así cobrara, ya sería gerente.', 'nadie sabe cómo le hace, pero le hace.', 'ojo, que a la mejor ya cumplió una misión con ustedes.', 'pura inteligencia de barrio.'],
+    enc_res: ['Y ganó {g}.', 'El resultado: {g}.', 'Y la banda eligió a {g}.', 'Ganó, por mayoría, {g}.', 'La respuesta del pueblo: {g}.'],
+    enc_j: ['no es por nada, pero todos ya sabíamos.', 'el pueblo ha hablado, y el pueblo es bien criticón.', 'ni modo, la banda no miente.', 'que no se ofenda, que la encuesta es anónima.',
+      'quien votó por otra cosa, que se vaya acostumbrando.', 'más claro, ni el agua del garrafón.', 'luego no anden pidiendo recuento.', 'ahí está la neta, en números.'],
+    ap_in: ['En las apuestas, {n} se llevó {m} billetes.', '{n} le atinó y cobró {m} billetes.', 'El más suertudo fue {n}: {m} billetes en apuestas.', '{n} hizo su agosto en las apuestas con {m} billetes.'],
+    ap_j: ['que me preste pa’ los tacos.', 'con esa suerte, que se compre un cachito de la lotería.', 'y los demás, a llorarle a la quincena.', 'billetes de mentiritas, pero el gusto es de a de veras.',
+      'ya anda presumiendo como si fueran de verdad.', 'nomás no se lo gaste todo en la tienda.', 'que invite algo, ¿no?', 'así cualquiera apuesta: con información privilegiada.'],
+    tienda_in: ['En la tienda, {n} se compró {c}{mas}.', '{n} estrenó {c}{mas}.', '{n} anda de compras: se llevó {c}{mas}.', 'Pasarela en la casa: {n} se compró {c}{mas}.'],
+    tienda_j: ['se ve que le sobra la lana; ahorita le hablo pa’ que me pague lo que me debe.', 'muy guapo su monito, lástima que la cara no se cambia en la tienda.', 'puro lujo, y luego andan pidiendo prestado pa’ la comida.',
+      'ese monito ya está mejor vestido que yo.', 'gastando como si no hubiera mañana.', 'a ver si ahora sí lo invitan a las fiestas.', 'el monito sí, pero el dueño sigue igual de fachoso.', 'todo por aparentar, como en Instagram.'],
+    chat_in: ['En el chat de la casa se echaron {k} {msj}.', 'El chat estuvo movido: {k} {msj}.', 'En el chat cayeron {k} {msj}.', 'Ayer se escribieron {k} {msj} en el chat de la casa.'],
+    chat_top: ['Y quien más habló fue {n}, con {t}.', 'La lengua más suelta fue la de {n}: {t}.', 'Y el que no paró de teclear fue {n}, con {t}.', 'El rey del chisme fue {n}, con {t} mensajes.'],
+    chat_j: ['ni en la junta habla tanto.', 'le tienen que cobrar por letra.', 'tiene más saldo pa’ chismear que pa’ trabajar.', 'a ese ya le salió callo en el pulgar.', 'si hablara así con los clientes, ya habría cobrado todo.',
+      'que alguien le cambie la contraseña del wifi.', 'y todo lo que dijo fue puro chisme, ya lo sabemos.', 'ahí se nota quién no tiene chamba.'],
+    vot_in: ['{k} {pers} al confesionario a votar.', 'Ayer {k} {pers} por el confesionario.', 'En el confesionario hubo fila: {k} {pers} a votar.', 'Ayer votaron {pers2} en el confesionario.'],
+    vot_j: ['y ninguno nos quiso decir por quién. Malditos discretos.', 'se oían los cuchicheos desde afuera.', 'y salieron con cara de culpables.', 'ahí se cocinan las traiciones, banda.', 'el ojo lo vio todo, pero no suelta prenda.', 'y todavía faltan los que votan al último minuto.'],
+    jug_in: ['{k} {se} a jugar en vez de trabajar.', 'Ayer {k} {se} a jugar en la casa.', 'En la pestaña de juegos hubo acción: {k} {se} a jugar.'],
+    jug_j: ['yo no los acuso, pero el jefe sí ve el noticiero.', 'luego dicen que no les alcanza el tiempo.', 'la productividad por los suelos, pero los récords por las nubes.', 'así cualquiera tiene buen humor.', 'que les cobren el tiempo aire.', 'y la cobranza esperando, pobrecita.'],
+    nada: [[['e', 'Pues ayer en la casa no pasó ni madres, banda.'], ['a', 'Como en la oficina, Elber: mucho café y cero cobranza.']],
+      [['a', 'Ayer estuvo más tranquilo que domingo en la tarde.'], ['e', 'Nadie hizo nada, Rosa. Ni nosotros.']],
+      [['e', 'Día flojo en la casa, raza.'], ['a', 'Flojo como tú, Elber, que ni te levantas temprano.']],
+      [['a', 'No hubo chisme ayer, banda.'], ['e', 'Eso es lo más raro que ha pasado en esta oficina.']]],
+    rico_in: ['Y quien más billetes tiene en la casa es {n}, con {b}.', 'El más millonario de la casa: {n}, con {b} billetes.', '{n} sigue de ricachón con {b} billetes.', 'En la cima de los billetes está {n}: {b}.'],
+    rico_j: ['billetes de mentiritas, pero igual ni nos invita un taco.', 'ya anda buscando casa en las Lomas.', 'que se compre algo bonito, porque esa cara no tiene arreglo.', 'el Slim de la oficina.', 'y todavía pide descuento en la tienda.', 'ahí está el que nunca presta.'],
+    nota_in: ['Ojo, banda, que nos llegó nota de la producción:', 'Atención, mensaje de la producción:', 'Nos pasaron un recadito de la producción:', 'La producción manda decir:', 'Último momento, de parte de la producción:'],
+    bien: ['Y bienvenida a {n}, que se registró ayer.', 'Saluden a {n}, que ya llegó a la casa.', 'Se nos unió {n}. ¡Un aplauso, raza!', 'Ojo, que {n} también se apuntó ayer.', 'Y llegó carne fresca: {n}.',
+      'Bienvenido, bienvenida, lo que seas, {n}.', 'Pásale, {n}, ya eres de la familia.', '{n} se registró ayer. ¡Ánimo, valiente!'],
+    bien_j: ['Pásele, pásele, que aquí nadie muerde… nomás tantito.', 'Ya se la sabe: aquí se paga hasta la entrada.', 'Que se ponga cómodo, pero que no se encariñe, que aquí sacan a cualquiera.',
+      'Bienvenido al manicomio: aquí nadie trabaja pero todos cobran.', 'Uno más pa’ la tanda, ¡órale!', 'Que no se asuste, que la Rosa ladra pero no muerde.', 'Ya llegó quien faltaba pa’ armar el desmadre.',
+      'Otro más que viene a sufrir con nosotros. Qué bonito.', 'Ojalá traiga tortas, porque aquí nomás hay café.', 'A ese ya le vi cara de que va a durar poquito.', 'Que se presente con un pastel, como se debe.', 'Sálvese quien pueda, que ya llegó otro.'],
+  };
+  // una noticia: Elber o Rosa la dice (entrada) y el otro reacciona (exclamación + chiste)
+  // (sin repetir la misma exclamación dos veces en el mismo programa)
+  let exclUsadas = new Set();
+  const reaccion = (clave, exclam, chistes, c, paso) => {
+    const lista = prod(exclam, chistes);
+    let t = frase(clave, lista, paso);
+    for (let k = 0; k < exclam.length && exclUsadas.has(exclam.find(x => t.startsWith(x + ' '))); k++) t = frase(clave, lista, paso);
+    exclUsadas.add(exclam.find(x => t.startsWith(x + ' ')));
+    return llenar(t, c);
+  };
+
   function guion() {
-    sembrar(d.dia); bolsas.clear(); usadas.clear();
+    diaN = Math.floor(Date.parse(d.dia + 'T12:00:00Z') / 864e5); usos = {}; exclUsadas = new Set();
     const L = [], titulares = [];
     const di = (q, t, cara) => L.push({ q, t, cara });
     const bloque = b => b.forEach(([q, t]) => di(q, t));
-    const nota = (titular, partes) => { titulares.push(titular); if (L.length > 6 && r() < .35) bloque(una(PUENTES)); partes.forEach(([q, t, cara]) => di(q, t, cara)); };
-    bloque(una(ENTRADAS));
+    let notas = 0;
+    const nota = (titular, partes) => {
+      titulares.push(titular);
+      if (notas > 0 && notas % 3 === 0) bloque(frase('puente', PUENTES, 3));     // un albur cada tantas noticias
+      notas++;
+      partes.forEach(([q, t, cara]) => di(q, t, cara));
+    };
+    const otro = q => q === 'e' ? 'a' : 'e';
+    bloque(frase('saludo', SALUDOS));
+    bloque(frase('albur', ALBURES));
+    bloque([frase('arranque', ARRANQUES)]);
+    let turno = 'e';
+    const dos = (titular, entrada, react, cara) => { const q = turno; turno = otro(turno); nota(titular, [[q, entrada, cara], [otro(q), react]]); };
     const n = s => s || 'alguien';
     // galas
     for (const g of d.galas || []) {
       if (g.final && g.podio?.length) {
-        const gan = g.podio.filter(x => x.lugar === 1);
-        nota(`🏆 ${gan.map(x => x.nombre).join(' y ')} gana Alfa Brother`, [
-          ['e', `¡Noticia de última hora, banda! Ya hay ganador de Alfa Brother: ${gan.map(x => x.nombre).join(' y ')}.`, gan[0].id],
-          ['a', una(['¡A huevo! Se llevó todo, hasta la dignidad de los demás.', 'Nomás no se le vaya a subir, que todavía debe la tanda.', 'Y los demás, a llorar al baño como todos los lunes.'])]]);
+        const gan = g.podio.filter(x => x.lugar === 1), nom = gan.map(x => x.nombre).join(' y ');
+        dos(`🏆 ${nom} gana Alfa Brother`, llenar(frase('gana_in', T.gana_in), { n: nom }), reaccion('gana_j', BIEN, T.gana_j, {}), gan[0].id);
         continue;
       }
       if (g.eliminado_id) {
         const fila = (g.tabla || []).find(x => x.id === g.eliminado_id);
-        nota(`💀 ${g.eliminado} salió de la casa`, [
-          ['a', `Y la nota que dolió: en la gala sacaron a ${g.eliminado}${fila ? `, con ${fila.puntos} puntos` : ''}.`, g.eliminado_id],
-          ['e', una([`Chale, ${g.eliminado}, te fuiste como cliente moroso: sin avisar y debiendo.`, `Ni modo, ${g.eliminado}. Ahora a ver la casa desde el palco, como el que ve pasar el camión.`, `Pa’ que vean que aquí no perdonamos ni a la mamá de la tanda.`])]]);
+        dos(`💀 ${g.eliminado} salió de la casa`, llenar(frase('elim_in', T.elim_in), { n: g.eliminado, pts: fila ? `, con ${fila.puntos} puntos` : '' }), reaccion('elim_j', MAL, T.elim_j, {}), g.eliminado_id);
       }
-      if (g.lider_salvado && g.lider) nota(`👑 La corona salvó a ${g.lider}`, [
-        ['e', `Y ojo: a ${g.lider} le llovieron votos, pero la corona de líder lo salvó.`, g.lider_id],
-        ['a', 'Así cualquiera, Elber: con fuero ni quién te toque.']]);
-      if (g.desempate) nota('⚖️ Hubo empate en la gala', [['a', 'Y hubo empate, banda: el líder tuvo que decidir quién se iba.'], ['e', 'Más feo que decidir quién paga la cuenta en la cantina.']]);
+      if (g.lider_salvado && g.lider) dos(`👑 La corona salvó a ${g.lider}`, llenar(frase('salva_in', T.salva_in), { n: g.lider }), reaccion('salva_j', NEUTRO, T.salva_j, {}), g.lider_id);
+      if (g.desempate) nota('⚖️ Hubo empate en la gala', frase('emp', T.emp).map(([q, t]) => [q, t]));
     }
-    // sucesos: semana nueva, líder y récords
+    // semana nueva y líder
     for (const s of d.sucesos || []) {
-      if (s.tipo === 'semana') nota(`📅 Empezó la semana ${s.dato.semana}`, s.dato.final
-        ? [['a', '¡Agárrense, que ya empezó la gran final!'], ['e', 'Sin prueba y sin líder: aquí puro voto, como en las elecciones del sindicato.']]
-        : [['e', `Arrancó la semana ${s.dato.semana} y la prueba es ${PRUEBAS[s.dato.prueba]?.nombre || 'una sorpresa'}.`], ['a', una(['A ver quién se pone las pilas, que luego andan llorando.', 'Y ya saben: el que se duerme, se lo lleva la corriente… y la gala.'])]]);
-      if (s.tipo === 'lider') nota(`👑 ${n(s.nombre)} es el líder`, [
-        ['e', `El chisme gordo: ${n(s.nombre)} se aventó la prueba y ahora es el líder de la semana.`, s.id],
-        ['a', una([`Ya lo vi pavoneándose con su coronita, ni que fuera el gerente.`, `Felicidades, ${n(s.nombre)}. Disfrútalo, que la corona dura menos que la quincena.`, `Ahora sí, ${n(s.nombre)}, a sentirse la última coca del desierto.`])]]);
-      if (s.tipo === 'record') nota(`🎮 Récord de ${n(s.nombre)} en ${JUEGOS[s.dato.juego] || 'un juego'}`, [
-        ['a', `Récord nuevo en ${JUEGOS[s.dato.juego] || 'los juegos'}: ${n(s.nombre)} hizo ${fmt(s.dato.puntos)} puntos.`, s.id],
-        ['e', una([`Neta, ${n(s.nombre)}, ¿a qué hora trabajas?`, 'Con esos dedos, ya podría marcar a todos los deudores en un minuto.', 'Ese récord no se rompe ni con martillo, banda.'])]]);
+      if (s.tipo === 'semana') {
+        if (s.dato.final) nota('🏁 Empezó la gran final', frase('final', T.final));
+        else dos(`📅 Empezó la semana ${s.dato.semana}`, llenar(frase('sem_in', T.sem_in), { s: s.dato.semana, p: PRUEBAS[s.dato.prueba]?.nombre || 'una sorpresa' }), reaccion('sem_j', NEUTRO, T.sem_j, {}));
+      }
+      if (s.tipo === 'lider') dos(`👑 ${n(s.nombre)} es el líder`, llenar(frase('lider_in', T.lider_in), { n: n(s.nombre) }), reaccion('lider_j', BIEN, T.lider_j, {}), s.id);
+    }
+    // récords: solo el récord actual de cada juego
+    const igual = [];
+    for (const r of d.records || []) {
+      const juego = JUEGOS[r.juego] || r.juego, a = r.actual;
+      if (!r.nuevo) { igual.push(r); continue; }
+      const c = { n: r.nuevo.nombre, p: fmt(r.nuevo.puntos), juego, prev: r.antes?.nombre || '' };
+      if (!r.antes) dos(`🎮 ${c.n} estrenó el récord de ${juego}`, llenar(frase('rec_nuevo_in', T.rec_nuevo_in, 2), c), reaccion('rec_nuevo_j', BIEN, T.rec_nuevo_j, c, 2), r.nuevo.id);
+      else if (r.antes.id === r.nuevo.id) dos(`🎮 ${c.n} superó su propia marca en ${juego}`, llenar(frase('rec_mismo_in', T.rec_mismo_in, 2), c), reaccion('rec_mismo_j', NEUTRO, T.rec_mismo_j, c, 2), r.nuevo.id);
+      else dos(`🎮 ${c.n} le quitó el récord de ${juego} a ${c.prev}`, llenar(frase('rec_quita_in', T.rec_quita_in, 2), c), reaccion('rec_quita_j', MAL, T.rec_quita_j, c, 2), r.nuevo.id);
+    }
+    if (igual.length) {
+      const r = igual[0], c = { n: r.actual.nombre, p: fmt(r.actual.puntos), juego: JUEGOS[r.juego] || r.juego };
+      dos(`🎮 ${c.n} mantiene el récord de ${c.juego}`, llenar(frase('rec_igual_in', T.rec_igual_in), c)
+        + (igual.length > 1 ? ' ' + igual.slice(1).map(x => `En ${JUEGOS[x.juego] || x.juego} manda ${x.actual.nombre}, con ${fmt(x.actual.puntos)}.`).join(' ') : ''),
+        reaccion('rec_igual_j', NEUTRO, T.rec_igual_j, c), r.actual.id);
     }
     // misiones
     const mis = d.misiones || [];
     if (mis.length) {
-      const total = mis.reduce((a, x) => a + x.n, 0), top = mis[0];
+      const total = mis.reduce((s, x) => s + x.n, 0), top = mis[0];
+      const q = turno; turno = otro(turno);
       nota(`🕵️ ${total} ${total === 1 ? 'misión cumplida' : 'misiones cumplidas'}`, [
-        ['a', `En misiones secretas hubo movimiento: se ${total === 1 ? 'cumplió una' : `cumplieron ${total}`}.`],
-        ['e', `Y quien más le metió fue ${top.nombre}, con ${top.n}. ${una(['Ese no pierde el tiempo… ni en horario laboral.', 'Más misiones que cobranzas, el muy vago.', 'Cuidado con esa persona, que te saca la sopa sin que te des cuenta.'])}`, top.id]]);
+        [q, llenar(frase('mis_in', T.mis_in), { cumplio: total === 1 ? 'cumplió una' : `cumplieron ${total}` })],
+        [otro(q), llenar(frase('mis_top', T.mis_top), { n: top.nombre, k: top.n }) + ' ' + reaccion('mis_j', NEUTRO, T.mis_j, {}), top.id]]);
     }
     // encuestas
     for (const e of d.encuestas || []) {
       const gan = (e.resultado?.ganadores || []).map(k => e.opciones?.[+k]?.t).filter(Boolean);
       const id = (e.resultado?.ganadores || []).map(k => e.opciones?.[+k]?.id).find(Boolean);
       if (!gan.length) continue;
-      nota(`📊 ${e.pregunta} → ${gan.join(' y ')}`, [
-        ['e', `La encuesta de ayer: ${e.pregunta}`],
-        ['a', `Y ganó ${gan.join(' y ')}. ${una(['No es por nada, pero todos ya sabíamos.', 'El pueblo ha hablado, y el pueblo es bien criticón.', 'Ni modo, la banda no miente.'])}`, id]]);
+      const q = turno; turno = otro(turno);
+      nota(`📊 ${e.pregunta} → ${gan.join(' y ')}`, [[q, `La encuesta de ayer: ${e.pregunta}`],
+        [otro(q), llenar(frase('enc_res', T.enc_res, 2), { g: gan.join(' y ') }) + ' ' + reaccion('enc_j', NEUTRO, T.enc_j, {}, 2), id]]);
     }
-    // apuestas
+    // apuestas, tienda, chat, votos, nuevos y juegos
     const ap = d.apuestas || [];
-    if (ap.length) nota(`💰 ${ap[0].nombre} ganó ${fmt$(ap[0].monto)} en apuestas`, [
-      ['a', `En las apuestas, ${ap[0].nombre} se llevó ${fmt(ap[0].monto)} billetes.`, ap[0].id],
-      ['e', una(['Pinche suertudo, que me preste pa’ los tacos.', 'Con esa suerte, que se compre un cachito de la lotería.', 'Y los demás, a llorarle a la quincena.'])]]);
-    // tienda
+    if (ap.length) dos(`💰 ${ap[0].nombre} ganó ${fmt$(ap[0].monto)} en apuestas`, llenar(frase('ap_in', T.ap_in), { n: ap[0].nombre, m: fmt(ap[0].monto) }), reaccion('ap_j', NEUTRO, T.ap_j, {}), ap[0].id);
     const com = d.compras || [];
-    if (com.length) {
-      const c = com[com.length - 1];
-      nota(`🛍️ ${c.nombre} estrenó ${c.cosa}`, [
-        ['e', `En la tienda, ${c.nombre} se compró ${c.cosa}${com.length > 1 ? `, y hubo ${com.length} compras en total` : ''}.`, c.id],
-        ['a', una(['Se ve que le sobra la lana. Ahorita le hablo pa’ que me pague lo que me debe.', 'Muy guapo su monito, lástima que la cara no se cambia en la tienda.', 'Puro lujo, banda. Luego andan pidiendo prestado pa’ la comida.'])]]);
+    if (com.length) { const c = com[com.length - 1];
+      dos(`🛍️ ${c.nombre} estrenó ${c.cosa}`, llenar(frase('tienda_in', T.tienda_in), { n: c.nombre, c: c.cosa, mas: com.length > 1 ? `, y hubo ${com.length} compras en total` : '' }), reaccion('tienda_j', NEUTRO, T.tienda_j, {}), c.id); }
+    if (d.chat?.n) {
+      const q = turno, k = d.chat.n; turno = otro(turno);
+      nota(`💬 ${k} ${k === 1 ? 'mensaje' : 'mensajes'} en el chat`, [[q, llenar(frase('chat_in', T.chat_in), { k, msj: k === 1 ? 'mensaje' : 'mensajes' })],
+        ...(d.chat.top ? [[otro(q), llenar(frase('chat_top', T.chat_top), { n: d.chat.top.nombre, t: d.chat.top.n }) + ' ' + reaccion('chat_j', NEUTRO, T.chat_j, {}), d.chat.top.id]] : [])]);
     }
-    // chat
-    if (d.chat?.n) nota(`💬 ${d.chat.n} mensajes en el chat`, [
-      ['a', `En el chat de la casa se echaron ${d.chat.n} ${d.chat.n === 1 ? 'mensaje' : 'mensajes'}.`],
-      ...(d.chat.top ? [['e', `Y quien más habló fue ${d.chat.top.nombre}, con ${d.chat.top.n}. ${una(['Ni en la junta habla tanto.', 'Le tienen que cobrar por letra.', 'Tiene más saldo pa’ chismear que pa’ trabajar.'])}`, d.chat.top.id]] : [])]);
-    if (d.votantes) nota(`🗳️ ${d.votantes} ${d.votantes === 1 ? 'pasó' : 'pasaron'} al confesionario`, [
-      ['e', `${d.votantes} ${d.votantes === 1 ? 'persona pasó' : 'personas pasaron'} al confesionario a votar.`],
-      ['a', 'Y ninguno nos quiso decir por quién. Malditos discretos.']]);
+    if (d.votantes) { const k = d.votantes;
+      dos(`🗳️ ${k} ${k === 1 ? 'pasó' : 'pasaron'} al confesionario`, llenar(frase('vot_in', T.vot_in), { k: k === 1 ? 'Una' : k, pers: k === 1 ? 'persona pasó' : 'personas pasaron', pers2: k === 1 ? 'una persona' : `${k} personas` }), reaccion('vot_j', NEUTRO, T.vot_j, {})); }
     const nuevos = d.nuevos || [];
-    const BIENVENIDA = [
-      n => `Y bienvenida a ${n}, que se registró ayer.`, n => `Saluden a ${n}, que ya llegó a la casa.`, n => `Se nos unió ${n}. ¡Un aplauso, raza!`,
-      n => `Ojo, que ${n} también se apuntó ayer.`, n => `Y llegó carne fresca: ${n}.`, n => `Bienvenido, bienvenida, lo que seas, ${n}.`];
-    const REMATE = ['Pásele, pásele, que aquí nadie muerde… nomás tantito.', 'Ya se la sabe: aquí se paga hasta la entrada.', 'Que se ponga cómodo, pero que no se encariñe, que aquí sacan a cualquiera.',
-      'Bienvenido al manicomio, aquí nadie trabaja pero todos cobran.', 'Uno más pa’ la tanda, ¡órale!', 'Que no se asuste, que la Rosa ladra pero no muerde.',
-      'Ya llegó quien faltaba pa’ armar el desmadre.', 'Otro más que viene a sufrir con nosotros. Qué bonito.', 'Ojalá traiga tortas, porque aquí nomás hay café.', 'A ese ya le vi cara de que va a durar poquito.'];
-    if (nuevos.length > 3) nota(`👋 ${nuevos.length} nuevos en la casa`, [
-      ['a', `Ayer se registraron ${nuevos.length}: ${nuevos.slice(0, -1).map(x => x.nombre).join(', ')} y ${nuevos[nuevos.length - 1].nombre}.`],
-      ['e', sinRepetir('remate-nuevo', REMATE)]]);
-    else for (const x of nuevos) nota(`👋 Bienvenida a ${x.nombre}`, [
-      ['a', sinRepetir('bienvenida', BIENVENIDA)(x.nombre) + (x.rol === 'espectador' ? ' Entra como público.' : ''), x.id],
-      ['e', sinRepetir('remate-nuevo', REMATE)]]);
-    if (d.jugaron) nota(`🎮 ${d.jugaron} ${d.jugaron === 1 ? 'se puso' : 'se pusieron'} a jugar`, [['e', `${d.jugaron} ${d.jugaron === 1 ? 'se puso' : 'se pusieron'} a jugar en vez de trabajar.`], ['a', 'Yo no los acuso, Elber, pero el jefe sí ve el noticiero.']]);
-    if (d.nota) nota('🎬 Nota de la producción', [['a', 'Ojo, banda, que nos llegó nota de la producción:'], ['e', d.nota]]);
-    if (titulares.length === 0) nota('😴 No pasó nada', [['e', 'Pues ayer en la casa no pasó ni madres, banda.'], ['a', 'Como en la oficina, Elber: mucho café y cero cobranza.']]);
-    if (d.rico) nota(`💵 ${d.rico.nombre} es quien más billetes tiene`, [['e', `Y quien más billetes tiene en la casa es ${d.rico.nombre}, con ${fmt(d.rico.billetes)}.`, d.rico.id], ['a', 'Billetes de mentiritas, pero igual ni nos invita un taco.']]);
-    bloque(una(SALIDAS));
+    if (nuevos.length > 3) dos(`👋 ${nuevos.length} nuevos en la casa`, `Ayer se registraron ${nuevos.length}: ${nuevos.slice(0, -1).map(x => x.nombre).join(', ')} y ${nuevos[nuevos.length - 1].nombre}.`, frase('bien_j', T.bien_j, 3));
+    else for (const x of nuevos) dos(`👋 Bienvenida a ${x.nombre}`, llenar(frase('bien', T.bien, 3), { n: x.nombre }) + (x.rol === 'espectador' ? ' Entra como público.' : ''), frase('bien_j', T.bien_j, 3), x.id);
+    if (d.jugaron) { const k = d.jugaron; dos(`🎮 ${k} ${k === 1 ? 'se puso' : 'se pusieron'} a jugar`, llenar(frase('jug_in', T.jug_in), { k: k === 1 ? 'una persona' : k, se: k === 1 ? 'se puso' : 'se pusieron' }), reaccion('jug_j', NEUTRO, T.jug_j, {})); }
+    if (d.nota) { const q = turno; turno = otro(turno); nota('🎬 Nota de la producción', [[q, frase('nota_in', T.nota_in)], [otro(q), d.nota]]); }
+    if (titulares.length === 0) nota('😴 No pasó nada', frase('nada', T.nada));
+    if (d.rico) dos(`💵 ${d.rico.nombre} es quien más billetes tiene`, llenar(frase('rico_in', T.rico_in), { n: d.rico.nombre, b: fmt(d.rico.billetes) }), reaccion('rico_j', NEUTRO, T.rico_j, {}), d.rico.id);
+    bloque(frase('salida', SALIDAS));
     return { lineas: L, titulares };
   }
 
@@ -3587,7 +3749,8 @@ const TV = (() => {
     document.body.style.overflow = '';
     SFX.pausaParaGala(false);
   }
-  return { abrir, cerrar, pintarBoton, diaEdicion };
+  // guionDe: arma el guion con datos dados (para revisar frases sin abrir la tele)
+  return { abrir, cerrar, pintarBoton, diaEdicion, guionDe: datos => { d = datos; return guion(); } };
 })();
 
 $('#c-tv').onclick = () => TV.abrir();
@@ -5151,7 +5314,10 @@ async function adminExtras(C, seccion) {
   const chatMsgs = await q(sb.from('chat').select('*').order('id', { ascending: false })).then(x => x.slice(0, 40)).catch(() => []);
   const recs = await q(sb.from('practicas').select('*').order('mejor', { ascending: false })).catch(() => []);
   const hoyMX = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
-  const notaHoy = (await q(sb.from('noticiero_notas').select('*').eq('dia', hoyMX)).catch(() => []))[0];
+  const notasTv = await q(sb.from('noticiero_notas').select('*').order('dia', { ascending: false })).then(x => x.slice(0, 14)).catch(() => []);
+  const notaHoy = notasTv.find(x => x.dia === hoyMX);
+  const diaNota = dia => { const t = new Date(dia + 'T12:00:00Z').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' }); return t.charAt(0).toUpperCase() + t.slice(1); };
+  const manana = dia => { const x = new Date(dia + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + 1); return diaNota(x.toISOString().slice(0, 10)).toLowerCase(); };
   const JUEGOS_REC = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy (clásico)', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo' };
   const ahora = Date.now();
   const estadoEnc = e => +new Date(e.abre) > ahora ? `Programada: abre ${fmtFecha(e.abre)}` : +new Date(e.cierra) > ahora ? `Abierta hasta ${fmtFecha(e.cierra)}` : 'Cerrada';
@@ -5199,7 +5365,12 @@ async function adminExtras(C, seccion) {
       <p class="ayuda">Cada mañana a las 8 sale el noticiero con lo que pasó el día anterior (y llega aviso al celular). Lo que escribas aquí lo leen Elber y Rosa como "nota de la producción" en el noticiero de <b>mañana</b>.</p>
       <label class="campo" for="tvn-txt">Nota de la producción de hoy</label>
       <textarea class="in" id="tvn-txt" maxlength="400" rows="3" placeholder="Ej. El viernes hay pizza para el que cumpla sus 5 misiones.">${esc(notaHoy?.texto || '')}</textarea>
-      <div class="adm-acciones"><button class="btn">Guardar nota</button><button type="button" class="btn sec" id="tvn-ver">Ver el noticiero de hoy</button><button type="button" class="btn sec" id="tvn-manana">👀 Ver el de mañana (cómo va)</button>${notaHoy ? '<button type="button" class="mini" id="tvn-del">Borrar nota</button>' : ''}</div>
+      <div class="adm-acciones"><button class="btn">${notaHoy ? 'Guardar cambios' : 'Guardar nota'}</button><button type="button" class="btn sec" id="tvn-ver">Ver el noticiero de hoy</button><button type="button" class="btn sec" id="tvn-manana">👀 Ver el de mañana (cómo va)</button>${notaHoy ? '<button type="button" class="mini" id="tvn-del">Borrar nota</button>' : ''}</div>
+      <p style="margin:14px 0 4px;font-weight:700">Notas guardadas</p>
+      ${notasTv.map(n => { const ya = n.dia < hoyMX;
+        return `<div class="adm-fila" style="align-items:flex-start"><div class="info"><b>${esc(diaNota(n.dia))}</b>
+          <small style="white-space:normal;display:block">${esc(n.texto)}</small><small style="display:block;color:${ya ? '#8E88B5' : '#1E8E5A'};font-weight:600">${ya ? `Ya salió en el noticiero del ${esc(manana(n.dia))}` : `Sale en el noticiero del ${esc(manana(n.dia))}`}</small></div>
+          <button type="button" class="mini" data-tvn-edit="${n.dia}">Editar</button><button type="button" class="mini" data-tvn-del="${n.dia}">Borrar</button></div>`; }).join('') || '<p class="ayuda">Todavía no hay notas.</p>'}
     </form>
     <form class="adm-caja" data-sec="records" id="rec-form"><h3>Récords de los juegos</h3>
       <p class="ayuda">Para corregir o poner a mano el récord de alguien (por ejemplo, si se le cerró la app y no se guardó). El número que pongas queda como su mejor puntaje.</p>
@@ -5280,6 +5451,17 @@ async function adminExtras(C, seccion) {
   };
   $('#tvn-ver').onclick = () => TV.abrir();
   $('#tvn-manana').onclick = () => TV.abrir(true);
+  $$('[data-tvn-edit]').forEach(b => b.onclick = async () => {
+    const n = notasTv.find(x => x.dia === b.dataset.tvnEdit);
+    const t = prompt(`Edita la nota del ${diaNota(n.dia)}:`, n.texto);
+    if (t === null) return;
+    if (!t.trim()) return toast('La nota no puede ir vacía (usa Borrar)');
+    try { await q(sb.from('noticiero_notas').update({ texto: t.trim().slice(0, 400) }).eq('dia', n.dia)); toast('Nota actualizada'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
+  });
+  $$('[data-tvn-del]').forEach(b => b.onclick = async () => {
+    if (!confirm(`¿Borrar la nota del ${diaNota(b.dataset.tvnDel)}?`)) return;
+    try { await q(sb.from('noticiero_notas').delete().eq('dia', b.dataset.tvnDel)); toast('Nota borrada'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
+  });
   $('#tvn-del')?.addEventListener('click', async () => {
     if (!confirm('¿Borrar la nota de hoy?')) return;
     try { await q(sb.from('noticiero_notas').delete().eq('dia', hoyMX)); toast('Nota borrada'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
