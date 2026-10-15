@@ -200,10 +200,18 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .pr-top span{background:rgba(255,255,255,.1);border-radius:999px;padding:3px 10px;font-size:.8rem;color:#fff}
 /* El Noticierazo */
 .chip-eco.tv-chip{background:#D7263D;box-shadow:none}
+.tv-aviso-card{width:100%;display:flex;align-items:center;gap:12px;text-align:left;border:0;cursor:pointer;margin-top:12px;padding:12px 14px;border-radius:14px;color:#fff;
+  background:linear-gradient(135deg,#D7263D,#7A3FB5);box-shadow:0 6px 0 #0E0A26;animation:entra-aviso .4s ease-out}
+.tv-aviso-card .ic{font-size:1.9rem;animation:latido-vivo 1.4s infinite}
+.tv-aviso-card .tx{flex:1;min-width:0;line-height:1.25}
+.tv-aviso-card .tx b{display:block;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.15rem;letter-spacing:.02em}
+.tv-aviso-card .tx small{font-size:.82rem;color:#FFE3EE}
+.tv-aviso-card .ver{flex:none;background:#FFD54A;color:#1B1440;font-weight:800;border-radius:999px;padding:6px 12px;font-size:.85rem}
+@keyframes entra-aviso{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 #m-tv{position:fixed;inset:0;z-index:300;background:#0d0828;color:#fff;display:flex;flex-direction:column;overflow:hidden}
 #m-tv.hidden{display:none}
 .tv-cargando{margin:auto;text-align:center;font-weight:700;padding:24px}
-.tv-top{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 8px}
+.tv-top{position:relative;z-index:3;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 8px}
 .tv-vivo{background:#D7263D;border-radius:6px;padding:2px 8px;font-weight:800;font-size:.75rem;animation:latido-vivo 1.4s infinite}
 @keyframes latido-vivo{50%{opacity:.55}}
 .tv-fecha{flex:1;font-size:.82rem;color:#C9C3EE}
@@ -910,6 +918,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 
   <!-- pestaña Casa -->
   <div class="tab-pane" id="tab-casa">
+  <div id="c-tv-aviso"></div>
   <div id="c-hoy"></div>
   <div id="c-accion"></div>
   <div id="c-avisos" class="hidden"></div>
@@ -3273,7 +3282,15 @@ const TV = (() => {
   const hayNueva = () => !!est && est.juego.semana > 0 && store.get('ab_tv_visto') !== diaEdicion();
   function pintarBoton() {
     const b = $('#c-tv'); if (!b || !est) return;
-    b.querySelector('.punto').classList.toggle('hidden', !hayNueva());
+    const nueva = hayNueva();
+    b.querySelector('.punto').classList.toggle('hidden', !nueva);
+    // aviso arriba en la casa, como notificación: se quita en cuanto lo ves
+    const caja = $('#c-tv-aviso'), dia = diaEdicion();
+    if (!nueva) { caja.innerHTML = ''; return; }
+    if (caja.dataset.dia === dia && caja.innerHTML) return;
+    caja.dataset.dia = dia;
+    caja.innerHTML = `<button class="tv-aviso-card"><span class="ic">📺</span><span class="tx"><b>¡Ya salió El Noticierazo!</b><small>Elber Galarga y Rosa Melano te cuentan lo que pasó el ${esc(diaBonito(dia).toLowerCase())}.</small></span><span class="ver">Ver ▶</span></button>`;
+    caja.querySelector('button').onclick = abrir;
   }
 
   // ---------- azar repetible por día (todos ven el mismo programa) ----------
