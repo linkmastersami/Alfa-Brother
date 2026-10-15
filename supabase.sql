@@ -1019,6 +1019,8 @@ declare
   pistas jsonb := '[]'::jsonb;
 begin
   yo := public._yo(p_token);
+  -- v18: el público no ve los chismes del ojo
+  if yo.rol <> 'jugador' then raise exception 'OJO_SOLO_HABITANTES'; end if;
   select * into c from public.config where id = 1;
   if c.fase = 'votacion' then
     select count(distinct votante_id) into v_mios from public.votos

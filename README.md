@@ -157,6 +157,7 @@ Versión 14: las misiones ya no usan código QR: tocas «¡Ya la cumplí!» y la
 Versión 15: las misiones de la semana pasada cuentan la mitad para elegir al líder.
 Versión 16: Monster Crazy (récords y premio diario) y la casa en pestañas con «¿Qué me toca hoy?».
 Versión 17: Monster Crazy 2.0 (círculos negros que quitan corazones desde la oleada 16).
+Versión 18: el público ya no puede ver los chismes del ojo.
 
 ---
 

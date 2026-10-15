@@ -151,6 +151,13 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .plegable.abierto>.pleg-cab .flecha{transform:rotate(180deg)}
 .plegable:not(.abierto)>.pleg-cuerpo{display:none}
 .hoy .pleg-cuerpo{margin-top:10px}
+.pleg-auto>h3{cursor:pointer;margin:0!important;align-items:center!important}
+.monster-card.pleg-auto>h3{display:block;position:relative;padding-right:26px}
+.monster-card.pleg-auto>h3 .flecha{position:absolute;right:0;top:50%;margin-top:-.6em;color:#fff;text-shadow:none}
+.pleg-auto>h3 .flecha{flex:none;font-family:"Work Sans",sans-serif;font-size:1rem;opacity:.7;transition:transform .2s;margin-left:2px}
+.pleg-auto.abierto>h3{margin-bottom:6px!important}
+.pleg-auto.abierto>h3 .flecha{transform:rotate(180deg)}
+.pleg-auto:not(.abierto)>:not(h3):not(.ed){display:none!important}
 .pleg-n{flex:none;min-width:24px;height:24px;border-radius:12px;background:#D7263D;color:#fff;font:800 .8rem/24px "Work Sans",sans-serif;text-align:center;padding:0 7px}
 .pleg-n.ok{background:#1E8E5A}
 #c-accion>.plegable>.pleg-cab{background:#FBE9A6;color:var(--texto);border-radius:14px;padding:14px;margin-top:12px;box-shadow:0 6px 0 #0E0A26}
@@ -1202,6 +1209,7 @@ const ERRORES = {
   ES_TU_CODIGO: 'Ese es tu propio código: lo tiene que escanear la otra persona.',
   NO_ERES_OBJETIVO: 'Esa misión no era sobre ti. Solo la persona de la misión puede confirmarla.',
   MISION_YA_CUMPLIDA: 'Esa misión ya estaba cumplida.',
+  OJO_SOLO_HABITANTES: 'El ojo solo les cuenta chismes a los habitantes de la casa. 👁️',
   MISION_VENCIDA: 'Esa misión era de una semana pasada.',
   MISION_NO_EXISTE: 'Esa misión ya no existe (quizá se repartieron otras).',
   MISION_YA_PEDIDA: 'Ya le avisaste: falta que confirme.',
@@ -2482,12 +2490,13 @@ const SALA = (() => {
     $('#puerta-aviso').classList.toggle('hidden', !meToca);
     caja.classList.toggle('votando', votando);
     caja.classList.toggle('llama-puerta', meToca);
-    caja.classList.toggle('llama-tele', !store.get('ab_vio_ojo'));
+    caja.classList.toggle('llama-tele', !store.get('ab_vio_ojo') && est.yo.rol === 'jugador');
     caja.classList.toggle('llama-reloj', !store.get('ab_vio_reloj'));
     pintarBarra();
     $('#sala-ayuda').textContent = soyActor()
       ? 'Toca el piso para caminar · a alguien para ver su ficha · la puerta roja para votar · la tele para escuchar al ojo · el reloj para ver la agenda'
-      : 'Toca a alguien para ver su ficha · la puerta roja para votar · la tele para escuchar al ojo · el reloj para ver la agenda';
+      : est.yo.rol === 'jugador' ? 'Toca a alguien para ver su ficha · la puerta roja para votar · la tele para escuchar al ojo · el reloj para ver la agenda'
+      : 'Toca a alguien para ver su ficha · la puerta roja para votar · el reloj para ver la agenda';
     despertar();
   }
   function pintarBarra() {
@@ -2989,6 +2998,7 @@ function pintarEconomia() {
   $$('#c-misiones [data-cumpli]').forEach(b => b.onclick = () => pedirMision(+b.dataset.cumpli));
   C.querySelector('#c-misiones [data-por-confirmar]')?.addEventListener('click', () => revisarPorConfirmar(true));
   $$('#c-jugar [data-practicar]').forEach(b => b.onclick = () => abrirPractica(b.dataset.practicar));
+  ['#c-dinero', '#c-misiones', '#c-jugar'].forEach(sel => plegarTarjetas($(sel)));
   $$('#c-jugar [data-monster]').forEach(b => b.onclick = () => MONSTER.abrir(b.dataset.monster));
 }
 
@@ -3064,12 +3074,30 @@ function pintarHoy() {
 }
 let tabActual = 'casa';
 const plegado = { hoy: true, accion: true };     // empiezan cerradas
+// Todas las tarjetas de las pestañas se pliegan igual: cerradas solo se ve su título; al tocarlo se despliegan.
+function plegarTarjetas(cont) {
+  if (!cont) return;
+  cont.querySelectorAll('.juego-card, .monster-card').forEach((card, i) => {
+    const h3 = card.querySelector(':scope > h3'); if (!h3) return;
+    // la llave es el título sin los números de la derecha, así se queda abierta aunque cambien los datos
+    const titulo = [...h3.childNodes].filter(n => n.nodeType === 3 || n.tagName === 'SPAN').map(n => n.textContent).join('').trim();
+    const k = 't:' + cont.id + ':' + titulo;
+    if (!(k in plegado)) plegado[k] = true;
+    card.classList.add('plegable', 'pleg-auto');
+    card.classList.toggle('abierto', !plegado[k]);
+    h3.dataset.pleg = k;
+    h3.setAttribute('role', 'button');
+    h3.setAttribute('aria-expanded', String(!plegado[k]));
+    if (!h3.querySelector('.flecha')) h3.insertAdjacentHTML('beforeend', '<span class="flecha">▾</span>');
+  });
+}
 document.addEventListener('click', e => {
   const b = e.target.closest?.('[data-pleg]'); if (!b) return;
   const k = b.dataset.pleg;
   plegado[k] = !plegado[k];
   const caja = b.closest('.plegable');
   caja.classList.toggle('abierto', !plegado[k]);
+  if (!plegado[k] && caja.classList.contains('pleg-auto')) setTimeout(() => caja.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
   b.setAttribute('aria-expanded', String(!plegado[k]));
   SFX.tocar('clic');
 });
@@ -3749,6 +3777,7 @@ function abrirAgenda() {
   $('#m-agenda').classList.remove('hidden');
 }
 function irAlOjo() {
+  if (est?.yo.rol !== 'jugador') { toast('👁️ El ojo solo les cuenta chismes a los habitantes de la casa.', 3500); return; }
   store.set('ab_vio_ojo', '1'); SALA.sincronizar();
   if (SALA.soyActor() && pantalla === 's-casa') SALA.irATele(abrirOjo);
   else abrirOjo();
