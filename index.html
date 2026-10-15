@@ -3375,7 +3375,7 @@ const TV = (() => {
   // Exclamaciones para armar las reacciones
   const BIEN = ['¡Bravo!', '¡Órale!', '¡Fierro!', '¡Ándale!', '¡No, pues wow!', '¡Uff!', '¡Qué chulada!', '¡Eso, mi gente!'];
   const MAL = ['¡Chale!', 'Híjole,', 'Uy,', 'Ay, nanita,', 'Ni modo,', '¡Qué oso!', '¡Ay, mamá!', 'Ah, caray,'];
-  // Groserías: salen poquito, nomás 1 o 2 por programa (sustituyen la exclamación de alguna reacción)
+  // Groserías para las reacciones, según si la noticia es buena, mala o normal (las reparte groserias())
   const GROSERAS = {
     bien: ['¡A huevo!', '¡No mames!', '¡Órale, wey!', '¡No friegues!', '¡No jodas!', '¡No chingues!', '¡A huevo, wey!'],
     mal: ['¡Chingue su madre!', '¡Uta madre!', '¡No mames!', '¡No chingues!', '¡No jodas!', '¡Ay, wey!', '¡No friegues!', '¡Ah, qué pedo!'],
@@ -3397,6 +3397,9 @@ const TV = (() => {
     [['a', '¡Qué onda, Grupo Alfa! Agarren su café que ya empezamos.'], ['e', 'Elber Galarga y Rosa Melano, con todo lo que pasó ayer.']],
     [['e', '¡Bienvenidos a El Noticierazo, el noticiero más corriente de la oficina!'], ['a', 'Corriente pero honesto, como su servidora, Rosa Melano.']],
     [['a', '¡Ándale, banda, que ya estamos al aire!'], ['e', 'Con Elber Galarga, el más guapo de la cuadra… según su mamá.']],
+    [['e', '¡Qué pedo, banda de Grupo Alfa! Aquí Elber Galarga, en El Noticierazo.'], ['a', 'Y Rosa Melano, con más chisme que ganas de trabajar.']],
+    [['a', '¡Buenos días, raza! Ya despierten, no mamen, que ya empezó El Noticierazo.'], ['e', 'Con Elber Galarga y Rosa Melano, crudos pero puntuales.']],
+    [['e', '¡A huevo, banda, otro día de chisme!'], ['a', 'Aquí Rosa Melano y este wey que se dice conductor, Elber Galarga.']],
   ];
   // Albures entre ellos dos: uno la pone y el otro la remata (nunca sobre los compañeros)
   const ALBURES = [
@@ -3434,6 +3437,8 @@ const TV = (() => {
     [['e', 'Rosa, ¿quieres que te lo meta… en la agenda?'], ['a', 'Métemelo en la agenda, Elber, que en otro lado ni te cabe la idea.']],
     [['a', 'Elber, ¿qué tal tu fin de semana?'], ['e', 'Movidito, Rosa, me la pasé dando y dando.'], ['a', 'Dando lástima, me contaron.']],
     [['e', 'Rosa, ¿me pasas el chile? Me gusta picosito.'], ['a', 'Ahí te va, Elber, que el tuyo ni pica ni da sabor.']],
+    [['a', 'Elber, ¿por qué llegaste tan tarde?'], ['e', 'Es que me quedé bien dormido, Rosa, no me podía parar.'], ['a', 'No mames, Elber, eso de que no se te para ya lo sabe toda la oficina.']],
+    [['e', 'Rosa, ¿te gustan los huevos estrellados?'], ['a', 'Me gustan, Elber, pero los tuyos ni estrellados se notan, wey.']],
     [['a', 'Elber, ¿sabes jugar al trompo?'], ['e', 'Soy experto, Rosa, lo enrollo y lo suelto.'], ['a', 'Y cae a los dos segundos sin girar, ya me contaron.']],
   ];
   const ARRANQUES = [
@@ -3456,6 +3461,9 @@ const TV = (() => {
     [['e', 'Pásame tantito el guion, Rosa.'], ['a', 'Ahí te va, y no lo arrugues como tu camisa.']],
     [['a', 'Elber, ya párale con los albures.'], ['e', 'No puedo, Rosa, se me salen solitos.'], ['a', 'Como la panza del pantalón.']],
     [['e', '¿Le seguimos, Rosa?'], ['a', 'Síguele, que hoy amaneciste inspirado… o desvelado.']],
+    [['a', 'Elber, no friegues, ya suelta la siguiente.'], ['e', 'Ahí va, Rosa, pero agárrala bien.'], ['a', 'Ya quisieras, wey.']],
+    [['e', 'Rosa, ¿quieres la siguiente o te la doy al rato?'], ['a', 'Dámela ya, no chingues, que no tengo tu tiempo.']],
+    [['a', '¿Qué pedo, Elber, te dormiste?'], ['e', 'Nomás estaba calentando, Rosa.'], ['a', 'Calentando la silla, como siempre.']],
     [['a', 'Elber, ¿por qué sudas tanto?'], ['e', 'Es que la noticia que sigue está bien caliente, Rosa.'], ['a', 'Caliente estás tú, pero de la calentura, ve al doctor.']],
   ];
   const SALIDAS = [
@@ -3468,6 +3476,9 @@ const TV = (() => {
     [['a', 'Gracias por vernos, banda bonita.'], ['e', 'Y si no les gustó, quéjense con la producción.'], ['a', 'Que ni nos paga, por cierto. ¡Bye!']],
     [['e', 'Aquí termina El Noticierazo.'], ['a', 'Vayan a trabajar, que el chisme no paga la renta.'], ['e', 'Pero cómo ayuda, Rosa, cómo ayuda. ¡Hasta mañana!']],
     [['a', 'Y con esto nos vamos, raza.'], ['e', 'Mañana más chisme, más albures y más carrilla.'], ['a', 'Y menos Elber, si Dios quiere. ¡Bye!']],
+    [['a', 'Y hasta aquí El Noticierazo, banda.'], ['e', 'No mamen, ¿ya se acabó? Si apenas me estaba calentando.'], ['a', 'Como siempre, Elber: cuando tú calientas, todos ya se fueron. ¡Hasta mañana!']],
+    [['e', 'Nos vamos, raza. Paguen lo que deben, no sean así.'], ['a', 'Y el que no pague, que se lo cobre Elber… uta madre, mejor yo. ¡Bye!']],
+    [['a', 'Se acabó, banda. A chambear, que no hay de otra.'], ['e', 'A huevo, Rosa. ¡Nos vemos mañana!']],
     [['e', 'Se acabó, banda. Pórtense mal.'], ['a', 'Pero cuídense bien. Y paguen la tanda. ¡Hasta mañana!']],
   ];
 
@@ -3556,22 +3567,26 @@ const TV = (() => {
     const ex = exclam.find(x => t.startsWith(x + ' '));
     exclUsadas.add(ex);
     t = llenar(t, c);
-    reacs.push({ t, ex, tono: exclam === BIEN ? 'bien' : exclam === MAL ? 'mal' : 'neutro' });
+    reacs.push({ t, ex, tono: exclam === BIEN ? 'bien' : exclam === MAL ? 'mal' : 'neutro', fuerte: FUERTES.has(clave) });
     return t;
   };
-  // pone 1 o 2 groserías en el programa: en lugar de la exclamación de alguna reacción
+  // Groserías con naturalidad: salen sobre todo en las noticias fuertes (alguien ganó, salió, le quitaron el récord…),
+  // de vez en cuando en las demás, nunca en dos reacciones seguidas y sin pasarse de unas 4 por programa (contando saludos y albures).
+  const FUERTES = new Set(['gana_j', 'elim_j', 'salva_j', 'lider_j', 'rec_quita_j', 'rec_nuevo_j']);
+  const GRX = /\bwey\b|no mam|no ching|no jod|no friegu|a huevo|qu[ée] pedo|uta madre|chingue su madre/i;
   function groserias(L) {
     const r = rng(diaN * 7919 + 13);
-    const k = reacs.length >= 3 && r() < 0.5 ? 2 : 1;
+    const ya = L.filter(x => GRX.test(x.t)).length, MAX = 4;
     const usadas = new Set();
     const toca = tono => { let g = frase('grosera_' + tono, GROSERAS[tono]); for (let j = 0; j < 8 && usadas.has(g); j++) g = frase('grosera_' + tono, GROSERAS[tono]); usadas.add(g); return g; };
     if (!reacs.length) {                       // día sin reacciones: la suelta al despedirse
+      if (ya) return;
       const ln = L.find(x => x.salida); if (ln) ln.t = frase('grosera_nada', ['¡Qué pedo, banda!', '¡Uta madre, ni un chisme!', '¡No mames, qué día tan aburrido!', '¡No friegues, puro silencio!', '¡No jodas, ni una nota!', '¡A huevo, mañana sí hay chisme!']) + ' ' + ln.t;
       return;
     }
-    // una en la primera mitad y otra en la segunda, para que no salgan juntas
-    const mitad = Math.ceil(reacs.length / 2);
-    const elegidas = k === 1 ? [Math.floor(r() * reacs.length)] : [Math.floor(r() * mitad), mitad + Math.floor(r() * (reacs.length - mitad))];
+    const elegidas = []; let prev = -2;
+    reacs.forEach((re, i) => { const sale = r() < (re.fuerte ? 0.6 : 0.2); if (sale && i - prev > 1 && ya + elegidas.length < MAX) { elegidas.push(i); prev = i; } });
+    if (!elegidas.length && !ya) { const f = reacs.findIndex(x => x.fuerte); elegidas.push(f >= 0 ? f : Math.floor(r() * reacs.length)); }   // al menos una por programa
     for (const ix of elegidas) {
       const re = reacs[ix]; if (!re?.ex) continue;
       const ln = L.find(x => x.t.includes(re.t)); if (!ln) continue;
