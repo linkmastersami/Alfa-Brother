@@ -3451,7 +3451,7 @@ const TV = (() => {
     m.querySelector('.tv-x').onclick = cerrar;
     $('#tv-play').onclick = empezar;
     $('#tv-pausa').onclick = alternarPausa;
-    $('#tv-sig').onclick = () => { parar(); siguiente(); };
+    $('#tv-sig').onclick = () => { const k = i; parar(); i = k + 1; if (!pausa) decir(); else mostrarLinea(i); };
     $('#tv-voz').onclick = () => { conVoz = !conVoz; store.set('ab_tv_voz', conVoz ? '1' : '0'); $('#tv-voz').textContent = conVoz ? '🔊' : '🔇'; parar(); decir(); };
   }
   async function abrir() {
@@ -3479,32 +3479,52 @@ const TV = (() => {
     const p = $('#tv-pantalla'), j = id && porId(id);
     p.innerHTML = j ? `<div class="tv-cara">${avatar(j, 76)}<b>${esc(j.nombre)}</b></div>` : `<div class="tv-logo">📺<b>EL NOTICIERAZO</b><small>Lo que pasó ayer en la casa</small></div>`;
   }
+  // Muestra en pantalla quién habla y qué dice
+  function mostrarLinea(k) {
+    const l = lineas[k]; if (!l) return;
+    i = k;
+    $('#tv-quien').textContent = (l.q === 'e' ? EL : ELLA) + ':';
+    $('#tv-quien').className = l.q === 'e' ? 'el' : 'ella';
+    $('#tv-texto').textContent = ' ' + l.t;
+    if (l.cara || k === 0) mostrarCara(l.cara);
+    $$('#m-tv .tv-host').forEach(h => h.classList.toggle('habla', h.id === 'tv-' + l.q));
+  }
+  const duracion = l => Math.max(1400, l.t.length * 50);
+  let turno = 0;                        // cambia al parar: las voces viejas ya no mueven la pantalla
   function decir() {
     clearTimeout(guardia); clearTimeout(sigT);
     if (!lineas.length || $('#m-tv').classList.contains('hidden')) return;
     if (i >= lineas.length) return fin();
-    const l = lineas[i], quien = l.q === 'e' ? EL : ELLA;
-    $('#tv-quien').textContent = quien + ':';
-    $('#tv-quien').className = l.q === 'e' ? 'el' : 'ella';
-    $('#tv-texto').textContent = ' ' + l.t;
-    if (l.cara || i === 0) mostrarCara(l.cara);
-    $$('#m-tv .tv-host').forEach(h => h.classList.toggle('habla', h.id === 'tv-' + l.q));
     sonando = true;
-    const dura = Math.max(1800, l.t.length * 62);
-    const listo = () => { if (!sonando) return; sonando = false; $$('#m-tv .tv-host').forEach(h => h.classList.remove('habla')); if (!pausa) sigT = setTimeout(siguiente, 380); };
+    const mio = ++turno;
     if (conVoz && voces && 'speechSynthesis' in window) {
-      const u = new SpeechSynthesisUtterance(sinEmojis(l.t));
-      const v = l.q === 'e' ? voces.e : voces.a;
-      u.voice = v; u.lang = v.lang;
-      u.pitch = voces.distintas ? (l.q === 'e' ? .95 : 1.1) : (l.q === 'e' ? .7 : 1.45);
-      u.rate = l.q === 'e' ? 1.02 : 1.08;
-      u.onend = listo; u.onerror = listo;
-      speechSynthesis.speak(u);
-      guardia = setTimeout(listo, dura * 2.2 + 3000);       // por si el celular no avisa que terminó
-    } else guardia = setTimeout(listo, dura);
+      // Todas las frases se forman en la fila de una vez: así uno entra en cuanto el otro termina, sin pausas
+      try { speechSynthesis.cancel(); } catch { }
+      for (let k = i; k < lineas.length; k++) {
+        const l = lineas[k], v = l.q === 'e' ? voces.e : voces.a;
+        const u = new SpeechSynthesisUtterance(sinEmojis(l.t));
+        u.voice = v; u.lang = v.lang;
+        u.pitch = voces.distintas ? (l.q === 'e' ? .95 : 1.1) : (l.q === 'e' ? .7 : 1.45);
+        u.rate = l.q === 'e' ? 1.28 : 1.32;
+        u.onstart = () => {
+          if (mio !== turno) return;
+          mostrarLinea(k);
+          clearTimeout(guardia);       // por si el celular se atora: salta a la siguiente
+          guardia = setTimeout(() => { if (mio === turno && !pausa) { i = k + 1; decir(); } }, duracion(l) * 2.5 + 3000);
+        };
+        u.onend = () => { if (mio === turno && k === lineas.length - 1) { clearTimeout(guardia); sonando = false; fin(); } };
+        speechSynthesis.speak(u);
+      }
+      mostrarLinea(i);
+      guardia = setTimeout(() => { if (mio === turno && !pausa) { i++; decir(); } }, duracion(lineas[i]) * 2.5 + 4000);
+    } else {
+      // sin voz: los subtítulos avanzan solos
+      mostrarLinea(i);
+      guardia = setTimeout(() => { if (mio === turno && !pausa) { i++; decir(); } }, duracion(lineas[i]));
+    }
   }
   function siguiente() { i++; decir(); }
-  function parar() { sonando = false; clearTimeout(guardia); clearTimeout(sigT); try { speechSynthesis.cancel(); } catch { } $$('#m-tv .tv-host').forEach(h => h.classList.remove('habla')); }
+  function parar() { turno++; sonando = false; clearTimeout(guardia); clearTimeout(sigT); try { speechSynthesis.cancel(); } catch { } $$('#m-tv .tv-host').forEach(h => h.classList.remove('habla')); }
   function alternarPausa() {
     pausa = !pausa;
     $('#tv-pausa').textContent = pausa ? '▶️' : '⏸️';
