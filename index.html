@@ -3296,7 +3296,16 @@ const TV = (() => {
   // ---------- azar repetible por día (todos ven el mismo programa) ----------
   let r = Math.random;
   const sembrar = s => { let h = 2166136261 >>> 0; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } let a = h; r = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
-  const una = arr => arr[Math.floor(r() * arr.length)];
+  // elige al azar sin repetir en el mismo programa lo que ya se dijo (mientras queden opciones)
+  const usadas = new Set();
+  const una = arr => { const libres = arr.filter(x => !usadas.has(x)), x = (libres.length ? libres : arr)[Math.floor(r() * (libres.length || arr.length))]; usadas.add(x); return x; };
+  // saca frases de una lista sin repetir (cuando se acaban, vuelve a barajar)
+  const bolsas = new Map();
+  const sinRepetir = (clave, arr) => {
+    let b = bolsas.get(clave);
+    if (!b || !b.length) { b = [...arr]; for (let k = b.length - 1; k > 0; k--) { const j = Math.floor(r() * (k + 1)); [b[k], b[j]] = [b[j], b[k]]; } bolsas.set(clave, b); }
+    return b.pop();
+  };
   const fmt = n => Number(n || 0).toLocaleString('es-MX');
   const JUEGOS = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo' };
 
@@ -3323,7 +3332,7 @@ const TV = (() => {
     [['a', 'Nos vamos, Grupo Alfa. Cuídense mucho.'], ['e', 'Y ya saben: el que no paga, no juega.'], ['a', 'Y el que juega con Elber, sale perdiendo. ¡Hasta mañana!']],
   ];
   function guion() {
-    sembrar(d.dia);
+    sembrar(d.dia); bolsas.clear(); usadas.clear();
     const L = [], titulares = [];
     const di = (q, t, cara) => L.push({ q, t, cara });
     const bloque = b => b.forEach(([q, t]) => di(q, t));
@@ -3399,7 +3408,19 @@ const TV = (() => {
     if (d.votantes) nota(`🗳️ ${d.votantes} pasaron al confesionario`, [
       ['e', `${d.votantes} ${d.votantes === 1 ? 'persona pasó' : 'personas pasaron'} al confesionario a votar.`],
       ['a', 'Y ninguno nos quiso decir por quién. Malditos discretos.']]);
-    for (const x of d.nuevos || []) nota(`👋 Bienvenida a ${x.nombre}`, [['a', `Y bienvenida a ${x.nombre}, que se registró ayer${x.rol === 'espectador' ? ' como público' : ''}.`, x.id], ['e', 'Pásele, pásele, que aquí nadie muerde… nomás tantito.']]);
+    const nuevos = d.nuevos || [];
+    const BIENVENIDA = [
+      n => `Y bienvenida a ${n}, que se registró ayer.`, n => `Saluden a ${n}, que ya llegó a la casa.`, n => `Se nos unió ${n}. ¡Un aplauso, raza!`,
+      n => `Ojo, que ${n} también se apuntó ayer.`, n => `Y llegó carne fresca: ${n}.`, n => `Bienvenido, bienvenida, lo que seas, ${n}.`];
+    const REMATE = ['Pásele, pásele, que aquí nadie muerde… nomás tantito.', 'Ya se la sabe: aquí se paga hasta la entrada.', 'Que se ponga cómodo, pero que no se encariñe, que aquí sacan a cualquiera.',
+      'Bienvenido al manicomio, aquí nadie trabaja pero todos cobran.', 'Uno más pa’ la tanda, ¡órale!', 'Que no se asuste, que la Rosa ladra pero no muerde.',
+      'Ya llegó quien faltaba pa’ armar el desmadre.', 'Otro más que viene a sufrir con nosotros. Qué bonito.', 'Ojalá traiga tortas, porque aquí nomás hay café.', 'A ese ya le vi cara de que va a durar poquito.'];
+    if (nuevos.length > 3) nota(`👋 ${nuevos.length} nuevos en la casa`, [
+      ['a', `Ayer se registraron ${nuevos.length}: ${nuevos.slice(0, -1).map(x => x.nombre).join(', ')} y ${nuevos[nuevos.length - 1].nombre}.`],
+      ['e', sinRepetir('remate-nuevo', REMATE)]]);
+    else for (const x of nuevos) nota(`👋 Bienvenida a ${x.nombre}`, [
+      ['a', sinRepetir('bienvenida', BIENVENIDA)(x.nombre) + (x.rol === 'espectador' ? ' Entra como público.' : ''), x.id],
+      ['e', sinRepetir('remate-nuevo', REMATE)]]);
     if (d.jugaron) nota(`🎮 ${d.jugaron} se pusieron a jugar`, [['e', `${d.jugaron} ${d.jugaron === 1 ? 'se puso' : 'se pusieron'} a jugar en vez de trabajar.`], ['a', 'Yo no los acuso, Elber, pero el jefe sí ve el noticiero.']]);
     if (d.nota) nota('🎬 Nota de la producción', [['a', 'Ojo, banda, que nos llegó nota de la producción:'], ['e', d.nota]]);
     if (titulares.length === 0) nota('😴 No pasó nada', [['e', 'Pues ayer en la casa no pasó ni madres, banda.'], ['a', 'Como en la oficina, Elber: mucho café y cero cobranza.']]);
