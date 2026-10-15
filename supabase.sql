@@ -1915,7 +1915,10 @@ begin
           'mi_voto', (select v.opcion from public.encuesta_votos v where v.encuesta_id = e.id and v.jugador_id = p_yo),
           'pozo', (select coalesce(sum(monto), 0) from public.apuestas a where a.tipo = 'encuesta' and a.ref = e.id),
           'resultado', case when e.liquidada then e.resultado end) order by e.cierra), '[]'::jsonb)
-        from public.encuestas e where e.abre <= now() and e.cierra > now() - interval '24 hours'),
+        -- v23: las encuestas cerradas se ven solo el mismo día en que cerraron (hora de la Ciudad de México);
+        -- al día siguiente ya no salen en la app, pero el registro se queda en el panel de producción
+        from public.encuestas e where e.abre <= now()
+          and (e.cierra > now() or (e.cierra at time zone 'America/Mexico_City')::date = (now() at time zone 'America/Mexico_City')::date)),
     'proxima_encuesta', (select min(abre) from public.encuestas where abre > now()),
     'chat_ultimo', case when yo.rol = 'jugador' then (select max(id) from public.chat) end,
     'anuncios', (select coalesce(jsonb_agg(jsonb_build_object('id', a.id, 'titulo', a.titulo, 'cuerpo', a.cuerpo, 'creado', a.creado) order by a.id desc), '[]'::jsonb)

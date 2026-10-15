@@ -160,6 +160,7 @@ Versión 16: Monster Crazy (récords y premio diario) y la casa en pestañas con
 Versión 17: Monster Crazy 2.0 (círculos negros que quitan corazones desde la oleada 16).
 Versión 18: el público ya no puede ver los chismes del ojo.
 Versión 22: el noticiero sale a las 9 a.m.; notas para el siguiente noticiero (con cambio de día y caras de habitantes) y el reportero, al que los habitantes le cuentan noticias.
+Versión 23: las encuestas cerradas desaparecen de la app al terminar el día en que cerraron (el registro queda en el panel).
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.
