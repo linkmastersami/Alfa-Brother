@@ -690,7 +690,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .revelar{appearance:none;border:2px dashed #6E5FD0;background:#1B1440;color:#C9C3EE;border-radius:10px;padding:14px;width:100%;font-weight:700;cursor:pointer;margin-top:8px;font-size:.95rem}
 .record-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
 .record-cols>div>b{display:block;font-size:.85rem;color:var(--luz);margin-bottom:4px}
-.record-cols>div:first-child,.record-cols>div:nth-child(2){grid-column:1/-1}
+.record-cols>div:first-child{grid-column:1/-1}
 .record-cols .r{display:flex;justify-content:space-between;gap:6px;font-size:.88rem;padding:2px 0}
 .record-cols .r span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .record-cols .r.yo{color:var(--luz)}
@@ -4472,7 +4472,7 @@ const TV = (() => {
     }
     // récords: solo el récord actual de cada juego
     const igual = [];
-    for (const r of d.records || []) {
+    for (const r of (d.records || []).filter(x => x.juego !== 'monster')) {      // Monster Crazy clásico ya se retiró
       const juego = JUEGOS[r.juego] || r.juego, a = r.actual;
       if (!r.nuevo) { igual.push(r); continue; }
       const c = { n: r.nuevo.nombre, p: fmt(r.nuevo.puntos), juego, prev: r.antes?.nombre || '' };
@@ -4971,7 +4971,7 @@ function tarjetaRecords() {
       <div class="r" style="margin-top:4px;color:#C9C3EE"><span>Tu mejor</span><span>${mio?.mejor ?? 0}</span></div></div>`;
   };
   return `<div class="juego-card"><h3>🏆 Récords de la casa <small>Juegos y prácticas</small></h3>
-    <div class="record-cols">${col('monster2', 'Monster Crazy 2.0')}${col('monster', 'Monster Crazy (clásico)')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}</div>
+    <div class="record-cols">${col('monster2', 'Monster Crazy 2.0')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}</div>
     <p class="ayuda" style="margin-top:6px">La primera partida de cada juego al día paga $100 y romper un récord de la casa, $200.</p></div>`;
 }
 // Las prácticas de las pruebas del líder, cada una en su tarjeta (con el mismo estilo que Monster Crazy)

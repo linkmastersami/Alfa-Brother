@@ -2039,7 +2039,7 @@ begin
           'actual', (select jsonb_build_object('id', p.jugador_id, 'nombre', j.nombre, 'puntos', p.mejor)
                        from public.practicas p join public.jugadores j on j.id = p.jugador_id and j.rol = 'jugador'
                       where p.juego = g.juego and p.mejor > 0 order by p.mejor desc limit 1)) as r
-          from (values (1, 'monster2'), (2, 'monster'), (3, 'memoria'), (4, 'adeudo')) g(o, juego) order by g.o) x
+          from (values (1, 'monster2'), (3, 'memoria'), (4, 'adeudo')) g(o, juego)   -- v26: sin Monster Crazy clásico (ya se retiró) order by g.o) x
         where x.r->'actual' <> 'null'::jsonb),
     -- v24: duelos del día (solo los que alguien ganó)
     'duelos', jsonb_build_object(
