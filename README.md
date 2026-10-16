@@ -172,6 +172,7 @@ Versión 31: Inflar el globo ahora es Globo explosivo 🎈💥 (feria, bomba con
 Versión 32: al escoger rival en duelos sale su ficha con el historial entre los dos (duelos, ganados, perdidos) y los botones Desafiar y Cancelar.
 Versión 33: El camino correcto ahora es un puente de cristal 🪟 (10 fases de 2 cristales, 6 segundos por paso, los cristales rotos se ven en los dos puentes, una 🪨 piedra para probar un cristal, pantalla dividida con el puente del rival).
 Versión 34: durante la votación, arriba de la casa sale quién todavía no vota ("avísales que su voto cuenta… pero que no voten por ti 😅").
+Versión 36: la tienda ya no se sale de la pantalla y al tocar un artículo tu monito se lo prueba antes de comprarlo.
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.

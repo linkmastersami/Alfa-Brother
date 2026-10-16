@@ -755,7 +755,8 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 
 /* Modales */
 .modal{position:fixed;inset:0;z-index:60;background:rgba(10,6,30,.7);display:grid;place-items:center;padding:16px}
-.modal .formato{width:100%;max-width:420px}
+.modal{grid-template-columns:minmax(0,1fr)}       /* que nada ancho (pestañas) estire la ventana fuera de la pantalla */
+.modal .formato{width:100%;max-width:420px;min-width:0;box-sizing:border-box;justify-self:center}
 
 /* Panel admin */
 #admin{position:fixed;inset:0;z-index:58;background:#EFEBDD;color:var(--texto);overflow:auto}
@@ -992,8 +993,17 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .rank{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:.92rem}
 .rank .n{width:22px;text-align:right;color:var(--suave);font-weight:700}
 .rank .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tienda-prev{display:flex;justify-content:center;background:#3B2E8C;border-radius:12px;padding:8px 0 10px;margin-top:8px}
+.tienda-fija{position:sticky;top:0;z-index:3;background:var(--papel);margin:8px -18px 0;padding:10px 18px 6px;border-radius:0 0 12px 12px}
+.tienda-prev{display:flex;justify-content:center;background:#3B2E8C;border-radius:12px;padding:8px 0 10px}
+.ti-prueba{display:flex;align-items:center;gap:8px;margin-top:8px;background:#FFF3C4;border:2px solid #F2C94C;border-radius:12px;padding:8px 10px}
+.ti-prueba .ico{font-size:1.6rem;line-height:1}
+.ti-prueba div{flex:1;min-width:0;font-size:.88rem;line-height:1.25}
+.ti-prueba div small{display:block;color:var(--suave);font-weight:700}
+.ti-prueba .btn{width:auto;padding:8px 12px;font-size:.9rem;margin:0}
+.ti-prueba .mini{flex:none}
+.ti.probando{border-color:#F2C94C;background:#FFF8DC;box-shadow:0 0 0 2px #F2C94C}
 .tienda-prev .mm-nom{color:#fff}
+.ti-grid .ti{min-width:0}
 .ti-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:6px}
 .ti{appearance:none;border:2px solid #D9D2B8;background:#fff;border-radius:12px;padding:8px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.8rem;font-weight:600;color:var(--texto)}
 .ti .ico{font-size:1.8rem;line-height:1.1}
@@ -1692,7 +1702,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 35;
+const APP_VERSION       = 36;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -5729,40 +5739,57 @@ async function abrirTienda() {
   try { catalogo ||= await rpc('tienda_lista'); } catch (e) { toast(mensajeError(e)); return; }
   pintarTienda();
 }
+let tiPrueba = null;                   // artículo que se está probando (sin comprar)
 function pintarTienda() {
   const mio = est.mi_estilo || {}, compras = new Set(est.compras || []);
   const icono = id => catalogo.find(x => x.id === id)?.icono;
-  const prev = Object.fromEntries(Object.entries(mio).map(([t, id]) => [t, icono(id)]));
+  const prueba = tiPrueba && !compras.has(tiPrueba) ? catalogo.find(x => x.id === tiPrueba) : null;
+  if (!prueba) tiPrueba = null;
+  const conPrueba = prueba ? { ...mio, [prueba.tipo]: prueba.id } : mio;
+  const prev = Object.fromEntries(Object.entries(conPrueba).map(([t, id]) => [t, icono(id)]));
   const yo = porId(est.yo.id) || est.yo;
+  const muestra = x => x.tipo === 'color' ? `<span class="muestra" style="background:${x.icono === 'arcoiris' ? 'conic-gradient(#FF4D5E,#FFC93C,#2ED198,#4D8DFF,#A974FF,#FF4D5E)' : x.icono}"></span>` : `<span class="ico">${x.icono}</span>`;
+  const falta = prueba ? prueba.precio - est.billetes : 0;
   $('#ti-caja').innerHTML = `<div class="folio"><span>Tienda del monito</span><span>Tienes ${fmt$(est.billetes)}</span></div>
-    <div class="tienda-prev">${monito(yo, { tam: 70, estilo: prev, cara: '😎', clase: 'festeja' })}</div>
+    <div class="tienda-fija">
+      <div class="tienda-prev">${monito(yo, { tam: 70, estilo: prev, cara: prueba ? '🤩' : '😎', clase: 'festeja' })}</div>
+      ${prueba ? `<div class="ti-prueba">${muestra(prueba)}<div><b>Probándote: ${esc(prueba.nombre)}</b><small>${falta > 0 ? `Te faltan ${fmt$(falta)}` : fmt$(prueba.precio)}</small></div>
+        <button class="btn" id="ti-comprar" ${falta > 0 ? 'disabled' : ''}>Comprar</button><button class="mini" id="ti-noprueba" aria-label="Quitar prueba">✕</button></div>`
+        : '<p class="ayuda" style="margin:6px 0 0;text-align:center">Toca un artículo para ver cómo se te ve 👀</p>'}
+    </div>
     <div class="ti-tabs">${TIPOS_TIENDA.map(([t, nombre]) => `<button data-ti-tab="${t}" class="${t === tiendaTab ? 'on' : ''}">${nombre}${mio[t] ? ' •' : ''}</button>`).join('')}</div>
     ${TIPOS_TIENDA.filter(([t]) => t === tiendaTab).map(([t, nombre]) => `<h3 style="margin-top:12px">${nombre}${mio[t] ? ` <button class="mini" data-quitar-t="${t}" style="float:right">Quitar</button>` : ''}</h3>
       <div class="ti-grid">${catalogo.filter(x => x.tipo === t).map(x => {
-        const tengo = compras.has(x.id), usando = mio[t] === x.id;
-        return `<button class="ti ${tengo ? 'tengo' : ''} ${usando ? 'usando' : ''}" data-item="${x.id}">
-          ${t === 'color' ? `<span class="muestra" style="background:${x.icono === 'arcoiris' ? 'conic-gradient(#FF4D5E,#FFC93C,#2ED198,#4D8DFF,#A974FF,#FF4D5E)' : x.icono}"></span>` : `<span class="ico">${x.icono}</span>`}
-          <span>${esc(x.nombre)}</span><small>${usando ? 'Usando ✓' : tengo ? 'Usar' : fmt$(x.precio)}</small></button>`;
+        const tengo = compras.has(x.id), usando = mio[t] === x.id, probando = prueba?.id === x.id;
+        return `<button class="ti ${tengo ? 'tengo' : ''} ${usando ? 'usando' : ''} ${probando ? 'probando' : ''}" data-item="${x.id}">
+          ${muestra(x)}<span>${esc(x.nombre)}</span><small>${usando ? 'Usando ✓' : tengo ? 'Usar' : probando ? 'Probando 👀' : fmt$(x.precio)}</small></button>`;
       }).join('')}</div>`).join('')}
     <button class="btn sec" id="ti-cerrar" style="margin-top:16px">Cerrar</button>`;
-  $('#ti-cerrar').onclick = () => $('#m-tienda').classList.add('hidden');
+  $('#ti-cerrar').onclick = () => { tiPrueba = null; $('#m-tienda').classList.add('hidden'); };
   $$('#ti-caja [data-ti-tab]').forEach(b => b.onclick = () => { tiendaTab = b.dataset.tiTab; SFX.tocar('clic'); pintarTienda(); });
   $$('#ti-caja [data-quitar-t]').forEach(b => b.onclick = async () => {
     try { await rpc('equipar', { p_token: token, p_tipo: b.dataset.quitarT, p_item: null }); await refrescar(); pintarTienda(); } catch (e) { toast(mensajeError(e)); }
   });
+  const ni = $('#ti-noprueba'); if (ni) ni.onclick = () => { tiPrueba = null; SFX.tocar('clic'); pintarTienda(); };
+  const bc = $('#ti-comprar');
+  if (bc) bc.onclick = async () => {
+    bc.disabled = true;
+    try {
+      await rpc('comprar', { p_token: token, p_item: prueba.id });
+      try { await rpc('equipar', { p_token: token, p_tipo: prueba.tipo, p_item: prueba.id }); } catch { }   // y te lo pones de una vez
+      SFX.tocar('caja'); toast(`🛍️ ¡Compraste ${prueba.nombre}!`);
+      tiPrueba = null; await refrescar(); pintarTienda();
+    } catch (e) { toast(mensajeError(e)); bc.disabled = false; }
+  };
   $$('#ti-caja [data-item]').forEach(b => b.onclick = async () => {
     const x = catalogo.find(i => i.id === b.dataset.item);
+    if (!compras.has(x.id)) {                // no lo tienes: te lo pruebas
+      tiPrueba = tiPrueba === x.id ? null : x.id; SFX.tocar('swish'); pintarTienda(); return;
+    }
     try {
-      if (!compras.has(x.id)) {
-        if (est.billetes < x.precio) return toast(`Te faltan ${fmt$(x.precio - est.billetes)} para ${x.nombre}`);
-        if (!confirm(`¿Comprar ${x.nombre} por ${fmt$(x.precio)}?`)) return;
-        await rpc('comprar', { p_token: token, p_item: x.id });
-        SFX.tocar('caja'); toast(`🛍️ ¡Compraste ${x.nombre}!`);
-      } else if (mio[x.tipo] === x.id) {
-        await rpc('equipar', { p_token: token, p_tipo: x.tipo, p_item: null });
-      } else {
-        await rpc('equipar', { p_token: token, p_tipo: x.tipo, p_item: x.id }); SFX.tocar('clic');
-      }
+      tiPrueba = null;
+      if (mio[x.tipo] === x.id) await rpc('equipar', { p_token: token, p_tipo: x.tipo, p_item: null });
+      else { await rpc('equipar', { p_token: token, p_tipo: x.tipo, p_item: x.id }); SFX.tocar('clic'); }
       await refrescar(); pintarTienda();
     } catch (e) { toast(mensajeError(e)); }
   });
