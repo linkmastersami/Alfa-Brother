@@ -328,6 +328,16 @@ create table if not exists public.duelos (
 );
 create index if not exists duelos_activos on public.duelos (estado) where estado in ('pendiente', 'jugando');
 
+-- v25: cada que cambia una foto (la cambie el habitante o la producción) los celulares la vuelven a bajar
+alter table public.jugadores add column if not exists foto_v int not null default 0;
+create or replace function public._foto_cambio() returns trigger language plpgsql as $$
+begin
+  if new.foto is distinct from old.foto then new.foto_v := old.foto_v + 1; end if;
+  return new;
+end $$;
+drop trigger if exists jugadores_foto_v on public.jugadores;
+create trigger jugadores_foto_v before update of foto on public.jugadores for each row execute function public._foto_cambio();
+
 -- Predicción secreta: quién gana y quién sale primero
 create table if not exists public.predicciones (
   jugador_id  uuid primary key references public.jugadores(id) on delete cascade,
@@ -543,7 +553,7 @@ begin
         'estilo', (select jsonb_object_agg(t.tipo, t.icono) from public.tienda t
                     where t.id in (select value from jsonb_each_text(j.estilo))))
         order by j.rol, j.estado, j.nombre), '[]'::jsonb) from public.jugadores j),
-    'fotos_firma', (select count(*) filter (where foto is not null) || '-' || count(*) from public.jugadores),
+    'fotos_firma', (select count(*) filter (where foto is not null) || '-' || count(*) || '-' || coalesce(sum(foto_v), 0) from public.jugadores),
     'mis_votos', (select coalesce(jsonb_agg(jsonb_build_object('id', v.votado_id, 'puntos', v.puntos, 'motivo', v.motivo)
         order by v.puntos desc), '[]'::jsonb)
         from public.votos v where v.semana = c.semana and v.votante_id = yo.id),

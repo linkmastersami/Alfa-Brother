@@ -6570,6 +6570,8 @@ async function adminHabitantes(C) {
         ${j.frase ? `<small style="display:block;font-style:italic">“${esc(j.frase)}” <button class="mini" data-sinfrase="${j.id}">Quitar frase</button></small>` : ''}
         <small>${j.rol === 'jugador' ? (j.estado === 'activo' ? 'En la casa' : `Eliminado semana ${j.semana_eliminado}`) : 'Público'}${j.bloqueado_hasta && new Date(j.bloqueado_hasta) > new Date() ? ' · <b style="display:inline;color:var(--sello)">bloqueado</b>' : ''}</small>
         <div class="adm-acciones" style="margin-top:6px">
+          <button class="mini" data-nombre="${j.id}">✏️ Nombre</button>
+          <button class="mini" data-foto="${j.id}">📷 ${j.foto ? 'Cambiar foto' : 'Poner foto'}</button>
           <button class="mini" data-pin="${j.id}">Nuevo PIN</button>
           <button class="mini" data-rol="${j.id}" data-val="${j.rol === 'jugador' ? 'espectador' : 'jugador'}">${j.rol === 'jugador' ? 'Pasar a público' : 'Hacer habitante'}</button>
           ${j.estado === 'eliminado' ? `<button class="mini" data-reac="${j.id}">Regresar a la casa</button>` : ''}
@@ -6580,9 +6582,33 @@ async function adminHabitantes(C) {
   C.innerHTML = `<div class="adm-caja"><h3>Lugares de habitante</h3>
       <div style="display:flex;gap:8px"><input class="in" id="ad-cupo" type="number" min="2" max="100" value="${c.cupo}" style="width:100px">
       <button class="btn chico" id="ad-cupo-g">Guardar</button></div></div>
-    <div class="adm-caja"><h3>Habitantes (${hab.length})</h3>${hab.map(fila).join('') || '<p class="ayuda">Nadie registrado.</p>'}</div>
+    <input type="file" accept="image/*" id="ad-foto-in" class="hidden">
+    <div class="adm-caja"><h3>Habitantes (${hab.length})</h3>
+      <p class="ayuda">Con «✏️ Nombre» y «📷 Foto» los dejas bien en la casa. Ojo: si le cambias el nombre, la próxima vez que entre a la app con su PIN tiene que usar el nombre nuevo (si ya tiene la sesión abierta, no le pasa nada).</p>${hab.map(fila).join('') || '<p class="ayuda">Nadie registrado.</p>'}</div>
     <div class="adm-caja"><h3>Público (${pub.length})</h3>${pub.map(fila).join('') || '<p class="ayuda">Sin público.</p>'}</div>`;
   $('#ad-cupo-g').onclick = async () => { try { await q(sb.from('config').update({ cupo: +$('#ad-cupo').value }).eq('id', 1)); toast('Guardado'); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } };
+  $$('[data-nombre]').forEach(b => b.onclick = async () => {
+    const id = b.dataset.nombre, antes = nombreDe(id);
+    const n = prompt(`Nombre nuevo para ${antes} (así sale en la casa y así entra con su PIN):`, antes);
+    if (n === null) return;
+    const v = n.trim().replace(/\s+/g, ' ');
+    if (v === antes) return;
+    if (v.length < 2 || v.length > 30) { toast('El nombre debe tener entre 2 y 30 letras.'); return; }
+    if (adm.jug.some(j => j.id !== id && j.nombre.trim().toLowerCase() === v.toLowerCase())) { toast('Ya hay alguien con ese nombre.'); return; }
+    try { await q(sb.from('jugadores').update({ nombre: v }).eq('id', id)); toast(`Listo: ${antes} ahora es ${v}`); cargarAdmin(); refrescar(); }
+    catch (x) { toast(/unique|duplicate|nombre_unico/i.test(String(x?.message)) ? 'Ya hay alguien con ese nombre.' : mensajeError(x)); }
+  });
+  let fotoPara = null;
+  $$('[data-foto]').forEach(b => b.onclick = () => { fotoPara = b.dataset.foto; $('#ad-foto-in').value = ''; $('#ad-foto-in').click(); });
+  $('#ad-foto-in').onchange = async e => {
+    const f = e.target.files?.[0]; if (!f || !fotoPara) return;
+    try {
+      const dataUrl = await comprimirFoto(f);
+      await q(sb.from('jugadores').update({ foto: dataUrl }).eq('id', fotoPara));
+      toast(`📷 Foto de ${nombreDe(fotoPara)} actualizada`);
+      fotosFirma = null; cargarAdmin(); refrescar();
+    } catch (x) { toast(mensajeError(x)); }
+  };
   $$('[data-pin]').forEach(b => b.onclick = () => {
     const pin = prompt('Nuevo PIN de 4 números para ' + nombreDe(b.dataset.pin));
     if (pin) accion('admin_reset_pin', { p_id: b.dataset.pin, p_pin: pin }, 'PIN cambiado');
@@ -6590,7 +6616,7 @@ async function adminHabitantes(C) {
   $$('[data-rol]').forEach(b => b.onclick = async () => { try { await q(sb.from('jugadores').update({ rol: b.dataset.val }).eq('id', b.dataset.rol)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
   $$('[data-reac]').forEach(b => b.onclick = () => { if (confirm('¿Regresar a ' + nombreDe(b.dataset.reac) + ' a la casa?')) accion('admin_reactivar', { p_id: b.dataset.reac }, 'Regresó a la casa'); });
   $$('[data-sinfrase]').forEach(b => b.onclick = async () => { try { await q(sb.from('jugadores').update({ frase: null }).eq('id', b.dataset.sinfrase)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
-  $$('[data-sinfoto]').forEach(b => b.onclick = async () => { try { await q(sb.from('jugadores').update({ foto: null }).eq('id', b.dataset.sinfoto)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); } });
+  $$('[data-sinfoto]').forEach(b => b.onclick = async () => { try { await q(sb.from('jugadores').update({ foto: null }).eq('id', b.dataset.sinfoto)); fotosFirma = null; cargarAdmin(); refrescar(); } catch (x) { toast(mensajeError(x)); } });
   $$('[data-borrar]').forEach(b => b.onclick = async () => {
     if (!confirm('¿Borrar a ' + nombreDe(b.dataset.borrar) + '? Se borran también sus votos.')) return;
     try { await q(sb.from('jugadores').delete().eq('id', b.dataset.borrar)); cargarAdmin(); } catch (x) { toast(mensajeError(x)); }
