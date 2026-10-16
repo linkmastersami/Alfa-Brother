@@ -2555,6 +2555,27 @@ returns jsonb language sql immutable as $$
   end
 $$;
 
+-- v32: historial de duelos entre dos habitantes (para la ventanita antes de desafiar)
+create or replace function public.duelos_contra(p_token uuid, p_rival uuid)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare yo public.jugadores;
+begin
+  yo := public._yo(p_token);
+  return (select jsonb_build_object(
+      'jugados', count(*),
+      'ganados', count(*) filter (where d.ganador = yo.id),
+      'perdidos', count(*) filter (where d.ganador = p_rival),
+      'empates', count(*) filter (where d.ganador is null),
+      'por_juego', coalesce((select jsonb_object_agg(x.juego, jsonb_build_object('g', x.g, 'p', x.p)) from (
+          select d2.juego, count(*) filter (where d2.ganador = yo.id) as g, count(*) filter (where d2.ganador = p_rival) as p
+            from public.duelos d2
+           where d2.estado = 'terminado' and ((d2.reta = yo.id and d2.retado = p_rival) or (d2.reta = p_rival and d2.retado = yo.id))
+           group by d2.juego) x), '{}'::jsonb),
+      'ultimo', max(d.fin))
+    from public.duelos d
+   where d.estado = 'terminado' and ((d.reta = yo.id and d.retado = p_rival) or (d.reta = p_rival and d.retado = yo.id)));
+end $$;
+
 -- Las funciones internas no se pueden llamar directo desde el celular
 revoke all on function public._iniciar_semana(text)  from public, anon, authenticated;
 revoke all on function public._cerrar_prueba(uuid)   from public, anon, authenticated;

@@ -169,6 +169,7 @@ Versión 28: vista previa de la pasarela en el panel (con los votos que hay, sin
 Versión 29: en la pasarela los motivos salen sueltos (sin para quién ni de quién) y solo se ven los puntos de cada persona; Ricky con voz de hombre.
 Versión 30: el duelo de piedra, papel o tijeras ahora es Boxeo 🤜🤛 (3 corazones, escudo o golpe doble, empate = vale doble, ring con cántico y K.O.).
 Versión 31: Inflar el globo ahora es Globo explosivo 🎈💥 (feria, bomba con botones Sube/Baja, inflas el globo de agua del otro y lo bañas).
+Versión 32: al escoger rival en duelos sale su ficha con el historial entre los dos (duelos, ganados, perdidos) y los botones Desafiar y Cancelar.
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.

@@ -449,6 +449,25 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 
 
 
+
+.du-ficha{position:fixed;inset:0;z-index:5;background:rgba(8,3,18,.72);display:grid;place-items:center;padding:16px;animation:du-fade .2s}
+@keyframes du-fade{from{opacity:0}}
+.du-ficha-caja{width:100%;max-width:360px;background:radial-gradient(circle at 50% 0%,#4a2470,#1a0b2e 80%);border:2px solid #FFD54A;border-radius:22px;padding:18px 16px 16px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.5);animation:pas-entra .3s cubic-bezier(.3,1.5,.6,1)}
+.du-ficha-mono{display:flex;justify-content:center}
+.du-ficha-caja h2{margin:4px 0 0;font:900 1.8rem Anton,Impact,sans-serif;color:#fff;letter-spacing:.02em}
+.du-ficha-sub{margin:2px 0 10px;color:#C9C3EE;font-size:.85rem}
+.du-ficha-num{display:flex;justify-content:center;gap:10px}
+.du-ficha-num div{background:rgba(255,255,255,.08);border-radius:14px;padding:8px 10px;min-width:64px}
+.du-ficha-num b{display:block;font:900 1.8rem/1 Anton,Impact,sans-serif;color:#FFD54A}
+.du-ficha-num .g b{color:#7CF29A}.du-ficha-num .p b{color:#ff8a8a}
+.du-ficha-num small{color:#C9C3EE;font-size:.72rem;font-weight:700}
+.du-ficha-va{margin:10px 0 4px;font-weight:800}
+.du-ficha-pj{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;font-size:.85rem}
+.du-ficha-pj span{background:rgba(0,0,0,.3);border-radius:999px;padding:3px 9px}
+.du-ficha-nuevo{margin:6px 0;font-weight:800;color:#FFD54A}
+.du-ficha-juego{margin:12px 0 10px;color:#E7D2FF;font-size:.92rem}
+.du-ficha-bot{display:grid;gap:8px}
+
 /* ---------- 🎈💥 Globo explosivo (la feria) ---------- */
 .gx{display:flex;flex-direction:column;gap:10px}
 .gx-escena{position:relative;height:clamp(300px,48vh,390px);margin:0 -10px;border-radius:16px;overflow:hidden;background:linear-gradient(#1b1646 0%,#3a1f6e 55%,#5a3a1e 56%,#7a5230 100%)}
@@ -3759,7 +3778,8 @@ const DUELO = (() => {
         <small id="du-ap-txt"></small></div>
       <div class="du-rivales"><button class="du-rival du-bot" data-rival="bot">${monito(BOT, { tam: 44 })}<small>🎤 Práctica</small></button>${rivales.map(x => `<button class="du-rival" data-rival="${x.id}">${monito(x, { tam: 44 })}<small>${SALA.enLinea(x.id) ? '<i class="on"></i>En línea' : x.estado !== 'activo' ? 'Eliminado' : '&nbsp;'}</small></button>`).join('')
         || '<p style="color:#C9C3EE">Todavía no hay a quién retar.</p>'}</div>
-      <div class="du-pie"><div class="error hidden" id="du-err"></div><button class="btn" id="du-retar" disabled>Escoge a quién retar</button></div></div>`;
+      <p class="du-nota" style="text-align:center">Toca a quién quieres retar.</p>
+      <div class="du-ficha hidden" id="du-ficha"></div></div>`;
     const txt = () => {
       $('#du-ap-txt').textContent = apuesta > est.billetes ? `No te alcanza: tienes ${fmt$(est.billetes)}.`
         : apuesta ? `Cada quien pone ${fmt$(apuesta)} y el que gana se lleva ${fmt$(apuesta * 2)}. Tienes ${fmt$(est.billetes)}.` : 'Sin apuesta: solo por el orgullo (y el marcador).';
@@ -3776,13 +3796,41 @@ const DUELO = (() => {
     $$('#m-duelo [data-rival]').forEach(b => b.onclick = () => {
       rivalSel = b.dataset.rival;
       $$('#m-duelo [data-rival]').forEach(x => { x.classList.toggle('on', x === b); expresar($('.mm', x), x === b ? (rivalSel === 'bot' ? '🎤' : '⚔️') : '', x === b ? 'festeja' : '', 0); });
-      $('#du-retar').disabled = false;
-      $('#du-retar').textContent = rivalSel === 'bot' ? '🎤 Practicar contra el Reportero' : `⚔️ Desafiar a ${porId(rivalSel)?.nombre || ''}`;
-      $('.du-apuesta').classList.toggle('hidden', rivalSel === 'bot');
       SFX.tocar('clic');
+      ficha();
     });
-    $('#du-retar').onclick = () => retar();
     $('[data-du-x]').onclick = cerrar;
+  }
+  // la ventanita del rival: cuántas veces han jugado y quién va ganando, con Desafiar y Cancelar
+  async function ficha() {
+    const f = $('#du-ficha'); if (!f) return;
+    const bot = rivalSel === 'bot', r = bot ? BOT : porId(rivalSel) || { id: rivalSel, nombre: '?' }, j = J[juegoK];
+    const cerrarFicha = () => { f.classList.add('hidden'); $$('#m-duelo [data-rival]').forEach(x => { x.classList.remove('on'); expresar($('.mm', x), '', '', 0); }); rivalSel = null; };
+    f.innerHTML = `<div class="du-ficha-caja">
+      <div class="du-ficha-mono">${monito(r, { tam: 70, cara: bot ? '🎤' : '⚔️', clase: 'festeja', nombre: false })}</div>
+      <h2>${esc(r.nombre)}</h2>
+      ${bot ? '<p class="du-ficha-sub">🎤 Práctica: no se gana ni se pierde nada.</p>' : `<p class="du-ficha-sub">${r.estado && r.estado !== 'activo' ? 'Eliminado de la casa · ' : ''}${SALA.enLinea(r.id) ? '🟢 En línea' : 'No está en línea ahorita'}</p>`}
+      <div class="du-ficha-stats" id="du-ficha-stats">${bot ? '' : '<p class="du-nota">Cargando historial…</p>'}</div>
+      <p class="du-ficha-juego">${j.ic} <b>${esc(j.nombre)}</b>${bot ? '' : ` · ${apuesta ? `${fmt$(apuesta)} cada quien` : 'por gusto'}`}</p>
+      <div class="error hidden" id="du-err"></div>
+      <div class="du-ficha-bot"><button class="btn" id="du-retar">${bot ? '🎤 Practicar' : '⚔️ Desafiar'}</button><button class="btn sec du-btn-sec" id="du-ficha-no">Cancelar</button></div></div>`;
+    f.classList.remove('hidden');
+    $('#du-retar').onclick = () => retar();
+    $('#du-ficha-no').onclick = () => { cerrarFicha(); SFX.tocar('clic'); };
+    f.onclick = e => { if (e.target === f) cerrarFicha(); };
+    if (bot) return;
+    try {
+      const h = await rpc('duelos_contra', { p_token: token, p_rival: r.id });
+      if (rivalSel !== r.id) return;
+      const caja = $('#du-ficha-stats'); if (!caja) return;
+      if (!h || !h.jugados) { caja.innerHTML = `<p class="du-ficha-nuevo">Nunca se han enfrentado. ¡Estrénalo! 🥊</p>`; return; }
+      const va = h.ganados > h.perdidos ? '¡Le llevas ventaja! 😎' : h.ganados < h.perdidos ? `${esc(r.nombre)} te lleva ventaja 😬` : 'Van empatados 🤝';
+      const pj = Object.entries(h.por_juego || {}).map(([k, v]) => `<span>${J[k]?.ic || '🎮'} ${v.g}–${v.p}</span>`).join('');
+      caja.innerHTML = `<div class="du-ficha-num"><div><b>${h.jugados}</b><small>${h.jugados === 1 ? 'duelo' : 'duelos'}</small></div>
+          <div class="g"><b>${h.ganados}</b><small>ganados</small></div><div class="p"><b>${h.perdidos}</b><small>perdidos</small></div>
+          ${h.empates ? `<div><b>${h.empates}</b><small>${h.empates === 1 ? 'empate' : 'empates'}</small></div>` : ''}</div>
+        <p class="du-ficha-va">${va}</p>${pj ? `<div class="du-ficha-pj">${pj}</div>` : ''}`;
+    } catch { const caja = $('#du-ficha-stats'); if (caja) caja.innerHTML = ''; }
   }
   async function retar(revancha = false) {
     if (ocupado || !rivalSel) return;
