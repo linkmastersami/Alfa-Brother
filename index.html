@@ -1001,6 +1001,11 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .ti-prueba div small{display:block;color:var(--suave);font-weight:700}
 .ti-prueba .btn{width:auto;padding:8px 12px;font-size:.9rem;margin:0}
 .ti-prueba .mini{flex:none}
+.ti{position:relative}
+.ti-tag{position:absolute;top:3px;right:4px;font-style:normal;font-size:.8rem}
+.ti-tabs button.hallo{border-color:#FF7A1A;color:#C24E00}
+.ti-tabs button.hallo.on{background:#1B1029;border-color:#FF7A1A;color:#FF9F43}
+.ti-hallo{margin:12px 0 0;background:linear-gradient(135deg,#1B1029,#3A1C52);color:#FFD9B0;border-radius:12px;padding:10px 12px;font-size:.9rem;text-align:center}
 .ti.probando{border-color:#F2C94C;background:#FFF8DC;box-shadow:0 0 0 2px #F2C94C}
 .tienda-prev .mm-nom{color:#fff}
 .ti-grid .ti{min-width:0}
@@ -1702,7 +1707,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 36;
+const APP_VERSION       = 37;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -5729,8 +5734,8 @@ async function abrirBilletes() {
 
 /* ---------- tienda del monito ---------- */
 let catalogo = null;
-const TIPOS_TIENDA = [['sombrero', '🎩 Sombreros'], ['lentes', '🕶️ Lentes'], ['color', '🎨 Color'], ['mano', '☕ En la mano'], ['mascota', '🐶 Mascotas'], ['efecto', '✨ Efectos']];
-let tiendaTab = 'sombrero';
+const TIPOS_TIENDA = [['halloween', '🎃 Halloween'], ['sombrero', '🎩 Sombreros'], ['lentes', '🕶️ Lentes'], ['color', '🎨 Color'], ['mano', '☕ En la mano'], ['mascota', '🐶 Mascotas'], ['efecto', '✨ Efectos']];
+let tiendaTab = 'halloween';
 async function abrirTienda() {
   if (est?.yo.rol !== 'jugador') { toast(ERRORES.PUBLICO_SIN_BILLETES, 4000); return; }
   catalogo = null;                     // siempre los precios más nuevos
@@ -5757,13 +5762,17 @@ function pintarTienda() {
         <button class="btn" id="ti-comprar" ${falta > 0 ? 'disabled' : ''}>Comprar</button><button class="mini" id="ti-noprueba" aria-label="Quitar prueba">✕</button></div>`
         : '<p class="ayuda" style="margin:6px 0 0;text-align:center">Toca un artículo para ver cómo se te ve 👀</p>'}
     </div>
-    <div class="ti-tabs">${TIPOS_TIENDA.map(([t, nombre]) => `<button data-ti-tab="${t}" class="${t === tiendaTab ? 'on' : ''}">${nombre}${mio[t] ? ' •' : ''}</button>`).join('')}</div>
-    ${TIPOS_TIENDA.filter(([t]) => t === tiendaTab).map(([t, nombre]) => `<h3 style="margin-top:12px">${nombre}${mio[t] ? ` <button class="mini" data-quitar-t="${t}" style="float:right">Quitar</button>` : ''}</h3>
-      <div class="ti-grid">${catalogo.filter(x => x.tipo === t).map(x => {
+    <div class="ti-tabs">${TIPOS_TIENDA.map(([t, nombre]) => `<button data-ti-tab="${t}" class="${t === tiendaTab ? 'on' : ''}${t === 'halloween' ? ' hallo' : ''}">${nombre}${mio[t] ? ' •' : ''}</button>`).join('')}</div>
+    ${tiendaTab === 'halloween' ? '<p class="ti-hallo">🎃 <b>Especial de Halloween</b> · ¡Disfrázate para el 31! 👻🦇</p>' : ''}
+    ${(tiendaTab === 'halloween' ? TIPOS_TIENDA.slice(1) : TIPOS_TIENDA.filter(([t]) => t === tiendaTab)).map(([t, nombre]) => {
+      const items = catalogo.filter(x => x.tipo === t && (tiendaTab !== 'halloween' || x.temporada === 'halloween'));
+      if (!items.length) return '';
+      return `<h3 style="margin-top:12px">${nombre}${mio[t] && tiendaTab !== 'halloween' ? ` <button class="mini" data-quitar-t="${t}" style="float:right">Quitar</button>` : ''}</h3>
+      <div class="ti-grid">${items.map(x => {
         const tengo = compras.has(x.id), usando = mio[t] === x.id, probando = prueba?.id === x.id;
         return `<button class="ti ${tengo ? 'tengo' : ''} ${usando ? 'usando' : ''} ${probando ? 'probando' : ''}" data-item="${x.id}">
-          ${muestra(x)}<span>${esc(x.nombre)}</span><small>${usando ? 'Usando ✓' : tengo ? 'Usar' : probando ? 'Probando 👀' : fmt$(x.precio)}</small></button>`;
-      }).join('')}</div>`).join('')}
+          ${x.temporada === 'halloween' && tiendaTab !== 'halloween' ? '<i class="ti-tag">🎃</i>' : ''}${muestra(x)}<span>${esc(x.nombre)}</span><small>${usando ? 'Usando ✓' : tengo ? 'Usar' : probando ? 'Probando 👀' : fmt$(x.precio)}</small></button>`;
+      }).join('')}</div>`; }).join('')}
     <button class="btn sec" id="ti-cerrar" style="margin-top:16px">Cerrar</button>`;
   $('#ti-cerrar').onclick = () => { tiPrueba = null; $('#m-tienda').classList.add('hidden'); };
   $$('#ti-caja [data-ti-tab]').forEach(b => b.onclick = () => { tiendaTab = b.dataset.tiTab; SFX.tocar('clic'); pintarTienda(); });

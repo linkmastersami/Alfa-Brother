@@ -1911,9 +1911,40 @@ insert into public.tienda (id, tipo, nombre, icono, precio, orden) values
 on conflict (id) do update set tipo = excluded.tipo, nombre = excluded.nombre, icono = excluded.icono,
                                precio = excluded.precio, orden = excluded.orden;
 
+-- v37: 🎃 especial de Halloween (cada artículo va en su lugar de siempre: sombrero, lentes, mano…)
+alter table public.tienda add column if not exists temporada text;
+insert into public.tienda (id, tipo, nombre, icono, precio, orden, temporada) values
+  ('h_fantasma',  'sombrero', 'Fantasmita',          '👻',  1200, 20, 'halloween'),
+  ('h_murcielago','sombrero', 'Murciélago',          '🦇',  1400, 21, 'halloween'),
+  ('h_telarana',  'sombrero', 'Telaraña',            '🕸️',  1600, 22, 'halloween'),
+  ('h_calavera',  'sombrero', 'Calaverita',          '💀',  2400, 23, 'halloween'),
+  ('h_antifaz',   'lentes',   'Antifaz de teatro',   '🎭',  1500, 20, 'halloween'),
+  ('h_ogro',      'lentes',   'Máscara de ogro',     '👹',  2200, 21, 'halloween'),
+  ('h_zombi',     'color',    'Zombi',               '#7BB661',  900, 20, 'halloween'),
+  ('h_calabaza',  'color',    'Calabaza',            '#FF7A1A',  900, 21, 'halloween'),
+  ('h_bruja',     'color',    'Bruja',               '#8E4FD6',  900, 22, 'halloween'),
+  ('h_ectoplasma','color',    'Ectoplasma',          '#7CFFB2', 1800, 23, 'halloween'),
+  ('h_dulce',     'mano',     'Dulce',               '🍬',   500, 20, 'halloween'),
+  ('h_paleta',    'mano',     'Paleta',              '🍭',   600, 21, 'halloween'),
+  ('h_hueso',     'mano',     'Hueso',               '🦴',   800, 22, 'halloween'),
+  ('h_vela',      'mano',     'Vela',                '🕯️',  1000, 23, 'halloween'),
+  ('h_escoba',    'mano',     'Escoba de bruja',     '🧹',  1500, 24, 'halloween'),
+  ('h_bola',      'mano',     'Bola de cristal',     '🔮',  2500, 25, 'halloween'),
+  ('h_arana',     'mascota',  'Araña',               '🕷️',  2000, 20, 'halloween'),
+  ('h_buho',      'mascota',  'Búho',                '🦉',  2800, 21, 'halloween'),
+  ('h_gatonegro', 'mascota',  'Gato negro',          '🐈‍⬛',  3200, 22, 'halloween'),
+  ('h_murci_m',   'mascota',  'Murcielaguito',       '🦇',  3500, 23, 'halloween'),
+  ('h_fantasmas', 'efecto',   'Fantasmas',           '👻',  4000, 20, 'halloween'),
+  ('h_murcis',    'efecto',   'Murciélagos',         '🦇',  4000, 21, 'halloween'),
+  ('h_dulces',    'efecto',   'Lluvia de dulces',    '🍬',  4500, 22, 'halloween'),
+  ('h_calabazas', 'efecto',   'Calabazas',           '🎃',  5000, 23, 'halloween')
+on conflict (id) do update set tipo = excluded.tipo, nombre = excluded.nombre, icono = excluded.icono,
+                               precio = excluded.precio, orden = excluded.orden, temporada = excluded.temporada;
+update public.tienda set temporada = 'halloween' where id = 'calabaza';
+
 create or replace function public.tienda_lista()
 returns jsonb language sql stable security definer set search_path = public as $$
-  select coalesce(jsonb_agg(jsonb_build_object('id', id, 'tipo', tipo, 'nombre', nombre, 'icono', icono, 'precio', precio)
+  select coalesce(jsonb_agg(jsonb_build_object('id', id, 'tipo', tipo, 'nombre', nombre, 'icono', icono, 'precio', precio, 'temporada', temporada)
                   order by tipo, orden), '[]'::jsonb) from public.tienda;
 $$;
 
