@@ -164,6 +164,7 @@ Versión 23: las encuestas cerradas desaparecen de la app al terminar el día en
 Versión 24 (duelos): duelos entre habitantes con apuesta (piedra, papel o tijeras; inflar el globo; cálculo rápido; el camino correcto), marcador de duelos y duelos en el noticiero.
 Versión 25: la producción puede cambiar el nombre y la foto de cada jugador; las fotos nuevas se actualizan en todos los celulares.
 Versión 26: Monster Crazy clásico ya no sale en el noticiero ni en los récords de la casa.
+Versión 27 (la pasarela): gala con Ricky Reflector (resumen de la semana, salvados sin votos, líder, motivos anónimos, puntos uno por uno, los últimos 3 y el eliminado); si hay empate, el líder decide en vivo por teléfono en 50 segundos (si no, la suerte). Los eliminados siguen en la casa, apagados.
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.

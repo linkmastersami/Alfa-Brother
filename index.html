@@ -446,6 +446,64 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .cuenta{font-size:1.15rem;line-height:1.35}
 .cuenta b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.6rem;color:var(--tinta)}
 
+
+/* ---------- La pasarela (Ricky Reflector) ---------- */
+.pas{position:relative;width:100%;max-width:520px;margin:0 auto;min-height:calc(100dvh - 20px);display:flex;flex-direction:column;gap:8px;padding:6px 12px 10px;box-sizing:border-box;overflow:hidden}
+.pas-luces{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.pas-luces i{position:absolute;top:-30px;width:90px;height:120%;background:linear-gradient(rgba(255,230,140,.32),rgba(255,230,140,0) 80%);transform-origin:50% 0;filter:blur(2px);clip-path:polygon(40% 0,60% 0,100% 100%,0 100%);animation:pas-barre 5s ease-in-out infinite alternate}
+.pas-luces i:nth-child(1){left:6%;animation-delay:-1s}.pas-luces i:nth-child(2){left:30%;animation-delay:-2.5s;background:linear-gradient(rgba(255,80,160,.25),transparent 80%)}
+.pas-luces i:nth-child(3){left:55%;animation-delay:-.5s;background:linear-gradient(rgba(90,200,255,.25),transparent 80%)}.pas-luces i:nth-child(4){left:78%;animation-delay:-3.5s}
+@keyframes pas-barre{from{transform:rotate(-22deg)}to{transform:rotate(22deg)}}
+.pas-titulo{position:relative;text-align:center;margin-top:34px;line-height:1}
+.pas-titulo small{display:block;color:#C9C3EE;font-weight:700;letter-spacing:.2em;font-size:.72rem}
+.pas-titulo b{font:900 2.3rem/1 Anton,Impact,sans-serif;color:#FFD54A;text-shadow:0 0 18px #ff8a00,0 3px 0 #7a3c00;letter-spacing:.04em}
+.pas-extra{position:relative;flex:1;min-height:150px;display:flex;align-items:center;justify-content:center}
+.pas-card{background:rgba(10,4,24,.72);border:2px solid rgba(255,213,74,.6);border-radius:18px;padding:12px 16px;display:flex;flex-direction:column;align-items:center;gap:2px;max-width:92%;box-shadow:0 0 26px rgba(255,180,60,.25);animation:pas-entra .35s cubic-bezier(.3,1.5,.6,1)}
+.pas-card b{color:#FFD54A;font-size:1rem}
+.pas-card span{font:900 1.5rem/1.15 Anton,Impact,sans-serif;color:#fff}
+.pas-card small{color:#E7D2FF;font-size:.85rem}
+.pas-card .pas-motivo{font:600 1.05rem/1.35 system-ui,sans-serif;font-style:italic;max-width:300px}
+.pas-ic{font-size:2rem;line-height:1}
+.pas-num{font:900 4.4rem/1 Anton,Impact,sans-serif;color:#FFD54A;text-shadow:0 0 20px #ff8a00}
+.pas-num.chico{font-size:2.6rem}
+@keyframes pas-entra{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.pas-esc{position:relative;height:200px;flex:none}
+.pas-piso{position:absolute;left:-12px;right:-12px;bottom:0;height:34px;background:radial-gradient(60% 100% at 50% 100%,rgba(255,213,74,.35),transparent 70%),linear-gradient(transparent,rgba(0,0,0,.35));border-bottom:3px solid rgba(255,213,74,.5)}
+.pas-actor{position:absolute;transform:translateX(-50%);transition-property:left,bottom;transition-timing-function:ease-in-out;z-index:1}
+.pas-actor.camina .mm{animation:pas-paso .32s ease-in-out infinite alternate}
+.pas-actor.apagado{filter:grayscale(1) brightness(.75);transition:filter 1.5s}
+@keyframes pas-paso{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-6px) rotate(3deg)}}
+.pas-abajo{display:flex;align-items:flex-end;gap:8px;margin-top:-6px}
+.pas-ricky{position:relative;width:104px;flex:none}
+.ricky-svg{width:104px;height:130px;display:block;filter:drop-shadow(0 6px 10px rgba(0,0,0,.4))}
+.pas-ricky.habla .ricky-boca{animation:ricky-boca .18s ease-in-out infinite alternate;transform-origin:60px 78px;transform-box:view-box}
+@keyframes ricky-boca{from{transform:scaleY(.35)}to{transform:scaleY(1.1)}}
+.pas-ricky .pas-tel{position:absolute;right:-4px;top:30px;font-size:2rem;display:none}
+.pas-ricky.telefono .pas-tel{display:block;animation:pas-ring .15s linear infinite}
+.pas-ricky.telefono .ricky-mic{display:none}
+@keyframes pas-ring{50%{transform:rotate(12deg)}}
+.pas-dice{flex:1;position:relative;background:#FFFDF6;color:#1B1440;border-radius:16px;padding:10px 12px;margin-bottom:24px;font-size:1rem;line-height:1.35;min-height:62px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.pas-dice::before{content:'';position:absolute;left:-10px;bottom:16px;border:10px solid transparent;border-right-color:#FFFDF6;border-left:0}
+.pas-dice b{display:block;font-size:.72rem;color:#D7263D;letter-spacing:.06em;text-transform:uppercase}
+.pas-dice.nuevo span{animation:pas-txt .3s ease-out}
+@keyframes pas-txt{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.pas-elim{position:relative;display:inline-block}
+.pas-elim .sello-grande{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-14deg);font-size:1.3rem;white-space:nowrap}
+.pas-elim-nom{font:900 2rem Anton,Impact,sans-serif!important;color:#fff!important;margin-top:6px}
+.pas-adios{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px}
+.pas-adios span{background:#FFFDF6;color:#1B1440;border-radius:999px;padding:3px 10px;font:700 .85rem system-ui,sans-serif;animation:pas-entra .4s both}
+.pas-adios span:nth-child(2){animation-delay:.3s}.pas-adios span:nth-child(3){animation-delay:.6s}.pas-adios span:nth-child(4){animation-delay:.9s}
+.pas-llamada{position:absolute;inset:0;z-index:20;background:rgba(10,4,24,.88);display:grid;place-items:center;padding:16px}
+.pas-llamada-caja{text-align:center;max-width:360px}
+.pas-llamada-caja h2{font-size:1.4rem;margin:6px 0}
+.pas-tel-grande{font-size:3.4rem;animation:pas-ring .15s linear infinite}
+.pas-opciones{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:12px 0}
+.pas-opciones button{border:2px solid #FFD54A;background:rgba(255,213,74,.12);color:#fff;border-radius:16px;padding:8px 12px;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:800}
+.pas-opciones button:disabled{opacity:.5}
+.pas-cuenta-llamada{font:900 3rem Anton,Impact,sans-serif;color:#ff4d4d}
+/* los eliminados siguen en la casa, pero apagados */
+.mono.apagado{filter:grayscale(1) brightness(.8);opacity:.85}
+
 /* Gala */
 #gala{position:fixed;inset:0;z-index:50;background:radial-gradient(90% 60% at 50% 0%, #4A3AA8 0%, var(--noche) 70%);overflow:auto;color:#fff}
 #gala .wrap{min-height:100dvh;display:flex;flex-direction:column}
@@ -1593,6 +1651,14 @@ const SFX = (() => {
       tono({ f: 1568, t: .15, d: .6, tipo: 'sine', v: .025 });
     },
     letra() { tono({ f: 900 + Math.random() * 300, d: .018, tipo: 'square', v: .018 }); },
+    // pasarela: música triste del eliminado, teléfono de Ricky y latido de nervios
+    triste() {
+      const notas = [[440, 0, .55], [392, .55, .55], [349, 1.1, .55], [330, 1.65, .9], [294, 2.6, .55], [262, 3.15, .55], [247, 3.7, .55], [220, 4.25, 1.8]];
+      for (const [f, t, d] of notas) { tono({ f, t, d: d + .25, tipo: 'triangle', v: .16 }); tono({ f: f / 2, t, d: d + .3, tipo: 'sine', v: .08 }); }
+      tono({ f: 110, t: 0, d: 2.5, tipo: 'sine', v: .07 }); tono({ f: 87.3, t: 2.6, d: 3.5, tipo: 'sine', v: .07 });
+    },
+    telefono() { for (let k = 0; k < 2; k++) for (let i = 0; i < 10; i++) tono({ f: i % 2 ? 480 : 440, t: k * 1.1 + i * .05, d: .05, tipo: 'square', v: .05 }); },
+    latido() { tono({ f: 70, f2: 40, d: .16, v: .55 }); tono({ f: 66, f2: 38, t: .24, d: .2, v: .45 }); },
     // redoble de tambor que crece
     redoble(seg = 3) {
       const c = ctx; redobleBus = c.createGain(); redobleBus.connect(c.destination);
@@ -2704,7 +2770,7 @@ const SALA = (() => {
     const el = a.el;
     const medalla = est.juego.fin ? MEDALLA[est.podio?.find(x => x.id === j.id)?.lugar] : null;
     const e = j.estilo || {};
-    const firma = [j.nombre, !!fotos[j.id], j.id === est.juego.lider_id, j.id === miId, medalla, JSON.stringify(e)].join('|');
+    const firma = [j.nombre, !!fotos[j.id], j.id === est.juego.lider_id, j.id === miId, medalla, JSON.stringify(e), j.estado].join('|');
     if (a.firma === firma) return;
     a.firma = firma;
     $('.mono-cab', el).style.background = colorDe(j.nombre);
@@ -2713,6 +2779,7 @@ const SALA = (() => {
     $('.mono-corona', el).textContent = medalla || '👑';
     $('.mono-corona', el).classList.toggle('hidden', !medalla && (j.id !== est.juego.lider_id || j.estado !== 'activo'));
     el.classList.toggle('yo', j.id === miId);
+    el.classList.toggle('apagado', j.estado !== 'activo');
     $('.mono-sombrero', el).textContent = e.sombrero || '';
     $('.mono-lentes', el).textContent = e.lentes || '';
     $('.mono-mano', el).textContent = e.mano || '';
@@ -2731,7 +2798,7 @@ const SALA = (() => {
     for (const [id, a] of actores) if (!ids.has(id)) { a.el.remove(); actores.delete(id); }
     const ahora = Date.now(), inicial = actores.size === 0;
     for (const j of habitantes) {
-      const enSala = j.estado === 'activo';
+      const enSala = true;          // los eliminados siguen en la casa (apagados) y participan en todo
       let a = actores.get(j.id);
       if (!a) {
         a = { id: j.id, el: null, x: PUERTA[0], y: PUERTA[1], modo: null, ctrl: null, blend: null, ocupado: 0, enSala: null };
@@ -2747,7 +2814,7 @@ const SALA = (() => {
       }
       pintarActor(a, j);
     }
-    $('#palco').classList.toggle('hidden', !habitantes.some(j => j.estado === 'eliminado'));
+    $('#palco').classList.add('hidden');
     const votando = est.juego.fase === 'votacion';
     const meToca = votando && !(est.mis_votos || []).length;     // parpadea hasta que vote
     $('#puerta-aviso').classList.toggle('hidden', !meToca);
@@ -5756,6 +5823,361 @@ async function esperar(ms) {
   const fin = performance.now() + ms;
   while (performance.now() < fin) { if (saltarGala) throw 'saltar'; await sleep(50); }
 }
+/* =====================================================================
+   LA PASARELA con Ricky Reflector (gala de eliminación de cada semana)
+   ===================================================================== */
+const RICKY = 'Ricky Reflector';
+const RICKY_SVG = `<svg class="ricky-svg" viewBox="0 0 120 150" aria-hidden="true">
+  <path d="M18 150 Q20 104 60 100 Q100 104 102 150 Z" fill="#1F2A6B"/>
+  <path d="M46 101 L60 132 L74 101 Z" fill="#fff"/>
+  <path d="M51 104 L60 112 L69 104 L66 101 L60 106 L54 101 Z" fill="#D7263D"/>
+  <path d="M46 101 L60 132 L52 150 L36 150 Z" fill="#283787"/><path d="M74 101 L60 132 L68 150 L84 150 Z" fill="#283787"/>
+  <rect x="52" y="86" width="16" height="16" rx="5" fill="#E8B48A"/>
+  <ellipse cx="60" cy="58" rx="30" ry="34" fill="#F0C29A"/>
+  <path d="M27 58 Q22 22 56 16 Q94 12 94 54 Q90 38 80 33 Q70 40 56 35 Q42 33 34 42 Q30 48 27 58 Z" fill="#2A1A10"/>
+  <path d="M40 22 Q60 2 92 14 Q96 26 88 34 Q80 20 64 22 Q52 22 40 22 Z" fill="#3A2416"/>
+  <path d="M50 16 Q66 8 84 14" stroke="#7A5236" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="29" cy="60" rx="5" ry="8" fill="#E8B48A"/><ellipse cx="91" cy="60" rx="5" ry="8" fill="#E8B48A"/>
+  <path d="M42 48 Q48 44 54 47" stroke="#1B1440" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M66 47 Q72 44 78 48" stroke="#1B1440" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="48" cy="57" r="3.6" fill="#1B1440"/><circle cx="72" cy="57" r="3.6" fill="#1B1440"/>
+  <circle cx="49.2" cy="55.8" r="1.1" fill="#fff"/><circle cx="73.2" cy="55.8" r="1.1" fill="#fff"/>
+  <path d="M60 60 Q57 68 61 70" stroke="#C99071" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <g class="ricky-boca"><path d="M46 75 Q60 88 74 75 Q60 80 46 75 Z" fill="#7A1022"/><path d="M48 76 Q60 80 72 76 L71 78 Q60 81 49 78 Z" fill="#fff"/></g>
+  <g class="ricky-mic"><rect x="96" y="96" width="6" height="34" rx="3" fill="#222" transform="rotate(-18 99 113)"/><circle cx="104" cy="92" r="9" fill="#555"/><circle cx="104" cy="92" r="9" fill="url(#mic-r)" opacity=".5"/></g>
+  <defs><radialGradient id="mic-r"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></radialGradient></defs>
+</svg>`;
+const PASARELA = (() => {
+  const azarSem = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  let rnd = Math.random, voz = null, el = {};
+  const de = arr => arr[Math.floor(rnd() * arr.length)];
+  const pts = n => `${n} ${n === 1 ? 'punto' : 'puntos'}`;
+  const lista = ns => ns.length <= 1 ? (ns[0] || '') : ns.slice(0, -1).join(', ') + ' y ' + ns[ns.length - 1];
+  const PRUEBA_N = { memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', trivia: 'la trivia' };
+  const JUEGO_N = { monster2: 'Monster Crazy 2.0', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo' };
+
+  // ---------- la voz de Ricky ----------
+  function elegirVoz() {
+    if (!('speechSynthesis' in window)) return null;
+    const vs = speechSynthesis.getVoices().filter(v => /^es/i.test(v.lang));
+    if (!vs.length) return null;
+    const masc = /(jorge|juan|diego|carlos|pablo|enrique|raul|raúl|andr[eé]s|miguel|gerardo|alvaro|álvaro|male|hombre|man\b)/i;
+    const orden = v => (masc.test(v.name) ? 0 : 2) + (/MX/i.test(v.lang) ? 0 : /US|419/i.test(v.lang) ? .5 : 1);
+    return vs.sort((a, b) => orden(a) - orden(b))[0];
+  }
+  const conVoz = () => store.get('ab_mudo') !== '1' && store.get('ab_gala_voz') !== '0' && 'speechSynthesis' in window;
+  async function hablar(txt, extra = 0) {
+    if (saltarGala) throw 'saltar';
+    el.txt.textContent = txt;
+    el.dice.classList.remove('nuevo'); void el.dice.offsetWidth; el.dice.classList.add('nuevo');
+    el.ricky.classList.add('habla');
+    const minimo = Math.max(1700, txt.length * 62);
+    try {
+      if (conVoz()) {
+        voz = voz || elegirVoz();
+        const u = new SpeechSynthesisUtterance(txt.replace(/[“”"]/g, ''));
+        u.lang = voz?.lang || 'es-MX'; if (voz) u.voice = voz; u.rate = 1.04; u.pitch = .95;
+        let fin = false; u.onend = u.onerror = () => fin = true;
+        speechSynthesis.speak(u);
+        const t0 = performance.now(), tope = minimo * 1.8 + 2500;
+        while (!fin && performance.now() - t0 < tope) { if (saltarGala) { speechSynthesis.cancel(); throw 'saltar'; } await sleep(60); }
+        await esperar(250 + extra);
+      } else await esperar(minimo + extra);
+    } finally { el.ricky.classList.remove('habla'); }
+  }
+  // ---------- los monitos en el escenario ----------
+  function actor(j, x = -15, abajo = 6, tam = 54) {
+    const a = document.createElement('div');
+    a.className = 'pas-actor';
+    a.style.left = x + '%'; a.style.bottom = abajo + 'px';
+    a.innerHTML = monito(j, { tam });
+    el.esc.appendChild(a);
+    return a;
+  }
+  async function mover(a, x, ms = 1100, abajo = null) {
+    a.style.transitionDuration = ms + 'ms';
+    a.classList.add('camina');
+    await sleep(20);
+    a.style.left = x + '%'; if (abajo !== null) a.style.bottom = abajo + 'px';
+    await esperar(ms);
+    a.classList.remove('camina');
+  }
+  const cara = (a, c, pose = '', ms = 0, despues = null) => a && expresar($('.mm', a), c, pose, ms, despues);
+  async function salir(a, ms = 1000) { await mover(a, 118, ms); a.remove(); }
+  const tarjeta = html => { el.extra.innerHTML = `<div class="pas-card">${html}</div>`; };
+  const limpiarTarjeta = () => { el.extra.innerHTML = ''; };
+  const posiciones = n => n === 1 ? [50] : [...Array(n).keys()].map(i => Math.round(14 + i * (72 / (n - 1))));
+
+  // ---------- la llamada al líder cuando hay empate ----------
+  let llamando = null;
+  async function decisionLider(r, persona, hasta) {
+    if (llamando) return llamando;
+    llamando = new Promise(res => {
+      const capa = document.createElement('div');
+      capa.className = 'pas-llamada';
+      const emp = (r.empatados || []).map(persona);
+      capa.innerHTML = `<div class="pas-llamada-caja"><div class="pas-tel-grande">📞</div>
+        <h2>¡${RICKY} te está llamando!</h2>
+        <p>Hubo empate y tú eres el líder. ¿Quién sale de la casa?</p>
+        <div class="pas-opciones">${emp.map(j => `<button data-sale="${j.id}">${monito(j, { tam: 52 })}<b>Sale ${esc(j.nombre)}</b></button>`).join('')}</div>
+        <div class="pas-cuenta-llamada" id="pas-cl">50</div>
+        <p class="ayuda" style="color:#C9C3EE">Si no decides a tiempo, lo decide la suerte.</p></div>`;
+      el.raiz.appendChild(capa);
+      SFX.tocar('telefono'); if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
+      const tk = setInterval(() => {
+        const s = Math.max(0, Math.ceil((Date.parse(hasta) - Date.now() - (r._off || 0)) / 1000));
+        const c = capa.querySelector('#pas-cl'); if (c) c.textContent = s;
+        if (s <= 0) terminar();
+      }, 250);
+      let hecho = false;
+      const terminar = () => { if (hecho) return; hecho = true; clearInterval(tk); capa.remove(); res(); };
+      capa.querySelectorAll('[data-sale]').forEach(b => b.onclick = async () => {
+        capa.querySelectorAll('[data-sale]').forEach(x => x.disabled = true);
+        try { await rpc('lider_decide', { p_token: token, p_id: b.dataset.sale }); toast('Decisión enviada a Ricky 📞'); }
+        catch (e) { toast(mensajeError(e)); }
+        terminar();
+      });
+    }).finally(() => { llamando = null; });
+    return llamando;
+  }
+  // Si soy el líder y ya me están llamando (aunque vaya en otra parte de la pasarela), contesto
+  function vigilarLlamada(r, persona) {
+    if (!r.empate_pendiente || r.lider_id !== est?.yo.id) return () => { };
+    let vivo = true;
+    (async () => {
+      while (vivo && galaAbierta) {
+        try {
+          const g = await rpc('gala', { p_token: token, p_semana: r.semana });
+          if (!g.empate_pendiente) return;
+          if (g.llamada_hasta && Date.parse(g.llamada_hasta) > Date.parse(g.ahora)) { r._off = Date.parse(g.ahora) - Date.now(); await decisionLider(r, persona, g.llamada_hasta); return; }
+        } catch { }
+        await sleep(3000);
+      }
+    })();
+    return () => { vivo = false; };
+  }
+
+  // ---------- el show ----------
+  async function correr(r, E, persona) {
+    rnd = azarSem((r.semana || 1) * 7919 + 17);
+    const tabla = r.tabla || [];
+    E.style.justifyContent = 'flex-start';
+    E.innerHTML = `<div class="pas" id="pas">
+      <div class="pas-luces"><i></i><i></i><i></i><i></i></div>
+      <div class="pas-titulo"><small>Semana ${r.semana}</small><b>LA PASARELA</b></div>
+      <div class="pas-extra" id="pas-extra"></div>
+      <div class="pas-esc" id="pas-esc"><div class="pas-piso"></div></div>
+      <div class="pas-abajo"><div class="pas-ricky" id="pas-ricky">${RICKY_SVG}<span class="pas-tel">📱</span></div>
+        <div class="pas-dice" id="pas-dice"><b>${RICKY}</b><span id="pas-txt"></span></div></div></div>`;
+    el = { raiz: $('#pas'), extra: $('#pas-extra'), esc: $('#pas-esc'), ricky: $('#pas-ricky'), dice: $('#pas-dice'), txt: $('#pas-txt') };
+    const dejar = vigilarLlamada(r, persona);
+    try {
+      return await show(r, tabla, persona);
+    } finally { dejar(); try { speechSynthesis.cancel(); } catch { } }
+  }
+
+  async function show(r, tabla, persona) {
+    const lider = r.lider_id;
+    const cands = tabla.filter(t => t.id !== lider);
+    // el orden entre empatados se sortea igual en todos los celulares (misma semilla)
+    const barajados = cands.map(t => ({ t, k: rnd() })).sort((a, b) => a.k - b.k).map(x => x.t).sort((a, b) => b.puntos - a.puntos);
+    const empatados = (r.empatados || []).length > 1 ? r.empatados : [];
+    let final;
+    if (empatados.length >= 3) final = barajados.filter(t => empatados.includes(t.id));
+    else if (empatados.length === 2) final = [...barajados.filter(t => empatados.includes(t.id)), ...barajados.filter(t => !empatados.includes(t.id) && t.puntos > 0).slice(0, 1)];
+    else final = barajados.filter(t => t.puntos > 0).slice(0, 3);
+    if (!final.length && r.eliminado_id) final = barajados.filter(t => t.id === r.eliminado_id);
+    const enFinal = new Set(final.map(t => t.id));
+    const ceros = barajados.filter(t => t.puntos === 0 && !enFinal.has(t.id));
+    const resto = barajados.filter(t => t.puntos > 0 && !enFinal.has(t.id)).reverse();   // del que tuvo menos al que tuvo más
+    const rapido = resto.length > 8;
+
+    // 1. presentación
+    SFX.tocar('fanfarria');
+    await hablar(de([`¡Buenas noches, Grupo Alfa! Soy ${RICKY} y esto es… ¡la pasarela de la semana ${r.semana}!`,
+      `¡Bienvenidos a la noche más esperada! Yo soy ${RICKY} y esto es… ¡la pasarela de Alfa Brother!`,
+      `¡Luces, cámara y cobranza! Soy ${RICKY} y arrancamos la pasarela de la semana ${r.semana}.`]));
+    // 2. resumen de la semana
+    const rs = r.resumen;
+    if (rs) {
+      await hablar('Pero antes… ¡vamos a recordar lo que pasó esta semana!');
+      if (rs.lider) { tarjeta(`<div class="pas-ic">👑</div><b>Líder de la semana</b><span>${esc(rs.lider)}</span><small>Prueba: ${esc(PRUEBA_N[rs.prueba] || 'la prueba del líder')}</small>`);
+        await hablar(`La prueba del líder fue ${PRUEBA_N[rs.prueba] || 'muy reñida'}, y la corona se la llevó ${rs.lider}.`); }
+      if (rs.misiones?.n) { tarjeta(`<div class="pas-ic">🕵️</div><b>Misiones secretas</b><span>${rs.misiones.n} cumplidas</span>${rs.misiones.top ? `<small>La que más: ${esc(rs.misiones.top.nombre)} (${rs.misiones.top.n})</small>` : ''}`);
+        await hablar(`Se cumplieron ${rs.misiones.n} misiones secretas${rs.misiones.top ? `, y quien más cumplió fue ${rs.misiones.top.nombre}, con ${rs.misiones.top.n}` : ''}.`); }
+      if (rs.duelos?.n) { tarjeta(`<div class="pas-ic">⚔️</div><b>Duelos</b><span>${rs.duelos.n} duelos</span>${rs.duelos.top ? `<small>El más bravo: ${esc(rs.duelos.top.nombre)} (${rs.duelos.top.n} ganados)</small>` : ''}`);
+        await hablar(`Hubo ${rs.duelos.n} duelos${rs.duelos.top ? ` y el más bravo fue ${rs.duelos.top.nombre}, con ${rs.duelos.top.n} ganados` : ''}.`); }
+      if (rs.records?.length) { tarjeta(`<div class="pas-ic">🏆</div><b>Récords</b>${rs.records.map(x => `<small>${esc(JUEGO_N[x.juego] || x.juego)}: ${esc(x.nombre)} · ${Number(x.puntos).toLocaleString('es-MX')}</small>`).join('')}`);
+        await hablar(`Y cayeron récords: ${rs.records.map(x => `en ${JUEGO_N[x.juego] || x.juego}, ${x.nombre}`).join('; ')}.`); }
+      if (rs.rico) { tarjeta(`<div class="pas-ic">💵</div><b>El más rico</b><span>${esc(rs.rico.nombre)}</span><small>${fmt$(rs.rico.billetes)}</small>`);
+        await hablar(`Y quien más billetes tiene es ${rs.rico.nombre}, con ${Number(rs.rico.billetes).toLocaleString('es-MX')}.`); }
+      limpiarTarjeta();
+    }
+    await hablar(de(['Pero bueno… ustedes vinieron por los votos. ¡Vamos a ello!', '¡Ahora sí! Lo que todos estaban esperando: ¡los votos!']));
+
+    // 3. los que no recibieron votos
+    if (ceros.length) {
+      const tam = ceros.length > 6 ? 40 : 52, xs = posiciones(ceros.length);
+      const as = ceros.map((t, i) => actor(persona(t.id), -12 - i * 4, 6 + (i % 2) * 18, tam));
+      await Promise.all(as.map((a, i) => mover(a, xs[i], 1200 + i * 60)));
+      as.forEach(a => cara(a, '😬', 'susto'));
+      await hablar(`${lista(ceros.map(t => t.nombre))}…`);
+      SFX.tocar('tadan');
+      as.forEach(a => cara(a, '🥳', 'festeja', 0));
+      tarjeta(`<div class="pas-ic">✨</div><b>¡A salvo!</b><span>Ni un solo voto</span>`);
+      await hablar(ceros.length === 1 ? '¡No recibiste ni un solo voto! Estás a salvo.' : '¡No recibieron ni un solo voto! Están a salvo.');
+      await Promise.all(as.map((a, i) => salir(a, 900 + i * 50)));
+      limpiarTarjeta();
+    } else await hablar('Esta semana… ¡todos recibieron por lo menos un voto! Uy.');
+
+    // 4. el líder
+    if (lider) {
+      const lt = tabla.find(t => t.id === lider);
+      const a = actor(persona(lider), -15, 6, 58);
+      await mover(a, 50, 1200);
+      cara(a, '👑', 'festeja');
+      tarjeta(`<div class="pas-ic">👑</div><b>Líder de la semana</b><span>${esc(persona(lider).nombre)}</span><small>Protegido por la corona</small>`);
+      SFX.tocar('fanfarria');
+      await hablar(`Y nuestro líder, ${persona(lider).nombre}, tiene la corona… ¡está protegido esta semana!`);
+      if (r.lider_salvado || (lt && lt.puntos > 0)) await hablar(r.lider_salvado ? '¡Y qué bueno! Porque le llovieron votos… ¡la corona lo salvó!' : 'Aunque algunos sí votaron por él… ni modo, la corona manda.');
+      await salir(a);
+      limpiarTarjeta();
+    }
+
+    // 5. los motivos, sin decir quién los escribió
+    const motivos = cands.filter(t => t.puntos > 0).flatMap(t => (t.motivos || []).filter(m => !m.p && m.t).map(m => ({ id: t.id, nombre: t.nombre, t: m.t })))
+      .map(m => ({ m, k: rnd() })).sort((a, b) => a.k - b.k).map(x => x.m).slice(0, 6);
+    if (motivos.length) {
+      SFX.tocar('ojo');
+      await hablar('Ahora… lo que escribieron en el confesionario. ¡Sin decir quién lo dijo!');
+      for (const m of motivos) {
+        tarjeta(`<div class="pas-ic">🗳️</div><b>Sobre ${esc(m.nombre)}</b><span class="pas-motivo">“${esc(m.t)}”</span>`);
+        await hablar(`De ${m.nombre} escribieron: ${m.t}`, 300);
+      }
+      limpiarTarjeta();
+    }
+
+    // 6. los números, del que tuvo menos al que tuvo más
+    if (resto.length) {
+      await hablar(de(['Vamos con los puntos… del que tuvo menos al que tuvo más.', 'Ahora sí, uno por uno… ¿cuántos puntos tuvieron?']));
+      for (const t of resto) {
+        const a = actor(persona(t.id), -14, 6, 60);
+        await mover(a, 50, rapido ? 800 : 1100);
+        cara(a, '👋', 'aplaude', 900, '😬');
+        await esperar(rapido ? 300 : 700);
+        cara(a, '😬', 'susto');
+        await hablar(`${t.nombre}… recibiste…`);
+        SFX.tocar('redoble', rapido ? .9 : 1.4); await esperar(rapido ? 900 : 1400); SFX.parar();
+        tarjeta(`<div class="pas-num">${t.puntos}</div><b>${esc(t.nombre)}</b><small>${t.puntos === 1 ? 'punto' : 'puntos'} · ${t.votos} ${t.votos === 1 ? 'voto' : 'votos'}</small>`);
+        SFX.tocar('tadan');
+        cara(a, t.puntos <= 2 ? '😮‍💨' : de(['😅', '😳', '🙈']), t.puntos <= 2 ? 'festeja' : '', 0);
+        await hablar(`¡${pts(t.puntos)}!`);
+        await salir(a, rapido ? 700 : 950);
+        limpiarTarjeta();
+      }
+    }
+
+    // 7. los que quedan al final
+    let elimId = r.eliminado_id;
+    if (final.length) {
+      const xs = posiciones(final.length).map(x => final.length === 2 ? (x === 14 ? 32 : 68) : x);
+      await hablar(final.length === 1 ? 'Y queda una sola persona en la pasarela…' : `Y quedan… ¡los ${final.length} con más puntos de la semana!`);
+      const as = final.map((t, i) => actor(persona(t.id), -14 - i * 5, 6, final.length > 3 ? 48 : 60));
+      await Promise.all(as.map((a, i) => mover(a, xs[i], 1300 + i * 120)));
+      as.forEach(a => cara(a, '😰', 'susto'));
+      SFX.tocar('latido'); await esperar(900); SFX.tocar('latido');
+      await hablar(de(['Uno de ustedes deja la casa esta noche.', 'Esto se pone bueno… uno de ustedes se va.']));
+      const quedan = [...final], porId_ = id => as[final.findIndex(t => t.id === id)];
+      // si hay tres y el tercero no está empatado arriba, primero se salva el tercero
+      if (final.length >= 3 && empatados.length < 3) {
+        const t3 = final[final.length - 1];
+        await hablar('La primera persona que se salva es…');
+        SFX.tocar('redoble', 2.6); await esperar(2600); SFX.parar();
+        tarjeta(`<div class="pas-ic">😮‍💨</div><b>¡A salvo!</b><span>${esc(t3.nombre)}</span><small>${pts(t3.puntos)}</small>`);
+        SFX.tocar('tadan');
+        cara(porId_(t3.id), '😮‍💨', 'festeja', 0);
+        await hablar(`¡${t3.nombre}! Con ${pts(t3.puntos)}. ¡Te salvaste!`);
+        await salir(porId_(t3.id));
+        quedan.pop();
+        limpiarTarjeta();
+        await Promise.all(quedan.map((t, i) => mover(porId_(t.id), quedan.length === 2 ? (i ? 66 : 34) : posiciones(quedan.length)[i], 700)));
+      }
+      quedan.forEach(t => cara(porId_(t.id), de(['😢', '😰', '🥺']), 'triste'));
+      if (empatados.length >= 2) {
+        // ¡empate! decide el líder por teléfono
+        tarjeta(`<div class="pas-ic">⚖️</div><b>¡EMPATE!</b><span>${pts(quedan[0].puntos)} cada quien</span>`);
+        SFX.tocar('dindon');
+        await hablar(`¡No lo puedo creer! ¡Hay empate! ${lista(quedan.map(t => t.nombre))} tienen ${pts(quedan[0].puntos)} cada quien.`);
+        if (r.empate_pendiente) {
+          await hablar(lider ? `Y cuando hay empate… ¡decide el líder! Vamos a llamarle a ${persona(lider).nombre}.` : 'No hay líder esta semana… así que ¡lo decide la suerte!');
+          el.ricky.classList.add('telefono'); SFX.tocar('telefono');
+          let ll = null;
+          try { ll = await rpc('gala_llamar', { p_token: token }); } catch { }
+          const off = ll ? Date.parse(ll.ahora) - Date.now() : 0;
+          r._off = off;
+          if (ll?.llamada_hasta && lider === est?.yo.id && !ll.eliminado_id) await decisionLider(r, persona, ll.llamada_hasta);
+          // esperar la decisión (máximo los 50 segundos y un poquito más)
+          const RELLENO = ['¿Bueno? ¿Bueno? ¡Contesta, líder!', 'Está pensando… ¡qué nervios!', 'Dice que ya casi… ¡aguántenme tantito!', 'Uy, se está tardando… ¡el reloj corre!', 'Vamos, vamos… ¿quién sale?'];
+          let k = 0, g = null, ultimoRelleno = 0;
+          const t0 = Date.now();
+          while (Date.now() - t0 < 75000) {
+            try { g = await rpc('gala', { p_token: token, p_semana: r.semana }); } catch { g = null; }
+            if (g && !g.empate_pendiente) break;
+            const hasta = g?.llamada_hasta || ll?.llamada_hasta;
+            const s = hasta ? Math.max(0, Math.ceil((Date.parse(hasta) - Date.now() - off) / 1000)) : null;
+            tarjeta(`<div class="pas-ic">📞</div><b>Llamando al líder…</b>${s !== null ? `<div class="pas-num chico">${s}</div>` : ''}<small>Si no contesta, decide la suerte</small>`);
+            if (Date.now() - ultimoRelleno > 7000) { ultimoRelleno = Date.now(); el.txt.textContent = RELLENO[k++ % RELLENO.length]; el.ricky.classList.add('habla'); setTimeout(() => el.ricky.classList.remove('habla'), 1600); }
+            await esperar(1500);
+          }
+          el.ricky.classList.remove('telefono');
+          if (g && !g.empate_pendiente) { Object.assign(r, g); elimId = g.eliminado_id; }
+          await hablar(r.decidio === 'lider' ? '¡El líder ya tomó su decisión!' : r.decidio === 'produccion' ? 'La producción tomó la decisión.' : 'El líder no contestó a tiempo… ¡así que lo decide la suerte!');
+        } else {
+          await hablar(r.decidio === 'lider' ? `Así que le llamamos a nuestro líder, ${lider ? persona(lider).nombre : ''}… ¡y ya tomó su decisión!`
+            : r.decidio === 'produccion' ? 'Y la producción tomó la decisión.' : 'El líder no contestó a tiempo… ¡y la suerte decidió!');
+        }
+      } else if (quedan.length === 2) {
+        const d = quedan[0].puntos - quedan[1].puntos;
+        await hablar(d <= 2 ? `¡Esto estuvo muy parejo! La diferencia entre ${quedan[0].nombre} y ${quedan[1].nombre} es de apenas ${pts(d)}.`
+          : `La diferencia entre ${quedan[0].nombre} y ${quedan[1].nombre} es de ${pts(d)}… pero aquí nada está escrito.`);
+      }
+      limpiarTarjeta();
+      // 8. ¡el eliminado!
+      if (elimId) {
+        await hablar(de(['El habitante que deja la casa de Alfa Brother esta semana es…', 'La persona que se despide hoy de la casa es…']));
+        SFX.tocar('redoble', 4); await esperar(4000); SFX.parar();
+        const ej = persona(elimId), aE = porId_(elimId) || actor(ej, 50, 6, 60);
+        tarjeta(`<div class="pas-elim">${avatar(ej, 92)}<div class="sello-grande">¡ELIMINADO!</div></div><b class="pas-elim-nom">${esc(ej.nombre)}</b>`);
+        SFX.tocar('sello'); if (navigator.vibrate) navigator.vibrate([80, 40, 160]);
+        await esperar(400); SFX.tocar('triste');
+        // los demás finalistas respiran
+        final.filter(t => t.id !== elimId).forEach(t => { const a = porId_(t.id); cara(a, '😮‍💨', 'festeja', 0); setTimeout(() => a && salir(a, 900), 1200); });
+        cara(aE, '😭', 'triste');
+        await mover(aE, 50, 900);
+        await hablar(`¡${ej.nombre}!`, 600);
+        // todos se juntan a despedirlo
+        const resto2 = tabla.filter(t => t.id !== elimId).map(t => persona(t.id)).slice(0, 8);
+        const lugares = [28, 72, 15, 85, 36, 64, 6, 94];
+        aE.style.zIndex = 5;
+        const abr = resto2.map((j, i) => actor(j, i % 2 ? 115 : -15, 6 + (i > 3 ? 28 : 0), 44));
+        await Promise.all(abr.map((a, i) => mover(a, lugares[i], 1400 + i * 80)));
+        const ADIOS = ['👋', '😢', '🍀', '🫂', '💔', '🥺', '✌️', '🙏'];
+        for (let i = 0; i < abr.length; i++) { cara(abr[i], ADIOS[i % ADIOS.length], i % 3 ? '' : 'triste', 0); await esperar(260); }
+        tarjeta(`<div class="pas-elim">${avatar(ej, 92)}<div class="sello-grande">¡ELIMINADO!</div></div><b class="pas-elim-nom">${esc(ej.nombre)}</b>
+          <div class="pas-adios"><span>¡Adiós!</span><span>Ni modo 😢</span><span>¡Mucha suerte!</span><span>Te vamos a extrañar</span></div>`);
+        await hablar(`Y todos le dicen: ¡adiós, ${ej.nombre}! Ni modo… ¡mucha suerte!`);
+        await hablar(de([`${ej.nombre}, gracias por todo. Desde hoy sigues con nosotros… pero desde afuera de la casa.`,
+          `Ni modo, ${ej.nombre}. Te vamos a extrañar en la casa… pero aquí te seguimos viendo en todas las actividades.`]), 500);
+        aE.classList.add('apagado'); cara(aE, '👋', '', 0);
+        await esperar(1800);
+        await hablar('¡Esto fue la pasarela! Nos vemos la próxima semana… ¡te vamos a cobrar!');
+      }
+    }
+    return r;
+  }
+  return { correr, decisionLider };
+})();
+
 async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
   let r;
   try { r = await rpc('gala', { p_token: token, p_semana: semana }); } catch (e) { toast(mensajeError(e)); return; }
@@ -5790,6 +6212,8 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
   $('#g-saltar').classList.remove('hidden');
   $('#g-saltar').onclick = () => { saltarGala = true; SFX.parar(); };
   try {
+    // semanas normales: la pasarela con Ricky Reflector
+    if (!r.final) { r = await PASARELA.correr(r, E, persona); throw 'saltar'; }
     SFX.tocar('dindon');
     E.innerHTML = `<p class="typed" style="color:#C9C3EE;margin:0">Semana ${r.semana}</p>
       <h1 class="display gala-titulo">${r.final ? 'Gran final' : 'Gala de eliminación'}</h1>
@@ -5820,53 +6244,19 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
       throw 'saltar';
     }
 
-    if (r.lider_id) {
-      E.innerHTML = `<p class="typed" style="color:#C9C3EE;margin:0">Líder de la semana</p>
-        <div style="font-size:2rem">👑</div>${avatar(persona(r.lider_id), 120)}
-        <h2 class="display" style="font-size:2.2rem">${esc(r.lider)}</h2>
-        <p>${r.lider_salvado ? 'Recibió muchos votos… pero el liderazgo lo protege.' : 'Está protegido esta semana.'}</p>`;
-      SFX.tocar('fanfarria'); lluviaBilletes(18);
-      await esperar(3200);
-    }
-
-    // conteo de puntos, del menor al mayor, dejando al eliminado al final
-    const orden = tabla.filter(t => t.id !== r.eliminado_id).sort((a, b) => a.puntos - b.puntos);
-    E.innerHTML = `<h2 class="display" style="font-size:2rem;color:var(--luz)">Los votos</h2><div class="conteo" id="g-conteo"></div>`;
-    const cont = $('#g-conteo');
-    for (const t of orden) {
-      const fila = document.createElement('div');
-      fila.className = 'fila-conteo';
-      fila.innerHTML = `${avatar(persona(t.id), 40)}<span style="font-weight:600">${esc(t.nombre)}${t.lider ? ' 👑' : ''}</span><span class="p">0</span>`;
-      cont.appendChild(fila);
-      const P = $('.p', fila);
-      const pasos = Math.min(t.puntos, 12);
-      for (let k = 1; k <= pasos; k++) { P.textContent = Math.round(t.puntos * k / pasos); if (k % 2) SFX.tocar('tic'); await esperar(45); }
-      P.textContent = t.puntos;
-      SFX.tocar('clic');
-      fila.classList.add('salvo');
-      fila.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      await esperar(orden.length > 10 ? 380 : 650);
-    }
-    await esperar(1200);
-
-    E.innerHTML = `${r.desempate ? '<p style="color:#C9C3EE">Hubo empate y el líder tuvo que decidir.</p>' : ''}
-      <p class="display suspenso">El habitante que deja la casa es<span class="puntos-suspenso"></span></p>`;
-    SFX.tocar('redoble', 3.5);
-    await esperar(3500);
-
-    E.innerHTML = `<div id="g-salida" style="display:flex;flex-direction:column;align-items:center;gap:6px">
-      <div class="revelado">${avatar(persona(elim.id), 170)}<div class="sello-grande">¡ELIMINADO!</div></div>
-      <h2 class="display" style="font-size:2.6rem;margin-top:10px">${esc(elim.nombre)}</h2>
-      <p style="margin:0">${elim.puntos} puntos en contra</p></div>`;
-    SFX.tocar('sello'); setTimeout(() => SFX.tocar('tadan'), 180);
-    if (navigator.vibrate) navigator.vibrate([80, 40, 160]);
-    await esperar(3600);
-    // sale de la casa arrastrado
-    $('#g-salida')?.classList.add('arrastrado');
-    SFX.tocar('swish');
-    await esperar(1200);
   } catch (e) { if (e !== 'saltar') console.error(e); }
   SFX.parar();
+  try { speechSynthesis.cancel(); } catch { }
+  // si se saltaron la pasarela mientras el líder decidía el empate, se espera la decisión
+  if (!r.final && r.empate_pendiente) {
+    E.style.justifyContent = '';
+    E.innerHTML = `<div style="font-size:3rem">📞</div><h2 class="display" style="font-size:1.8rem">Hubo empate</h2><p style="color:#C9C3EE">El líder está decidiendo quién sale… (si no contesta, decide la suerte)</p>`;
+    try { await rpc('gala_llamar', { p_token: token }); } catch { }
+    for (let k = 0; k < 50 && r.empate_pendiente; k++) {
+      await sleep(1500);
+      try { const g = await rpc('gala', { p_token: token, p_semana: r.semana }); if (g && !g.empate_pendiente) Object.assign(r, g); } catch { }
+    }
+  }
 
   // tabla completa
   $('#g-saltar').classList.add('hidden');
@@ -6064,6 +6454,11 @@ async function adminJuego(C) {
       <div class="adm-acciones"><button class="btn" id="ad-cerrar-vot">Cerrar votación</button>
       ${c.es_final ? '' : '<button class="btn sec chico" data-fase="prueba">Regresar a la prueba</button>'}</div></div>`;
   }
+  if (c.fase === 'gala' && c.gala_revelada && !c.eliminado_id && !c.es_final && (c.empatados || []).length > 1) {
+    h += `<div class="adm-caja"><h3>📞 Empate en la pasarela</h3>
+      <p>${c.lider_id ? `${RICKY} le está llamando a <b>${esc(nombreDe(c.lider_id))}</b> para que decida.` : 'No hay líder: decide la suerte.'} Si hace falta, decide tú:</p>
+      <div class="adm-acciones">${c.empatados.map(id => `<button class="btn sec chico" data-decidir="${id}">Sale ${esc(nombreDe(id))}</button>`).join('')}</div></div>`;
+  }
   if (c.fase === 'decision') {
     h += `<div class="adm-caja"><h3>Empate</h3>
       <p>${c.lider_id ? `Esperando a que <b>${esc(nombreDe(c.lider_id))}</b> decida desde su celular. Si tarda, puedes decidir tú:` : 'No hay líder. Decide tú quién sale:'}</p>
@@ -6082,7 +6477,7 @@ async function adminJuego(C) {
       <button class="btn sec chico" data-fase="votacion">Reabrir votación</button></div></div>`;
   } else if (c.fase === 'gala' && !c.gala_revelada) {
     h += `<div class="adm-caja"><h3>Gala lista</h3>
-      <p>Sale: <b>${esc(nombreDe(c.eliminado_id))}</b>. Nadie más lo sabe todavía.</p>
+      <p>${c.eliminado_id ? `Sale: <b>${esc(nombreDe(c.eliminado_id))}</b>. Nadie más lo sabe todavía.` : `Hay <b>empate</b> entre ${c.empatados.map(id => `<b>${esc(nombreDe(id))}</b>`).join(' y ')}: en la pasarela ${RICKY} le llama al líder y tiene 50 segundos para decidir (si no contesta, decide la suerte).`}</p>
       <p class="ayuda">Al revelar, la gala aparece sola en todos los celulares que tengan el juego abierto.</p>
       <div class="adm-acciones"><button class="btn" id="ad-revelar">Revelar en todos los celulares</button>
       <button class="btn sec chico" data-fase="votacion">Reabrir votación</button></div></div>`;

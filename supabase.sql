@@ -338,6 +338,10 @@ end $$;
 drop trigger if exists jugadores_foto_v on public.jugadores;
 create trigger jugadores_foto_v before update of foto on public.jugadores for each row execute function public._foto_cambio();
 
+-- v27: en la pasarela, si hay empate, Ricky Reflector le llama al líder y tiene 50 segundos para decidir
+alter table public.config add column if not exists llamada_ini timestamptz;
+alter table public.config add column if not exists llamada_hasta timestamptz;
+
 -- Predicción secreta: quién gana y quién sale primero
 create table if not exists public.predicciones (
   jugador_id  uuid primary key references public.jugadores(id) on delete cascade,
@@ -612,10 +616,16 @@ end $$;
 
 -- Gala congelada de una semana (solo después de la revelación)
 create or replace function public.gala(p_token uuid, p_semana int)
-returns jsonb language plpgsql stable security definer set search_path = public as $$
+returns jsonb language plpgsql volatile security definer set search_path = public as $$
+declare c public.config; r jsonb;
 begin
   perform public._yo(p_token);
-  return (select resultados from public.historial where semana = p_semana);
+  perform public._empate_vencido();
+  select resultados into r from public.historial where semana = p_semana;
+  if r is null then return null; end if;
+  select * into c from public.config where id = 1;
+  return r || jsonb_build_object('ahora', now(),
+    'llamada_hasta', case when c.semana = p_semana and coalesce((r->>'empate_pendiente')::boolean, false) then c.llamada_hasta end);
 end $$;
 
 -- Empieza la prueba (una sola oportunidad por semana)
@@ -760,8 +770,14 @@ declare
 begin
   yo := public._yo(p_token);
   select * into c from public.config where id = 1 for update;
-  if c.fase <> 'decision' or c.lider_id is distinct from yo.id then raise exception 'NO_AUTORIZADO'; end if;
+  if c.lider_id is distinct from yo.id then raise exception 'NO_AUTORIZADO'; end if;
   if not (p_id = any (c.empatados)) then raise exception 'NO_EMPATADO'; end if;
+  if c.fase = 'gala' and c.gala_revelada and c.eliminado_id is null then          -- v27: la llamada de la pasarela
+    if c.llamada_hasta is not null and now() > c.llamada_hasta + interval '4 seconds' then raise exception 'LLAMADA_VENCIDA'; end if;
+    perform public._resolver_empate(p_id, 'lider');
+    return;
+  end if;
+  if c.fase <> 'decision' then raise exception 'NO_AUTORIZADO'; end if;
   update public.config set eliminado_id = p_id, fase = 'gala', gala_revelada = false, actualizado = now() where id = 1;
 end $$;
 
@@ -776,6 +792,7 @@ declare
   v_act int;
   v_final boolean;
 begin
+  perform public._resolver_empate(null, 'azar');            -- v27: un empate de la pasarela que nadie decidió
   select * into c from public.config where id = 1 for update;
   if not (c.fase = 'registro' or (c.fase = 'gala' and c.gala_revelada)) then raise exception 'FASE_INCORRECTA'; end if;
   select count(*) into v_act from public.jugadores where rol = 'jugador' and estado = 'activo';
@@ -884,7 +901,9 @@ begin
   if array_length(v_emp, 1) = 1 then
     update public.config set eliminado_id = v_emp[1], empatados = '{}', fase = 'gala', gala_revelada = false, actualizado = now() where id = 1;
   else
-    update public.config set eliminado_id = null, empatados = v_emp, fase = 'decision', actualizado = now() where id = 1;
+    -- v27: el empate se decide EN la pasarela (el líder recibe la llamada de Ricky Reflector)
+    update public.config set eliminado_id = null, empatados = v_emp, fase = 'gala', gala_revelada = false,
+           llamada_ini = null, llamada_hasta = null, actualizado = now() where id = 1;
   end if;
   return jsonb_build_object('empate', array_length(v_emp, 1) > 1, 'candidatos', to_jsonb(v_emp));
 end $$;
@@ -896,7 +915,13 @@ declare c public.config;
 begin
   perform public._solo_admin();
   select * into c from public.config where id = 1 for update;
-  if c.fase <> 'decision' or not (p_id = any (c.empatados)) then raise exception 'NO_EMPATADO'; end if;
+  if not (p_id = any (c.empatados)) then raise exception 'NO_EMPATADO'; end if;
+  if c.fase = 'gala' and c.eliminado_id is null then
+    if c.gala_revelada then perform public._resolver_empate(p_id, 'produccion');
+    else update public.config set eliminado_id = p_id, actualizado = now() where id = 1; end if;   -- antes de la pasarela
+    return;
+  end if;
+  if c.fase <> 'decision' then raise exception 'NO_EMPATADO'; end if;
   update public.config set eliminado_id = p_id, fase = 'gala', gala_revelada = false, actualizado = now() where id = 1;
 end $$;
 
@@ -910,7 +935,7 @@ declare
   v_max_otros int;
 begin
   select * into c from public.config where id = 1 for update;
-  if c.fase <> 'gala' or c.gala_revelada or (c.eliminado_id is null and not c.es_final) then raise exception 'FASE_INCORRECTA'; end if;
+  if c.fase <> 'gala' or c.gala_revelada or (c.eliminado_id is null and not c.es_final and cardinality(c.empatados) < 2) then raise exception 'FASE_INCORRECTA'; end if;
 
   res := public._resultados(c.semana);
 
@@ -944,12 +969,18 @@ begin
     'lider', (select nombre from public.jugadores where id = c.lider_id),
     'lider_salvado', coalesce(v_max_lider > 0 and v_max_lider >= v_max_otros, false),
     'desempate', cardinality(c.empatados) > 1,
+    'empatados', to_jsonb(c.empatados),
+    'empate_pendiente', c.eliminado_id is null,                  -- v27: lo decide el líder en la pasarela
+    'decidio', case when cardinality(c.empatados) > 1 and c.eliminado_id is not null then 'lider' end,
+    'resumen', public._resumen_semana(c.semana),
     'tabla', res))
   on conflict (semana) do update set resultados = excluded.resultados, creado = now();
 
-  update public.jugadores set estado = 'eliminado', semana_eliminado = c.semana where id = c.eliminado_id;
   update public.config set gala_revelada = true, actualizado = now() where id = 1;
-  perform public._liquidar('eliminado', c.semana, array[c.eliminado_id::text], format('eliminado de la semana %s', c.semana));
+  if c.eliminado_id is not null then
+    update public.jugadores set estado = 'eliminado', semana_eliminado = c.semana where id = c.eliminado_id;
+    perform public._liquidar('eliminado', c.semana, array[c.eliminado_id::text], format('eliminado de la semana %s', c.semana));
+  end if;
   if (select count(*) from public.jugadores where rol = 'jugador' and estado = 'activo') <= 1 then
     -- fue la gran final: se apaga la agenda para que no empiece otra semana
     update public.config set ag_semana = null, ag_prueba_ini = null, ag_prueba_fin = null,
@@ -1057,7 +1088,7 @@ begin
            set eliminado_id = c.empatados[1 + floor(random() * cardinality(c.empatados))::int],
                fase = 'gala', gala_revelada = false, actualizado = now()
          where id = 1;
-      elsif c.fase = 'gala' and not c.gala_revelada and (c.eliminado_id is not null or c.es_final) and c.ag_gala <= now() then
+      elsif c.fase = 'gala' and not c.gala_revelada and (c.eliminado_id is not null or c.es_final or cardinality(c.empatados) > 1) and c.ag_gala <= now() then
         perform public._revelar();
       else
         exit;
@@ -1313,6 +1344,7 @@ begin
   perform public._encuestas();
   begin perform public._noticiero_aviso(); exception when others then null; end;
   begin perform public._cerrar_duelos(); exception when others then null; end;
+  begin perform public._empate_vencido(); exception when others then null; end;
 end $$;
 
 do $$ begin
@@ -2364,6 +2396,92 @@ revoke all on function public._terminar_duelo(bigint, uuid) from public, anon, a
 revoke all on function public._cerrar_duelos() from public, anon, authenticated;
 revoke all on function public._duelo_vista(bigint, uuid) from public, anon, authenticated;
 revoke all on function public._duelos_estado(uuid) from public, anon, authenticated;
+
+-- ---------------------------------------------------------------------
+--  v27: LA PASARELA (Ricky Reflector)
+-- ---------------------------------------------------------------------
+-- Resumen de la semana para el inicio de la pasarela
+create or replace function public._resumen_semana(p_semana int)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare v_ini timestamptz; c public.config;
+begin
+  select * into c from public.config where id = 1;
+  select creado into v_ini from public.sucesos where tipo = 'semana' and (dato->>'semana')::int = p_semana order by id desc limit 1;
+  v_ini := coalesce(v_ini, now() - interval '7 days');
+  return jsonb_build_object(
+    'prueba', c.prueba,
+    'lider', (select nombre from public.jugadores where id = c.lider_id),
+    'misiones', jsonb_build_object(
+      'n', (select count(*) from public.movimientos where concepto = 'Misión secreta cumplida' and creado >= v_ini),
+      'top', (select jsonb_build_object('nombre', j.nombre, 'n', count(*)) from public.movimientos m join public.jugadores j on j.id = m.jugador_id
+               where m.concepto = 'Misión secreta cumplida' and m.creado >= v_ini group by j.nombre order by count(*) desc, j.nombre limit 1)),
+    'duelos', jsonb_build_object(
+      'n', (select count(*) from public.duelos where estado = 'terminado' and ganador is not null and fin >= v_ini),
+      'top', (select jsonb_build_object('nombre', j.nombre, 'n', count(*)) from public.duelos d join public.jugadores j on j.id = d.ganador
+               where d.estado = 'terminado' and d.fin >= v_ini group by j.nombre order by count(*) desc, j.nombre limit 1)),
+    'records', (select coalesce(jsonb_agg(jsonb_build_object('juego', x.juego, 'nombre', x.nombre, 'puntos', x.puntos)), '[]'::jsonb) from (
+        select distinct on (s.dato->>'juego') s.dato->>'juego' as juego, j.nombre, (s.dato->>'puntos')::int as puntos
+          from public.sucesos s join public.jugadores j on j.id = s.jugador_id
+         where s.tipo = 'record' and s.creado >= v_ini and s.dato->>'juego' <> 'monster'
+         order by s.dato->>'juego', s.id desc) x),
+    'rico', (select jsonb_build_object('nombre', nombre, 'billetes', billetes) from public.jugadores where rol = 'jugador' order by billetes desc, nombre limit 1));
+end $$;
+
+-- Cierra un empate de la pasarela: lo decidió el líder, la producción o la suerte
+create or replace function public._resolver_empate(p_id uuid, p_como text)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare c public.config; v uuid;
+begin
+  select * into c from public.config where id = 1 for update;
+  if c.fase <> 'gala' or c.eliminado_id is not null or c.es_final or cardinality(c.empatados) < 2 or not c.gala_revelada then return null; end if;
+  v := coalesce(p_id, c.empatados[1 + floor(random() * cardinality(c.empatados))::int]);
+  if not (v = any (c.empatados)) then raise exception 'NO_EMPATADO'; end if;
+  update public.config set eliminado_id = v, llamada_hasta = least(coalesce(llamada_hasta, now()), now()), actualizado = now() where id = 1;
+  update public.historial set resultados = resultados || jsonb_build_object('eliminado_id', v,
+           'eliminado', (select nombre from public.jugadores where id = v), 'empate_pendiente', false,
+           'decidio', case when p_id is null then 'azar' else p_como end)
+   where semana = c.semana;
+  update public.jugadores set estado = 'eliminado', semana_eliminado = c.semana where id = v;
+  perform public._liquidar('eliminado', c.semana, array[v::text], format('eliminado de la semana %s', c.semana));
+  return v;
+end $$;
+
+-- Si el líder no contestó en sus 50 segundos (o nadie vio la pasarela en 30 minutos), decide la suerte
+create or replace function public._empate_vencido()
+returns void language plpgsql security definer set search_path = public as $$
+declare c public.config;
+begin
+  select * into c from public.config where id = 1;
+  if c.fase <> 'gala' or not c.gala_revelada or c.eliminado_id is not null or c.es_final or cardinality(c.empatados) < 2 then return; end if;
+  if (c.llamada_hasta is not null and now() > c.llamada_hasta + interval '4 seconds')
+     or (c.llamada_ini is null and (select creado from public.historial where semana = c.semana) < now() - interval '30 minutes') then
+    perform public._resolver_empate(null, 'azar');
+  end if;
+end $$;
+
+-- Ricky Reflector toma el teléfono: el primer celular que llega a ese momento de la pasarela hace la llamada
+create or replace function public.gala_llamar(p_token uuid)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare c public.config;
+begin
+  perform public._yo(p_token);
+  perform public._empate_vencido();
+  select * into c from public.config where id = 1 for update;
+  if c.fase = 'gala' and c.gala_revelada and c.eliminado_id is null and not c.es_final and cardinality(c.empatados) > 1 and c.llamada_ini is null then
+    if c.lider_id is null then
+      perform public._resolver_empate(null, 'azar');
+    else
+      update public.config set llamada_ini = now(), llamada_hasta = now() + interval '50 seconds' where id = 1;
+      perform public._avisar('📞 ¡Ricky Reflector te está llamando!', 'Hubo empate en la pasarela. Eres el líder: tienes 50 segundos para decidir quién sale. ¡Entra ya!', array[c.lider_id]);
+      perform public._avisar_produccion('📞 Empate en la pasarela', 'El líder tiene 50 segundos para decidir. Si no contesta, decide la suerte.');
+    end if;
+  end if;
+  select * into c from public.config where id = 1;
+  return jsonb_build_object('ahora', now(), 'llamada_hasta', c.llamada_hasta, 'eliminado_id', c.eliminado_id, 'lider_id', c.lider_id);
+end $$;
+revoke all on function public._resumen_semana(int) from public, anon, authenticated;
+revoke all on function public._resolver_empate(uuid, text) from public, anon, authenticated;
+revoke all on function public._empate_vencido() from public, anon, authenticated;
 
 -- Las funciones internas no se pueden llamar directo desde el celular
 revoke all on function public._iniciar_semana(text)  from public, anon, authenticated;
