@@ -2123,13 +2123,13 @@ revoke all on function public._noticiero_aviso() from public, anon, authenticate
 -- ---------------------------------------------------------------------
 create or replace function public._duelo_nombre(p_juego text)
 returns text language sql immutable as $$
-  select case p_juego when 'ppt' then 'Piedra, papel o tijeras' when 'globo' then 'Inflar el globo'
+  select case p_juego when 'ppt' then 'Boxeo' when 'globo' then 'Inflar el globo'
                       when 'calculo' then 'Cálculo rápido' else 'El camino correcto' end
 $$;
 -- Tiempo máximo de cada juego (después de eso se cierra solo)
 create or replace function public._duelo_limite(p_juego text)
 returns interval language sql immutable as $$
-  select case p_juego when 'ppt' then interval '100 seconds' when 'globo' then interval '60 seconds'
+  select case p_juego when 'ppt' then interval '180 seconds' when 'globo' then interval '60 seconds'
                       when 'calculo' then interval '100 seconds' else interval '180 seconds' end
 $$;
 
@@ -2163,8 +2163,8 @@ begin
     v_g := null;
     if d.juego = 'calculo' then             -- el único que entregó gana
       if d.res_a is not null and d.res_b is null then v_g := d.reta; elsif d.res_b is not null and d.res_a is null then v_g := d.retado; end if;
-    elsif d.juego = 'ppt' then              -- gana quien iba ganando, o quien sí siguió jugando
-      a := coalesce((d.datos->>'ga')::int, 0); b := coalesce((d.datos->>'gb')::int, 0);
+    elsif d.juego = 'ppt' then              -- boxeo: gana quien tenía más corazones, o quien sí siguió jugando
+      a := coalesce((d.datos->>'va')::int, 3); b := coalesce((d.datos->>'vb')::int, 3);
       if a > b then v_g := d.reta; elsif b > a then v_g := d.retado;
       elsif d.datos->'pend' ? 'a' and not d.datos->'pend' ? 'b' then v_g := d.reta;
       elsif d.datos->'pend' ? 'b' and not d.datos->'pend' ? 'a' then v_g := d.retado; end if;
@@ -2188,7 +2188,11 @@ begin
   if d.estado <> 'terminado' then
     if v ? 'ops' then v := jsonb_set(v, '{ops}', (select coalesce(jsonb_agg(op - 'r' order by i), '[]'::jsonb) from jsonb_array_elements(v->'ops') with ordinality x(op, i))); end if;
     v := v - 'camino';
-    if v ? 'pend' then v := jsonb_set(v, '{pend}', (select coalesce(jsonb_object_agg(key, true), '{}'::jsonb) from jsonb_each(v->'pend'))); end if;
+    if v ? 'pend' then
+      v := v || jsonb_build_object('pp', (select coalesce(jsonb_object_agg(key, true), '{}'::jsonb) from jsonb_each(v->'pend')
+                                          where jsonb_typeof(value) = 'object' and value->>'p' is not null));   -- usó poder (sin decir cuál)
+      v := jsonb_set(v, '{pend}', (select coalesce(jsonb_object_agg(key, true), '{}'::jsonb) from jsonb_each(v->'pend')));
+    end if;
   end if;
   return jsonb_build_object('id', d.id, 'juego', d.juego, 'reta', d.reta, 'retado', d.retado, 'apuesta', d.apuesta, 'estado', d.estado,
     'datos', v, 'yo', k, 'ganador', d.ganador, 'creado', d.creado, 'inicio', d.inicio, 'fin', d.fin, 'ahora', now(),
@@ -2287,7 +2291,7 @@ begin
   elsif d.juego = 'globo' then
     v_datos := jsonb_build_object('taps', 40);
   else
-    v_datos := jsonb_build_object('rondas', '[]'::jsonb, 'ga', 0, 'gb', 0, 'pend', '{}'::jsonb);
+    v_datos := jsonb_build_object('rondas', '[]'::jsonb, 'va', 3, 'vb', 3, 'mult', 1, 'pend', '{}'::jsonb);   -- boxeo: 3 corazones
   end if;
   update public.duelos set estado = 'jugando', inicio = now() + interval '5 seconds', datos = v_datos where id = d.id;
   perform public._avisar('⚔️ ¡Aceptaron tu duelo!', format('%s aceptó tu reto de %s. ¡Entra ya, que ya empieza!', yo.nombre, public._duelo_nombre(d.juego)), array[d.reta]);
@@ -2319,6 +2323,7 @@ declare
   k text; o text;
   n int; m int; ma int; mb int; ga int; gb int;
   v jsonb; w text;
+  pw text; pa text; pb text; da int; db int; va int; vb int; mu int;
 begin
   yo := public._yo(p_token);
   select * into d from public.duelos where id = p_id for update;
@@ -2368,23 +2373,35 @@ begin
     end if;
 
   elsif d.juego = 'ppt' then
+    -- 🤜🤛 BOXEO (v30): piedra, papel o tijeras con 3 corazones; un poder por pelea (🛡️ escudo o ⚡ golpe doble);
+    -- si empatan, la siguiente ronda vale doble
     n := jsonb_array_length(d.datos->'rondas');
     m := (p_dato->>'mano')::int;
+    pw := nullif(p_dato->>'poder', '');
     if (p_dato->>'ronda')::int is distinct from n or m is null or m not between 0 and 2 or d.datos->'pend' ? k then
       return public._duelo_vista(d.id, yo.id);
     end if;
-    v := d.datos->'pend' || jsonb_build_object(k, m);
+    if pw is not null and (pw not in ('escudo', 'doble') or d.datos->>('pod' || k) is not null) then pw := null; end if;
+    v := d.datos->'pend' || jsonb_build_object(k, jsonb_build_object('m', m, 'p', pw));
     if v ? 'a' and v ? 'b' then
-      ma := (v->>'a')::int; mb := (v->>'b')::int;
+      ma := (v->'a'->>'m')::int; mb := (v->'b'->>'m')::int;
+      pa := v->'a'->>'p'; pb := v->'b'->>'p';
       w := case when ma = mb then '' when (ma - mb + 3) % 3 = 1 then 'a' else 'b' end;    -- papel le gana a piedra, etc.
-      ga := (d.datos->>'ga')::int + case when w = 'a' then 1 else 0 end;
-      gb := (d.datos->>'gb')::int + case when w = 'b' then 1 else 0 end;
-      d.datos := d.datos || jsonb_build_object('rondas', d.datos->'rondas' || jsonb_build_array(jsonb_build_object('a', ma, 'b', mb, 'g', w)),
-                                               'ga', ga, 'gb', gb, 'pend', '{}'::jsonb);
+      mu := coalesce((d.datos->>'mult')::int, 1);
+      da := 0; db := 0;
+      if w = 'a' then db := mu * case when pa = 'doble' then 2 else 1 end; if pb = 'escudo' then db := 0; end if;
+      elsif w = 'b' then da := mu * case when pb = 'doble' then 2 else 1 end; if pa = 'escudo' then da := 0; end if;
+      end if;
+      va := greatest(0, coalesce((d.datos->>'va')::int, 3) - da);
+      vb := greatest(0, coalesce((d.datos->>'vb')::int, 3) - db);
+      d.datos := d.datos || jsonb_build_object(
+        'rondas', d.datos->'rondas' || jsonb_build_array(jsonb_build_object('a', ma, 'b', mb, 'g', w, 'pa', pa, 'pb', pb, 'da', da, 'db', db, 'x', mu)),
+        'va', va, 'vb', vb, 'mult', case when w = '' then 2 else 1 end, 'pend', '{}'::jsonb,
+        'poda', coalesce(d.datos->>'poda', pa), 'podb', coalesce(d.datos->>'podb', pb));
       update public.duelos set datos = d.datos where id = d.id;
-      if ga >= 2 then perform public._terminar_duelo(d.id, d.reta);
-      elsif gb >= 2 then perform public._terminar_duelo(d.id, d.retado);
-      elsif n + 1 >= 9 then perform public._terminar_duelo(d.id, case when ga > gb then d.reta when gb > ga then d.retado end);
+      if vb <= 0 then perform public._terminar_duelo(d.id, d.reta);
+      elsif va <= 0 then perform public._terminar_duelo(d.id, d.retado);
+      elsif n + 1 >= 15 then perform public._terminar_duelo(d.id, case when va > vb then d.reta when vb > va then d.retado end);
       end if;
     else
       update public.duelos set datos = jsonb_set(d.datos, '{pend}', v) where id = d.id;
