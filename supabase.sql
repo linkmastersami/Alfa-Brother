@@ -566,7 +566,11 @@ begin
     -- misiones que cumplí la semana pasada: cuentan la mitad para el líder de esta semana
     'misiones_previas', (select count(*) from public.misiones m
         where m.semana = c.semana - 1 and m.jugador_id = yo.id and m.cumplida is not null),
-    'galas', (select coalesce(jsonb_agg(h.semana order by h.semana desc), '[]'::jsonb) from public.historial h)
+    'galas', (select coalesce(jsonb_agg(h.semana order by h.semana desc), '[]'::jsonb) from public.historial h),
+    -- v34: habitantes que todavía no votan (solo mientras está abierta la votación; no dice por quién votó nadie)
+    'sin_votar', case when c.fase = 'votacion' then (select coalesce(jsonb_agg(j.id order by j.nombre), '[]'::jsonb)
+        from public.jugadores j where j.rol = 'jugador'
+         and not exists (select 1 from public.votos v where v.semana = c.semana and v.votante_id = j.id)) end
   ) || public._economia(yo.id, v_bono) || public._duelos_estado(yo.id);
 end $$;
 

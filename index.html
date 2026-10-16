@@ -374,6 +374,16 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .calc-lista .bien{color:#7CF29A}
 .calc-lista .mal{color:#ff9a9a}
 .calc-lista s{opacity:.8}
+.faltan{background:linear-gradient(135deg,rgba(255,213,74,.14),rgba(255,77,109,.12));border:1px solid rgba(255,213,74,.35);border-radius:16px;padding:10px 12px;margin:0 0 12px}
+.faltan.listo{text-align:center;color:#7CF29A;border-color:rgba(124,242,154,.4);background:rgba(30,142,90,.15)}
+.faltan-t{display:flex;align-items:center;gap:6px;font-size:1rem}
+.faltan-t span{margin-left:auto;background:#FFD54A;color:#1B1440;font-weight:900;border-radius:20px;padding:1px 9px;font-size:.85rem}
+.faltan-l{display:flex;gap:8px;overflow-x:auto;padding:8px 2px 4px;scrollbar-width:none}
+.faltan-p{flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;color:#fff;padding:0;width:52px}
+.faltan-p small{font-size:.7rem;font-weight:700;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#E8E4FF}
+.faltan-p.yo .av{box-shadow:0 0 0 3px #FFD54A}
+.faltan-p.fuera .av{filter:grayscale(1);opacity:.7}
+.faltan p{margin:4px 0 0;font-size:.86rem;color:#E8E4FF}
 /* 🪟 Puente de cristal (v33) */
 .pz{flex:1;display:flex;flex-direction:column;gap:8px}
 .pz-top{display:flex;align-items:center;gap:10px}
@@ -1362,6 +1372,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
   <div id="c-avisos" class="hidden"></div>
 
   <div id="c-anuncio"></div>
+  <div id="c-faltan"></div>
   <div class="seccion-t"><span>Habitantes</span><small id="c-cuenta"></small></div>
   <div id="c-sala-box">
     <div class="sala" id="sala">
@@ -2282,6 +2293,7 @@ function pintarCasa() {
   $('#c-cuenta').textContent = g.semana === 0 ? `${habitantes.length} de ${g.cupo}` : (g.fin ? 'Terminó el juego' : activos.length === 1 ? '1 sigue en la casa' : `${activos.length} siguen en la casa`);
 
   SALA.sincronizar();
+  pintarFaltan();
 
   $('#c-espect-box').classList.toggle('hidden', !publico.length);
   $('#c-espect-n').textContent = publico.length + (publico.length === 1 ? ' persona' : ' personas');
@@ -2295,6 +2307,19 @@ function pintarCasa() {
   pintarEconomia();
   pintarHoy();
   MONSTER.mandarPendiente();
+}
+
+// 🗳️ Habitantes que todavía no votan (solo mientras está abierta la votación)
+function pintarFaltan() {
+  const el = $('#c-faltan'), ids = est.sin_votar;
+  if (!Array.isArray(ids)) { el.innerHTML = ''; return; }
+  const js = ids.map(porId).filter(Boolean);
+  if (!js.length) { el.innerHTML = '<div class="faltan listo">✅ <b>¡Ya votaron todos!</b> Ahora a esperar la pasarela… 😬</div>'; return; }
+  const yoFalto = ids.includes(est.yo.id);
+  el.innerHTML = `<div class="faltan">
+    <div class="faltan-t">🗳️ <b>Aún no votan</b><span>${js.length}</span></div>
+    <div class="faltan-l">${js.map(j => `<button class="faltan-p${j.id === est.yo.id ? ' yo' : ''}${j.estado !== 'activo' ? ' fuera' : ''}" data-ficha="${j.id}">${avatar(j, 30)}<small>${esc(j.id === est.yo.id ? 'Tú' : j.nombre)}</small></button>`).join('')}</div>
+    <p>${yoFalto ? '¡Tú tampoco has votado! 👀 ' : ''}Avísales que su voto cuenta… pero que no voten por ti 😅</p></div>`;
 }
 
 function pintarAccion() {
