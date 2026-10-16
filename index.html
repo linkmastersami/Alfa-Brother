@@ -762,6 +762,9 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 #admin .wrap{padding-top:12px}
 .adm-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .adm-top h1{font-family:Anton,Impact,sans-serif;font-size:1.5rem}
+.adm-version{margin:4px 0 10px;font-size:.85rem;opacity:.85}
+.adm-version .ok{color:#1E8E4A;font-weight:700}
+.adm-version .nueva{color:#C0392B;font-weight:700}
 .adm-tabs{display:flex;gap:6px;overflow-x:auto;margin:12px -16px 0;padding:0 16px 4px;scrollbar-width:none}
 .adm-tabs button{appearance:none;border:0;border-radius:999px;padding:8px 14px;background:#fff;color:var(--texto);font-weight:600;white-space:nowrap;cursor:pointer}
 .adm-tabs button[aria-selected="true"]{background:var(--texto);color:#fff}
@@ -1516,6 +1519,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
       <h1>Cabina de producción</h1>
       <button class="btn sec chico" id="a-cerrar">Cerrar</button>
     </div>
+    <p class="adm-version" id="a-version"></p>
     <div class="adm-tabs" role="tablist" id="a-tabs">
       <button data-at="juego" aria-selected="true">Juego</button>
       <button data-at="votos" aria-selected="false">Votos</button>
@@ -1687,6 +1691,8 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
+// Versión del juego: súbela junto con version.json en cada actualización
+const APP_VERSION       = 35;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -6971,10 +6977,25 @@ $('#f-clave').addEventListener('submit', async e => {
 let adm = { tab: 'juego', cfg: null, jug: [], timer: null };
 const nombreDe = id => adm.jug.find(j => j.id === id)?.nombre || '—';
 
+// Muestra la versión que tiene este celular y la última publicada en GitHub
+async function revisarVersion() {
+  const el = $('#a-version');
+  el.innerHTML = `Versión en este celular: <b>v${APP_VERSION}</b> · revisando la última…`;
+  try {
+    const r = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
+    const ult = (await r.json()).version;
+    el.innerHTML = ult > APP_VERSION
+      ? `Versión en este celular: <b>v${APP_VERSION}</b> · <span class="nueva">ya salió la v${ult}: cierra y vuelve a abrir el juego</span>`
+      : `Versión en este celular: <b>v${APP_VERSION}</b> · <span class="ok">✓ es la más nueva</span>`;
+  } catch {
+    el.innerHTML = `Versión en este celular: <b>v${APP_VERSION}</b> · no se pudo revisar la última (sin conexión)`;
+  }
+}
 function abrirAdmin() {
   $('#admin').classList.remove('hidden'); document.body.style.overflow = 'hidden';
   $$('.emoji-vuela, .flota').forEach(x => x.remove());      // nada de la casa flotando sobre el panel
   CHAT.boton();
+  revisarVersion();
   cargarAdmin();
   clearInterval(adm.timer);
   adm.timer = setInterval(() => { if (['juego', 'votos', 'pruebas'].includes(adm.tab) && !document.hidden) cargarAdmin(true); }, 6000);

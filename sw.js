@@ -56,6 +56,8 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   // Solo archivos propios del juego; Supabase y fuentes van directo a internet.
   if (req.method !== 'GET' || url.origin !== self.location.origin) return;
+  // version.json siempre directo de internet (sirve para saber si hay versión nueva)
+  if (url.pathname.endsWith('/version.json')) return;
   const pagina = req.mode === 'navigate';
   const red = fetch(req).then(async res => { await guardar(req, res, pagina); return res; });
   e.waitUntil(red.catch(() => {}));          // aunque se use la copia, la nueva se termina de guardar
