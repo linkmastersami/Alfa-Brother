@@ -942,6 +942,10 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .barra-eco{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .chip-eco{appearance:none;border:0;border-radius:999px;background:#2A2160;color:#fff;font-weight:700;padding:7px 12px;font-size:.88rem;cursor:pointer;white-space:nowrap;box-shadow:inset 0 0 0 1px #4A3AA8}
 .chip-eco.dinero{background:#1E8E5A;box-shadow:none}
+/* botón de la tienda: el contorno brilla y parpadea */
+#c-tienda{animation:tienda-brilla 1.6s ease-in-out infinite}
+@keyframes tienda-brilla{0%,100%{box-shadow:inset 0 0 0 2px #FFD54A,0 0 0 0 rgba(255,213,74,0)}50%{box-shadow:inset 0 0 0 3px #FFB347,0 0 18px 6px rgba(255,170,60,.85)}}
+@media (prefers-reduced-motion:reduce){#c-tienda{animation:none;box-shadow:inset 0 0 0 2px #FFD54A}}
 .chip-eco.sube{animation:pulso .7s}
 .chip-eco .punto{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--luz);margin-left:4px;vertical-align:middle}
 @keyframes pulso{40%{transform:scale(1.18)}}
@@ -1707,7 +1711,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 37;
+const APP_VERSION       = 38;
 /* ===================================================================== */
 
 const PRUEBAS = {

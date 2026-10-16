@@ -174,6 +174,7 @@ Versión 33: El camino correcto ahora es un puente de cristal 🪟 (10 fases de 
 Versión 34: durante la votación, arriba de la casa sale quién todavía no vota ("avísales que su voto cuenta… pero que no voten por ti 😅").
 Versión 36: la tienda ya no se sale de la pantalla y al tocar un artículo tu monito se lo prueba antes de comprarlo.
 Versión 37: especial de Halloween en la tienda 🎃 (sombreros, máscaras, colores, cosas en la mano, mascotas y efectos de temporada).
+Versión 38: el botón de la tienda brilla y parpadea.
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.
