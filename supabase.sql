@@ -2187,7 +2187,8 @@ begin
   v := d.datos;
   if d.estado <> 'terminado' then
     if v ? 'ops' then v := jsonb_set(v, '{ops}', (select coalesce(jsonb_agg(op - 'r' order by i), '[]'::jsonb) from jsonb_array_elements(v->'ops') with ordinality x(op, i))); end if;
-    v := v - 'camino';
+    v := v - 'camino' - ('col' || o);
+    if v ? ('pied' || o) then v := jsonb_set(v, array['pied' || o], 'true'::jsonb); end if;   -- que lanzó la piedra, pero no qué vio
     if v ? 'pend' then
       v := v || jsonb_build_object('pp', (select coalesce(jsonb_object_agg(key, true), '{}'::jsonb) from jsonb_each(v->'pend')
                                           where jsonb_typeof(value) = 'object' and value->>'p' is not null));   -- usó poder (sin decir cuál)
@@ -2287,7 +2288,11 @@ begin
     end loop;
     v_datos := jsonb_build_object('ops', v_ops);
   elsif d.juego = 'camino' then
-    v_datos := jsonb_build_object('camino', (select jsonb_agg(floor(random() * 2)::int) from generate_series(1, 5)), 'fa', 0, 'fb', 0, 'ca', 0, 'cb', 0);
+    -- v33: puente de cristal. Fases 1-3 con 2 cristales y 4-5 con 3; los rotos se ven en los dos puentes
+    v_datos := jsonb_build_object('opc', '[2,2,2,3,3]'::jsonb,
+      'camino', (select jsonb_agg(floor(random() * case when g.x <= 3 then 2 else 3 end)::int order by g.x) from generate_series(1, 5) g(x)),
+      'rotos', '[[],[],[],[],[]]'::jsonb, 'fa', 0, 'fb', 0, 'ca', 0, 'cb', 0,
+      'plazoa', now() + interval '11 seconds', 'plazob', now() + interval '11 seconds');
   elsif d.juego = 'globo' then
     v_datos := jsonb_build_object('bombeos', 18);           -- v31: globo explosivo (sube y baja el mango)
   else
@@ -2313,7 +2318,7 @@ end $$;
 --   ppt:     {"ronda": n, "mano": 0 piedra | 1 papel | 2 tijeras}
 --   globo:   {"fin": true}               (ya lo reventé)
 --   calculo: {"resp": [10 números]}      (mis respuestas)
---   camino:  {"fase": n, "lado": 0 izquierda | 1 derecha}
+--   camino:  {"fase": n, "lado": cristal (-1 = se acabó el tiempo)} o {"fase": n, "piedra": cristal}
 --   todos:   {"rendir": true}
 create or replace function public.jugada_duelo(p_token uuid, p_id bigint, p_dato jsonb)
 returns jsonb language plpgsql security definer set search_path = public as $$
@@ -2359,15 +2364,40 @@ begin
     end if;
 
   elsif d.juego = 'camino' then
+    -- 🪟 PUENTE DE CRISTAL (v33): {"fase": n, "lado": i} pisa el cristal i (-1 = se acabó el tiempo);
+    -- {"fase": n, "piedra": i} le avienta la piedra (una por partida). Los cristales rotos se ven en los dos puentes.
     if now() < coalesce((d.datos->>('bloq' || k))::timestamptz, '-infinity'::timestamptz) then return public._duelo_vista(d.id, yo.id); end if;
     n := coalesce((d.datos->>('f' || k))::int, 0);
-    if (p_dato->>'fase')::int is distinct from n then return public._duelo_vista(d.id, yo.id); end if;
-    if (p_dato->>'lado')::int = (d.datos->'camino'->>n)::int then
-      d.datos := d.datos || jsonb_build_object('f' || k, n + 1, 'ult' || k, 'ok');
+    if (p_dato->>'fase')::int is distinct from n or n >= 5 then return public._duelo_vista(d.id, yo.id); end if;
+    mu := coalesce((d.datos->'opc'->>n)::int, 2);
+    if p_dato ? 'piedra' then
+      m := (p_dato->>'piedra')::int;
+      if d.datos ? ('pied' || k) or m is null or m < 0 or m >= mu or d.datos->'rotos'->n @> to_jsonb(m) then
+        return public._duelo_vista(d.id, yo.id);
+      end if;
+      if m = (d.datos->'camino'->>n)::int then
+        d.datos := d.datos || jsonb_build_object('pied' || k, jsonb_build_object('f', n, 'i', m, 'ok', true));
+      else
+        d.datos := jsonb_set(d.datos, array['rotos', n::text], (d.datos->'rotos'->n) || to_jsonb(m))
+                   || jsonb_build_object('pied' || k, jsonb_build_object('f', n, 'i', m, 'ok', false));
+      end if;
+      d.datos := d.datos || jsonb_build_object('plazo' || k,
+        greatest(now(), coalesce((d.datos->>('plazo' || k))::timestamptz, now())) + interval '2 seconds');
+      update public.duelos set datos = d.datos where id = d.id;
+      return public._duelo_vista(d.id, yo.id);
+    end if;
+    m := (p_dato->>'lado')::int;
+    if m is null or m < -1 or m >= mu or (m >= 0 and d.datos->'rotos'->n @> to_jsonb(m)) then return public._duelo_vista(d.id, yo.id); end if;
+    -- se le acabaron los 6 segundos (con un poquito de tolerancia por la señal)
+    if now() > coalesce((d.datos->>('plazo' || k))::timestamptz, 'infinity'::timestamptz) + interval '1.5 seconds' then m := -1; end if;
+    if m = (d.datos->'camino'->>n)::int then
+      d.datos := d.datos || jsonb_build_object('f' || k, n + 1, 'ult' || k, 'ok', 'col' || k, m, 'plazo' || k, now() + interval '6 seconds');
       update public.duelos set datos = d.datos where id = d.id;
       if n + 1 >= 5 then perform public._terminar_duelo(d.id, yo.id); end if;
-    else            -- se cayó: regresa a la fase 1 y espera 4 segundos
-      d.datos := d.datos || jsonb_build_object('f' || k, 0, 'ult' || k, 'cae', 'bloq' || k, now() + interval '4 seconds',
+    else            -- se cayó: el cristal se rompe (para los dos), regresa a la salida y espera 4 segundos
+      if m >= 0 then d.datos := jsonb_set(d.datos, array['rotos', n::text], (d.datos->'rotos'->n) || to_jsonb(m)); end if;
+      d.datos := (d.datos - ('col' || k)) || jsonb_build_object('f' || k, 0, 'ult' || k, case when m < 0 then 'tiempo' else 'cae' end,
+                                               'bloq' || k, now() + interval '4 seconds', 'plazo' || k, now() + interval '10 seconds',
                                                'c' || k, coalesce((d.datos->>('c' || k))::int, 0) + 1);
       update public.duelos set datos = d.datos where id = d.id;
     end if;
@@ -2555,6 +2585,7 @@ returns jsonb language sql immutable as $$
   end
 $$;
 
+-- v33: El camino correcto = puente de cristal (ver responder_duelo y jugada_duelo)
 -- v32: historial de duelos entre dos habitantes (para la ventanita antes de desafiar)
 create or replace function public.duelos_contra(p_token uuid, p_rival uuid)
 returns jsonb language plpgsql stable security definer set search_path = public as $$

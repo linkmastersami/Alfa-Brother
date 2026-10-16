@@ -374,30 +374,83 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .calc-lista .bien{color:#7CF29A}
 .calc-lista .mal{color:#ff9a9a}
 .calc-lista s{opacity:.8}
-.cam-pistas{display:grid;gap:6px;background:rgba(0,0,0,.25);border-radius:14px;padding:8px 10px}
-.cam-pista{display:flex;align-items:center;gap:8px}
-.cam-pista small{width:62px;font-weight:700;color:#C9C3EE;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cam-dots{flex:1;display:flex;justify-content:space-between;align-items:center}
-.cam-dots i{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center;font-style:normal;font-size:.72rem;font-weight:800}
-.cam-dots i.ya{background:#1e8e5a}
-.cam-dots i.aqui{background:#FFD54A;color:#1B1440;box-shadow:0 0 0 3px rgba(255,213,74,.35)}
-.cam-escena{position:relative;flex:1;min-height:340px;border-radius:18px;overflow:hidden;background:linear-gradient(#183a2a,#2f6b3e 60%,#3c7d47)}
-.cam-svg{position:absolute;inset:0;width:100%;height:100%}
-.cam-svg path{fill:none;stroke:#c9a46a;stroke-width:13;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.85}
-.cam-fase{position:absolute;top:10px;left:0;right:0;text-align:center;font:900 1.3rem Anton,Impact,sans-serif;color:#FFD54A;text-shadow:0 2px 0 rgba(0,0,0,.4)}
-.cam-otro{position:absolute;top:40px;left:10%;transform:translateX(-50%);transition:left .4s;opacity:.85}
-.cam-lado{position:absolute;top:30%;border:0;border-radius:14px;background:rgba(10,4,20,.65);color:#fff;font-weight:800;padding:12px 14px;font-size:1rem;box-shadow:0 4px 0 rgba(0,0,0,.35)}
-.cam-lado.izq{left:8px}
-.cam-lado.der{right:8px}
-.cam-lado:disabled{opacity:.45}
-.cam-mono{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);transition:left .45s ease-in,bottom .45s ease-in}
-.cam-mono.va-0{left:23%;bottom:42%}
-.cam-mono.va-1{left:77%;bottom:42%}
-.cam-mono.cae{animation:cam-cae .9s ease-in forwards}
-@keyframes cam-cae{0%{transform:translateX(-50%)}25%{transform:translateX(-50%) translateY(-14px)}100%{transform:translateX(-50%) translateY(90px) rotate(220deg) scale(.4);opacity:0}}
-.cam-trampa{position:absolute;top:34%;font-size:64px;transform:translate(-50%,-50%) scale(0);transition:transform .25s cubic-bezier(.3,1.6,.6,1);pointer-events:none}
-.cam-trampa.on{transform:translate(-50%,-50%) scale(1)}
-.cam-bloq{position:absolute;inset:0;display:grid;place-items:center;background:rgba(10,4,20,.5);font:900 5rem Anton,Impact,sans-serif;color:#ff4d4d;text-shadow:0 0 18px #000}
+/* 🪟 Puente de cristal (v33) */
+.pz{flex:1;display:flex;flex-direction:column;gap:8px}
+.pz-top{display:flex;align-items:center;gap:10px}
+.pz-fase{flex:1;min-width:0}
+.pz-fase b{display:block;font:900 1.25rem/1.1 Anton,Impact,sans-serif;color:#FFD54A;letter-spacing:.02em}
+.pz-reloj{height:9px;border-radius:9px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:5px}
+.pz-reloj i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#3ee08f,#FFD54A);border-radius:9px}
+.pz-reloj.poco i{background:#ff4d4d}
+.pz-piedra{border:0;border-radius:14px;background:#5b4a3a;color:#fff;font-weight:800;padding:9px 12px;font-size:.92rem;box-shadow:0 4px 0 #2e241b;flex:none}
+.pz-piedra.apunta{background:#FFD54A;color:#1B1440;box-shadow:0 4px 0 #a07d10;animation:pz-lat .7s infinite}
+.pz-piedra:disabled{opacity:.4}
+@keyframes pz-lat{50%{transform:scale(1.06)}}
+.pz-main{flex:1;display:flex;gap:8px;min-height:420px}
+.pz-vista{position:relative;flex:1;min-width:0;border-radius:18px;overflow:hidden;perspective:560px;perspective-origin:50% -10%;
+  background:radial-gradient(120% 60% at 50% 0%,#2b1f5c 0%,#120a2c 55%,#05030d 100%)}
+.pz-vista::before{content:"";position:absolute;inset:0;background:radial-gradient(1.5px 1.5px at 12% 8%,#fff8,transparent),radial-gradient(1.5px 1.5px at 70% 5%,#fff9,transparent),radial-gradient(1px 1px at 40% 14%,#fff7,transparent),radial-gradient(1.5px 1.5px at 88% 18%,#fff6,transparent),radial-gradient(1px 1px at 25% 22%,#fff5,transparent)}
+.pz-vista::after{content:"";position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(transparent,rgba(30,10,60,.55));pointer-events:none}
+.pz-plano{--rh:100px;position:absolute;left:12%;right:12%;bottom:-30px;height:calc(var(--rh)*7);transform-origin:50% 100%;
+  transform:rotateX(56deg) translateY(var(--cam,0px));transform-style:preserve-3d;transition:transform .75s cubic-bezier(.3,.8,.3,1)}
+.pz-riel{position:absolute;top:0;bottom:0;width:8px;border-radius:4px;background:linear-gradient(90deg,#4b5563,#e5e7eb 50%,#4b5563);box-shadow:0 0 8px rgba(255,255,255,.25)}
+.pz-riel.i{left:-12px}.pz-riel.d{right:-12px}
+.pz-fila{position:absolute;left:0;right:0;height:var(--rh);display:flex;gap:9%;padding:10px 4%;box-sizing:border-box;transform-style:preserve-3d;transform:translateZ(1px)}
+.pz-fila::before{content:"";position:absolute;left:-12px;right:-12px;bottom:-3px;height:6px;background:linear-gradient(#9ca3af,#4b5563);border-radius:3px}
+.pz-plat{background:repeating-linear-gradient(90deg,#3b3355 0 12px,#463d66 12px 24px);border-radius:10px;align-items:center;justify-content:center;
+  font:900 1.1rem Anton,Impact,sans-serif;color:#C9C3EE;letter-spacing:.1em}
+.pz-meta{background:conic-gradient(#fff 25%,#222 0 50%,#fff 0 75%,#222 0) 0 0/28px 28px;color:#FFD54A;text-shadow:0 2px 0 #000,0 0 8px #000;font-size:1.5rem}
+.pz-v{flex:1;position:relative;transform:translateZ(1px);border-radius:7px;border:2px solid rgba(215,248,255,.75);cursor:pointer;
+  background:linear-gradient(135deg,rgba(190,240,255,.6),rgba(80,150,220,.28) 45%,rgba(140,210,255,.35) 60%,rgba(220,250,255,.55));
+  box-shadow:inset 0 0 14px rgba(140,230,255,.45),0 0 10px rgba(120,220,255,.25)}
+.pz-v::before{content:"";position:absolute;left:12%;top:10%;width:22%;height:70%;background:linear-gradient(rgba(255,255,255,.55),transparent);transform:skewX(-18deg);border-radius:4px}
+.pz-fila.activa .pz-v:not(.roto){animation:pz-brillo 1.1s infinite}
+@keyframes pz-brillo{50%{border-color:#FFD54A;box-shadow:inset 0 0 18px rgba(255,213,74,.5),0 0 16px rgba(255,213,74,.55)}}
+.pz-apunta .pz-fila.activa .pz-v:not(.roto){animation:pz-mira .6s infinite}
+@keyframes pz-mira{50%{border-color:#ff8a00;box-shadow:inset 0 0 18px rgba(255,138,0,.6),0 0 18px rgba(255,138,0,.7)}}
+.pz-v.roto{background:none;border-color:transparent;box-shadow:none;cursor:default;animation:none!important}
+.pz-v.roto::before,.pz-v.roto::after{content:"";position:absolute;transform:none;border-radius:0;width:auto;height:auto;background:rgba(170,225,255,.5)}
+.pz-v.roto::before{left:0;top:0;right:0;bottom:0;clip-path:polygon(0 0,38% 0,22% 18%,30% 30%,8% 42%,0 60%);}
+.pz-v.roto::after{left:0;top:0;right:0;bottom:0;clip-path:polygon(100% 100%,58% 100%,74% 84%,64% 70%,90% 58%,100% 36%)}
+.pz-v.seguro{border-color:#3ee08f;box-shadow:inset 0 0 18px rgba(62,224,143,.55),0 0 16px rgba(62,224,143,.6);animation:none!important}
+.pz-v.seguro::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;font:900 2rem sans-serif;color:#3ee08f;text-shadow:0 0 8px #000}
+.pz-ast{position:absolute;left:50%;top:50%;width:26%;height:30%;background:rgba(190,240,255,.7);clip-path:polygon(50% 0,100% 70%,20% 100%);
+  animation:pz-ast .9s ease-in forwards;pointer-events:none}
+@keyframes pz-ast{to{transform:translate3d(var(--tx),var(--ty),-320px) rotate(var(--r));opacity:0}}
+.pz-cosa{position:absolute;width:0;height:0;transform-style:preserve-3d;transition:left .38s ease-out,bottom .38s ease-out;pointer-events:none}
+.pz-up{position:absolute;left:0;bottom:0;transform:translateX(-50%) rotateX(-56deg);transform-origin:50% 100%}
+.pz-br.salta{animation:pz-salto .38s ease-out}
+@keyframes pz-salto{45%{transform:translateY(-38px)}}
+.pz-br.cae{animation:pz-caer 1.1s ease-in forwards}
+@keyframes pz-caer{15%{transform:translateY(-14px)}100%{transform:translateY(330px) rotate(320deg) scale(.35);opacity:0}}
+.pz-br.baja{animation:pz-bajar 3.4s ease-out}
+@keyframes pz-bajar{0%{transform:translateY(-240px);opacity:0}12%{opacity:1}100%{transform:none}}
+.pz-globito{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);font-size:34px;line-height:1;transition:opacity .4s}
+.pz-roca{font-size:26px;line-height:1}
+.pz-br.lanza{animation:pz-arco .5s ease-out}
+@keyframes pz-arco{45%{transform:translateY(-60px) rotate(180deg)}100%{transform:rotate(360deg)}}
+.pz-bloq{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:4px;background:rgba(10,4,20,.45);text-align:center;pointer-events:none}
+.pz-bloq b{font:900 4.6rem/1 Anton,Impact,sans-serif;color:#ff4d4d;text-shadow:0 0 18px #000}
+.pz-bloq small{font-weight:800;color:#fff;text-shadow:0 1px 4px #000}
+.pz-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+.pz-flash.on{animation:pz-flash .35s}
+@keyframes pz-flash{0%{opacity:.35}100%{opacity:0}}
+.pz-rival{width:86px;flex:none;display:flex;flex-direction:column;gap:4px;background:rgba(0,0,0,.28);border-radius:16px;padding:8px 6px;box-sizing:border-box}
+.pz-rival-cab{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.pz-rival-cab small{font-weight:800;font-size:.72rem;color:#C9C3EE;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pz-rival-cab em{font-style:normal;font-size:.7rem;color:#ff9a9a;min-height:1em}
+.pz-mini{flex:1;display:flex;flex-direction:column;gap:4px;justify-content:center}
+.pz-mf.aqui>span:not(.pz-mrival){opacity:0}
+.pz-mf{position:relative;flex:1;max-height:42px;min-height:26px;display:flex;gap:4px;padding:3px;border-radius:8px;box-sizing:border-box}
+.pz-mf.plat{background:#3b3355;align-items:center;justify-content:center;font:900 .62rem Anton,Impact,sans-serif;color:#C9C3EE;letter-spacing:.06em}
+.pz-mf.meta{background:conic-gradient(#fff 25%,#222 0 50%,#fff 0 75%,#222 0) 0 0/12px 12px}
+.pz-mf i{flex:1;border-radius:4px;border:1.5px solid rgba(215,248,255,.7);background:rgba(140,210,255,.35)}
+.pz-mf i.roto{border:1.5px dashed rgba(255,120,120,.7);background:none}
+.pz-mf.aqui{box-shadow:0 0 0 2px #FFD54A}
+.pz-mrival{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;transition:opacity .3s}
+.pz-mrival .av{border:2px solid #FFD54A;box-shadow:0 2px 6px #000}
+.pz-mf.cae .pz-mrival{animation:pz-mcae .9s ease-in}
+@keyframes pz-mcae{50%{transform:translate(-50%,30px) scale(.4);opacity:0}}
 .du-titulo{font:900 2.6rem/1 Anton,Impact,sans-serif!important;letter-spacing:.03em;margin-top:8px!important}
 .du-titulo.gana{color:#FFD54A;text-shadow:0 0 18px #ff8a00}
 .du-titulo.pierde{color:#ff6b6b}
@@ -1785,6 +1838,10 @@ const SFX = (() => {
     inflar(f = 0) { tono({ f: 300 + f * 700, f2: 360 + f * 760, d: .06, tipo: 'triangle', v: .07 }); },
     pop() { ruido({ d: .18, v: .55, filtro: 2600 }); tono({ f: 220, f2: 60, d: .2, v: .3 }); },
     caida() { tono({ f: 880, f2: 110, d: .7, tipo: 'triangle', v: .16 }); ruido({ t: .62, d: .18, v: .4, filtro: 500 }); },
+    // puente de cristal: se rompe, la piedra rebota (tunk) y el pasito sobre el cristal
+    cristal() { ruido({ d: .35, v: .45, filtro: 3000, tipo: 'highpass' }); ruido({ t: .04, d: .5, v: .18, filtro: 6000, tipo: 'bandpass', q: 2 }); for (let i = 0; i < 8; i++) tono({ f: 2500 + Math.random() * 3500, t: Math.random() * .3, d: .06 + Math.random() * .14, tipo: 'triangle', v: .05 }); },
+    tink() { tono({ f: 3200, d: .2, v: .12 }); tono({ f: 4800, t: .01, d: .14, v: .05 }); tono({ f: 1600, t: .02, d: .1, tipo: 'triangle', v: .06 }); },
+    paso() { tono({ f: 2100, d: .09, tipo: 'triangle', v: .1 }); ruido({ d: .04, v: .1, filtro: 4000, tipo: 'highpass' }); },
     // papel volteándose
     swish() { ruido({ d: .2, v: .18, filtro: 1500, tipo: 'bandpass', q: .8, barrido: 6000 }); },
     // aviso de cambio de fase
@@ -3704,7 +3761,7 @@ const DUELOS_JUEGOS = {
   ppt: { nombre: 'Boxeo', ic: '🤜🤛', desc: 'Piedra, papel o tijeras a golpes: 3 corazones cada quien y un poder por pelea (🛡️ escudo o ⚡ golpe doble). Si empatan, la siguiente vale doble. Gana el último en pie.' },
   globo: { nombre: 'Globo explosivo', ic: '🎈💥', desc: 'En la feria: sube y baja el mango de tu bomba para inflar el globo de agua que cuelga sobre tu rival. El primero que lo revienta ¡lo baña y gana!' },
   calculo: { nombre: 'Cálculo rápido', ic: '➕✖️', desc: 'Las mismas 10 operaciones para los dos. Gana quien tenga más buenas; si empatan, el más rápido.' },
-  camino: { nombre: 'El camino correcto', ic: '🛤️', desc: '5 fases: izquierda o derecha. Si te caes, regresas a la fase 1 y pierdes 4 segundos. Gana el primero en llegar a la meta.' },
+  camino: { nombre: 'El camino correcto', ic: '🪟', desc: 'Puente de cristal: 5 fases (las 2 últimas con 3 cristales) y 6 segundos por paso. Si pisas el falso se rompe para los dos, te caes y regresas a la salida. Tienes una 🪨 piedra para probar un cristal. Gana el primero en llegar a la meta.' },
 };
 function tarjetaDuelos() {
   const marc = (est.duelos_marcador || []).slice(0, 5);
@@ -3718,8 +3775,6 @@ function tarjetaDuelos() {
 const DUELO = (() => {
   const J = DUELOS_JUEGOS;
   const MANOS = ['✊', '✋', '✌️'], NOM_MANO = ['Piedra', 'Papel', 'Tijeras'];
-  const TRAMPAS = [['🕳️', '¡Se cayó a un hoyo!'], ['🎹', '¡Le cayó un piano!'], ['🐊', '¡Lo mordió un cocodrilo!'], ['🍌', '¡Se resbaló con una cáscara!'],
-    ['📋', '¡Lo agarró un cobrador!'], ['🐝', '¡Lo persiguieron las abejas!'], ['💩', '¡Pisó una sorpresita!'], ['🌵', '¡Se sentó en un nopal!']];
   let modo = null;            // null | elegir | esperando | invitacion | juego | resultado | aviso
   let d = null;               // cómo va el duelo (lo que regresa el servidor)
   let off = 0;                // diferencia con el reloj del servidor
@@ -3747,7 +3802,7 @@ const DUELO = (() => {
   const avisar = para => d?.bot || SALA.mandarDuelo({ para, duelo: d?.id, de: yoId() });
   const progreso = p => d?.bot || SALA.mandarDuelo({ duelo: d?.id, de: yoId(), p });
   function abrirCaja() { caja().classList.remove('hidden'); document.body.style.overflow = 'hidden'; SFX.pausaParaGala(true); }
-  function limpiar() { cancelAnimationFrame(G.raf); clearInterval(poll); clearInterval(tick); clearTimeout(G.cuentaT); clearTimeout(G.t1); clearTimeout(G.t2); clearTimeout(G.botT); clearTimeout(G.botT2); poll = tick = null; G = {}; }
+  function limpiar() { cancelAnimationFrame(G.raf); clearInterval(poll); clearInterval(tick); clearTimeout(G.cuentaT); clearTimeout(G.t1); clearTimeout(G.t2); clearTimeout(G.botT); clearTimeout(G.botT2); clearInterval(G.reloj); poll = tick = null; G = {}; }
   function cerrar() {
     limpiar(); modo = null; d = null;
     caja().classList.add('hidden'); caja().innerHTML = '';
@@ -4372,76 +4427,196 @@ const DUELO = (() => {
     $('#c-op').innerHTML = '¿Listo?'; info('yo', '0/10'); info('otro', '0/10');
   }
 
-  // 🛤️ El camino correcto: 5 fases, si te caes regresas a la fase 1 y esperas 4 segundos
+  // 🪟 El camino correcto: PUENTE DE CRISTAL. 5 fases (las 2 últimas con 3 cristales), 6 segundos por paso,
+  // si pisas el falso se rompe (para los dos), te caes y regresas a la salida. Una 🪨 piedra para probar un cristal.
   function jCamino() {
     const z = $('#du-zona');
     caja().querySelector('.du-ring').classList.add('hidden');
-    G.f = d.datos['f' + k()] || 0; G.fo = d.datos['f' + o()] || 0; G.esperando = false; G.bloq = 0;
-    z.innerHTML = `<div class="cam-pistas">
-        <div class="cam-pista"><small>Tú</small><div class="cam-dots" id="cam-yo"></div></div>
-        <div class="cam-pista"><small>${esc(nomOtro())}</small><div class="cam-dots" id="cam-otro"></div></div></div>
-      <div class="cam-escena" id="cam-esc">
-        <svg class="cam-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M50 100 L50 66 Q50 56 22 44 L18 0" /><path d="M50 66 Q50 56 78 44 L82 0" /></svg>
-        <div class="cam-fase" id="cam-fase"></div>
-        <div class="cam-otro">${monito(otroJ(), { tam: 26, nombre: false })}</div>
-        <button class="cam-lado izq" data-lado="0" disabled>⬅️ Izquierda</button>
-        <button class="cam-lado der" data-lado="1" disabled>Derecha ➡️</button>
-        <div class="cam-mono" id="cam-mono">${monito(yoJ(), { tam: 50, nombre: false })}</div>
-        <div class="cam-trampa" id="cam-trampa"></div>
-        <div class="cam-bloq hidden" id="cam-bloq"></div>
+    const D = () => d.datos, RH = 100;
+    const OPC = D().opc || [2, 2, 2, 3, 3];
+    const rotos = f => D().rotos?.[f] || [];
+    const mia = () => { const p = D()['pied' + k()]; return p && typeof p === 'object' ? p : null; };
+    G.f = D()['f' + k()] || 0; G.fo = D()['f' + o()] || 0; G.col = D()['col' + k()];
+    G.co = D()['c' + o()] || 0; G.pOtro = !!D()['pied' + o()]; G.esperando = false; G.bloq = 0; G.apunta = false;
+    G.vistos = new Set(OPC.flatMap((n, f) => rotos(f).map(i => f + '-' + i)));
+    z.innerHTML = `<div class="pz">
+      <div class="pz-top"><div class="pz-fase"><b id="pz-fase"></b><div class="pz-reloj" id="pz-reloj"><i></i></div></div>
+        <button class="pz-piedra" id="pz-piedra" disabled>🪨 Piedra</button></div>
+      <div class="pz-main">
+        <div class="pz-vista" id="pz-vista"><div class="pz-plano" id="pz-plano"></div><div class="pz-flash" id="pz-flash"></div>
+          <div class="pz-bloq hidden" id="pz-bloq"><b></b><small>Un globo te regresa a la salida 🎈</small></div></div>
+        <div class="pz-rival"><div class="pz-rival-cab">${monito(otroJ(), { tam: 30, nombre: false })}<small>${esc(nomOtro())}</small><em id="pz-rc"></em></div>
+          <div class="pz-mini" id="pz-mini"></div></div>
       </div>
-      <p class="du-msg" id="cam-msg">Uno de los dos caminos es el bueno. ¡Escoge!</p>`;
-    G.mYo = $('#cam-mono .mm'); G.mOtro = $('.cam-otro .mm');
-    const dots = (sel, f) => { const el = $(sel); if (el) el.innerHTML = [0, 1, 2, 3, 4].map(i => `<i class="${i < f ? 'ya' : i === f ? 'aqui' : ''}">${i < f ? '✓' : i + 1}</i>`).join('') + `<i class="${f >= 5 ? 'ya' : ''}">🏁</i>`; };
-    const pinta = () => {
-      dots('#cam-yo', G.f); dots('#cam-otro', G.fo);
-      $('#cam-fase').textContent = G.f >= 5 ? '¡Meta!' : `Fase ${G.f + 1} de 5${G.f === 4 ? ' · ¡la última!' : ''}`;
-      const otro = $('.cam-otro'); if (otro) otro.style.left = (10 + G.fo * 18) + '%';
-    };
-    const botones = on => $$('#cam-esc [data-lado]').forEach(b => b.disabled = !on);
-    const elegirLado = async lado => {
-      if (!G.activo || G.esperando || Date.now() < G.bloq) return;
-      G.esperando = true; botones(false);
-      const mono = $('#cam-mono'); mono.className = 'cam-mono va-' + lado;
-      SFX.tocar('swish');
-      const antes = G.f, caidas = d.datos['c' + k()] || 0;
-      let v = null;
-      try { v = await jugada({ fase: antes, lado }); progreso(v.datos['f' + k()] ?? antes); avisar(otroId()); } catch { }
-      setTimeout(() => {
+      <p class="du-msg" id="cam-msg">Pisa el cristal bueno. Si pisas el falso… ¡pa' bajo! 😱</p></div>`;
+    const plano = $('#pz-plano');
+    plano.innerHTML = `<div class="pz-riel i"></div><div class="pz-riel d"></div>
+      <div class="pz-fila pz-plat" style="bottom:0">SALIDA</div>
+      ${OPC.map((n, f) => `<div class="pz-fila" data-f="${f}" style="bottom:${(f + 1) * RH}px">${Array.from({ length: n }, (_, i) => `<div class="pz-v${rotos(f).includes(i) ? ' roto' : ''}" data-f="${f}" data-i="${i}"></div>`).join('')}</div>`).join('')}
+      <div class="pz-fila pz-plat pz-meta" style="bottom:${6 * RH}px">🏁 META</div>
+      <div class="pz-cosa" id="pz-yo"><div class="pz-up"><div class="pz-br" id="pz-br"><span class="pz-globito" id="pz-glo" style="opacity:0">🎈</span>${monito(yoJ(), { tam: 44, nombre: false })}</div></div></div>`;
+    G.mYo = $('#pz-br .mm'); G.mOtro = $('.pz-rival-cab .mm');
+    const yo = $('#pz-yo'), br = $('#pz-br'), msg = t => { const el = $('#cam-msg'); if (el) el.innerHTML = t; };
+    // dónde queda el centro de cada cristal (en % del ancho y px desde abajo)
+    const cx = (n, i) => { const w = (92 - 9 * (n - 1)) / n; return 4 + i * (w + 9) + w / 2; };
+    const pos = (f, col) => f <= 0 ? [50, RH * .42] : f >= 5 ? [50, 6.42 * RH] : [col == null ? 50 : cx(OPC[f - 1], col), (f + .42) * RH];
+    const poner = (el, [x, y], anim = true) => { el.style.transition = anim ? '' : 'none'; el.style.left = x + '%'; el.style.bottom = y + 'px'; if (!anim) void el.offsetWidth; };
+    const camara = f => plano.style.setProperty('--cam', Math.min(4, Math.max(0, f)) * RH + 'px');
+    const brinco = (el, cls) => { el.classList.remove('salta', 'cae', 'baja', 'lanza'); void el.offsetWidth; if (cls) el.classList.add(cls); };
+    const vidrio = (f, i) => plano.querySelector(`.pz-v[data-f="${f}"][data-i="${i}"]`);
+    function romper(f, i, fuerte = true) {
+      if (G.vistos.has(f + '-' + i)) return;
+      G.vistos.add(f + '-' + i);
+      const v = vidrio(f, i); if (!v) return;
+      v.classList.add('roto');
+      for (let n = 0; n < 7; n++) {
+        const a = document.createElement('span'); a.className = 'pz-ast';
+        a.style.cssText = `--tx:${Math.round((Math.random() - .5) * 120)}px;--ty:${Math.round((Math.random() - .5) * 90)}px;--r:${Math.round(Math.random() * 720 - 360)}deg;left:${10 + Math.random() * 60}%;top:${10 + Math.random() * 60}%`;
+        v.appendChild(a); setTimeout(() => a.remove(), 950);
+      }
+      SFX.tocar('cristal');
+      if (fuerte) { const fl = $('#pz-flash'); fl.classList.remove('on'); void fl.offsetWidth; fl.classList.add('on'); }
+    }
+    function pintaMini() {
+      const fila = (cls, ins, aqui) => `<div class="pz-mf ${cls}${aqui ? ' aqui' : ''}">${ins}${aqui ? `<span class="pz-mrival">${avatar(otroJ(), 20)}</span>` : ''}</div>`;
+      let h = fila('plat meta', '', G.fo >= 5);
+      for (let f = 4; f >= 0; f--) h += fila('', Array.from({ length: OPC[f] }, (_, i) => `<i class="${rotos(f).includes(i) ? 'roto' : ''}"></i>`).join(''), G.fo === f + 1);
+      h += fila('plat', '<span>SALIDA</span>', G.fo === 0);
+      $('#pz-mini').innerHTML = h;
+      const c = D()['c' + o()] || 0;
+      $('#pz-rc').textContent = (c ? `💥 ${c} ${c === 1 ? 'caída' : 'caídas'}` : '') + (G.pOtro ? ' 🪨' : '');
+    }
+    function pinta() {
+      $('#pz-fase').textContent = G.f >= 5 ? '¡Llegaste a la meta!' : `Fase ${G.f + 1} de 5${G.f === 4 ? ' · ¡la última!' : ''}${OPC[G.f] === 3 ? ' · 3 cristales' : ''}`;
+      OPC.forEach((n, f) => {
+        const fila = plano.querySelector(`.pz-fila[data-f="${f}"]`);
+        fila.classList.toggle('activa', f === G.f && G.activo && !G.esperando && Date.now() >= G.bloq);
+        for (let i = 0; i < n; i++) { const p = mia(); vidrio(f, i).classList.toggle('seguro', !!(p && p.ok && p.f === f && p.i === i)); }
+      });
+      const b = $('#pz-piedra'), usada = !!D()['pied' + k()];
+      b.textContent = usada ? '🪨 Usada' : G.apunta ? '🎯 ¿A cuál?' : '🪨 Piedra';
+      b.classList.toggle('apunta', G.apunta);
+      b.disabled = usada || !G.activo || G.esperando || Date.now() < G.bloq || G.f >= 5;
+      $('#pz-vista').classList.toggle('pz-apunta', G.apunta);
+      pintaMini();
+    }
+    // ⏱️ 6 segundos por paso (el plazo lo pone el servidor)
+    const plazo = () => { const p = D()['plazo' + k()]; return p ? Date.parse(p) - off : Infinity; };
+    let ultSeg = null;
+    function reloj() {
+      const el = $('#pz-reloj'); if (!el || modo !== 'juego') return;
+      const falta = plazo() - Date.now(), bar = el.firstElementChild;
+      const corre = G.activo && !G.esperando && Date.now() >= G.bloq && G.f < 5;
+      bar.style.width = (corre ? Math.max(0, Math.min(1, falta / 6000)) * 100 : 100) + '%';
+      el.classList.toggle('poco', corre && falta < 2000);
+      if (corre && falta < 3000 && falta > 0) { const s = Math.ceil(falta / 1000); if (s !== ultSeg) { ultSeg = s; SFX.tocar('tic'); } }
+      if (corre && falta <= 0) tiempo();
+    }
+    async function enviar(dato) {
+      try { await jugada(dato); progreso(D()['f' + k()] ?? 0); avisar(otroId()); } catch { }
+    }
+    // Te caes: animación, regresas a la salida en globito y esperas 4 segundos
+    function caer(txt) {
+      expresar(G.mYo, '😱', 'susto', 0);
+      brinco(br, 'cae'); SFX.tocar('caida');
+      msg(txt + ' Regresas a la salida.');
+      G.f = 0; G.col = null;
+      const hasta = Date.now() + 4000; G.bloq = hasta;
+      const bl = $('#pz-bloq'); bl.classList.remove('hidden'); bl.firstElementChild.textContent = 4;
+      G.t1 = setTimeout(() => {
         if (modo !== 'juego') return;
-        const nf = d.datos['f' + k()] ?? antes;
-        if (d.estado === 'terminado' && d.ganador === yoId()) { G.f = 5; pinta(); expresar(G.mYo, '🏆', 'festeja', 0); G.animando = true; setTimeout(() => { G.animando = false; resultado(); }, 1100); return; }
-        if (nf > antes) {
-          G.f = nf; pinta(); expresar(G.mYo, '😎', 'festeja', 700, '');
-          $('#cam-msg').textContent = ['¡Bien! Ese era.', '¡Eso! Sigue así.', '¡Pasaste!', '¡Vas volando!'][antes % 4];
-          SFX.tocar('caja');
-          setTimeout(() => { mono.className = 'cam-mono'; G.esperando = false; botones(true); }, 450);
-        } else if ((d.datos['c' + k()] || 0) > caidas) {
-          const [emo, txt] = TRAMPAS[Math.floor(Math.random() * TRAMPAS.length)];
-          const tr = $('#cam-trampa'); tr.textContent = emo; tr.style.left = lado ? '76%' : '24%'; tr.classList.add('on');
-          expresar(G.mYo, '😱', 'susto', 0);
-          mono.classList.add('cae');
-          SFX.tocar('caida');
-          $('#cam-msg').textContent = `${txt} Regresas a la fase 1.`;
-          G.f = 0; pinta();
-          const hasta = Date.now() + 4000; G.bloq = hasta;
-          const bl = $('#cam-bloq'); bl.classList.remove('hidden');
-          const cd = setInterval(() => {
-            const s = Math.ceil((hasta - Date.now()) / 1000);
-            if (s > 0) { bl.textContent = s; return; }
-            clearInterval(cd); bl.classList.add('hidden'); tr.classList.remove('on');
-            mono.className = 'cam-mono'; expresar(G.mYo, '', '', 0);
-            G.esperando = false; if (modo === 'juego') { botones(true); $('#cam-msg').textContent = 'Otra vez desde el principio. ¡Tú puedes!'; }
-          }, 200);
-          bl.textContent = 4;
-        } else { mono.className = 'cam-mono'; G.esperando = false; botones(true); }
-      }, 480);
+        poner(yo, pos(0)); camara(0); expresar(G.mYo, '😵‍💫', '', 0);
+        $('#pz-glo').style.opacity = 1; brinco(br, 'baja'); pinta();
+      }, 1150);
+      const cd = setInterval(() => {
+        if (modo !== 'juego') { clearInterval(cd); return; }
+        const s = Math.ceil((hasta - Date.now()) / 1000);
+        if (s > 0) { bl.firstElementChild.textContent = s; return; }
+        clearInterval(cd); bl.classList.add('hidden'); $('#pz-glo').style.opacity = 0; brinco(br, '');
+        expresar(G.mYo, '', '', 0); G.esperando = false;
+        msg('Otra vez desde la salida. ¡Fíjate en los cristales rotos! 👀'); pinta();
+      }, 200);
+    }
+    async function tiempo() {
+      if (G.esperando) return;
+      G.esperando = true; G.apunta = false; pinta();
+      await enviar({ fase: G.f, lado: -1 });
+      if (modo !== 'juego') return;
+      caer(['🌬️ ¡Se te acabó el tiempo y te tumbó el viento!', '⏰ ¡Muy lento! El puente se sacudió.'][rand(2)]);
+    }
+    async function pisar(i) {
+      if (!G.activo || G.esperando || Date.now() < G.bloq || G.f >= 5) return;
+      if (rotos(G.f).includes(i)) { msg('Ese ya está roto. 🙈'); return; }
+      if (G.apunta) return lanzar(i);
+      G.esperando = true; pinta();
+      const antes = G.f, caidas = D()['c' + k()] || 0, t0 = Date.now();
+      poner(yo, pos(antes + 1, i)); brinco(br, 'salta'); SFX.tocar('swish');
+      await enviar({ fase: antes, lado: i });
+      await new Promise(r => setTimeout(r, Math.max(0, 400 - (Date.now() - t0))));
+      if (modo !== 'juego') return;
+      const nf = D()['f' + k()] ?? antes;
+      if (nf > antes) {
+        G.f = nf; G.col = i; SFX.tocar('paso');
+        if (nf >= 5 || (d.estado === 'terminado' && d.ganador === yoId())) {
+          G.f = 5; G.animando = true; pinta();
+          setTimeout(() => { poner(yo, pos(5)); brinco(br, 'salta'); camara(5); expresar(G.mYo, '🏆', 'festeja', 0); SFX.tocar('fanfarria'); }, 350);
+          setTimeout(() => { G.animando = false; resultado(); }, 1700);
+          return;
+        }
+        camara(nf); expresar(G.mYo, '😎', 'festeja', 700, '');
+        msg(['¡Aguantó! 😮‍💨', '¡Eso! Sigue así.', '¡Uff, ese era!', '¡Vas volando! 🔥'][antes % 4]);
+        G.esperando = false; pinta();
+      } else if ((D()['c' + k()] || 0) > caidas) {
+        romper(antes, i);
+        caer(['¡Crack! Ese era el falso.', '¡Pa\' bajo! Ese cristal no aguantaba.', '¡Uy! Se hizo pedazos.', '¡Adiós! 💥'][rand(4)]);
+      } else { poner(yo, pos(antes, G.col)); G.esperando = false; pinta(); }
+    }
+    // 🪨 avientas la piedra a un cristal: si se rompe era falso (y se rompe para los dos); si rebota, es seguro (solo tú lo sabes)
+    async function lanzar(i) {
+      G.apunta = false; G.esperando = true; pinta();
+      const f = G.f, roca = document.createElement('div');
+      roca.className = 'pz-cosa';
+      roca.innerHTML = '<div class="pz-up"><div class="pz-br"><span class="pz-roca">🪨</span></div></div>';
+      plano.appendChild(roca);
+      const [x, y] = pos(f, G.col); poner(roca, [x, y + 20], false);
+      requestAnimationFrame(() => { poner(roca, pos(f + 1, i)); brinco(roca.querySelector('.pz-br'), 'lanza'); });
+      SFX.tocar('swish'); expresar(G.mYo, '💪', 'festeja', 600, '');
+      const t0 = Date.now();
+      await enviar({ fase: f, piedra: i });
+      await new Promise(r => setTimeout(r, Math.max(0, 520 - (Date.now() - t0))));
+      if (modo !== 'juego') return;
+      const p = mia();
+      if (p && p.f === f && p.i === i) {
+        if (p.ok) { SFX.tocar('tink'); msg('¡Tunk! 🪨 La piedra rebotó: <b>ese cristal aguanta</b> 💪 (solo tú lo sabes)'); brinco(roca.querySelector('.pz-br'), 'salta'); setTimeout(() => roca.remove(), 700); }
+        else { romper(f, i); msg('¡Crack! Ese era falso. ¡Te salvaste! 😅'); brinco(roca.querySelector('.pz-br'), 'cae'); setTimeout(() => roca.remove(), 1100); }
+      } else roca.remove();
+      G.esperando = false; pinta();
+    }
+    plano.querySelectorAll('.pz-v').forEach(v => v.onclick = () => { if (+v.dataset.f === G.f) pisar(+v.dataset.i); });
+    $('#pz-piedra').onclick = () => { if (D()['pied' + k()] || G.esperando) return; G.apunta = !G.apunta; SFX.tocar('clic'); msg(G.apunta ? '🎯 Toca el cristal al que le quieres aventar la piedra.' : 'Pisa el cristal bueno.'); pinta(); };
+    poner(yo, pos(G.f, G.col), false); camara(G.f);
+    // lo que hace el rival
+    G.prog = p => {
+      if (p === G.fo) return;
+      const cayo = p < G.fo; G.fo = p; pintaMini();
+      if (cayo) { expresar(G.mOtro, '😵', 'susto', 1100, ''); const m = $('#pz-mini .aqui'); if (m) { m.classList.add('cae'); } }
     };
-    $$('#cam-esc [data-lado]').forEach(b => b.onclick = () => elegirLado(+b.dataset.lado));
-    G.prog = p => { if (p !== G.fo) { if (p < G.fo) expresar(G.mOtro, '😵', 'susto', 900, ''); G.fo = p; pinta(); } };
-    G.al = v => G.prog(v.datos['f' + o()] || 0);
-    G.arranca = () => { G.activo = true; botones(true); };
+    G.al = v => {
+      G.prog(v.datos['f' + o()] || 0);
+      OPC.forEach((n, f) => rotos(f).forEach(i => {
+        if (G.vistos.has(f + '-' + i)) return;
+        romper(f, i, f === G.f);
+        if (f >= G.f && !G.esperando) msg(`💥 ¡${esc(nomOtro())} rompió un cristal de la fase ${f + 1}! Ya sabes que ese no es.`);
+      }));
+      const po = !!v.datos['pied' + o()];
+      if (po && !G.pOtro && !G.esperando) msg(`🪨 ${esc(nomOtro())} aventó su piedra…`);
+      G.pOtro = po;
+      if (!G.esperando) pinta(); else pintaMini();
+    };
+    G.arranca = () => {
+      if (d.bot) d.datos.plazoa = new Date(Date.now() + 6000).toISOString();
+      G.activo = true; pinta(); G.reloj = setInterval(reloj, 100);
+    };
     pinta();
   }
 
@@ -4460,7 +4635,7 @@ const DUELO = (() => {
       }
       return { ops };
     }
-    if (juego === 'camino') return { camino: [0, 0, 0, 0, 0].map(() => rand(2)), fa: 0, fb: 0, ca: 0, cb: 0 };
+    if (juego === 'camino') return { opc: [2, 2, 2, 3, 3], camino: [2, 2, 2, 3, 3].map(n => rand(n)), rotos: [[], [], [], [], []], fa: 0, fb: 0, ca: 0, cb: 0 };
     if (juego === 'globo') return { bombeos: 18 };
     return { rondas: [], va: 3, vb: 3, mult: 1, pend: {} };
   }
@@ -4508,20 +4683,29 @@ const DUELO = (() => {
       G.botPaso = paso;
       G.botT2 = setTimeout(() => paso(false), alAzar(3500, 7500));
     } else if (d.juego === 'camino') {
-      const sabe = {};                                // lo que ya aprendió de cada fase
+      const sabe = {};                                // los cristales buenos que ya conoce
       const paso = () => {
         if (!sigue()) return;
-        const f = D.fb, lado = sabe[f] ?? rand(2);
+        const f = D.fb;
+        let libres = [...Array(D.opc[f]).keys()].filter(i => !D.rotos[f].includes(i));
+        if (sabe[f] != null) libres = [sabe[f]];
+        if (sabe[f] == null && libres.length >= 3 && !D.piedb && Math.random() < .6) {     // avienta su piedra
+          const i = libres[rand(libres.length)];
+          if (i === D.camino[f]) sabe[f] = i; else D.rotos[f].push(i);
+          D.piedb = true; alVer();
+          G.botT2 = setTimeout(paso, alAzar(1200, 2000)); return;
+        }
+        const lado = libres[rand(libres.length)];
         if (lado === D.camino[f]) {
           sabe[f] = lado; D.fb = f + 1; G.prog?.(D.fb);
           if (D.fb >= 5) { finBot('bot'); alVer(); return; }
-          G.botT2 = setTimeout(paso, alAzar(1100, 2300));
+          G.botT2 = setTimeout(paso, alAzar(1300, 3200));
         } else {
-          sabe[f] = 1 - lado; D.fb = 0; D.cb++; G.prog?.(0);
+          D.rotos[f].push(lado); D.fb = 0; D.cb++; G.prog?.(0); alVer();
           G.botT2 = setTimeout(paso, 4000 + alAzar(900, 1900));
         }
       };
-      G.botT2 = setTimeout(paso, alAzar(1000, 2000));
+      G.botT2 = setTimeout(paso, alAzar(1200, 2400));
     }
     // en piedra, papel o tijeras el Reportero escoge cuando tú ya escogiste (ver jugadaBot)
   }
@@ -4538,9 +4722,18 @@ const DUELO = (() => {
         setTimeout(calcBot, 0);
       }
     } else if (d.juego === 'camino') {
-      if (dato.fase !== D.fa) return d;
-      if (dato.lado === D.camino[D.fa]) { D.fa++; D.ulta = 'ok'; if (D.fa >= 5) finBot(yoId()); }
-      else { D.fa = 0; D.ca++; D.ulta = 'cae'; }
+      const f = D.fa, iso = ms => new Date(ms).toISOString();
+      if (dato.fase !== f || f >= 5) return d;
+      if (dato.piedra != null) {
+        if (D.pieda || D.rotos[f].includes(dato.piedra)) return d;
+        const ok = dato.piedra === D.camino[f];
+        if (!ok) D.rotos[f].push(dato.piedra);
+        D.pieda = { f, i: dato.piedra, ok }; D.plazoa = iso(Math.max(Date.now(), Date.parse(D.plazoa || 0)) + 2000);
+        return d;
+      }
+      if (dato.lado >= 0 && D.rotos[f].includes(dato.lado)) return d;
+      if (dato.lado === D.camino[f]) { D.fa++; D.cola = dato.lado; D.ulta = 'ok'; D.plazoa = iso(Date.now() + 6000); if (D.fa >= 5) finBot(yoId()); }
+      else { if (dato.lado >= 0) D.rotos[f].push(dato.lado); D.fa = 0; D.ca++; D.ulta = dato.lado < 0 ? 'tiempo' : 'cae'; delete D.cola; D.plazoa = iso(Date.now() + 10000); }
     } else if (d.juego === 'ppt') {
       if (dato.ronda !== D.rondas.length || D.pend.a != null) return d;
       D.pend.a = dato.mano;
