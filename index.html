@@ -482,17 +482,17 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .box-lu.otro .box-mano.agita{animation-name:box-agita-d}
 @keyframes box-agita{50%{transform:translateY(-16px)}}
 @keyframes box-agita-d{0%,100%{transform:scaleX(-1)}50%{transform:scaleX(-1) translateY(-16px)}}
-.box-lu.yo .box-mano.sale,.box-lu.otro .box-mano.sale{transform:scale(1.1)}
+.box-lu.yo .box-mano.sale,.box-lu.otro .box-mano.sale{transform:translateX(var(--dx,0px)) scale(1.1);transition:transform .22s cubic-bezier(.2,1.4,.5,1)}
 .box-mano.sale,.box-mano.rebota{border-radius:50%;padding:6px;background:rgba(255,255,255,.92);box-shadow:0 0 0 4px var(--esq),0 6px 14px rgba(0,0,0,.35)}
 .box-lu.yo .box-mano{--esq:#e74c3c}.box-lu.otro .box-mano{--esq:#3498db}
 .box-mano.gana{box-shadow:0 0 0 4px var(--esq),0 0 22px 6px #FFD54A;animation:box-gana .5s ease-out}
 .box-mano.pierde{filter:grayscale(.85);opacity:.75}
-.box-lu.yo .box-mano.gana,.box-lu.otro .box-mano.gana{transform:scale(1.3)}
+.box-lu.yo .box-mano.gana,.box-lu.otro .box-mano.gana{transform:translateX(var(--dx,0px)) scale(1.3)}
 @keyframes box-gana{0%{scale:1}50%{scale:1.25}100%{scale:1}}
 .box-lu.yo .box-mano.sale::after,.box-lu.otro .box-mano.sale::after{content:attr(data-quien);position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:6px;font:800 .62rem system-ui,sans-serif;color:#fff;background:var(--esq);border-radius:999px;padding:1px 6px;white-space:nowrap}
-.box-lu.yo .box-mano.rebota{animation:box-reb-i .5s}.box-lu.otro .box-mano.rebota{animation:box-reb-d .5s}
-@keyframes box-reb-i{0%{transform:none}50%{transform:translateX(10px)}100%{transform:translateX(-8px)}}
-@keyframes box-reb-d{0%{transform:none}50%{transform:translateX(-10px)}100%{transform:translateX(8px)}}
+.box-lu.yo .box-mano.rebota{animation:box-reb-i .45s ease-out forwards}.box-lu.otro .box-mano.rebota{animation:box-reb-d .45s ease-out forwards}
+@keyframes box-reb-i{0%{transform:translateX(var(--dx,0px))}100%{transform:translateX(calc(var(--dx,0px) - 26px))}}
+@keyframes box-reb-d{0%{transform:translateX(var(--dx,0px))}100%{transform:translateX(calc(var(--dx,0px) + 26px))}}
 .box-pod{position:absolute;top:-6px;font-size:1.4rem}
 .box-lu.yo .box-pod{left:-8px}.box-lu.otro .box-pod{right:-8px}
 .box-grito{position:absolute;left:50%;top:22%;transform:translate(-50%,-50%) scale(0);font:900 2rem Anton,Impact,sans-serif;color:#FFD54A;text-shadow:0 0 14px #ff8a00,0 3px 0 #7a3c00;white-space:nowrap;pointer-events:none;z-index:3}
@@ -3947,6 +3947,7 @@ const DUELO = (() => {
       const my = $('#mano-yo'), mo = $('#mano-otro'); if (!my) return;
       my.textContent = a; mo.textContent = b;
       my.dataset.quien = 'Tú'; mo.dataset.quien = nomO;
+      if (!/sale|rebota|gana/.test(cls)) { my.style.removeProperty('--dx'); mo.style.removeProperty('--dx'); }
       my.className = 'box-mano ' + cls; mo.className = 'box-mano ' + cls;
     };
     const grito = t => { const g = $('#box-grito'); if (!g) return; g.textContent = t; g.classList.remove('on'); void g.offsetWidth; g.classList.toggle('on', !!t); };
@@ -4001,6 +4002,18 @@ const DUELO = (() => {
       if (!vivo()) return;
       grito('¡YA!'); SFX.tocar('swish');
       manos('sale', MANOS[mia], MANOS[suya]);
+      // las dos manos llegan al centro del ring, casi tocándose (sin encimarse)
+      const centrar = () => {
+        const ring = $('#box-ring'); if (!ring) return;
+        const cx = ring.clientWidth / 2, sep = 5, esc = 1.3;
+        for (const [id, lado] of [['yo', -1], ['otro', 1]]) {
+          const m = $('#mano-' + id), lu = $('#lu-' + id);
+          const w = m.offsetWidth, centro = lu.offsetLeft + m.offsetLeft + w / 2;
+          const meta = cx + lado * (sep + w * esc / 2);
+          m.style.setProperty('--dx', (meta - centro).toFixed(1) + 'px');
+        }
+      };
+      centrar();
       $('#pod-yo').textContent = poderTxt(pm); $('#pod-otro').textContent = poderTxt(ps);
       await sleep(320); if (!vivo()) return;
       const res = r.g === '' ? 'empate' : r.g === k() ? 'gano' : 'pierdo';
