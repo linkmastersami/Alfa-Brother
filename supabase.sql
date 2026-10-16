@@ -2123,7 +2123,7 @@ revoke all on function public._noticiero_aviso() from public, anon, authenticate
 -- ---------------------------------------------------------------------
 create or replace function public._duelo_nombre(p_juego text)
 returns text language sql immutable as $$
-  select case p_juego when 'ppt' then 'Boxeo' when 'globo' then 'Inflar el globo'
+  select case p_juego when 'ppt' then 'Boxeo' when 'globo' then 'Globo explosivo'
                       when 'calculo' then 'Cálculo rápido' else 'El camino correcto' end
 $$;
 -- Tiempo máximo de cada juego (después de eso se cierra solo)
@@ -2289,7 +2289,7 @@ begin
   elsif d.juego = 'camino' then
     v_datos := jsonb_build_object('camino', (select jsonb_agg(floor(random() * 2)::int) from generate_series(1, 5)), 'fa', 0, 'fb', 0, 'ca', 0, 'cb', 0);
   elsif d.juego = 'globo' then
-    v_datos := jsonb_build_object('taps', 40);
+    v_datos := jsonb_build_object('bombeos', 18);           -- v31: globo explosivo (sube y baja el mango)
   else
     v_datos := jsonb_build_object('rondas', '[]'::jsonb, 'va', 3, 'vb', 3, 'mult', 1, 'pend', '{}'::jsonb);   -- boxeo: 3 corazones
   end if;
@@ -2337,7 +2337,7 @@ begin
   end if;
 
   if d.juego = 'globo' then
-    if coalesce((p_dato->>'fin')::boolean, false) and now() >= d.inicio + interval '2 seconds' then
+    if coalesce((p_dato->>'fin')::boolean, false) and now() >= d.inicio + interval '3 seconds' then
       perform public._terminar_duelo(d.id, yo.id);
     end if;
 

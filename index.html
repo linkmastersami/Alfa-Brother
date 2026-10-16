@@ -448,6 +448,57 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 
 
 
+
+/* ---------- 🎈💥 Globo explosivo (la feria) ---------- */
+.gx{display:flex;flex-direction:column;gap:10px}
+.gx-escena{position:relative;height:clamp(300px,48vh,390px);margin:0 -10px;border-radius:16px;overflow:hidden;background:linear-gradient(#1b1646 0%,#3a1f6e 55%,#5a3a1e 56%,#7a5230 100%)}
+.gx-carpa{position:absolute;left:50%;top:10%;width:62%;height:48%;transform:translateX(-50%);background:repeating-linear-gradient(90deg,#c0392b 0 18px,#f5e6c8 18px 36px);clip-path:polygon(50% 0,100% 38%,100% 100%,0 100%,0 38%);opacity:.55}
+.gx-banderines{position:absolute;left:0;right:0;top:4px;display:flex;justify-content:space-between;padding:0 4px}
+.gx-banderines i{width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:18px solid var(--c)}
+.gx-luces{position:absolute;left:0;right:0;top:30px;display:flex;justify-content:space-around}
+.gx-luces b{width:7px;height:7px;border-radius:50%;background:#ffe27a;box-shadow:0 0 8px 2px #ffd54a;animation:gx-luz 1s ease-in-out infinite alternate}
+@keyframes gx-luz{to{opacity:.25}}
+.gx-tubos{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.gx-tubos path{fill:none;stroke:#e74c3c;stroke-width:5;vector-effect:non-scaling-stroke;stroke-linecap:round;opacity:.85}
+.gx-tubos path.otro{stroke:#3498db}
+.gx-globo{--f:0;position:absolute;top:13%;width:64px;height:76px;transform:translateX(-50%) scale(calc(.55 + var(--f) * 1.05));transform-origin:50% 100%;transition:transform .12s;z-index:2}
+.gx-globo.sobre-otro{left:80%}.gx-globo.sobre-yo{left:20%}
+.gx-globo i{position:absolute;inset:0;border-radius:50% 50% 46% 46%;background:radial-gradient(circle at 34% 28%,#d6f1ff 0 10%,#5ec3ff 30%,#1f78d1 80%);box-shadow:inset -6px -8px 14px rgba(0,0,40,.35)}
+.gx-globo::after{content:'';position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:9px solid #1f78d1}
+.gx-globo.tenso i{animation:gx-tiembla .14s linear infinite}
+.gx-globo.peligro i{box-shadow:inset -6px -8px 14px rgba(0,0,40,.35),0 0 0 3px #ff4d4d,0 0 18px #ff4d4d}
+@keyframes gx-tiembla{50%{transform:translate(1.5px,-1px) scale(1.02)}}
+.gx-globo.pum{animation:gx-pum .35s ease-out forwards}
+@keyframes gx-pum{0%{opacity:1}40%{transform:translateX(-50%) scale(2);opacity:.9}100%{transform:translateX(-50%) scale(2.3);opacity:0}}
+.gx-lado{position:absolute;bottom:9%;z-index:1;transition:filter .5s}
+.gx-lado.yo{left:6%}.gx-lado.otro{right:6%}
+.gx-lado .mm-cuerpo line{stroke:#fff}
+.gx-lado.empuja .mm{animation:gx-empuja .18s ease-out}
+@keyframes gx-empuja{50%{transform:translateY(6px) scaleY(.94)}}
+.gx-lado.mojado{filter:saturate(.6) hue-rotate(170deg) brightness(.9)}
+.gx-bomba{position:absolute;bottom:8%;width:34px;height:78px;z-index:1}
+#bomba-yo{left:32%}#bomba-otro{right:32%}
+.gx-mango{transition:transform .08s;transform:translateY(0)}
+.gx-bomba.arriba .gx-mango{transform:translateY(-22px)}
+.gx-agua{position:absolute;top:22%;left:4%;width:32%;height:70%;pointer-events:none;z-index:3;opacity:0}
+.gx-agua.otro{left:auto;right:4%}
+.gx-agua.on{opacity:1}
+.gx-agua i{position:absolute;left:var(--x);top:0;font-style:normal;font-size:1.3rem;animation:gx-gota .9s ease-in var(--d) forwards}
+@keyframes gx-gota{0%{transform:translateY(-10px) scale(.6)}100%{transform:translateY(190px) scale(1.1);opacity:.2}}
+.gx-progreso{display:grid;gap:5px;background:rgba(0,0,0,.25);border-radius:12px;padding:8px 10px;font-size:.85rem}
+.gx-progreso div{display:flex;align-items:center;gap:8px}
+.gx-progreso b{width:70px;color:#C9C3EE;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gx-bar{flex:1;height:10px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}
+.gx-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#5ec3ff,#1f78d1);transition:width .12s}
+.gx-bar.otro i{background:linear-gradient(90deg,#ff9a9a,#e74c3c)}
+.gx-botones{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gx-botones button{border:0;border-radius:20px;padding:22px 0;background:#2a1748;box-shadow:0 6px 0 #0c0518;color:#fff;font-size:2rem;display:flex;flex-direction:column;align-items:center;gap:2px;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.gx-botones button b{font:900 1.2rem Anton,Impact,sans-serif;letter-spacing:.06em}
+.gx-botones button.toca{background:linear-gradient(#ff5c8a,#d7263d);box-shadow:0 6px 0 #7a1022}
+.gx-botones button:active:not(:disabled){transform:translateY(4px);box-shadow:0 2px 0 #0c0518}
+.gx-botones button.nope{animation:mm-tiembla .12s linear 2}
+.gx-botones button:disabled{opacity:.45}
+
 /* ---------- 🤜🤛 Boxeo ---------- */
 .box{display:flex;flex-direction:column;gap:10px}
 .box-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:rgba(0,0,0,.3);border-radius:14px;padding:8px 10px}
@@ -3614,7 +3665,7 @@ const MONSTER = (() => {
 /* ---------- ⚔️ Duelos entre habitantes (2 jugadores, con apuesta) ---------- */
 const DUELOS_JUEGOS = {
   ppt: { nombre: 'Boxeo', ic: '🤜🤛', desc: 'Piedra, papel o tijeras a golpes: 3 corazones cada quien y un poder por pelea (🛡️ escudo o ⚡ golpe doble). Si empatan, la siguiente vale doble. Gana el último en pie.' },
-  globo: { nombre: 'Inflar el globo', ic: '🎈', desc: 'Tap tap tap hasta reventar tu globo. El primero que lo revienta gana.' },
+  globo: { nombre: 'Globo explosivo', ic: '🎈💥', desc: 'En la feria: sube y baja el mango de tu bomba para inflar el globo de agua que cuelga sobre tu rival. El primero que lo revienta ¡lo baña y gana!' },
   calculo: { nombre: 'Cálculo rápido', ic: '➕✖️', desc: 'Las mismas 10 operaciones para los dos. Gana quien tenga más buenas; si empatan, el más rápido.' },
   camino: { nombre: 'El camino correcto', ic: '🛤️', desc: '5 fases: izquierda o derecha. Si te caes, regresas a la fase 1 y pierdes 4 segundos. Gana el primero en llegar a la meta.' },
 };
@@ -4060,51 +4111,87 @@ const DUELO = (() => {
     pintarVidas(); historial(); manos('guardia'); expresar(G.mOtro, '🤔', '', 0);
   }
 
-  // 🎈 Inflar el globo: el primero que lo revienta gana
+  // 🎈💥 GLOBO EXPLOSIVO: en la feria, cada quien bombea (sube y baja el mango) para inflar el globo de agua
+  // que cuelga sobre el OTRO. El primero que lo revienta lo baña de agua y gana.
   function jGlobo() {
     const z = $('#du-zona');
     caja().querySelector('.du-ring').classList.add('hidden');
-    G.taps = d.datos.taps || 40; G.n = 0; G.otro = 0; G.ult = 0; G.activo = false; G.envT = 0;
-    z.innerHTML = `<div class="globos">
-        <div class="globo-col"><div class="globo-hilo"><div class="globo" id="g-yo">🎈</div></div>${monito(yoJ(), { tam: 54 })}<small id="g-yo-n">0%</small></div>
-        <div class="globo-col"><div class="globo-hilo"><div class="globo otro" id="g-otro">🎈</div></div>${monito(otroJ(), { tam: 54 })}<small id="g-otro-n">0%</small></div></div>
-      <p class="du-msg" id="g-msg">Cuando diga ¡YA!, pícale como loco al botón.</p>
-      <button class="tap-zona" id="g-tap" disabled>¡TAP TAP TAP! 🎈</button>`;
-    const [mY, mO] = $$('#du-zona .globo-col .mm'); G.mYo = mY; G.mOtro = mO;
-    const pinta = (quien, n) => {
-      const el = $(quien === 'yo' ? '#g-yo' : '#g-otro'); if (!el || el.classList.contains('pum')) return;
-      const f = Math.min(1, n / G.taps);
-      el.style.transform = `scale(${(0.7 + f * 1.9).toFixed(3)})`;
-      el.classList.toggle('tenso', f > .8);
-      $(quien === 'yo' ? '#g-yo-n' : '#g-otro-n').textContent = Math.round(f * 100) + '%';
+    G.total = d.datos.bombeos || 18; G.n = 0; G.otro = 0; G.arriba = false; G.ult = 0; G.activo = false; G.envT = 0;
+    const bomba = id => `<svg class="gx-bomba" id="${id}" viewBox="0 0 40 90" aria-hidden="true">
+        <g class="gx-mango"><rect x="6" y="2" width="28" height="7" rx="3.5" fill="#2b2b2b"/><rect x="18.5" y="8" width="3" height="40" fill="#9aa4b1"/></g>
+        <rect x="11" y="34" width="18" height="46" rx="5" fill="#d7263d"/><rect x="11" y="40" width="18" height="5" fill="#fff" opacity=".35"/>
+        <rect x="4" y="80" width="32" height="8" rx="3" fill="#3a3a3a"/></svg>`;
+    z.innerHTML = `<div class="gx">
+      <div class="gx-escena" id="gx-esc">
+        <div class="gx-carpa"></div>
+        <div class="gx-banderines">${[...Array(14).keys()].map(i => `<i style="--c:${['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6'][i % 5]}"></i>`).join('')}</div>
+        <div class="gx-luces">${[...Array(12).keys()].map(i => `<b style="animation-delay:${(i % 4) * .25}s"></b>`).join('')}</div>
+        <svg class="gx-tubos" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M33 58 C 45 18, 70 10, 80 20" /><path d="M67 58 C 55 18, 30 10, 20 20" class="otro"/></svg>
+        <div class="gx-globo sobre-otro" id="gl-otro"><i></i></div>
+        <div class="gx-globo sobre-yo" id="gl-yo"><i></i></div>
+        <div class="gx-lado yo">${monito(yoJ(), { tam: 54 })}</div>${bomba('bomba-yo')}
+        <div class="gx-lado otro">${monito(otroJ(), { tam: 54 })}</div>${bomba('bomba-otro')}
+        <div class="gx-agua" id="agua-yo"></div><div class="gx-agua otro" id="agua-otro"></div>
+      </div>
+      <div class="gx-progreso"><div><b>Tú</b><span class="gx-bar"><i id="gx-p-yo"></i></span></div><div><b>${esc(nomOtro())}</b><span class="gx-bar otro"><i id="gx-p-otro"></i></span></div></div>
+      <p class="du-msg" id="g-msg">Sube y baja el mango para inflar el globo de ${esc(nomOtro())}. ¡Que se moje!</p>
+      <div class="gx-botones"><button id="gx-sube" disabled>⬆️<b>SUBE</b></button><button id="gx-baja" disabled>⬇️<b>BAJA</b></button></div>
+    </div>`;
+    const [mY, mO] = $$('#du-zona .gx-lado .mm'); G.mYo = mY; G.mOtro = mO;
+    const globo = (cual, n) => {                        // cual: 'otro' = el que yo inflo (sobre el otro)
+      const el = $('#gl-' + cual); if (!el || el.classList.contains('pum')) return;
+      const f = Math.min(1, n / G.total);
+      el.style.setProperty('--f', f.toFixed(3));
+      el.classList.toggle('tenso', f > .78);
+      el.classList.toggle('peligro', f > .9);
+      const b = $(cual === 'otro' ? '#gx-p-yo' : '#gx-p-otro'); if (b) b.style.width = Math.round(f * 100) + '%';
     };
-    const pum = quien => {
-      const el = $(quien === 'yo' ? '#g-yo' : '#g-otro'); if (!el || el.classList.contains('pum')) return;
-      el.textContent = '💥'; el.style.transform = ''; el.classList.add('pum');
-      SFX.tocar('pop');
-      expresar(quien === 'yo' ? G.mYo : G.mOtro, '😆', 'festeja', 1500);
-      expresar(quien === 'yo' ? G.mOtro : G.mYo, '😱', 'susto', 1500);
+    const mango = (id, arriba) => $('#' + id)?.classList.toggle('arriba', arriba);
+    const revienta = cual => {                          // revienta el globo que cuelga sobre "cual" y lo baña
+      const el = $('#gl-' + cual); if (!el || el.classList.contains('pum')) return;
+      el.classList.add('pum'); SFX.tocar('pop'); setTimeout(() => SFX.tocar('swish'), 120);
+      const agua = $('#agua-' + cual); agua.innerHTML = [...Array(14).keys()].map(i => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 5) * .06}s">💧</i>`).join(''); agua.classList.add('on');
+      const mojado = cual === 'yo' ? G.mYo : G.mOtro, seco = cual === 'yo' ? G.mOtro : G.mYo;
+      mojado.closest('.gx-lado').classList.add('mojado');
+      expresar(mojado, '😫', 'triste', 0); expresar(seco, '😆', 'festeja', 1800);
+      if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
     };
-    const tap = async e => {
-      e.preventDefault();
+    const pulsar = async dir => {
       if (!G.activo) return;
-      const t = performance.now();
-      if (t - G.ult < 55) return;          // máximo ~18 taps por segundo (nada de trampas con varios dedos)
-      G.ult = t; G.n++;
-      pinta('yo', G.n);
-      SFX.tocar('inflar', G.n / G.taps);
-      if (t - G.envT > 150 || G.n >= G.taps) { G.envT = t; progreso(G.n); }
-      if (G.n >= G.taps) {
-        G.activo = false; $('#g-tap').disabled = true; pum('yo');
-        $('#g-msg').textContent = '¡Lo reventaste! Viendo quién fue primero…';
+      const t = performance.now(); if (t - G.ult < 45) return; G.ult = t;
+      if (dir === 'sube') {
+        if (G.arriba) { $('#gx-sube').classList.add('nope'); setTimeout(() => $('#gx-sube')?.classList.remove('nope'), 250); return; }
+        G.arriba = true; mango('bomba-yo', true); SFX.tocar('tic');
+        $('#gx-sube').classList.remove('toca'); $('#gx-baja').classList.add('toca');
+        return;
+      }
+      if (!G.arriba) { $('#gx-baja').classList.add('nope'); setTimeout(() => $('#gx-baja')?.classList.remove('nope'), 250); return; }
+      G.arriba = false; mango('bomba-yo', false); G.n++;
+      $('#gx-baja').classList.remove('toca'); $('#gx-sube').classList.add('toca');
+      globo('otro', G.n); SFX.tocar('inflar', G.n / G.total);
+      G.mYo.closest('.gx-lado').classList.remove('empuja'); void G.mYo.offsetWidth; G.mYo.closest('.gx-lado').classList.add('empuja');
+      if (t - G.envT > 120 || G.n >= G.total) { G.envT = t; progreso(G.n); }
+      if (G.n >= G.total) {
+        G.activo = false; $('#gx-sube').disabled = $('#gx-baja').disabled = true;
+        revienta('otro');
+        $('#g-msg').textContent = `¡SPLASH! Bañaste a ${nomOtro()} 💦 Viendo quién fue primero…`;
         G.animando = true;
         try { await jugada({ fin: true }); avisar(otroId()); } catch { }
-        setTimeout(() => { G.animando = false; alVer(); }, 900);
+        setTimeout(() => { G.animando = false; alVer(); }, 1300);
       }
     };
-    $('#g-tap').addEventListener('pointerdown', tap);
-    G.prog = p => { G.otro = Math.max(G.otro, p); pinta('otro', G.otro); if (G.otro >= G.taps) pum('otro'); };
-    G.arranca = () => { G.activo = true; $('#g-tap').disabled = false; $('#g-msg').textContent = '¡Dale, dale, dale!'; };
+    for (const [id, dir] of [['#gx-sube', 'sube'], ['#gx-baja', 'baja']]) $(id).addEventListener('pointerdown', e => { e.preventDefault(); pulsar(dir); });
+    G.prog = p => {
+      if (p > G.otro) { mango('bomba-otro', false); setTimeout(() => mango('bomba-otro', true), 60); setTimeout(() => mango('bomba-otro', false), 160); }
+      G.otro = Math.max(G.otro, p); globo('yo', G.otro);
+      if (G.otro >= G.total) { revienta('yo'); $('#g-msg').textContent = `¡SPLASH! ${nomOtro()} te bañó 💦`; }
+    };
+    G.arranca = () => {
+      G.activo = true; $('#gx-sube').disabled = $('#gx-baja').disabled = false; $('#gx-sube').classList.add('toca');
+      $('#g-msg').textContent = '¡Bombea! Sube… baja… sube… baja… ¡más rápido!';
+    };
+    globo('otro', 0); globo('yo', 0);
   }
 
   // ➕ Cálculo rápido: 10 operaciones, gana quien tenga más buenas (y si empatan, el más rápido)
@@ -4253,7 +4340,7 @@ const DUELO = (() => {
       return { ops };
     }
     if (juego === 'camino') return { camino: [0, 0, 0, 0, 0].map(() => rand(2)), fa: 0, fb: 0, ca: 0, cb: 0 };
-    if (juego === 'globo') return { taps: 40 };
+    if (juego === 'globo') return { bombeos: 18 };
     return { rondas: [], va: 3, vb: 3, mult: 1, pend: {} };
   }
   function practicar(juego) {
@@ -4279,12 +4366,12 @@ const DUELO = (() => {
   function botArranca() {
     const D = d.datos, sigue = () => d?.bot && d.estado === 'jugando' && modo === 'juego';
     if (d.juego === 'globo') {
-      const vel = alAzar(110, 170);                 // entre 6 y 9 taps por segundo
+      const vel = alAzar(330, 470);                 // entre 2 y 3 bombeos por segundo
       let n = 0;
       const paso = () => {
         if (!sigue()) return;
         n++; G.prog?.(n);
-        if (n >= D.taps) { finBot('bot'); G.animando = true; setTimeout(() => { G.animando = false; alVer(); }, 900); return; }
+        if (n >= (D.bombeos || 18)) { finBot('bot'); G.animando = true; setTimeout(() => { G.animando = false; alVer(); }, 900); return; }
         G.botT2 = setTimeout(paso, vel * alAzar(.7, 1.3));
       };
       G.botT2 = setTimeout(paso, alAzar(200, 500));
@@ -4372,6 +4459,7 @@ const DUELO = (() => {
       det = `<p class="du-det">${a ? `Tú: <b>${a.ok} buenas</b> en ${segs(a.ms)} s` : 'Tú no entregaste'} · ${b ? `${esc(r.nombre)}: <b>${b.ok} buenas</b> en ${segs(b.ms)} s` : `${esc(r.nombre)} no entregó`}</p>`;
       if (a && d.datos.ops?.[0]?.r !== undefined) det += `<div class="calc-lista">${d.datos.ops.map((op, i) => { const mi = a.resp?.[i]; const bien = mi !== null && mi !== undefined && +mi === +op.r; return `<span class="${bien ? 'bien' : 'mal'}">${esc(op.t)} = ${op.r}${bien ? ' ✓' : ` <s>${mi ?? '—'}</s>`}</span>`; }).join('')}</div>`;
     }
+    if (d.juego === 'globo' && d.ganador) det = `<p class="du-det">💦 ${gane ? `¡Bañaste a ${esc(r.nombre)}!` : `${esc(r.nombre)} te bañó. ¡A secarse!`}</p>`;
     if (d.datos?.rindio) det = `<p class="du-det">🏳️ ${d.datos.rindio === k() ? 'Te rendiste' : `${esc(r.nombre)} se rindió`}.</p>`;
     const dinero = d.bot ? 'Práctica: no se gana ni se pierde nada.' : empate ? (d.apuesta ? 'Te devolvimos tu apuesta.' : '') : gane ? (d.apuesta ? `+${fmt$(d.apuesta * 2)}` : '¡Puro orgullo!') : (d.apuesta ? `−${fmt$(d.apuesta)}` : 'No perdiste billetes… solo la dignidad.');
     caja().innerHTML = `<div class="du-pant du-centro">
