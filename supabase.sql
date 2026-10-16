@@ -2483,6 +2483,47 @@ revoke all on function public._resumen_semana(int) from public, anon, authentica
 revoke all on function public._resolver_empate(uuid, text) from public, anon, authenticated;
 revoke all on function public._empate_vencido() from public, anon, authenticated;
 
+-- v28: vista previa de la pasarela para la producción (no cambia nada: calcula lo que saldría con los votos de ahorita)
+create or replace function public.admin_gala_avance()
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare
+  c public.config;
+  res jsonb;
+  v_max int;
+  v_emp uuid[];
+  v_max_lider int;
+  v_max_otros int;
+begin
+  perform public._solo_admin();
+  select * into c from public.config where id = 1;
+  if c.semana = 0 then raise exception 'SIN_SEMANA'; end if;
+  res := public._resultados(c.semana);
+  if c.es_final then
+    return jsonb_build_object('semana', c.semana, 'final', true, 'avance', true, 'eliminado_id', null, 'lider_id', null,
+      'podio', (select jsonb_agg(jsonb_build_object('id', x->>'id', 'nombre', x->>'nombre', 'puntos', (x->>'puntos')::int, 'lugar', lugar) order by lugar, x->>'nombre')
+                  from (select x, dense_rank() over (order by (x->>'puntos')::int) as lugar from jsonb_array_elements(res) x) t),
+      'tabla', res);
+  end if;
+  select max((x->>'puntos')::int) into v_max from jsonb_array_elements(res) x where (x->>'id')::uuid is distinct from c.lider_id;
+  select array_agg((x->>'id')::uuid) into v_emp from jsonb_array_elements(res) x
+   where (x->>'id')::uuid is distinct from c.lider_id and (x->>'puntos')::int = v_max;
+  select max((x->>'puntos')::int) filter (where (x->>'id')::uuid = c.lider_id),
+         max((x->>'puntos')::int) filter (where (x->>'id')::uuid is distinct from c.lider_id)
+    into v_max_lider, v_max_otros from jsonb_array_elements(res) x;
+  return jsonb_build_object(
+    'semana', c.semana, 'avance', true,
+    'eliminado_id', case when cardinality(v_emp) = 1 then v_emp[1] end,
+    'eliminado', case when cardinality(v_emp) = 1 then (select nombre from public.jugadores where id = v_emp[1]) end,
+    'lider_id', c.lider_id,
+    'lider', (select nombre from public.jugadores where id = c.lider_id),
+    'lider_salvado', coalesce(v_max_lider > 0 and v_max_lider >= v_max_otros, false),
+    'desempate', coalesce(cardinality(v_emp), 0) > 1,
+    'empatados', case when cardinality(v_emp) > 1 then to_jsonb(v_emp) else '[]'::jsonb end,
+    'empate_pendiente', coalesce(cardinality(v_emp), 0) > 1,
+    'resumen', public._resumen_semana(c.semana),
+    'tabla', res);
+end $$;
+
 -- Las funciones internas no se pueden llamar directo desde el celular
 revoke all on function public._iniciar_semana(text)  from public, anon, authenticated;
 revoke all on function public._cerrar_prueba(uuid)   from public, anon, authenticated;

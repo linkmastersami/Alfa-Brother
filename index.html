@@ -505,6 +505,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .mono.apagado{filter:grayscale(1) brightness(.8);opacity:.85}
 
 /* Gala */
+#gala.avance{z-index:80}
 #gala{position:fixed;inset:0;z-index:50;background:radial-gradient(90% 60% at 50% 0%, #4A3AA8 0%, var(--noche) 70%);overflow:auto;color:#fff}
 #gala .wrap{min-height:100dvh;display:flex;flex-direction:column}
 #gala .escena{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:14px;padding:24px 0}
@@ -5942,7 +5943,7 @@ const PASARELA = (() => {
   }
   // Si soy el líder y ya me están llamando (aunque vaya en otra parte de la pasarela), contesto
   function vigilarLlamada(r, persona) {
-    if (!r.empate_pendiente || r.lider_id !== est?.yo.id) return () => { };
+    if (r.avance || !r.empate_pendiente || r.lider_id !== est?.yo.id) return () => { };
     let vivo = true;
     (async () => {
       while (vivo && galaAbierta) {
@@ -5964,7 +5965,7 @@ const PASARELA = (() => {
     E.style.justifyContent = 'flex-start';
     E.innerHTML = `<div class="pas" id="pas">
       <div class="pas-luces"><i></i><i></i><i></i><i></i></div>
-      <div class="pas-titulo"><small>Semana ${r.semana}</small><b>LA PASARELA</b></div>
+      <div class="pas-titulo"><small>${r.avance ? '👀 VISTA PREVIA · ' : ''}Semana ${r.semana}</small><b>LA PASARELA</b></div>
       <div class="pas-extra" id="pas-extra"></div>
       <div class="pas-esc" id="pas-esc"><div class="pas-piso"></div></div>
       <div class="pas-abajo"><div class="pas-ricky" id="pas-ricky">${RICKY_SVG}<span class="pas-tel">📱</span></div>
@@ -6108,7 +6109,14 @@ const PASARELA = (() => {
         tarjeta(`<div class="pas-ic">⚖️</div><b>¡EMPATE!</b><span>${pts(quedan[0].puntos)} cada quien</span>`);
         SFX.tocar('dindon');
         await hablar(`¡No lo puedo creer! ¡Hay empate! ${lista(quedan.map(t => t.nombre))} tienen ${pts(quedan[0].puntos)} cada quien.`);
-        if (r.empate_pendiente) {
+        if (r.empate_pendiente && r.avance) {
+          // vista previa: no se le llama a nadie; se escoge al azar solo para enseñar cómo quedaría
+          el.ricky.classList.add('telefono'); SFX.tocar('telefono');
+          tarjeta(`<div class="pas-ic">👀</div><b>Vista previa</b><small>En la pasarela real aquí le llamo ${lider ? `a ${esc(persona(lider).nombre)}` : 'al líder'} y tiene 50 segundos para decidir.<br>Ahorita escojo al azar solo para que veas cómo queda.</small>`);
+          await hablar(lider ? `En la pasarela real aquí le llamo a ${persona(lider).nombre} y tiene 50 segundos para decidir. Como es vista previa, escojo al azar.` : 'No hay líder: en la pasarela real lo decide la suerte.');
+          el.ricky.classList.remove('telefono');
+          elimId = de(quedan).id;
+        } else if (r.empate_pendiente) {
           await hablar(lider ? `Y cuando hay empate… ¡decide el líder! Vamos a llamarle a ${persona(lider).nombre}.` : 'No hay líder esta semana… así que ¡lo decide la suerte!');
           el.ricky.classList.add('telefono'); SFX.tocar('telefono');
           let ll = null;
@@ -6178,10 +6186,11 @@ const PASARELA = (() => {
   return { correr, decisionLider };
 })();
 
-async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
-  let r;
-  try { r = await rpc('gala', { p_token: token, p_semana: semana }); } catch (e) { toast(mensajeError(e)); return; }
+async function abrirGala(semana, marcarVista, conTelon = false, tarde = false, datos = null) {
+  let r = datos;                     // datos: la vista previa de la producción (no toca nada)
+  if (!r) { try { r = await rpc('gala', { p_token: token, p_semana: semana }); } catch (e) { toast(mensajeError(e)); return; } }
   if (!r) return;
+  $('#gala').classList.toggle('avance', !!r.avance);
   if (marcarVista) store.set('ab_gala_' + semana, '1');
   galaAbierta = true; saltarGala = false; CHAT.boton();
   SFX.pausaParaGala(true);
@@ -6248,7 +6257,7 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
   SFX.parar();
   try { speechSynthesis.cancel(); } catch { }
   // si se saltaron la pasarela mientras el líder decidía el empate, se espera la decisión
-  if (!r.final && r.empate_pendiente) {
+  if (!r.final && r.empate_pendiente && !r.avance) {
     E.style.justifyContent = '';
     E.innerHTML = `<div style="font-size:3rem">📞</div><h2 class="display" style="font-size:1.8rem">Hubo empate</h2><p style="color:#C9C3EE">El líder está decidiendo quién sale… (si no contesta, decide la suerte)</p>`;
     try { await rpc('gala_llamar', { p_token: token }); } catch { }
@@ -6264,8 +6273,8 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
     : [...tabla].sort((a, b) => b.puntos - a.puntos || b.publico - a.publico);
   const lugarDe = id => r.final ? r.podio.find(x => x.id === id)?.lugar : null;
   E.style.justifyContent = 'flex-start';
-  E.innerHTML = `<h2 class="display" style="font-size:2rem;color:var(--luz);margin-top:8px">${r.final ? 'Gran final' : `Semana ${r.semana}`}: resultados</h2>
-    <p style="margin:0;color:#C9C3EE">${r.final ? `${ganadores.length > 1 ? 'Ganaron' : 'Ganó'} <b style="color:#fff">${esc(ganadores.map(x => x.nombre).join(' y '))}</b>` : `Salió <b style="color:#fff">${esc(r.eliminado)}</b>`}${r.lider ? ` · Líder: <b style="color:#fff">${esc(r.lider)}</b>` : ''}</p>
+  E.innerHTML = `${r.avance ? '<p style="margin:8px 0 0;color:#FFD54A;font-weight:800">👀 Vista previa: así quedaría si la votación terminara ahorita. No se cambió nada.</p>' : ''}<h2 class="display" style="font-size:2rem;color:var(--luz);margin-top:8px">${r.final ? 'Gran final' : `Semana ${r.semana}`}: resultados</h2>
+    <p style="margin:0;color:#C9C3EE">${r.final ? `${ganadores.length > 1 ? 'Ganaron' : 'Ganó'} <b style="color:#fff">${esc(ganadores.map(x => x.nombre).join(' y '))}</b>` : r.eliminado ? `${r.avance ? 'Saldría' : 'Salió'} <b style="color:#fff">${esc(r.eliminado)}</b>` : `Empate: ${r.avance ? 'decidiría' : 'decide'} el líder`}${r.lider ? ` · Líder: <b style="color:#fff">${esc(r.lider)}</b>` : ''}</p>
     <div class="formato tabla-final" style="text-align:left">
       <div class="folio"><span>Habitante</span><span>Puntos · Público</span></div>
       ${ordenFinal.map(t => `<div class="res ${t.id === r.eliminado_id ? 'fuera' : ''}">
@@ -6281,6 +6290,7 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false) {
   $('#g-cerrar').onclick = () => {
     G.classList.add('hidden'); E.style.justifyContent = ''; document.body.style.overflow = '';
     galaAbierta = false; SFX.pausaParaGala(false); refrescar(); SALA.despertar(); CHAT.boton();
+    G.classList.remove('avance');
   };
 }
 
@@ -6385,6 +6395,9 @@ async function adminJuego(C) {
     <dt>Habitantes</dt><dd>${act.length} activos de ${hab.length} · ${adm.jug.length - hab.length} de público</dd>
   </dl></div>`;
 
+  if (c.semana > 0 && !c.gala_revelada) h += `<div class="adm-caja"><h3>👀 Vista previa de la pasarela</h3>
+      <p class="ayuda">Así se vería la pasarela si terminara ahorita, con los votos que hay. No cambia nada, no avisa a nadie y nadie más la ve.</p>
+      <div class="adm-acciones"><button class="btn sec" id="ad-gala-avance">Ver la pasarela de prueba</button></div></div>`;
   const opcionesPrueba = Object.entries(PRUEBAS).map(([k, v]) => `<option value="${k}">${esc(v.nombre)}</option>`).join('');
 
   // Agenda: aplica a la semana en curso o, entre semanas, a la siguiente
@@ -6534,6 +6547,9 @@ async function adminJuego(C) {
   });
   $$('[data-decidir]').forEach(b => b.onclick = () => { if (confirm('¿Sale ' + nombreDe(b.dataset.decidir) + '?')) accion('admin_decidir', { p_id: b.dataset.decidir }, 'Decidido'); });
   $$('[data-fase]').forEach(b => b.onclick = () => { if (confirm('¿Seguro?')) accion('admin_fase', { p_fase: b.dataset.fase }, 'Fase cambiada'); });
+  $('#ad-gala-avance')?.addEventListener('click', async () => {
+    try { const d = await rpc('admin_gala_avance'); abrirGala(d.semana, false, false, false, d); } catch (x) { toast(mensajeError(x)); }
+  });
   $('#ad-revelar')?.addEventListener('click', () => { if (confirm('¿Revelar la gala en todos los celulares?')) accion('admin_revelar', {}, '¡Gala revelada!'); });
   $('#av-prod-si')?.addEventListener('click', () => accion('admin_push_produccion', { p_endpoint: miEndpoint, p_activar: true }, '🎬 Listo: aquí te llegarán los avisos de producción'));
   $('#av-prod-no')?.addEventListener('click', () => accion('admin_push_produccion', { p_endpoint: miEndpoint, p_activar: false }, 'Ya no recibirás avisos de producción aquí'));
