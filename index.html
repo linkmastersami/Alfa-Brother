@@ -459,35 +459,39 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .box-cor i.vacio{opacity:.55}
 .box-cor i.rompe{animation:box-rompe .7s ease-out}
 @keyframes box-rompe{0%{transform:scale(1.8) rotate(0)}40%{transform:scale(1.4) rotate(-20deg)}100%{transform:scale(1) rotate(0)}}
-.box-ring{position:relative;height:190px;border-radius:16px;overflow:hidden;background:radial-gradient(70% 70% at 50% 40%,#4a2a7a,#1a0b33 80%);border:3px solid #c0392b;box-shadow:inset 0 -26px 0 rgba(255,255,255,.06)}
+.box-ring{position:relative;height:clamp(290px,46vh,380px);margin:0 -10px;border-radius:16px;overflow:hidden;background:radial-gradient(80% 60% at 50% 0%,#5a3a9a,#140826 75%)}
+.box-escena{position:absolute;inset:0;width:100%;height:100%}
 .box-cuerdas{position:absolute;inset:0;pointer-events:none}
 .box-cuerdas i{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,#e74c3c,#fff,#3498db);opacity:.55}
 .box-cuerdas i:nth-child(1){top:22%}.box-cuerdas i:nth-child(2){top:42%}.box-cuerdas i:nth-child(3){top:62%}
-.box-arbitro{position:absolute;left:50%;top:4px;transform:translateX(-50%);opacity:.9}
-.box-lu{position:absolute;bottom:4px;transition:transform .25s}
-.box-lu.yo{left:12%}.box-lu.otro{right:12%}
+.box-arbitro{position:absolute;left:50%;bottom:48%;transform:translateX(-50%);opacity:.95;z-index:1}
+.box-arbitro .mm-cuerpo line{stroke:#1B1440}
+.box-lu{position:absolute;bottom:17%;transition:transform .25s;z-index:2}
+.box-lu.yo{left:9%}.box-lu.otro{right:9%}
+.box-lu .mm-cuerpo line{stroke:#1B1440}
+.box-lu .mm-nom{color:#1B1440;background:rgba(255,255,255,.7);border-radius:6px;padding:0 5px}
 .box-lu.pega.yo{animation:box-pega-i .6s ease-out}.box-lu.pega.otro{animation:box-pega-d .6s ease-out}
 @keyframes box-pega-i{30%{transform:translateX(-28px) rotate(-12deg)}100%{transform:none}}
 @keyframes box-pega-d{30%{transform:translateX(28px) rotate(12deg)}100%{transform:none}}
 .box-lu.ko.yo{transform:translateX(-18px) rotate(-80deg) translateY(24px)}.box-lu.ko.otro{transform:translateX(18px) rotate(80deg) translateY(24px)}
-.box-mano{position:absolute;top:46%;font-size:2.6rem;line-height:1;transition:transform .2s;z-index:2}
-.box-lu.yo .box-mano{right:-34px}.box-lu.otro .box-mano{left:-34px}
+.box-mano{position:absolute;top:44%;font-size:3.2rem;line-height:1;transition:transform .2s;z-index:3}
+.box-lu.yo .box-mano{right:-42px}.box-lu.otro .box-mano{left:-42px}
 .box-lu.otro .box-mano.guardia,.box-lu.otro .box-mano.agita{transform:scaleX(-1)}
 .box-mano.guardia{opacity:.5}
 .box-mano.agita{animation:box-agita .38s ease-in-out infinite}
 .box-lu.otro .box-mano.agita{animation-name:box-agita-d}
 @keyframes box-agita{50%{transform:translateY(-16px)}}
 @keyframes box-agita-d{0%,100%{transform:scaleX(-1)}50%{transform:scaleX(-1) translateY(-16px)}}
-.box-lu.yo .box-mano.sale{transform:translateX(34px) scale(1.25)}.box-lu.otro .box-mano.sale{transform:translateX(-34px) scale(1.25)}
+.box-lu.yo .box-mano.sale{transform:translateX(44px) scale(1.3)}.box-lu.otro .box-mano.sale{transform:translateX(-44px) scale(1.3)}
 .box-lu.yo .box-mano.rebota{animation:box-reb-i .5s}.box-lu.otro .box-mano.rebota{animation:box-reb-d .5s}
 @keyframes box-reb-i{0%{transform:translateX(34px)}100%{transform:translateX(-6px)}}
 @keyframes box-reb-d{0%{transform:translateX(-34px)}100%{transform:translateX(6px)}}
 .box-pod{position:absolute;top:-6px;font-size:1.4rem}
 .box-lu.yo .box-pod{left:-8px}.box-lu.otro .box-pod{right:-8px}
-.box-grito{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%) scale(0);font:900 2rem Anton,Impact,sans-serif;color:#FFD54A;text-shadow:0 0 14px #ff8a00,0 3px 0 #7a3c00;white-space:nowrap;pointer-events:none;z-index:3}
+.box-grito{position:absolute;left:50%;top:22%;transform:translate(-50%,-50%) scale(0);font:900 2rem Anton,Impact,sans-serif;color:#FFD54A;text-shadow:0 0 14px #ff8a00,0 3px 0 #7a3c00;white-space:nowrap;pointer-events:none;z-index:3}
 .box-grito.on{animation:box-grito .38s ease-out forwards}
 @keyframes box-grito{0%{transform:translate(-50%,-50%) scale(1.8);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
-.box-boom{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%) scale(0);font-size:4.4rem;pointer-events:none;z-index:2}
+.box-boom{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%) scale(0);font-size:4.4rem;pointer-events:none;z-index:2}
 .box-boom.on{animation:box-boom .6s ease-out}
 @keyframes box-boom{0%{transform:translate(-50%,-50%) scale(.2);opacity:1}60%{transform:translate(-50%,-50%) scale(1.3);opacity:1}100%{transform:translate(-50%,-50%) scale(1.6);opacity:0}}
 .box-info{display:flex;justify-content:space-between;font-weight:800;color:#C9C3EE}
@@ -3873,10 +3877,33 @@ const DUELO = (() => {
         <div class="box-pel der"><b>${esc(nomO)}</b><div class="box-cor" id="cor-otro"></div></div>
       </div>
       <div class="box-ring" id="box-ring">
-        <div class="box-cuerdas"><i></i><i></i><i></i></div>
-        <div class="box-arbitro">${monito(BOT, { tam: 26, nombre: false })}</div>
-        <div class="box-lu yo" id="lu-yo">${monito(yoJ(), { tam: 60 })}<span class="box-mano" id="mano-yo">✊</span><span class="box-pod" id="pod-yo"></span></div>
-        <div class="box-lu otro" id="lu-otro">${monito(otroJ(), { tam: 60 })}<span class="box-mano" id="mano-otro">✊</span><span class="box-pod" id="pod-otro"></span></div>
+        <svg class="box-escena" viewBox="0 0 360 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+          <defs><linearGradient id="bx-lona" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfd8ea"/><stop offset="1" stop-color="#9fb0d0"/></linearGradient>
+            <radialGradient id="bx-luz" cx="50%" cy="0%" r="90%"><stop offset="0" stop-color="#fff6c8" stop-opacity=".35"/><stop offset="1" stop-color="#fff6c8" stop-opacity="0"/></radialGradient></defs>
+          <g fill="#2a1a4a" opacity=".9">${[...Array(18).keys()].map(i => `<circle cx="${10 + i * 20}" cy="${92 + (i % 3) * 6}" r="9"/>`).join('')}</g>
+          <polygon points="52,150 308,150 360,258 0,258" fill="url(#bx-lona)"/>
+          <polygon points="52,150 308,150 360,258 0,258" fill="url(#bx-luz)"/>
+          <ellipse cx="180" cy="208" rx="70" ry="16" fill="#c0392b" opacity=".22"/>
+          <rect x="0" y="258" width="360" height="42" fill="#7a1022"/>
+          <rect x="0" y="258" width="360" height="5" fill="#b0233a"/>
+          <text x="180" y="288" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="20" fill="#FFD54A" letter-spacing="3">ALFA BROTHER</text>
+          <g stroke-linecap="round">
+            <line x1="52" y1="78" x2="308" y2="78" stroke="#e74c3c" stroke-width="3"/>
+            <line x1="52" y1="102" x2="308" y2="102" stroke="#fff" stroke-width="3"/>
+            <line x1="52" y1="126" x2="308" y2="126" stroke="#3498db" stroke-width="3"/>
+            <line x1="52" y1="78" x2="4" y2="168" stroke="#e74c3c" stroke-width="4"/>
+            <line x1="52" y1="102" x2="4" y2="200" stroke="#fff" stroke-width="4"/>
+            <line x1="52" y1="126" x2="4" y2="232" stroke="#3498db" stroke-width="4"/>
+            <line x1="308" y1="78" x2="356" y2="168" stroke="#e74c3c" stroke-width="4"/>
+            <line x1="308" y1="102" x2="356" y2="200" stroke="#fff" stroke-width="4"/>
+            <line x1="308" y1="126" x2="356" y2="232" stroke="#3498db" stroke-width="4"/>
+          </g>
+          <rect x="45" y="66" width="14" height="88" rx="4" fill="#c0392b"/><rect x="43" y="62" width="18" height="10" rx="3" fill="#e74c3c"/>
+          <rect x="301" y="66" width="14" height="88" rx="4" fill="#2471a3"/><rect x="299" y="62" width="18" height="10" rx="3" fill="#3498db"/>
+        </svg>
+        <div class="box-arbitro">${monito(BOT, { tam: 30, nombre: false })}</div>
+        <div class="box-lu yo" id="lu-yo">${monito(yoJ(), { tam: 74 })}<span class="box-mano" id="mano-yo">✊</span><span class="box-pod" id="pod-yo"></span></div>
+        <div class="box-lu otro" id="lu-otro">${monito(otroJ(), { tam: 74 })}<span class="box-mano" id="mano-otro">✊</span><span class="box-pod" id="pod-otro"></span></div>
         <div class="box-grito" id="box-grito"></div>
         <div class="box-boom" id="box-boom">💥</div>
       </div>
