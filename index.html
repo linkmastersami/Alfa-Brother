@@ -499,6 +499,24 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .gx-botones button.nope{animation:mm-tiembla .12s linear 2}
 .gx-botones button:disabled{opacity:.45}
 
+
+.gx-bombero{position:absolute;bottom:3%;width:150px;height:190px;z-index:2;--cx:48px;--cy:40px}
+.gx-bombero.yo{left:-2%}.gx-bombero.otro{right:-2%}
+.gx-bombero.otro .gx-nom{left:auto;right:32%;transform:translateX(50%)}
+.gx-bombero svg{position:absolute;inset:0;overflow:visible}
+.gx-bombero line{stroke:#fff;stroke-width:4;stroke-linecap:round}
+.gx-cab{position:absolute;left:var(--cx);top:var(--cy);transform:translateX(-50%);z-index:2}
+.gx-cab .av{box-shadow:0 0 0 3px #fff}
+.gx-nom{position:absolute;left:32%;bottom:-14px;transform:translateX(-50%);font-size:.7rem;font-weight:800;color:#fff;background:rgba(0,0,0,.45);border-radius:6px;padding:0 6px;white-space:nowrap}
+.gx-cara{position:absolute;left:calc(var(--cx) + 8px);top:calc(var(--cy) - 26px);font-size:1.6rem;transform:scale(0);transition:transform .15s;z-index:3;background:#FFFDF6;border-radius:999px;padding:0 4px}
+.gx-cara.on{transform:scale(1)}
+.gx-bombero.mojado{filter:saturate(.6) hue-rotate(170deg) brightness(.9)}
+.gx-aviso{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font:900 1.4rem Anton,Impact,sans-serif;color:#FFD54A;text-shadow:0 0 12px #ff8a00,0 2px 0 #7a3c00;white-space:nowrap;opacity:0;pointer-events:none;z-index:4}
+.gx-aviso.on{animation:gx-aviso 1.1s ease-out}
+@keyframes gx-aviso{0%{opacity:0;transform:translate(-50%,-30%) scale(.7)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-80%)}}
+.gx-botones button small{font-size:.7rem;opacity:.75;font-weight:700}
+.gx-botones button.on{background:linear-gradient(#ffd54a,#f0a500);color:#1B1440;box-shadow:0 2px 0 #7a5200;transform:translateY(4px)}
+
 /* ---------- 🤜🤛 Boxeo ---------- */
 .box{display:flex;flex-direction:column;gap:10px}
 .box-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:rgba(0,0,0,.3);border-radius:14px;padding:8px 10px}
@@ -1992,8 +2010,8 @@ $$('.js-logo').forEach((svg, i) => { svg.innerHTML = LOGO(i); svg.classList.add(
 /* ---------- avatar ---------- */
 function avatar(j, size = 56) {
   const f = fotos[j.id];
-  const inicial = esc(String(j.nombre || '?').trim().charAt(0).toUpperCase());
-  const st = `width:${size}px;height:${size}px;font-size:${Math.round(size * .48)}px;background:${colorDe(j.nombre)}`;
+  const inicial = j.emoji || esc(String(j.nombre || '?').trim().charAt(0).toUpperCase());
+  const st = `width:${size}px;height:${size}px;font-size:${Math.round(size * (j.emoji ? .62 : .48))}px;background:${j.color || colorDe(j.nombre)}`;
   return f ? `<div class="av" style="${st}"><img src="${f}" alt=""></div>` : `<div class="av" style="${st}" aria-hidden="true">${inicial}</div>`;
 }
 function porId(id) { return est?.jugadores.find(j => j.id === id); }
@@ -3710,7 +3728,7 @@ const DUELO = (() => {
   const avisar = para => d?.bot || SALA.mandarDuelo({ para, duelo: d?.id, de: yoId() });
   const progreso = p => d?.bot || SALA.mandarDuelo({ duelo: d?.id, de: yoId(), p });
   function abrirCaja() { caja().classList.remove('hidden'); document.body.style.overflow = 'hidden'; SFX.pausaParaGala(true); }
-  function limpiar() { clearInterval(poll); clearInterval(tick); clearTimeout(G.cuentaT); clearTimeout(G.t1); clearTimeout(G.t2); clearTimeout(G.botT); clearTimeout(G.botT2); poll = tick = null; G = {}; }
+  function limpiar() { cancelAnimationFrame(G.raf); clearInterval(poll); clearInterval(tick); clearTimeout(G.cuentaT); clearTimeout(G.t1); clearTimeout(G.t2); clearTimeout(G.botT); clearTimeout(G.botT2); poll = tick = null; G = {}; }
   function cerrar() {
     limpiar(); modo = null; d = null;
     caja().classList.add('hidden'); caja().innerHTML = '';
@@ -4111,87 +4129,142 @@ const DUELO = (() => {
     pintarVidas(); historial(); manos('guardia'); expresar(G.mOtro, '🤔', '', 0);
   }
 
-  // 🎈💥 GLOBO EXPLOSIVO: en la feria, cada quien bombea (sube y baja el mango) para inflar el globo de agua
-  // que cuelga sobre el OTRO. El primero que lo revienta lo baña de agua y gana.
+  // 🎈💥 GLOBO EXPLOSIVO: en la feria, cada monito agarra el mango de su bomba. Se deja apretado SUBE hasta arriba
+  // y BAJA hasta abajo: mientras más completo el recorrido, más aire entra al globo de agua que cuelga sobre el OTRO.
+  // El primero que lo revienta lo baña y gana.
   function jGlobo() {
     const z = $('#du-zona');
     caja().querySelector('.du-ring').classList.add('hidden');
-    G.total = d.datos.bombeos || 18; G.n = 0; G.otro = 0; G.arriba = false; G.ult = 0; G.activo = false; G.envT = 0;
-    const bomba = id => `<svg class="gx-bomba" id="${id}" viewBox="0 0 40 90" aria-hidden="true">
-        <g class="gx-mango"><rect x="6" y="2" width="28" height="7" rx="3.5" fill="#2b2b2b"/><rect x="18.5" y="8" width="3" height="40" fill="#9aa4b1"/></g>
-        <rect x="11" y="34" width="18" height="46" rx="5" fill="#d7263d"/><rect x="11" y="40" width="18" height="5" fill="#fff" opacity=".35"/>
-        <rect x="4" y="80" width="32" height="8" rx="3" fill="#3a3a3a"/></svg>`;
+    const TOTAL = 10, VIAJE = 420;              // 10 "bombazos" de aire; el mango tarda 0.42 s de abajo hasta arriba
+    G.aire = 0; G.otro = 0; G.p = 0; G.dir = 0; G.desde = 0; G.activo = false; G.envT = 0; G.tUlt = 0;
+    // el monito parado junto a su bomba, con las dos manos en el mango (de lado)
+    const bombero = (lado, j) => `<div class="gx-bombero ${lado}" id="bb-${lado}">
+        <svg viewBox="0 0 150 190" width="150" height="190" aria-hidden="true"><g ${lado === 'otro' ? 'transform="translate(150 0) scale(-1 1)"' : ''}>
+          <rect x="88" y="104" width="24" height="70" rx="6" fill="#d7263d"/><rect x="88" y="112" width="24" height="6" fill="#fff" opacity=".35"/>
+          <rect x="80" y="174" width="40" height="10" rx="3" fill="#3a3a3a"/><rect x="112" y="166" width="14" height="6" rx="2" fill="#555"/>
+          <rect class="gx-vara" x="98.5" y="50" width="3" height="56" fill="#9aa4b1"/>
+          <rect class="gx-asa" x="82" y="46" width="36" height="9" rx="4.5" fill="#2b2b2b"/>
+          <line class="gx-pierna" x1="48" y1="132" x2="34" y2="184"/><line class="gx-pierna" x1="48" y1="132" x2="64" y2="184"/>
+          <line class="gx-torso" x1="48" y1="84" x2="48" y2="132"/>
+          <line class="gx-brazo" x1="48" y1="90" x2="86" y2="50"/><line class="gx-brazo b2" x1="48" y1="94" x2="94" y2="50"/>
+        </g></svg>
+        <div class="gx-cab">${avatar(j, 46)}</div><span class="gx-nom">${esc(j.id === yoId() ? 'Tú' : j.nombre)}</span><span class="gx-cara"></span></div>`;
     z.innerHTML = `<div class="gx">
       <div class="gx-escena" id="gx-esc">
         <div class="gx-carpa"></div>
         <div class="gx-banderines">${[...Array(14).keys()].map(i => `<i style="--c:${['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6'][i % 5]}"></i>`).join('')}</div>
         <div class="gx-luces">${[...Array(12).keys()].map(i => `<b style="animation-delay:${(i % 4) * .25}s"></b>`).join('')}</div>
         <svg class="gx-tubos" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M33 58 C 45 18, 70 10, 80 20" /><path d="M67 58 C 55 18, 30 10, 20 20" class="otro"/></svg>
+          <path d="M33 92 C 50 70, 64 26, 80 24" /><path d="M67 92 C 50 70, 36 26, 20 24" class="otro"/></svg>
         <div class="gx-globo sobre-otro" id="gl-otro"><i></i></div>
         <div class="gx-globo sobre-yo" id="gl-yo"><i></i></div>
-        <div class="gx-lado yo">${monito(yoJ(), { tam: 54 })}</div>${bomba('bomba-yo')}
-        <div class="gx-lado otro">${monito(otroJ(), { tam: 54 })}</div>${bomba('bomba-otro')}
+        ${bombero('yo', yoJ())}${bombero('otro', otroJ())}
+        <div class="gx-aviso" id="gx-aviso"></div>
         <div class="gx-agua" id="agua-yo"></div><div class="gx-agua otro" id="agua-otro"></div>
       </div>
       <div class="gx-progreso"><div><b>Tú</b><span class="gx-bar"><i id="gx-p-yo"></i></span></div><div><b>${esc(nomOtro())}</b><span class="gx-bar otro"><i id="gx-p-otro"></i></span></div></div>
-      <p class="du-msg" id="g-msg">Sube y baja el mango para inflar el globo de ${esc(nomOtro())}. ¡Que se moje!</p>
-      <div class="gx-botones"><button id="gx-sube" disabled>⬆️<b>SUBE</b></button><button id="gx-baja" disabled>⬇️<b>BAJA</b></button></div>
+      <p class="du-msg" id="g-msg">Mantén apretado SUBE hasta que el mango llegue arriba y luego BAJA hasta abajo. ¡Así entra más aire!</p>
+      <div class="gx-botones"><button id="gx-sube" disabled>⬆️<b>SUBE</b><small>mantén</small></button><button id="gx-baja" disabled>⬇️<b>BAJA</b><small>mantén</small></button></div>
     </div>`;
-    const [mY, mO] = $$('#du-zona .gx-lado .mm'); G.mYo = mY; G.mOtro = mO;
-    const globo = (cual, n) => {                        // cual: 'otro' = el que yo inflo (sobre el otro)
+    // el mango (p: 0 abajo … 1 arriba) mueve los brazos y el cuerpo del monito
+    const pintarBombero = (lado, p) => {
+      const bb = $('#bb-' + lado); if (!bb) return;
+      const asaY = 92 - p * 46;                       // el mango: arriba 46, abajo 92
+      const inclina = (1 - p) * 10;                   // al bajar el mango, el monito se agacha hacia la bomba
+      const hx = 48 + inclina, hy = 84 + (1 - p) * 14;
+      const set = (sel, at) => bb.querySelectorAll(sel).forEach((el, i) => { for (const k in at) el.setAttribute(k, typeof at[k] === 'function' ? at[k](i) : at[k]); });
+      set('.gx-asa', { y: asaY - 4.5 });
+      set('.gx-vara', { y: asaY, height: Math.max(4, 108 - asaY) });
+      set('.gx-torso', { x1: hx, y1: hy });
+      set('.gx-brazo', { x1: hx, y1: i => hy + 6 + i * 4, x2: i => i ? 94 : 86, y2: asaY });
+      const x = lado === 'otro' ? 150 - hx : hx;
+      bb.style.setProperty('--cx', x + 'px'); bb.style.setProperty('--cy', (hy - 44) + 'px');
+    };
+    const cara = (lado, c, ms = 0) => { const el = $(`#bb-${lado} .gx-cara`); if (!el) return; el.textContent = c; el.classList.toggle('on', !!c); clearTimeout(el._t); if (ms) el._t = setTimeout(() => { el.textContent = ''; el.classList.remove('on'); }, ms); };
+    const globo = (cual, f) => {                        // cual: 'otro' = el que yo inflo (cuelga sobre el otro)
       const el = $('#gl-' + cual); if (!el || el.classList.contains('pum')) return;
-      const f = Math.min(1, n / G.total);
+      f = Math.min(1, f);
       el.style.setProperty('--f', f.toFixed(3));
-      el.classList.toggle('tenso', f > .78);
-      el.classList.toggle('peligro', f > .9);
+      el.classList.toggle('tenso', f > .78); el.classList.toggle('peligro', f > .9);
       const b = $(cual === 'otro' ? '#gx-p-yo' : '#gx-p-otro'); if (b) b.style.width = Math.round(f * 100) + '%';
     };
-    const mango = (id, arriba) => $('#' + id)?.classList.toggle('arriba', arriba);
-    const revienta = cual => {                          // revienta el globo que cuelga sobre "cual" y lo baña
+    const aviso = t => { const a = $('#gx-aviso'); if (!a) return; a.textContent = t; a.classList.remove('on'); void a.offsetWidth; a.classList.add('on'); };
+    const revienta = cual => {
       const el = $('#gl-' + cual); if (!el || el.classList.contains('pum')) return;
       el.classList.add('pum'); SFX.tocar('pop'); setTimeout(() => SFX.tocar('swish'), 120);
-      const agua = $('#agua-' + cual); agua.innerHTML = [...Array(14).keys()].map(i => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 5) * .06}s">💧</i>`).join(''); agua.classList.add('on');
-      const mojado = cual === 'yo' ? G.mYo : G.mOtro, seco = cual === 'yo' ? G.mOtro : G.mYo;
-      mojado.closest('.gx-lado').classList.add('mojado');
-      expresar(mojado, '😫', 'triste', 0); expresar(seco, '😆', 'festeja', 1800);
+      const agua = $('#agua-' + cual); agua.innerHTML = [...Array(16).keys()].map(i => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 5) * .06}s">💧</i>`).join(''); agua.classList.add('on');
+      $('#bb-' + cual).classList.add('mojado');
+      cara(cual, '😫'); cara(cual === 'yo' ? 'otro' : 'yo', '😆');
       if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
     };
-    const pulsar = async dir => {
-      if (!G.activo) return;
-      const t = performance.now(); if (t - G.ult < 45) return; G.ult = t;
-      if (dir === 'sube') {
-        if (G.arriba) { $('#gx-sube').classList.add('nope'); setTimeout(() => $('#gx-sube')?.classList.remove('nope'), 250); return; }
-        G.arriba = true; mango('bomba-yo', true); SFX.tocar('tic');
-        $('#gx-sube').classList.remove('toca'); $('#gx-baja').classList.add('toca');
-        return;
+    // el ciclo: mientras tengas apretado un botón, el mango se mueve; al bajar entra aire
+    let ultimo = performance.now();
+    const ciclo = t => {
+      if (!$('#bb-yo')) return;
+      const dt = Math.min(50, t - ultimo); ultimo = t;
+      if (G.activo && G.dir) {
+        const antes = G.p;
+        G.p = Math.max(0, Math.min(1, G.p + G.dir * dt / VIAJE));
+        if (G.dir < 0 && G.p < antes) {
+          G.aire += (antes - G.p);
+          if (G.p <= 0.02 && G.desde >= 0.95 && !G.bombazo) { G.bombazo = true; G.aire += .25; aviso('¡BOMBAZO! 💨'); SFX.tocar('inflar', G.aire / TOTAL); }
+          globo('otro', G.aire / TOTAL);
+          if (t - G.envT > 150) { G.envT = t; progreso(Math.round(G.aire * 10)); }
+          if (G.aire >= TOTAL) ganar();
+        }
+        pintarBombero('yo', G.p);
       }
-      if (!G.arriba) { $('#gx-baja').classList.add('nope'); setTimeout(() => $('#gx-baja')?.classList.remove('nope'), 250); return; }
-      G.arriba = false; mango('bomba-yo', false); G.n++;
-      $('#gx-baja').classList.remove('toca'); $('#gx-sube').classList.add('toca');
-      globo('otro', G.n); SFX.tocar('inflar', G.n / G.total);
-      G.mYo.closest('.gx-lado').classList.remove('empuja'); void G.mYo.offsetWidth; G.mYo.closest('.gx-lado').classList.add('empuja');
-      if (t - G.envT > 120 || G.n >= G.total) { G.envT = t; progreso(G.n); }
-      if (G.n >= G.total) {
-        G.activo = false; $('#gx-sube').disabled = $('#gx-baja').disabled = true;
-        revienta('otro');
-        $('#g-msg').textContent = `¡SPLASH! Bañaste a ${nomOtro()} 💦 Viendo quién fue primero…`;
-        G.animando = true;
-        try { await jugada({ fin: true }); avisar(otroId()); } catch { }
-        setTimeout(() => { G.animando = false; alVer(); }, 1300);
-      }
+      G.raf = requestAnimationFrame(ciclo);
     };
-    for (const [id, dir] of [['#gx-sube', 'sube'], ['#gx-baja', 'baja']]) $(id).addEventListener('pointerdown', e => { e.preventDefault(); pulsar(dir); });
+    const ganar = async () => {
+      if (!G.activo) return;
+      G.activo = false; G.dir = 0; $('#gx-sube').disabled = $('#gx-baja').disabled = true;
+      progreso(TOTAL * 10); revienta('otro');
+      $('#g-msg').textContent = `¡SPLASH! Bañaste a ${nomOtro()} 💦 Viendo quién fue primero…`;
+      G.animando = true;
+      try { await jugada({ fin: true }); avisar(otroId()); } catch { }
+      setTimeout(() => { G.animando = false; alVer(); }, 1300);
+    };
+    const apretar = dir => {
+      if (!G.activo) return;
+      if (dir < 0) { G.desde = G.p; G.bombazo = false; }
+      G.dir = dir;
+      $('#gx-sube').classList.toggle('on', dir > 0); $('#gx-baja').classList.toggle('on', dir < 0);
+      SFX.tocar(dir > 0 ? 'tic' : 'tac');
+    };
+    const soltar = dir => {
+      if (G.dir !== dir) return;
+      if (dir < 0 && G.activo) {                    // al soltar BAJA: ¿fue un buen bombeo o uno chiquito?
+        const rec = G.desde - G.p;
+        if (rec > 0 && rec < .45 && !G.bombazo) aviso('Poquito aire… ¡sube hasta arriba!');
+        if (rec >= .45) SFX.tocar('inflar', G.aire / TOTAL);
+      }
+      G.dir = 0; $('#gx-sube').classList.remove('on'); $('#gx-baja').classList.remove('on');
+    };
+    for (const [id, dir] of [['#gx-sube', 1], ['#gx-baja', -1]]) {
+      const b = $(id);
+      b.addEventListener('pointerdown', e => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch { } apretar(dir); });
+      for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(ev, () => soltar(dir));
+      b.addEventListener('contextmenu', e => e.preventDefault());
+    }
+    // el rival: cuando le entra aire, su monito hace un bombeo
+    const bombeoOtro = () => {
+      if (G.animOtro) return; G.animOtro = true;
+      const t0 = performance.now();
+      const paso = t => { const k = Math.min(1, (t - t0) / 520); pintarBombero('otro', k < .5 ? k * 2 : 2 - k * 2); if (k < 1 && $('#bb-otro')) requestAnimationFrame(paso); else G.animOtro = false; };
+      requestAnimationFrame(paso);
+    };
     G.prog = p => {
-      if (p > G.otro) { mango('bomba-otro', false); setTimeout(() => mango('bomba-otro', true), 60); setTimeout(() => mango('bomba-otro', false), 160); }
-      G.otro = Math.max(G.otro, p); globo('yo', G.otro);
-      if (G.otro >= G.total) { revienta('yo'); $('#g-msg').textContent = `¡SPLASH! ${nomOtro()} te bañó 💦`; }
+      if (p > G.otro) bombeoOtro();
+      G.otro = Math.max(G.otro, p); globo('yo', G.otro / (TOTAL * 10));
+      if (G.otro >= TOTAL * 10) { revienta('yo'); $('#g-msg').textContent = `¡SPLASH! ${nomOtro()} te bañó 💦`; }
     };
     G.arranca = () => {
-      G.activo = true; $('#gx-sube').disabled = $('#gx-baja').disabled = false; $('#gx-sube').classList.add('toca');
-      $('#g-msg').textContent = '¡Bombea! Sube… baja… sube… baja… ¡más rápido!';
+      G.activo = true; $('#gx-sube').disabled = $('#gx-baja').disabled = false;
+      $('#g-msg').textContent = '¡Bombea! Mantén SUBE hasta arriba… y BAJA hasta abajo. ¡Con ritmo!';
     };
-    globo('otro', 0); globo('yo', 0);
+    pintarBombero('yo', 0); pintarBombero('otro', 0); globo('otro', 0); globo('yo', 0);
+    G.raf = requestAnimationFrame(ciclo);
   }
 
   // ➕ Cálculo rápido: 10 operaciones, gana quien tenga más buenas (y si empatan, el más rápido)
@@ -4366,15 +4439,15 @@ const DUELO = (() => {
   function botArranca() {
     const D = d.datos, sigue = () => d?.bot && d.estado === 'jugando' && modo === 'juego';
     if (d.juego === 'globo') {
-      const vel = alAzar(330, 470);                 // entre 2 y 3 bombeos por segundo
+      const vel = alAzar(950, 1300);                // un bombazo completo cada 1 a 1.3 segundos
       let n = 0;
       const paso = () => {
         if (!sigue()) return;
-        n++; G.prog?.(n);
-        if (n >= (D.bombeos || 18)) { finBot('bot'); G.animando = true; setTimeout(() => { G.animando = false; alVer(); }, 900); return; }
-        G.botT2 = setTimeout(paso, vel * alAzar(.7, 1.3));
+        n = Math.min(100, n + (Math.random() < .75 ? 12.5 : 7)); G.prog?.(Math.round(n));
+        if (n >= 100) { finBot('bot'); G.animando = true; setTimeout(() => { G.animando = false; alVer(); }, 900); return; }
+        G.botT2 = setTimeout(paso, vel * alAzar(.85, 1.15));
       };
-      G.botT2 = setTimeout(paso, alAzar(200, 500));
+      G.botT2 = setTimeout(paso, alAzar(700, 1100));
     } else if (d.juego === 'calculo') {
       let i = 0, ok = 0;
       const paso = rapido => {
