@@ -429,9 +429,6 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .pz-roca{font-size:26px;line-height:1}
 .pz-br.lanza{animation:pz-arco .5s ease-out}
 @keyframes pz-arco{45%{transform:translateY(-60px) rotate(180deg)}100%{transform:rotate(360deg)}}
-.pz-bloq{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:4px;background:rgba(10,4,20,.45);text-align:center;pointer-events:none}
-.pz-bloq b{font:900 4.6rem/1 Anton,Impact,sans-serif;color:#ff4d4d;text-shadow:0 0 18px #000}
-.pz-bloq small{font-weight:800;color:#fff;text-shadow:0 1px 4px #000}
 .pz-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
 .pz-flash.on{animation:pz-flash .35s}
 @keyframes pz-flash{0%{opacity:.35}100%{opacity:0}}
@@ -441,7 +438,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .pz-rival-cab em{font-style:normal;font-size:.7rem;color:#ff9a9a;min-height:1em}
 .pz-mini{flex:1;display:flex;flex-direction:column;gap:4px;justify-content:center}
 .pz-mf.aqui>span:not(.pz-mrival){opacity:0}
-.pz-mf{position:relative;flex:1;max-height:42px;min-height:26px;display:flex;gap:4px;padding:3px;border-radius:8px;box-sizing:border-box}
+.pz-mf{position:relative;flex:1;max-height:32px;min-height:18px;display:flex;gap:4px;padding:3px;border-radius:8px;box-sizing:border-box}
 .pz-mf.plat{background:#3b3355;align-items:center;justify-content:center;font:900 .62rem Anton,Impact,sans-serif;color:#C9C3EE;letter-spacing:.06em}
 .pz-mf.meta{background:conic-gradient(#fff 25%,#222 0 50%,#fff 0 75%,#222 0) 0 0/12px 12px}
 .pz-mf i{flex:1;border-radius:4px;border:1.5px solid rgba(215,248,255,.7);background:rgba(140,210,255,.35)}
@@ -3761,7 +3758,7 @@ const DUELOS_JUEGOS = {
   ppt: { nombre: 'Boxeo', ic: '🤜🤛', desc: 'Piedra, papel o tijeras a golpes: 3 corazones cada quien y un poder por pelea (🛡️ escudo o ⚡ golpe doble). Si empatan, la siguiente vale doble. Gana el último en pie.' },
   globo: { nombre: 'Globo explosivo', ic: '🎈💥', desc: 'En la feria: sube y baja el mango de tu bomba para inflar el globo de agua que cuelga sobre tu rival. El primero que lo revienta ¡lo baña y gana!' },
   calculo: { nombre: 'Cálculo rápido', ic: '➕✖️', desc: 'Las mismas 10 operaciones para los dos. Gana quien tenga más buenas; si empatan, el más rápido.' },
-  camino: { nombre: 'El camino correcto', ic: '🪟', desc: 'Puente de cristal: 5 fases (las 2 últimas con 3 cristales) y 6 segundos por paso. Si pisas el falso se rompe para los dos, te caes y regresas a la salida. Tienes una 🪨 piedra para probar un cristal. Gana el primero en llegar a la meta.' },
+  camino: { nombre: 'El camino correcto', ic: '🪟', desc: 'Puente de cristal: 10 fases de 2 cristales y 6 segundos por paso. Si pisas el falso se rompe para los dos, te caes y regresas a la salida. Tienes una 🪨 piedra para probar un cristal. Gana el primero en llegar a la meta.' },
 };
 function tarjetaDuelos() {
   const marc = (est.duelos_marcador || []).slice(0, 5);
@@ -4427,13 +4424,13 @@ const DUELO = (() => {
     $('#c-op').innerHTML = '¿Listo?'; info('yo', '0/10'); info('otro', '0/10');
   }
 
-  // 🪟 El camino correcto: PUENTE DE CRISTAL. 5 fases (las 2 últimas con 3 cristales), 6 segundos por paso,
+  // 🪟 El camino correcto: PUENTE DE CRISTAL. 10 fases de 2 cristales, 6 segundos por paso,
   // si pisas el falso se rompe (para los dos), te caes y regresas a la salida. Una 🪨 piedra para probar un cristal.
   function jCamino() {
     const z = $('#du-zona');
     caja().querySelector('.du-ring').classList.add('hidden');
     const D = () => d.datos, RH = 100;
-    const OPC = D().opc || [2, 2, 2, 3, 3];
+    const OPC = D().opc || [2, 2, 2, 2, 2], N = OPC.length;
     const rotos = f => D().rotos?.[f] || [];
     const mia = () => { const p = D()['pied' + k()]; return p && typeof p === 'object' ? p : null; };
     G.f = D()['f' + k()] || 0; G.fo = D()['f' + o()] || 0; G.col = D()['col' + k()];
@@ -4443,25 +4440,26 @@ const DUELO = (() => {
       <div class="pz-top"><div class="pz-fase"><b id="pz-fase"></b><div class="pz-reloj" id="pz-reloj"><i></i></div></div>
         <button class="pz-piedra" id="pz-piedra" disabled>🪨 Piedra</button></div>
       <div class="pz-main">
-        <div class="pz-vista" id="pz-vista"><div class="pz-plano" id="pz-plano"></div><div class="pz-flash" id="pz-flash"></div>
-          <div class="pz-bloq hidden" id="pz-bloq"><b></b><small>Un globo te regresa a la salida 🎈</small></div></div>
+        <div class="pz-vista" id="pz-vista"><div class="pz-plano" id="pz-plano"></div><div class="pz-flash" id="pz-flash"></div></div>
+
         <div class="pz-rival"><div class="pz-rival-cab">${monito(otroJ(), { tam: 30, nombre: false })}<small>${esc(nomOtro())}</small><em id="pz-rc"></em></div>
           <div class="pz-mini" id="pz-mini"></div></div>
       </div>
       <p class="du-msg" id="cam-msg">Pisa el cristal bueno. Si pisas el falso… ¡pa' bajo! 😱</p></div>`;
     const plano = $('#pz-plano');
+    plano.style.height = (N + 2) * RH + 'px';
     plano.innerHTML = `<div class="pz-riel i"></div><div class="pz-riel d"></div>
       <div class="pz-fila pz-plat" style="bottom:0">SALIDA</div>
       ${OPC.map((n, f) => `<div class="pz-fila" data-f="${f}" style="bottom:${(f + 1) * RH}px">${Array.from({ length: n }, (_, i) => `<div class="pz-v${rotos(f).includes(i) ? ' roto' : ''}" data-f="${f}" data-i="${i}"></div>`).join('')}</div>`).join('')}
-      <div class="pz-fila pz-plat pz-meta" style="bottom:${6 * RH}px">🏁 META</div>
+      <div class="pz-fila pz-plat pz-meta" style="bottom:${(N + 1) * RH}px">🏁 META</div>
       <div class="pz-cosa" id="pz-yo"><div class="pz-up"><div class="pz-br" id="pz-br"><span class="pz-globito" id="pz-glo" style="opacity:0">🎈</span>${monito(yoJ(), { tam: 44, nombre: false })}</div></div></div>`;
     G.mYo = $('#pz-br .mm'); G.mOtro = $('.pz-rival-cab .mm');
     const yo = $('#pz-yo'), br = $('#pz-br'), msg = t => { const el = $('#cam-msg'); if (el) el.innerHTML = t; };
     // dónde queda el centro de cada cristal (en % del ancho y px desde abajo)
     const cx = (n, i) => { const w = (92 - 9 * (n - 1)) / n; return 4 + i * (w + 9) + w / 2; };
-    const pos = (f, col) => f <= 0 ? [50, RH * .42] : f >= 5 ? [50, 6.42 * RH] : [col == null ? 50 : cx(OPC[f - 1], col), (f + .42) * RH];
+    const pos = (f, col) => f <= 0 ? [50, RH * .42] : f >= N ? [50, (N + 1.42) * RH] : [col == null ? 50 : cx(OPC[f - 1], col), (f + .42) * RH];
     const poner = (el, [x, y], anim = true) => { el.style.transition = anim ? '' : 'none'; el.style.left = x + '%'; el.style.bottom = y + 'px'; if (!anim) void el.offsetWidth; };
-    const camara = f => plano.style.setProperty('--cam', Math.min(4, Math.max(0, f)) * RH + 'px');
+    const camara = f => plano.style.setProperty('--cam', Math.min(N - 1, Math.max(0, f)) * RH + 'px');
     const brinco = (el, cls) => { el.classList.remove('salta', 'cae', 'baja', 'lanza'); void el.offsetWidth; if (cls) el.classList.add(cls); };
     const vidrio = (f, i) => plano.querySelector(`.pz-v[data-f="${f}"][data-i="${i}"]`);
     function romper(f, i, fuerte = true) {
@@ -4479,15 +4477,15 @@ const DUELO = (() => {
     }
     function pintaMini() {
       const fila = (cls, ins, aqui) => `<div class="pz-mf ${cls}${aqui ? ' aqui' : ''}">${ins}${aqui ? `<span class="pz-mrival">${avatar(otroJ(), 20)}</span>` : ''}</div>`;
-      let h = fila('plat meta', '', G.fo >= 5);
-      for (let f = 4; f >= 0; f--) h += fila('', Array.from({ length: OPC[f] }, (_, i) => `<i class="${rotos(f).includes(i) ? 'roto' : ''}"></i>`).join(''), G.fo === f + 1);
+      let h = fila('plat meta', '', G.fo >= N);
+      for (let f = N - 1; f >= 0; f--) h += fila('', Array.from({ length: OPC[f] }, (_, i) => `<i class="${rotos(f).includes(i) ? 'roto' : ''}"></i>`).join(''), G.fo === f + 1);
       h += fila('plat', '<span>SALIDA</span>', G.fo === 0);
       $('#pz-mini').innerHTML = h;
       const c = D()['c' + o()] || 0;
       $('#pz-rc').textContent = (c ? `💥 ${c} ${c === 1 ? 'caída' : 'caídas'}` : '') + (G.pOtro ? ' 🪨' : '');
     }
     function pinta() {
-      $('#pz-fase').textContent = G.f >= 5 ? '¡Llegaste a la meta!' : `Fase ${G.f + 1} de 5${G.f === 4 ? ' · ¡la última!' : ''}${OPC[G.f] === 3 ? ' · 3 cristales' : ''}`;
+      $('#pz-fase').textContent = G.f >= N ? '¡Llegaste a la meta!' : `Fase ${G.f + 1} de ${N}${G.f === N - 1 ? ' · ¡la última!' : ''}`;
       OPC.forEach((n, f) => {
         const fila = plano.querySelector(`.pz-fila[data-f="${f}"]`);
         fila.classList.toggle('activa', f === G.f && G.activo && !G.esperando && Date.now() >= G.bloq);
@@ -4496,7 +4494,7 @@ const DUELO = (() => {
       const b = $('#pz-piedra'), usada = !!D()['pied' + k()];
       b.textContent = usada ? '🪨 Usada' : G.apunta ? '🎯 ¿A cuál?' : '🪨 Piedra';
       b.classList.toggle('apunta', G.apunta);
-      b.disabled = usada || !G.activo || G.esperando || Date.now() < G.bloq || G.f >= 5;
+      b.disabled = usada || !G.activo || G.esperando || Date.now() < G.bloq || G.f >= N;
       $('#pz-vista').classList.toggle('pz-apunta', G.apunta);
       pintaMini();
     }
@@ -4506,7 +4504,7 @@ const DUELO = (() => {
     function reloj() {
       const el = $('#pz-reloj'); if (!el || modo !== 'juego') return;
       const falta = plazo() - Date.now(), bar = el.firstElementChild;
-      const corre = G.activo && !G.esperando && Date.now() >= G.bloq && G.f < 5;
+      const corre = G.activo && !G.esperando && Date.now() >= G.bloq && G.f < N;
       bar.style.width = (corre ? Math.max(0, Math.min(1, falta / 6000)) * 100 : 100) + '%';
       el.classList.toggle('poco', corre && falta < 2000);
       if (corre && falta < 3000 && falta > 0) { const s = Math.ceil(falta / 1000); if (s !== ultSeg) { ultSeg = s; SFX.tocar('tic'); } }
@@ -4519,23 +4517,20 @@ const DUELO = (() => {
     function caer(txt) {
       expresar(G.mYo, '😱', 'susto', 0);
       brinco(br, 'cae'); SFX.tocar('caida');
-      msg(txt + ' Regresas a la salida.');
+      msg(txt + ' Un globito te regresa a la salida 🎈');
       G.f = 0; G.col = null;
-      const hasta = Date.now() + 4000; G.bloq = hasta;
-      const bl = $('#pz-bloq'); bl.classList.remove('hidden'); bl.firstElementChild.textContent = 4;
+      G.bloq = Date.now() + 4000;      // el castigo dura lo que tarda el globito en regresarte
       G.t1 = setTimeout(() => {
         if (modo !== 'juego') return;
         poner(yo, pos(0)); camara(0); expresar(G.mYo, '😵‍💫', '', 0);
         $('#pz-glo').style.opacity = 1; brinco(br, 'baja'); pinta();
       }, 1150);
-      const cd = setInterval(() => {
-        if (modo !== 'juego') { clearInterval(cd); return; }
-        const s = Math.ceil((hasta - Date.now()) / 1000);
-        if (s > 0) { bl.firstElementChild.textContent = s; return; }
-        clearInterval(cd); bl.classList.add('hidden'); $('#pz-glo').style.opacity = 0; brinco(br, '');
+      G.t2 = setTimeout(() => {
+        if (modo !== 'juego') return;
+        $('#pz-glo').style.opacity = 0; brinco(br, '');
         expresar(G.mYo, '', '', 0); G.esperando = false;
         msg('Otra vez desde la salida. ¡Fíjate en los cristales rotos! 👀'); pinta();
-      }, 200);
+      }, Math.max(0, G.bloq - Date.now()));
     }
     async function tiempo() {
       if (G.esperando) return;
@@ -4545,7 +4540,7 @@ const DUELO = (() => {
       caer(['🌬️ ¡Se te acabó el tiempo y te tumbó el viento!', '⏰ ¡Muy lento! El puente se sacudió.'][rand(2)]);
     }
     async function pisar(i) {
-      if (!G.activo || G.esperando || Date.now() < G.bloq || G.f >= 5) return;
+      if (!G.activo || G.esperando || Date.now() < G.bloq || G.f >= N) return;
       if (rotos(G.f).includes(i)) { msg('Ese ya está roto. 🙈'); return; }
       if (G.apunta) return lanzar(i);
       G.esperando = true; pinta();
@@ -4557,9 +4552,9 @@ const DUELO = (() => {
       const nf = D()['f' + k()] ?? antes;
       if (nf > antes) {
         G.f = nf; G.col = i; SFX.tocar('paso');
-        if (nf >= 5 || (d.estado === 'terminado' && d.ganador === yoId())) {
-          G.f = 5; G.animando = true; pinta();
-          setTimeout(() => { poner(yo, pos(5)); brinco(br, 'salta'); camara(5); expresar(G.mYo, '🏆', 'festeja', 0); SFX.tocar('fanfarria'); }, 350);
+        if (nf >= N || (d.estado === 'terminado' && d.ganador === yoId())) {
+          G.f = N; G.animando = true; pinta();
+          setTimeout(() => { poner(yo, pos(N)); brinco(br, 'salta'); camara(N); expresar(G.mYo, '🏆', 'festeja', 0); SFX.tocar('fanfarria'); }, 350);
           setTimeout(() => { G.animando = false; resultado(); }, 1700);
           return;
         }
@@ -4635,7 +4630,7 @@ const DUELO = (() => {
       }
       return { ops };
     }
-    if (juego === 'camino') return { opc: [2, 2, 2, 3, 3], camino: [2, 2, 2, 3, 3].map(n => rand(n)), rotos: [[], [], [], [], []], fa: 0, fb: 0, ca: 0, cb: 0 };
+    if (juego === 'camino') { const opc = Array(10).fill(2); return { opc, camino: opc.map(n => rand(n)), rotos: opc.map(() => []), fa: 0, fb: 0, ca: 0, cb: 0 }; }
     if (juego === 'globo') return { bombeos: 18 };
     return { rondas: [], va: 3, vb: 3, mult: 1, pend: {} };
   }
@@ -4698,7 +4693,7 @@ const DUELO = (() => {
         const lado = libres[rand(libres.length)];
         if (lado === D.camino[f]) {
           sabe[f] = lado; D.fb = f + 1; G.prog?.(D.fb);
-          if (D.fb >= 5) { finBot('bot'); alVer(); return; }
+          if (D.fb >= D.opc.length) { finBot('bot'); alVer(); return; }
           G.botT2 = setTimeout(paso, alAzar(1300, 3200));
         } else {
           D.rotos[f].push(lado); D.fb = 0; D.cb++; G.prog?.(0); alVer();
@@ -4723,7 +4718,7 @@ const DUELO = (() => {
       }
     } else if (d.juego === 'camino') {
       const f = D.fa, iso = ms => new Date(ms).toISOString();
-      if (dato.fase !== f || f >= 5) return d;
+      if (dato.fase !== f || f >= D.opc.length) return d;
       if (dato.piedra != null) {
         if (D.pieda || D.rotos[f].includes(dato.piedra)) return d;
         const ok = dato.piedra === D.camino[f];
@@ -4732,7 +4727,7 @@ const DUELO = (() => {
         return d;
       }
       if (dato.lado >= 0 && D.rotos[f].includes(dato.lado)) return d;
-      if (dato.lado === D.camino[f]) { D.fa++; D.cola = dato.lado; D.ulta = 'ok'; D.plazoa = iso(Date.now() + 6000); if (D.fa >= 5) finBot(yoId()); }
+      if (dato.lado === D.camino[f]) { D.fa++; D.cola = dato.lado; D.ulta = 'ok'; D.plazoa = iso(Date.now() + 6000); if (D.fa >= D.opc.length) finBot(yoId()); }
       else { if (dato.lado >= 0) D.rotos[f].push(dato.lado); D.fa = 0; D.ca++; D.ulta = dato.lado < 0 ? 'tiempo' : 'cae'; delete D.cola; D.plazoa = iso(Date.now() + 10000); }
     } else if (d.juego === 'ppt') {
       if (dato.ronda !== D.rondas.length || D.pend.a != null) return d;
