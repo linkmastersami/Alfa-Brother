@@ -525,7 +525,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .tabla-final{width:100%;color:var(--texto)}
 .res{border-top:1px dashed rgba(27,20,64,.35);padding:10px 0}
 .res:first-of-type{border-top:0}
-.res .fila{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:10px}
+.res .fila{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px}
 .res .nm{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .res .nm small{display:block;font-weight:500;color:var(--suave)}
 .res .pt{font-family:Anton,Impact,sans-serif;font-size:1.5rem;text-align:right}
@@ -5862,10 +5862,12 @@ const PASARELA = (() => {
     if (!('speechSynthesis' in window)) return null;
     const vs = speechSynthesis.getVoices().filter(v => /^es/i.test(v.lang));
     if (!vs.length) return null;
-    const masc = /(jorge|juan|diego|carlos|pablo|enrique|raul|raúl|andr[eé]s|miguel|gerardo|alvaro|álvaro|male|hombre|man\b)/i;
-    const orden = v => (masc.test(v.name) ? 0 : 2) + (/MX/i.test(v.lang) ? 0 : /US|419/i.test(v.lang) ? .5 : 1);
+    const orden = v => (esHombre(v) ? 0 : FEMENINA.test(v.name) ? 4 : 2) + (/MX/i.test(v.lang) ? 0 : /US|419/i.test(v.lang) ? .5 : 1);
     return vs.sort((a, b) => orden(a) - orden(b))[0];
   }
+  const MASCULINA = /(jorge|juan|diego|carlos|pablo|enrique|raul|raúl|andr[eé]s|miguel|gerardo|alvaro|álvaro|eddy|reed|rocko|grandpa|male|hombre|man\b)/i;
+  const FEMENINA = /(paulina|sabina|m[oó]nica|helena|laura|luc[ií]a|elvira|dalia|paloma|marisol|ang[eé]lica|esperanza|female|mujer|woman|flo|sandy|shelley|grandma)/i;
+  const esHombre = v => MASCULINA.test(v.name) && !FEMENINA.test(v.name);
   const conVoz = () => store.get('ab_mudo') !== '1' && store.get('ab_gala_voz') !== '0' && 'speechSynthesis' in window;
   async function hablar(txt, extra = 0) {
     if (saltarGala) throw 'saltar';
@@ -5876,8 +5878,10 @@ const PASARELA = (() => {
     try {
       if (conVoz()) {
         voz = voz || elegirVoz();
+        if (!voz || !esHombre(voz)) voz = elegirVoz() || voz;          // a veces las voces cargan tarde
         const u = new SpeechSynthesisUtterance(txt.replace(/[“”"]/g, ''));
-        u.lang = voz?.lang || 'es-MX'; if (voz) u.voice = voz; u.rate = 1.04; u.pitch = .95;
+        u.lang = voz?.lang || 'es-MX'; if (voz) u.voice = voz; u.rate = 1.02;
+        u.pitch = voz && esHombre(voz) ? .9 : .55;                          // si el celular no tiene voz de hombre, se la ponemos grave
         let fin = false; u.onend = u.onerror = () => fin = true;
         speechSynthesis.speak(u);
         const t0 = performance.now(), tope = minimo * 1.8 + 2500;
@@ -6046,14 +6050,13 @@ const PASARELA = (() => {
     }
 
     // 5. los motivos, sin decir quién los escribió
-    const motivos = cands.filter(t => t.puntos > 0).flatMap(t => (t.motivos || []).filter(m => !m.p && m.t).map(m => ({ id: t.id, nombre: t.nombre, t: m.t })))
-      .map(m => ({ m, k: rnd() })).sort((a, b) => a.k - b.k).map(x => x.m).slice(0, 6);
+    const motivos = (r.motivos || []).filter(Boolean).map(t => ({ t, k: rnd() })).sort((a, b) => a.k - b.k).map(x => x.t).slice(0, 6);
     if (motivos.length) {
       SFX.tocar('ojo');
-      await hablar('Ahora… lo que escribieron en el confesionario. ¡Sin decir quién lo dijo!');
+      await hablar('Ahora… algunas cosas que escribieron en el confesionario. ¡Sin decir quién lo escribió ni para quién!');
       for (const m of motivos) {
-        tarjeta(`<div class="pas-ic">🗳️</div><b>Sobre ${esc(m.nombre)}</b><span class="pas-motivo">“${esc(m.t)}”</span>`);
-        await hablar(`De ${m.nombre} escribieron: ${m.t}`, 300);
+        tarjeta(`<div class="pas-ic">🗳️</div><b>Del confesionario</b><span class="pas-motivo">“${esc(m)}”</span>`);
+        await hablar(`“${m}”`, 400);
       }
       limpiarTarjeta();
     }
@@ -6069,7 +6072,7 @@ const PASARELA = (() => {
         cara(a, '😬', 'susto');
         await hablar(`${t.nombre}… recibiste…`);
         SFX.tocar('redoble', rapido ? .9 : 1.4); await esperar(rapido ? 900 : 1400); SFX.parar();
-        tarjeta(`<div class="pas-num">${t.puntos}</div><b>${esc(t.nombre)}</b><small>${t.puntos === 1 ? 'punto' : 'puntos'} · ${t.votos} ${t.votos === 1 ? 'voto' : 'votos'}</small>`);
+        tarjeta(`<div class="pas-num">${t.puntos}</div><b>${esc(t.nombre)}</b><small>${t.puntos === 1 ? 'punto' : 'puntos'}</small>`);
         SFX.tocar('tadan');
         cara(a, t.puntos <= 2 ? '😮‍💨' : de(['😅', '😳', '🙈']), t.puntos <= 2 ? 'festeja' : '', 0);
         await hablar(`¡${pts(t.puntos)}!`);
@@ -6270,19 +6273,17 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false, d
   // tabla completa
   $('#g-saltar').classList.add('hidden');
   const ordenFinal = r.final ? [...tabla].sort((a, b) => a.puntos - b.puntos || a.nombre.localeCompare(b.nombre))
-    : [...tabla].sort((a, b) => b.puntos - a.puntos || b.publico - a.publico);
+    : [...tabla].sort((a, b) => b.puntos - a.puntos || a.nombre.localeCompare(b.nombre));
   const lugarDe = id => r.final ? r.podio.find(x => x.id === id)?.lugar : null;
   E.style.justifyContent = 'flex-start';
   E.innerHTML = `${r.avance ? '<p style="margin:8px 0 0;color:#FFD54A;font-weight:800">👀 Vista previa: así quedaría si la votación terminara ahorita. No se cambió nada.</p>' : ''}<h2 class="display" style="font-size:2rem;color:var(--luz);margin-top:8px">${r.final ? 'Gran final' : `Semana ${r.semana}`}: resultados</h2>
     <p style="margin:0;color:#C9C3EE">${r.final ? `${ganadores.length > 1 ? 'Ganaron' : 'Ganó'} <b style="color:#fff">${esc(ganadores.map(x => x.nombre).join(' y '))}</b>` : r.eliminado ? `${r.avance ? 'Saldría' : 'Salió'} <b style="color:#fff">${esc(r.eliminado)}</b>` : `Empate: ${r.avance ? 'decidiría' : 'decide'} el líder`}${r.lider ? ` · Líder: <b style="color:#fff">${esc(r.lider)}</b>` : ''}</p>
     <div class="formato tabla-final" style="text-align:left">
-      <div class="folio"><span>Habitante</span><span>Puntos · Público</span></div>
+      <div class="folio"><span>Habitante</span><span>Puntos</span></div>
       ${ordenFinal.map(t => `<div class="res ${t.id === r.eliminado_id ? 'fuera' : ''}">
         <div class="fila">${avatar(persona(t.id), 38)}
-          <span class="nm">${lugarDe(t.id) ? MEDALLA[lugarDe(t.id)] + ' ' : ''}${esc(t.nombre)}${t.lider ? ' 👑' : ''}<small>${t.votos} ${t.votos === 1 ? 'voto' : 'votos'}${t.motivos.length ? ` · ${t.motivos.length} ${t.motivos.length === 1 ? 'motivo' : 'motivos'}` : ''}</small></span>
-          <span class="pt">${t.puntos}</span><span class="pb">${t.publico} del público</span></div>
-        ${t.motivos.length ? `<details style="margin-top:4px"><summary style="cursor:pointer;font-size:.85rem;color:var(--tinta);margin-left:48px">Ver por qué votaron</summary>
-          <ul class="motivos">${t.motivos.map(m => `<li>“${esc(m.t)}”${m.p ? ' <em>(público)</em>' : ''}</li>`).join('')}</ul></details>` : ''}
+          <span class="nm">${lugarDe(t.id) ? MEDALLA[lugarDe(t.id)] + ' ' : ''}${esc(t.nombre)}${t.lider ? ' 👑' : ''}</span>
+          <span class="pt">${t.puntos}</span></div>
       </div>`).join('')}
     </div>
     <div style="width:100%;margin-top:16px"><button class="btn" id="g-cerrar">Regresar a la casa</button></div>`;

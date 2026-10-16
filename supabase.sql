@@ -621,7 +621,7 @@ declare c public.config; r jsonb;
 begin
   perform public._yo(p_token);
   perform public._empate_vencido();
-  select resultados into r from public.historial where semana = p_semana;
+  select public._gala_publica(resultados) into r from public.historial where semana = p_semana;
   if r is null then return null; end if;
   select * into c from public.config where id = 1;
   return r || jsonb_build_object('ahora', now(),
@@ -2502,7 +2502,7 @@ begin
     return jsonb_build_object('semana', c.semana, 'final', true, 'avance', true, 'eliminado_id', null, 'lider_id', null,
       'podio', (select jsonb_agg(jsonb_build_object('id', x->>'id', 'nombre', x->>'nombre', 'puntos', (x->>'puntos')::int, 'lugar', lugar) order by lugar, x->>'nombre')
                   from (select x, dense_rank() over (order by (x->>'puntos')::int) as lugar from jsonb_array_elements(res) x) t),
-      'tabla', res);
+      'tabla', (select jsonb_agg(x - 'motivos' - 'votos' - 'publico') from jsonb_array_elements(res) x));
   end if;
   select max((x->>'puntos')::int) into v_max from jsonb_array_elements(res) x where (x->>'id')::uuid is distinct from c.lider_id;
   select array_agg((x->>'id')::uuid) into v_emp from jsonb_array_elements(res) x
@@ -2510,7 +2510,7 @@ begin
   select max((x->>'puntos')::int) filter (where (x->>'id')::uuid = c.lider_id),
          max((x->>'puntos')::int) filter (where (x->>'id')::uuid is distinct from c.lider_id)
     into v_max_lider, v_max_otros from jsonb_array_elements(res) x;
-  return jsonb_build_object(
+  return public._gala_publica(jsonb_build_object(
     'semana', c.semana, 'avance', true,
     'eliminado_id', case when cardinality(v_emp) = 1 then v_emp[1] end,
     'eliminado', case when cardinality(v_emp) = 1 then (select nombre from public.jugadores where id = v_emp[1]) end,
@@ -2521,8 +2521,22 @@ begin
     'empatados', case when cardinality(v_emp) > 1 then to_jsonb(v_emp) else '[]'::jsonb end,
     'empate_pendiente', coalesce(cardinality(v_emp), 0) > 1,
     'resumen', public._resumen_semana(c.semana),
-    'tabla', res);
+    'tabla', res));
 end $$;
+
+-- v29: lo que ven los celulares de una gala: solo puntos por persona y los motivos sueltos
+-- (sin decir para quién fue ni quién lo escribió, y sin cuántas personas votaron)
+create or replace function public._gala_publica(r jsonb)
+returns jsonb language sql immutable as $$
+  select case when r is null then null else
+    jsonb_set(r, '{tabla}', coalesce((select jsonb_agg(jsonb_build_object('id', t->>'id', 'nombre', t->>'nombre', 'puntos', (t->>'puntos')::int,
+                                                        'lider', coalesce((t->>'lider')::boolean, false)) order by o)
+                                        from jsonb_array_elements(r->'tabla') with ordinality x(t, o)), '[]'::jsonb))
+    || jsonb_build_object('motivos', coalesce((select jsonb_agg(m->>'t' order by md5((m->>'t') || coalesce(r->>'semana', '')))
+                                                 from jsonb_array_elements(r->'tabla') t, jsonb_array_elements(t->'motivos') m
+                                                where not coalesce((m->>'p')::boolean, false) and btrim(coalesce(m->>'t', '')) <> ''), '[]'::jsonb))
+  end
+$$;
 
 -- Las funciones internas no se pueden llamar directo desde el celular
 revoke all on function public._iniciar_semana(text)  from public, anon, authenticated;
