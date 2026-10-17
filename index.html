@@ -1081,6 +1081,9 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .prueba-abre{display:grid;justify-items:center;gap:2px;background:#1B1440;color:#fff;border-radius:12px;padding:10px;margin:10px 0}
 .prueba-abre b{font:900 1.8rem Anton,Impact,sans-serif;color:#FFD54A}
 .prueba-abre small{color:#C9C3EE}
+.fs-pleg{margin-top:16px;border:2px solid #D9D2B8;border-radius:14px;padding:12px}
+.fs-cab span:first-child{flex:1;font:900 1.15rem Anton,Impact,sans-serif}
+.fs-pleg .pleg-cuerpo{margin-top:10px}
 .fs-chips{display:flex;gap:6px;overflow-x:auto;padding:4px 0;scrollbar-width:none}
 .fs-chips button{flex:none;appearance:none;border:2px solid #D9D2B8;background:#fff;border-radius:999px;padding:6px 12px;font-weight:700;font-size:.85rem;color:var(--texto);cursor:pointer}
 .fs-chips button.on{background:var(--texto);border-color:var(--texto);color:#fff}
@@ -1780,7 +1783,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 46;
+const APP_VERSION       = 47;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -2901,31 +2904,8 @@ async function abrirFicha(id) {
   caja.innerHTML = cab + '<p class="ayuda" style="margin-top:12px">Cargando…</p>';
   $('#m-ficha').classList.remove('hidden');
 
-  const galas = await cargarGalas();
-  const semanas = galas.map(g => ({ s: g.semana, fila: g.tabla.find(t => t.id === id), lider: g.lider_id === id }));
-  const conPuntos = semanas.filter(x => x.fila);
-  const total = conPuntos.reduce((a, x) => a + x.fila.puntos, 0);
-  const lider = semanas.filter(x => x.lider).length + (est.juego.lider_id === id && !est.galas.includes(est.juego.semana) ? 1 : 0);
-  const max = Math.max(1, ...conPuntos.map(x => x.fila.puntos));
-  let h = cab + `<div class="tiles">
-      <div class="tile"><b>${total}</b><small>puntos negativos</small></div>
-      <div class="tile"><b>${lider}</b><small>${lider === 1 ? 'vez líder' : 'veces líder'}</small></div></div>`;
-  if (j.rol === 'jugador') {
-    h += `<h3>Puntos negativos por semana</h3>` + (conPuntos.length
-      ? `<div class="barras">${conPuntos.map(x => `<div class="barra-sem"><span>Semana ${x.s}</span><i style="width:${x.fila.puntos / max * 100}%"></i><span>${x.fila.puntos}</span></div>`).join('')}</div>`
-      : '<p class="ayuda">Todavía no hay galas. Los puntos se ven después de cada gala.</p>');
-  }
-  {
-    const pr = t => (est.practicas || []).find(x => x.id === id && x.juego === t);
-    const fila = (t, n) => { const x = pr(t); return `<div class="tile"><b>${x?.mejor ?? 0}</b><small>${n} · mejor de ${x?.partidas ?? 0} ${x?.partidas === 1 ? 'partida' : 'partidas'}</small></div>`; };
-    h += `<h3>${esYo ? 'Mis prácticas' : 'Prácticas'}</h3><div class="tiles" style="margin-top:4px">${fila('memoria', 'Memoria')}${fila('adeudo', 'Adeudo')}${fila('billetes', 'Billetes')}</div>`;
-  }
-  // v45: lo de cada semana (por quién votaste y lo que te escribieron solo lo ves tú)
-  if (j.rol === 'jugador' && est.juego.semana > 0) {
-    const sems = Array.from({ length: est.juego.semana }, (_, i) => est.juego.semana - i);
-    h += `<h3>${esYo ? 'Mi semana' : 'Su semana'}</h3><div class="fs-chips">${sems.map(n => `<button data-fs="${n}" class="${n === est.juego.semana ? 'on' : ''}">Semana ${n}</button>`).join('')}</div>
-      <div id="ficha-sem" class="fs-caja"><p class="ayuda">Cargando…</p></div>`;
-  }
+  let h = cab;
+  // primero: personalizar el monito y los emojis
   if (esYo) {
     h += `<button class="btn tinta" id="ficha-tienda" style="margin-top:14px">🛍️ Personalizar mi monito</button>`;
     if (SALA.soyActor()) h += `<h3>Ponte un emoji</h3><div class="emoji-envio">${EMOJIS.map(e => `<button data-mio="${e}">${e}</button>`).join('')}</div>`;
@@ -2935,6 +2915,15 @@ async function abrirFicha(id) {
       : '<p class="ayuda">Conectando con la casa…</p>');
     if (SALA.puedeRetar(id)) h += `<button class="btn" id="ficha-reto" style="margin-top:12px">✊✋✌️ Jugar piedra, papel o tijera</button>`;
     else if (j.estado === 'activo' && !SALA.soyActor()) h += `<p class="ayuda" style="margin-top:10px">Piedra, papel o tijera: solo entre habitantes que están en la casa.</p>`;
+  }
+  // luego: la información de cada semana, plegable (por quién votaste y lo que te escribieron solo lo ves tú)
+  if (j.rol === 'jugador' && est.juego.semana > 0) {
+    if (!('ficha' in plegado)) plegado.ficha = true;
+    const sems = Array.from({ length: est.juego.semana }, (_, i) => est.juego.semana - i);
+    h += `<div class="plegable fs-pleg ${plegado.ficha ? '' : 'abierto'}"><button class="pleg-cab fs-cab" data-pleg="ficha" aria-expanded="${!plegado.ficha}">
+        <span>📅 ${esYo ? 'Mi información de la semana' : 'Su información de la semana'}</span><span class="flecha">▾</span></button>
+      <div class="pleg-cuerpo"><div class="fs-chips">${sems.map(n => `<button data-fs="${n}" class="${n === est.juego.semana ? 'on' : ''}">Semana ${n}</button>`).join('')}</div>
+      <div id="ficha-sem" class="fs-caja"><p class="ayuda">Cargando…</p></div></div></div>`;
   }
   h += `<button class="btn sec" id="ficha-cerrar" style="margin-top:16px;color:var(--texto)">Cerrar</button>`;
   caja.innerHTML = h;
@@ -2948,13 +2937,14 @@ async function abrirFicha(id) {
     if (!$('#ficha-sem') || !$(`[data-fs="${n}"].on`, caja)) return;
     const NJ = { memoria: 'Memoria', adeudo: 'Adeudo', billetes: 'Billetes', monster2: 'Monster 2.0', monster: 'Monster' };
     const t = (b, txt) => `<div class="tile"><b>${b}</b><small>${txt}</small></div>`;
-    let x = `<div class="fs-tit">${d.lider ? '<span>👑 Fue líder</span>' : ''}${d.eliminado ? '<span>🚪 Salió esa semana</span>' : ''}</div>
-      <div class="tiles">${t(d.revelada ? d.puntos : '?', d.revelada ? 'puntos negativos' : 'puntos negativos (se saben en la pasarela)')}
+    let x = `<div class="fs-tit">${d.eliminado ? '<span>🚪 Salió esa semana</span>' : ''}</div>
+      <div class="tiles">${t(d.revelada ? d.puntos : '?', d.revelada ? 'puntos negativos' : 'puntos negativos (se saben en la pasarela)')}${t(d.lider ? '👑 Sí' : 'No', 'fue líder')}
       ${t(`${d.duelos_g} / ${d.duelos}`, 'duelos ganados / jugados')}${t(`${d.misiones} / 5`, 'misiones cumplidas')}
       ${t(d.partidas, d.partidas === 1 ? 'partida jugada' : 'partidas jugadas')}${t(fmt$(d.generado), 'billetes generados')}
       ${t(d.encuestas, d.encuestas === 1 ? 'encuesta votada' : 'encuestas votadas')}${t(`${d.apuestas_g} / ${d.apuestas_p}`, 'apuestas ganadas / perdidas')}</div>`;
     const mej = Object.entries(d.mejores || {});
-    if (mej.length) x += `<p class="fs-sub">🏆 Mejores puntajes de esa semana: ${mej.map(([k, v]) => `${NJ[k] || k} <b>${Number(v).toLocaleString('es-MX')}</b>`).join(' · ')}</p>`;
+    x += `<h4>🎮 ${esYo ? 'Mis partidas' : 'Sus partidas'} de esa semana</h4>` + (mej.length
+      ? `<div class="tiles">${mej.map(([k, v]) => t(Number(v).toLocaleString('es-MX'), `${NJ[k] || k} · mejor puntaje`)).join('')}</div>` : '<p class="ayuda">No jugó partidas esa semana.</p>');
     if (d.votos) x += `<h4>🗳️ Tu voto de esa semana</h4>` + (d.votos.length
       ? d.votos.map(v => `<div class="fs-voto">${avatar(porId(v.id) || { nombre: v.nombre }, 26)}<span>${esc(v.nombre)}${v.motivo ? `<small>“${esc(v.motivo)}”</small>` : ''}</span><b>${v.puntos} ${v.puntos === 1 ? 'punto' : 'puntos'}</b></div>`).join('')
       : '<p class="ayuda">No votaste esa semana.</p>');
