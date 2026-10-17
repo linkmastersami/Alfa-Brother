@@ -1081,6 +1081,13 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .prueba-abre{display:grid;justify-items:center;gap:2px;background:#1B1440;color:#fff;border-radius:12px;padding:10px;margin:10px 0}
 .prueba-abre b{font:900 1.8rem Anton,Impact,sans-serif;color:#FFD54A}
 .prueba-abre small{color:#C9C3EE}
+.tvg-l{border-top:1px solid rgba(27,20,64,.1);padding:8px 0}
+.tvg-cab{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap}
+.tvg-cab>span{font-weight:800;min-width:24px}
+.tvg-cab button[data-tq]{appearance:none;border:2px solid #D9D2B8;background:#fff;border-radius:999px;padding:3px 9px;font-weight:700;font-size:.8rem;cursor:pointer}
+.tvg-cab button[data-tq].on{background:var(--texto);border-color:var(--texto);color:#fff}
+.tvg-cab small{color:var(--suave)}
+.tvg-cab .tvg-x{margin-left:auto}
 .fs-pleg{margin-top:16px;border:2px solid #D9D2B8;border-radius:14px;padding:12px}
 .fs-cab span:first-child{flex:1;font:900 1.15rem Anton,Impact,sans-serif}
 .fs-pleg .pleg-cuerpo{margin-top:10px}
@@ -1783,7 +1790,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 48;
+const APP_VERSION       = 49;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -5451,7 +5458,8 @@ const TV = (() => {
     SFX.pausaParaGala(true);
     try { d = await rpc('noticiero', avance ? { p_token: token, p_avance: true } : { p_token: token }); }
     catch (e) { $('#m-tv').innerHTML = `<div class="tv-cargando">No se pudo sintonizar: ${esc(mensajeError(e))}<br><button class="btn" style="margin-top:14px">Cerrar</button></div>`; $('#m-tv .btn').onclick = cerrar; return; }
-    const g = guion(); lineas = g.lineas; i = 0;
+    const g = d.editado?.lineas?.length ? { lineas: d.editado.lineas, titulares: d.editado.titulares || [] } : guion();   // v49: guion editado por la producción
+    lineas = g.lineas; i = 0;
     armar();
     const cinta = g.titulares.join('   •   ');
     $('#tv-cinta').textContent = cinta + '   •   ' + cinta;
@@ -7741,6 +7749,10 @@ async function adminExtras(C, seccion) {
           <small style="white-space:normal;display:block">${Array.isArray(n.guion) && n.guion.length ? n.guion.map(x => `<b>${x.q === 'e' ? 'Elber' : 'Rosa'}:</b> ${esc(x.t)}${x.cara ? ` <i>(📸 ${esc(nombreDe(x.cara))})</i>` : ''}`).join('<br>') : esc(n.texto)}</small><small style="display:block;color:${ya ? '#8E88B5' : '#1E8E5A'};font-weight:600">${ya ? '✔ Ya salió: ya no se puede cambiar' : 'Todavía no sale: la puedes cambiar'}</small></div>
           ${ya ? '' : `<button type="button" class="mini" data-tvn-edit="${n.dia}">Editar</button><button type="button" class="mini" data-tvn-del="${n.dia}">Borrar</button>`}</div>`; }).join('') || '<p class="ayuda">Todavía no hay notas.</p>'}
     </form>
+    <div class="adm-caja" data-sec="noticiero" id="tvg"><h3>📝 Guion completo del noticiero</h3>
+      <p class="ayuda">Aquí ves todo lo que van a decir Elber y Rosa y puedes cambiar lo que quieras. Al guardar, ese noticiero se queda tal cual: si después pasan más cosas, ya no se agregan solas (para eso está "Volver al original").</p>
+      <div class="adm-acciones"><button type="button" class="btn sec chico" id="tvg-aire">Cargar el último (al aire)</button><button type="button" class="btn sec chico" id="tvg-sig">Cargar el siguiente (cómo va)</button></div>
+      <div id="tvg-zona"></div></div>
     <div class="adm-caja" data-sec="noticiero"><h3>🎤 Lo que le contaron al reportero</h3>
       <p class="ayuda">Los habitantes le cuentan noticias al reportero y te llegan aquí con su nombre. Con «Usar» se agregan a las noticias de arriba para que las acomodes.</p>
       ${reportajes.map(r => `<div class="adm-fila" style="align-items:flex-start;${r.usado ? 'opacity:.55' : ''}"><div class="info"><b>${esc(nombreDe(r.jugador_id))}</b>
@@ -7888,6 +7900,46 @@ async function adminExtras(C, seccion) {
   });
   $('#tvn-ver').onclick = () => TV.abrir();
   $('#tvn-manana').onclick = () => TV.abrir(true);
+  // v49: editar el guion completo
+  const cargarGuionTv = async avance => {
+    const z = $('#tvg-zona'); z.innerHTML = '<p class="ayuda">Cargando…</p>';
+    let datos;
+    try { datos = await rpc('noticiero', avance ? { p_token: token, p_avance: true } : { p_token: token }); } catch (x) { z.innerHTML = `<p class="ayuda">${esc(mensajeError(x))}</p>`; return; }
+    const gen = TV.guionDe(datos), ed = datos.editado;
+    const lin = ed?.lineas?.length ? ed.lineas : gen.lineas, tit = ed ? (ed.titulares || []) : gen.titulares;
+    const LOC = { e: 'Elber', a: 'Rosa' };
+    const fila = (l, k) => `<div class="tvg-l" data-cara="${esc(l.cara || '')}"><div class="tvg-cab"><span>${k + 1}.</span>${['e', 'a'].map(q => `<button type="button" data-tq="${q}" class="${l.q === q ? 'on' : ''}">🎙️ ${LOC[q]}</button>`).join('')}${l.cara ? `<small>📸 ${esc(nombreDe(l.cara))}</small>` : ''}<button type="button" class="mini tvg-x" aria-label="Quitar línea">✕</button></div>
+      <textarea class="in" rows="2" maxlength="600">${esc(l.t || '')}</textarea></div>`;
+    z.innerHTML = `<p style="margin:10px 0 4px"><b>📺 Noticiero del ${esc(manana(datos.dia))}</b> ${ed ? '<span class="pill verde">Editado</span>' : '<span class="pill">Generado solo</span>'}</p>
+      <div id="tvg-lista">${lin.map(fila).join('')}</div>
+      <div class="adm-acciones"><button type="button" class="btn sec chico" id="tvg-mas">➕ Agregar línea al final</button></div>
+      <label class="campo" for="tvg-tit">Titulares de la cinta de abajo (uno por renglón)</label>
+      <textarea class="in" id="tvg-tit" rows="4">${esc(tit.join('\n'))}</textarea>
+      <div class="adm-acciones"><button type="button" class="btn chico" id="tvg-guardar">Guardar guion</button>${ed ? '<button type="button" class="btn sec chico" id="tvg-orig">Volver al original</button>' : ''}</div>`;
+    const lista = $('#tvg-lista');
+    const enlazar = () => {
+      $$('.tvg-l', lista).forEach(el => {
+        $$('[data-tq]', el).forEach(b => b.onclick = () => { $$('[data-tq]', el).forEach(x => x.classList.toggle('on', x === b)); });
+        $('.tvg-x', el).onclick = () => { el.remove(); $$('.tvg-cab>span', lista).forEach((s, i) => s.textContent = (i + 1) + '.'); };
+      });
+    };
+    enlazar();
+    $('#tvg-mas').onclick = () => { lista.insertAdjacentHTML('beforeend', fila({ q: 'e', t: '' }, lista.children.length)); enlazar(); lista.lastElementChild.querySelector('textarea').focus(); };
+    $('#tvg-guardar').onclick = async () => {
+      const lineas = $$('.tvg-l', lista).map(el => ({ q: $('[data-tq].on', el)?.dataset.tq || 'e', t: $('textarea', el).value.trim(), cara: el.dataset.cara || undefined })).filter(l => l.t);
+      if (!lineas.length) return toast('El guion no puede quedar vacío');
+      const titulares = $('#tvg-tit').value.split('\n').map(x => x.trim()).filter(Boolean);
+      try { await q(sb.from('noticiero_guiones').delete().eq('dia', datos.dia)); await q(sb.from('noticiero_guiones').insert({ dia: datos.dia, lineas, titulares, editado: new Date().toISOString() })); toast('📝 Guion guardado'); cargarGuionTv(avance); }
+      catch (x) { toast(mensajeError(x)); }
+    };
+    const bo = $('#tvg-orig');
+    if (bo) bo.onclick = async () => {
+      if (!confirm('¿Borrar tus cambios y que el noticiero se vuelva a generar solo?')) return;
+      try { await q(sb.from('noticiero_guiones').delete().eq('dia', datos.dia)); toast('Listo: vuelve a ser el original'); cargarGuionTv(avance); } catch (x) { toast(mensajeError(x)); }
+    };
+  };
+  $('#tvg-aire').onclick = () => cargarGuionTv(false);
+  $('#tvg-sig').onclick = () => cargarGuionTv(true);
   $$('[data-tvn-edit]').forEach(b => b.onclick = () => { adm.tvnDia = b.dataset.tvnEdit; cargarAdmin().then?.(() => $('#tvn-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); });
   $$('[data-tvn-del]').forEach(b => b.onclick = async () => {
     if (!confirm(`¿Borrar la nota del ${diaNota(b.dataset.tvnDel)}?`)) return;

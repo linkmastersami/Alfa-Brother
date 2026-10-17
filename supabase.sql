@@ -317,6 +317,13 @@ create table if not exists public.noticiero_notas (
 alter table public.noticiero_notas add column if not exists guion jsonb;
 alter table public.noticiero_notas drop constraint if exists noticiero_notas_texto_check;
 alter table public.noticiero_notas add constraint noticiero_notas_texto_check check (char_length(texto) between 1 and 4000);
+-- v49: la producción puede editar el guion completo de un noticiero (si existe, se usa tal cual)
+create table if not exists public.noticiero_guiones (
+  dia       date primary key,
+  lineas    jsonb not null,          -- [{"q":"e"|"a","t":"...","cara":id}]
+  titulares text[] not null default '{}',
+  editado   timestamptz not null default now()
+);
 
 -- v22: el reportero del Noticierazo: los habitantes le cuentan noticias y le llegan a la producción
 create table if not exists public.reportajes (
@@ -381,7 +388,7 @@ do $$
 declare t text;
 begin
   foreach t in array array['config','jugadores','sesiones','trivia','intentos','votos','historial','admins','predicciones','chismes','push_subs','push_ajustes',
-                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda','push_produccion','anuncios','chat','sucesos','noticiero_notas','reportajes','duelos','partidas'] loop
+                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda','push_produccion','anuncios','chat','sucesos','noticiero_notas','reportajes','duelos','partidas','noticiero_guiones'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists admin_todo on public.%I', t);
     execute format('create policy admin_todo on public.%I for all to authenticated using (public.es_admin()) with check (public.es_admin())', t);
@@ -2222,13 +2229,13 @@ declare
   v_ini timestamptz := (v_dia::timestamp) at time zone 'America/Mexico_City';
   v_fin timestamptz := ((v_dia + 1)::timestamp) at time zone 'America/Mexico_City';
 begin
-  if p_avance then
-    if not public.es_admin() then raise exception 'NO_AUTORIZADO'; end if;
-  else
-    perform public._yo(p_token);
+  if public.es_admin() then null;                    -- la producción puede ver cualquiera
+  elsif p_avance then raise exception 'NO_AUTORIZADO';
+  else perform public._yo(p_token);
   end if;
   return jsonb_build_object(
     'dia', v_dia, 'avance', p_avance,
+    'editado', (select jsonb_build_object('lineas', g.lineas, 'titulares', to_jsonb(g.titulares)) from public.noticiero_guiones g where g.dia = v_dia),
     'galas', (select coalesce(jsonb_agg(h.resultados order by h.semana), '[]'::jsonb)
         from public.historial h where h.creado >= v_ini and h.creado < v_fin),
     'sucesos', (select coalesce(jsonb_agg(jsonb_build_object('tipo', s.tipo, 'id', s.jugador_id, 'nombre', j.nombre, 'dato', s.dato) order by s.id), '[]'::jsonb)
