@@ -249,6 +249,20 @@ create table if not exists public.practicas (
 -- v16: Monster Crazy también guarda récord (y paga como las prácticas)
 alter table public.practicas drop constraint if exists practicas_juego_check;
 alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster','monster2'));   -- v17: Monster Crazy 2.0
+-- v40: Cuenta los billetes verdes (práctica y prueba del líder) y registro de cada partida (paga según el puntaje)
+alter table public.practicas drop constraint if exists practicas_juego_check;
+alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster','monster2','billetes'));
+alter table public.config drop constraint if exists config_prueba_check;
+alter table public.config add constraint config_prueba_check check (prueba in ('trivia','memoria','adeudo','billetes'));
+create table if not exists public.partidas (
+  id         bigint generated always as identity primary key,
+  jugador_id uuid not null references public.jugadores(id) on delete cascade,
+  juego      text not null,                -- memoria, adeudo, monster2, billetes… o 'duelo'
+  puntaje    int  not null default 0,
+  pago       int  not null default 0,
+  creado     timestamptz not null default now()
+);
+create index if not exists partidas_jugador on public.partidas (jugador_id, creado);
 
 -- Tienda para personalizar el monito
 create table if not exists public.tienda (
@@ -364,7 +378,7 @@ do $$
 declare t text;
 begin
   foreach t in array array['config','jugadores','sesiones','trivia','intentos','votos','historial','admins','predicciones','chismes','push_subs','push_ajustes',
-                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda','push_produccion','anuncios','chat','sucesos','noticiero_notas','reportajes','duelos'] loop
+                                'movimientos','apuestas','encuestas','encuesta_votos','misiones_banco','misiones','practicas','tienda','push_produccion','anuncios','chat','sucesos','noticiero_notas','reportajes','duelos','partidas'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists admin_todo on public.%I', t);
     execute format('create policy admin_todo on public.%I for all to authenticated using (public.es_admin()) with check (public.es_admin())', t);
@@ -567,6 +581,12 @@ begin
     'misiones_previas', (select count(*) from public.misiones m
         where m.semana = c.semana - 1 and m.jugador_id = yo.id and m.cumplida is not null),
     'galas', (select coalesce(jsonb_agg(h.semana order by h.semana desc), '[]'::jsonb) from public.historial h),
+    -- v40: cómo voy para ser líder (mientras está abierta la prueba)
+    'mi_lider', case when c.fase = 'prueba' and yo.rol = 'jugador' and yo.estado = 'activo' then (
+        select jsonb_build_object('misiones', s.misiones, 'jugadas', s.jugadas, 'duelos_g', s.duelos_g, 'rec', s.rec,
+                 'max_jugadas', (select max(x.jugadas) from public._stats_lider(c.semana) x),
+                 'max_duelos', (select max(x.duelos_g) from public._stats_lider(c.semana) x))
+          from public._stats_lider(c.semana) s where s.jugador_id = yo.id) end,
     -- v34: habitantes que todavía no votan (solo mientras está abierta la votación; no dice por quién votó nadie)
     'sin_votar', case when c.fase = 'votacion' then (select coalesce(jsonb_agg(j.id order by j.nombre), '[]'::jsonb)
         from public.jugadores j where j.rol = 'jugador'
@@ -805,7 +825,7 @@ begin
   -- con 3 o menos en la casa es la gran final: sin prueba ni líder, se vota directo
   v_final := v_act between 2 and 3;
   if not v_final then
-    if p_prueba not in ('trivia','memoria','adeudo') then raise exception 'PRUEBA_INVALIDA'; end if;
+    if p_prueba not in ('trivia','memoria','adeudo','billetes') then raise exception 'PRUEBA_INVALIDA'; end if;
     if p_prueba = 'trivia' and not exists (select 1 from public.trivia where activa) then raise exception 'SIN_TRIVIAS'; end if;
   end if;
   update public.config
@@ -818,6 +838,7 @@ begin
          empatados = '{}', gala_revelada = false, actualizado = now()
    where id = 1;
   insert into public.sucesos (tipo, dato) values ('semana', jsonb_build_object('semana', c.semana + 1, 'prueba', case when v_final then null else p_prueba end, 'final', v_final));
+  update public.practicas set mejor = 0 where mejor <> 0;     -- v40: los récords vuelven a cero cada semana
   -- misiones secretas de la semana nueva
   begin perform public._repartir_misiones(c.semana + 1, false);
   exception when others then null; end;
@@ -826,20 +847,59 @@ end $$;
 -- v15: el líder sale mitad de la prueba y mitad de las misiones cumplidas la semana pasada.
 -- Prueba: tu puntaje contra el mejor de la semana (hasta 50). Misiones: 10 por cada una (hasta 50).
 -- Solo cuenta quien jugó la prueba. Empate: mejor prueba, luego quien terminó primero.
-create or replace function public._tabla_lider(p_semana int)
-returns table (jugador_id uuid, puntaje int, misiones int, total numeric, terminado timestamptz)
+-- v40: el líder sale 30% de la prueba y 70% repartido en 4 partes iguales (17.5 cada una):
+--   misiones cumplidas la semana pasada (de 5) · lo que jugó (prácticas + duelos) · sus récords · duelos ganados.
+-- "La semana" va desde que empezó la semana pasada hasta que cierra la prueba.
+create or replace function public._stats_lider(p_semana int)
+returns table (jugador_id uuid, misiones int, jugadas int, duelos_g int, rec numeric)
 language sql stable security definer set search_path = public as $$
-  with i as (
-    select i.jugador_id, greatest(i.puntaje, 0) as puntaje, i.terminado,
-           least(5, (select count(*) from public.misiones m
-                      where m.semana = p_semana - 1 and m.jugador_id = i.jugador_id and m.cumplida is not null))::int as misiones
+  with v as (select coalesce((select s.creado from public.sucesos s where s.tipo = 'semana' and (s.dato->>'semana')::int = p_semana - 1
+                                order by s.id desc limit 1), now() - interval '7 days') as ini),
+  pa as (select p.jugador_id, p.juego, count(*) as n, max(p.puntaje) as mejor
+           from public.partidas p, v where p.creado >= v.ini and p.juego <> 'duelo' group by 1, 2),
+  tops as (select pa.juego, max(pa.mejor) as top from pa join public.jugadores jj on jj.id = pa.jugador_id and jj.rol = 'jugador'
+            where pa.juego in ('monster2', 'memoria', 'adeudo', 'billetes') group by pa.juego having max(pa.mejor) > 0)
+  select j.id,
+    least(5, (select count(*) from public.misiones m where m.semana = p_semana - 1 and m.jugador_id = j.id and m.cumplida is not null))::int,
+    ((select coalesce(sum(pa.n), 0) from pa where pa.jugador_id = j.id)
+      + (select count(*) from public.duelos d, v where d.estado = 'terminado' and j.id in (d.reta, d.retado) and d.fin >= v.ini))::int,
+    (select count(*) from public.duelos d, v where d.estado = 'terminado' and d.ganador = j.id and d.fin >= v.ini)::int,
+    round(coalesce((select sum(least(1, pa.mejor::numeric / t.top)) from pa join tops t on t.juego = pa.juego where pa.jugador_id = j.id)
+                   / nullif((select count(*) from tops), 0), 0), 3)
+  from public.jugadores j where j.rol = 'jugador' and j.estado = 'activo'
+$$;
+revoke all on function public._stats_lider(int) from public, anon, authenticated;
+
+drop function if exists public._tabla_lider(int);
+create or replace function public._tabla_lider(p_semana int)
+returns table (jugador_id uuid, puntaje int, misiones int, jugadas int, duelos_g int, rec numeric,
+               p_prueba numeric, p_mis numeric, p_jug numeric, p_rec numeric, p_duel numeric, total numeric, terminado timestamptz)
+language sql stable security definer set search_path = public as $$
+  with s as (select * from public._stats_lider(p_semana)),
+  i as (
+    select i.jugador_id, greatest(i.puntaje, 0) as puntaje, i.terminado
       from public.intentos i join public.jugadores j on j.id = i.jugador_id
      where i.semana = p_semana and i.puntaje is not null and j.estado = 'activo' and j.rol = 'jugador'),
-  mx as (select greatest(max(puntaje), 1) as m from i)
-  select i.jugador_id, i.puntaje, i.misiones, round(50.0 * i.puntaje / mx.m + 10 * i.misiones, 1), i.terminado
-    from i, mx
-   order by 4 desc, 2 desc, 5 asc
+  mx as (select greatest((select max(puntaje) from i), 1) as mp, greatest((select max(jugadas) from s), 1) as mj,
+                greatest((select max(duelos_g) from s), 1) as md),
+  t as (
+    select i.jugador_id, i.puntaje, s.misiones, s.jugadas, s.duelos_g, s.rec, i.terminado,
+           round(30.0 * i.puntaje / mx.mp, 1) as p_prueba, round(17.5 * s.misiones / 5, 1) as p_mis,
+           round(17.5 * s.jugadas / mx.mj, 1) as p_jug, round(17.5 * s.rec, 1) as p_rec, round(17.5 * s.duelos_g / mx.md, 1) as p_duel
+      from i join s on s.jugador_id = i.jugador_id, mx)
+  select jugador_id, puntaje, misiones, jugadas, duelos_g, rec, p_prueba, p_mis, p_jug, p_rec, p_duel,
+         p_prueba + p_mis + p_jug + p_rec + p_duel, terminado
+    from t order by 12 desc, 2 desc, 13 asc
 $$;
+revoke all on function public._tabla_lider(int) from public, anon, authenticated;
+
+-- Para el panel: la tabla del líder con el desglose
+create or replace function public.admin_tabla_lider()
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+begin
+  perform public._solo_admin();
+  return (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public._tabla_lider((select semana from public.config where id = 1)) t);
+end $$;
 revoke all on function public._tabla_lider(int) from public, anon, authenticated;
 
 -- Cierra la prueba. Sin p_lider elige al mejor del puntaje combinado (prueba + misiones).
@@ -1026,7 +1086,7 @@ begin
            ag_voto_ini = null, ag_voto_fin = null, ag_gala = null, actualizado = now() where id = 1;
     return;
   end if;
-  if coalesce(p->>'prueba', 'memoria') not in ('trivia','memoria','adeudo') then raise exception 'PRUEBA_INVALIDA'; end if;
+  if coalesce(p->>'prueba', 'memoria') not in ('trivia','memoria','adeudo','billetes') then raise exception 'PRUEBA_INVALIDA'; end if;
   update public.config
      set ag_semana     = (p->>'semana')::int,
          ag_prueba     = coalesce(p->>'prueba', 'memoria'),
@@ -1206,6 +1266,7 @@ begin
   delete from public.misiones where true;
   delete from public.sucesos where true;
   delete from public.practicas where true;
+  delete from public.partidas where true;
   delete from public.encuestas where liquidada;
   delete from public.duelos where true;
   update public.jugadores set billetes = 2000, ultimo_bono = null where true;
@@ -1278,7 +1339,7 @@ begin
   begin
     select nombre into v_lider from public.jugadores where id = new.lider_id;
     v_prueba := case new.prueba when 'trivia' then 'Trivia de la oficina' when 'memoria' then 'Memoria de expedientes'
-                                when 'adeudo' then 'Calcula el adeudo' else 'la prueba' end;
+                                when 'adeudo' then 'Calcula el adeudo' when 'billetes' then 'Cuenta los billetes verdes' else 'la prueba' end;
     if new.fase = 'prueba' and (old.fase <> 'prueba' or new.semana <> old.semana) then
       perform public._avisar(format('🏆 Semana %s: prueba del líder', new.semana),
                              format('Ya puedes jugar %s. Solo tienes un intento.', v_prueba));
@@ -1831,6 +1892,25 @@ on conflict (texto) do nothing;
 --  RÉCORDS DE LA CASA
 -- ---------------------------------------------------------------------
 
+-- v40: cada partida paga según qué tan bien te fue (hasta $50, contra un puntaje de referencia)
+-- y hay un tope de $2,000 al día por jugar (prácticas, Monster Crazy y duelos). Romper récord ya no paga.
+create or replace function public._pago_jugar(p_yo uuid, p_juego text, p_puntaje int, p_fijo int default null)
+returns int language plpgsql security definer set search_path = public as $$
+declare v int; v_ref numeric; v_hoy int;
+begin
+  v_ref := case p_juego when 'memoria' then 713 when 'adeudo' then 1450 when 'billetes' then 1000 else 54228 end;
+  v := coalesce(p_fijo, round(50 * least(1, greatest(coalesce(p_puntaje, 0), 0) / v_ref))::int);
+  select coalesce(sum(pago), 0) into v_hoy from public.partidas
+   where jugador_id = p_yo and creado >= (public._hoy()::timestamp at time zone 'America/Mexico_City');
+  v := greatest(0, least(v, 2000 - v_hoy));
+  insert into public.partidas (jugador_id, juego, puntaje, pago) values (p_yo, p_juego, greatest(coalesce(p_puntaje, 0), 0), v);
+  if v > 0 then
+    perform public._mover(p_yo, v, case when p_juego = 'duelo' then 'Jugaste un duelo' else 'Jugaste una partida' end);
+  end if;
+  return v;
+end $$;
+revoke all on function public._pago_jugar(uuid, text, int, int) from public, anon, authenticated;
+
 create or replace function public.guardar_practica(p_token uuid, p_juego text, p_puntaje int)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare
@@ -1838,31 +1918,26 @@ declare
   v int;
   v_rec int;
   p public.practicas;
-  v_premio int := 0;
+  v_pago int := 0;
   v_record boolean := false;
 begin
   yo := public._yo(p_token);
-  if p_juego not in ('memoria', 'adeudo', 'monster', 'monster2') then raise exception 'JUEGO_INVALIDO'; end if;
-  v := least(greatest(coalesce(p_puntaje, 0), 0), case p_juego when 'memoria' then 1000 when 'adeudo' then 20000 else 5000000 end);
+  if p_juego not in ('memoria', 'adeudo', 'monster', 'monster2', 'billetes') then raise exception 'JUEGO_INVALIDO'; end if;
+  v := least(greatest(coalesce(p_puntaje, 0), 0), case p_juego when 'memoria' then 1000 when 'billetes' then 1000 when 'adeudo' then 20000 else 5000000 end);
   select coalesce(max(p2.mejor), 0) into v_rec from public.practicas p2 join public.jugadores j on j.id = p2.jugador_id and j.rol = 'jugador' where p2.juego = p_juego;
   insert into public.practicas (jugador_id, juego) values (yo.id, p_juego) on conflict do nothing;
   select * into p from public.practicas where jugador_id = yo.id and juego = p_juego for update;
-  if p.ultimo_premio is distinct from public._hoy() then
-    perform public._mover(yo.id, 100, 'Práctica del día'); v_premio := 100;
-  end if;
+  v_pago := public._pago_jugar(yo.id, p_juego, v);
   if v > v_rec and v > 0 and yo.rol = 'jugador' then        -- el público guarda su mejor marca, pero no cuenta para los récords de la casa
     v_record := true;
     insert into public.sucesos (tipo, jugador_id, dato) values ('record', yo.id, jsonb_build_object('juego', p_juego, 'puntos', v, 'antes', v_rec));
-    if p.ultimo_record is distinct from public._hoy() then
-      perform public._mover(yo.id, 200, 'Nuevo récord de la casa'); v_premio := v_premio + 200;
-    end if;
   end if;
   update public.practicas
      set mejor = greatest(mejor, v), partidas = partidas + 1, ultimo_premio = public._hoy(),
          ultimo_record = case when v_record then public._hoy() else ultimo_record end
    where jugador_id = yo.id and juego = p_juego;
-  return jsonb_build_object('mejor', greatest(p.mejor, v), 'record', v_record, 'premio', v_premio,
-    'premio_dia', case when p.ultimo_premio is distinct from public._hoy() then 100 else 0 end,
+  return jsonb_build_object('mejor', greatest(p.mejor, v), 'record', v_record, 'premio', v_pago, 'pago', v_pago,
+    'hoy', (select coalesce(sum(pago), 0) from public.partidas where jugador_id = yo.id and creado >= (public._hoy()::timestamp at time zone 'America/Mexico_City')),
     'top', (select coalesce(jsonb_agg(jsonb_build_object('id', t.jugador_id, 'nombre', j.nombre, 'mejor', t.mejor) order by t.mejor desc), '[]'::jsonb)
               from (select p3.* from public.practicas p3 join public.jugadores j3 on j3.id = p3.jugador_id and j3.rol = 'jugador'
                      where p3.juego = p_juego and p3.mejor > 0 order by p3.mejor desc limit 5) t
@@ -2138,7 +2213,7 @@ begin
           'actual', (select jsonb_build_object('id', p.jugador_id, 'nombre', j.nombre, 'puntos', p.mejor)
                        from public.practicas p join public.jugadores j on j.id = p.jugador_id and j.rol = 'jugador'
                       where p.juego = g.juego and p.mejor > 0 order by p.mejor desc limit 1)) as r
-          from (values (1, 'monster2'), (3, 'memoria'), (4, 'adeudo')) g(o, juego) order by g.o) x   -- v26: sin Monster Crazy clásico (ya se retiró)
+          from (values (1, 'monster2'), (3, 'memoria'), (4, 'adeudo'), (5, 'billetes')) g(o, juego) order by g.o) x   -- v26: sin Monster Crazy clásico (ya se retiró)
         where x.r->'actual' <> 'null'::jsonb),
     -- v24: duelos del día (solo los que alguien ganó)
     'duelos', jsonb_build_object(
@@ -2203,12 +2278,18 @@ $$;
 -- Cierra un duelo: el ganador se lleva lo de los dos; si empatan, a cada quien se le devuelve lo suyo
 create or replace function public._terminar_duelo(p_id bigint, p_ganador uuid)
 returns void language plpgsql security definer set search_path = public as $$
-declare d public.duelos; v_jg text;
+declare d public.duelos; v_jg text; pa int; pb int;
 begin
   select * into d from public.duelos where id = p_id for update;
   if not found or d.estado <> 'jugando' then return; end if;
   update public.duelos set estado = 'terminado', fin = now(), ganador = p_ganador where id = d.id;
   v_jg := public._duelo_nombre(d.juego);
+  -- v40: los dos ganan $50 por jugar (si el duelo duró al menos 15 segundos; cuenta para el tope de $2,000 al día)
+  if now() >= d.inicio + interval '15 seconds' then
+    pa := public._pago_jugar(d.reta, 'duelo', 0, 50);
+    pb := public._pago_jugar(d.retado, 'duelo', 0, 50);
+    update public.duelos set datos = datos || jsonb_build_object('pago', jsonb_build_object('a', pa, 'b', pb)) where id = d.id;
+  end if;
   if d.apuesta > 0 then
     if p_ganador is null then
       perform public._mover(d.reta, d.apuesta, 'Duelo empatado (' || v_jg || '): te devolvemos tu apuesta');

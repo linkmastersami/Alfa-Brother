@@ -384,6 +384,49 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .faltan-p.yo .av{box-shadow:0 0 0 3px #FFD54A}
 .faltan-p.fuera .av{filter:grayscale(1);opacity:.7}
 .faltan p{margin:4px 0 0;font-size:.86rem;color:#E8E4FF}
+/* 💵 Cuenta los billetes verdes */
+.bv-esc{position:relative;height:230px;border-radius:14px;overflow:hidden;background:linear-gradient(#8fd3ff 0%,#c9ecff 38%,#9ccf6a 38%,#7fb84f 58%,#6b6b78 58%,#5b5b66 100%);margin:6px 0}
+.bv-casas{position:absolute;left:0;right:0;top:18%;height:22%;background:
+  linear-gradient(#F2A65A,#F2A65A) 4% 100%/16% 70% no-repeat,linear-gradient(#E86A5A,#E86A5A) 22% 100%/14% 90% no-repeat,
+  linear-gradient(#FFD27A,#FFD27A) 40% 100%/18% 65% no-repeat,linear-gradient(#A0C4FF,#A0C4FF) 60% 100%/15% 85% no-repeat,
+  linear-gradient(#FFADAD,#FFADAD) 78% 100%/18% 72% no-repeat,linear-gradient(#CDB4DB,#CDB4DB) 99% 100%/12% 95% no-repeat}
+.bv-calle{position:absolute;left:0;right:0;top:78%;height:4px;background:repeating-linear-gradient(90deg,#fff 0 18px,transparent 18px 34px);opacity:.8}
+.bv-pista{position:absolute;inset:0}
+.bv-ir{position:absolute;left:0;margin-top:-12px;will-change:transform}
+.bv-b{position:relative;width:46px;height:24px;border-radius:4px;background:var(--c);border:2px solid rgba(0,0,0,.35);box-shadow:inset 0 0 0 3px rgba(255,255,255,.35);display:grid;place-items:center;animation:bv-trote .28s ease-in-out infinite alternate}
+.bv-b b{font:900 .85rem/1 sans-serif;color:rgba(255,255,255,.9);text-shadow:0 1px 0 rgba(0,0,0,.4);width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.18);display:grid;place-items:center}
+.bv-b.atras{transform:scaleX(-1)}
+.bv-pie{position:absolute;bottom:-7px;width:3px;height:8px;background:#222;border-radius:2px;transform-origin:top;animation:bv-pata .2s linear infinite alternate}
+.bv-pie.a{left:12px}.bv-pie.b{right:12px;animation-delay:-.1s}
+@keyframes bv-pata{from{transform:rotate(25deg)}to{transform:rotate(-25deg)}}
+@keyframes bv-trote{to{translate:0 -3px}}
+.bv-bino{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.bv-bino path{fill:#0c0a18}
+.bv-aviso{position:absolute;inset:0;display:grid;place-items:center;align-content:center;text-align:center;font:900 2.2rem/1.1 Anton,Impact,sans-serif;color:#FFD54A;text-shadow:0 3px 0 #000;opacity:0;transform:scale(.6);transition:.25s;pointer-events:none}
+.bv-aviso small{display:block;font:700 .95rem/1.3 'Work Sans',sans-serif;color:#fff;text-shadow:0 1px 3px #000;margin-top:6px}
+.bv-aviso.on{opacity:1;transform:none}
+.bv-verde{color:#2E9E57;font-weight:900}
+.bv-aviso .bv-verde{color:#5CFF95}
+.bv-abajo{min-height:150px;display:grid;align-content:center}
+.bv-cont{display:flex;align-items:center;gap:10px;justify-content:center}
+.bv-click{appearance:none;border:0;border-radius:18px;background:#1E8E5A;color:#fff;font-weight:900;font-size:1.5rem;padding:14px 22px;box-shadow:0 6px 0 #0e4d30;display:grid;justify-items:center;cursor:pointer;min-width:190px;touch-action:manipulation}
+.bv-click small{font-size:.75rem;font-weight:700;opacity:.85}
+.bv-click.pum{animation:bv-pum .15s}
+.bv-click:active{transform:translateY(4px);box-shadow:0 2px 0 #0e4d30}
+@keyframes bv-pum{50%{transform:scale(.94)}}
+.bv-preg{text-align:center}
+.bv-preg p{margin:0 0 6px;font-weight:700}
+.bv-num{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:8px}
+.bv-num b{font:900 3rem/1 Anton,Impact,sans-serif;min-width:70px}
+.bv-num button{appearance:none;border:0;width:56px;height:56px;border-radius:50%;background:var(--texto);color:#fff;font-size:2rem;font-weight:900;cursor:pointer;touch-action:manipulation}
+.bv-preg .btn{margin-top:10px}
+.bv-res{text-align:center;border-radius:14px;padding:12px;display:grid;gap:4px;font-size:1rem}
+.bv-res strong{font:900 1.6rem Anton,Impact,sans-serif}
+.bv-res.bien{background:#E7F6EE;color:#14663f}.bv-res.casi{background:#FFF3C4;color:#7a5a00}.bv-res.mal{background:#FDE2E4;color:#8f1d2c}
+.bv-tabla{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:4px 10px;font-size:.88rem;text-align:left;margin:8px 0}
+.monster-card.pr-billetes{background:radial-gradient(circle at 50% 0%,#1f6b3f,#06180e 75%);border-color:#5CFF95;box-shadow:0 0 22px rgba(92,255,149,.25)}
+.monster-card.pr-billetes h3{color:#9CFFC0;text-shadow:0 0 14px #1e8e5a}
+.monster-card.pr-billetes .btn{background:#2E9E57;box-shadow:0 5px 0 #14663f}
 /* 🪟 Puente de cristal (v33) */
 .pz{flex:1;display:flex;flex-direction:column;gap:8px}
 .pz-top{display:flex;align-items:center;gap:10px}
@@ -1030,6 +1073,8 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .elegir-hab label:has(input:checked){border-color:var(--tinta);background:#E8ECFF}
 .elegir-hab input{position:absolute;opacity:0;pointer-events:none}
 .elegir-hab small{color:var(--suave);font-weight:500}
+.lider-f{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;font-size:.86rem;padding:2px 0}
+.lider-f small{opacity:.75}
 .mis-item{display:flex;gap:10px;align-items:flex-start;margin-top:8px}
 .mis-item .num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--luz);color:var(--texto);font-weight:800;display:grid;place-items:center;font-size:.85rem;margin-top:8px}
 .mis-item.hecha .num{background:none;font-size:1.1rem}
@@ -1711,12 +1756,13 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 39;
+const APP_VERSION       = 40;
 /* ===================================================================== */
 
 const PRUEBAS = {
   trivia:  { nombre: 'Trivia de la oficina',   desc: 'Preguntas sobre la oficina y los compañeros. Tienes 12 segundos por pregunta; contestar rápido da puntos extra.' },
   memoria: { nombre: 'Memoria de expedientes', desc: 'Voltea los expedientes y encuentra los 8 pares. Gana quien termine más rápido y con menos errores.' },
+  billetes: { nombre: 'Cuenta los billetes verdes', desc: 'Pasan billetes de colores corriendo por la calle y tú los ves con binoculares. Cuenta solo los VERDES (usa el botón ¡Clic! para llevar la cuenta) y al final di cuántos pasaron. 5 rondas, cada vez más rápido: exacto +200, por 1 +120, por 2 +50.' },
   adeudo:  { nombre: 'Calcula el adeudo',      desc: 'Tienes 2 minutos para cobrar cuentas de la oficina. Empiezas en fácil (mensualidades, +100); si aciertas subes a pagaré (+150) y luego a difícil (+300), donde te quedas hasta que falles. Un error resta 50 y te regresa a fácil.' },
 };
 const ERRORES = {
@@ -2376,12 +2422,17 @@ function pintarAccion() {
     else if (mi_intento?.terminado) cuerpo = `<p>Tu puntaje: <b class="display" style="font-size:1.6rem">${mi_intento.puntaje}</b></p><p class="ayuda">El líder se anuncia cuando cierre la prueba.</p>`;
     else if (mi_intento) cuerpo = `<p>Tu intento quedó incompleto y cuenta como cero.</p>`;
     else cuerpo = `<p>${esc(p.desc)}</p><p><b>Solo tienes un intento.</b></p><button class="btn" id="a-jugar">Jugar la prueba</button>`;
-    // mitad prueba, mitad misiones de la semana pasada
-    if (soyHabitanteActivo && g.semana > 1) {
-      const mp = Math.min(5, est.misiones_previas || 0);
-      cuerpo += `<div class="lider-mis"><b>🕵️ Tus misiones de la semana pasada: ${mp} de 5</b>
-        <span class="puntos-mis">${'●'.repeat(mp)}<i>${'○'.repeat(5 - mp)}</i></span>
-        <small>El líder sale mitad de esta prueba y mitad de las misiones que cumpliste la semana pasada. Ya llevas <b>${mp * 10} de 50</b> puntos por misiones.${mi_intento ? '' : ' Para contar tienes que jugar la prueba.'}</small></div>`;
+    // v40: 30% la prueba y 70% lo que hiciste la semana (misiones, jugar, récords y duelos ganados)
+    if (soyHabitanteActivo && est.mi_lider) {
+      const L = est.mi_lider, r1 = x => Math.round(x * 10) / 10;
+      const filas = [['🕵️ Misiones de la semana pasada', `${L.misiones} de 5`, 17.5 * L.misiones / 5],
+        ['🎮 Lo que jugaste', `${L.jugadas} ${L.jugadas === 1 ? 'partida' : 'partidas'}`, 17.5 * L.jugadas / Math.max(1, L.max_jugadas)],
+        ['🏆 Tus récords', `${Math.round(L.rec * 100)}% del mejor`, 17.5 * L.rec],
+        ['⚔️ Duelos ganados', `${L.duelos_g}`, 17.5 * L.duelos_g / Math.max(1, L.max_duelos)]];
+      const suma = filas.reduce((a, f) => a + f[2], 0);
+      cuerpo += `<div class="lider-mis"><b>👑 Así vas para ser líder: ${r1(suma)} de 70 puntos</b>
+        ${filas.map(f => `<div class="lider-f"><span>${f[0]}</span><small>${f[1]}</small><b>${r1(f[2])} / 17.5</b></div>`).join('')}
+        <small>Lo demás (30 puntos) sale de esta prueba. Cuenta lo que hiciste desde que empezó la semana pasada.${mi_intento ? '' : ' Para contar tienes que jugar la prueba.'}</small></div>`;
     }
     h = `<div class="formato amarillo"><div class="folio"><span>Prueba del líder</span><span>Semana ${g.semana}</span></div><h2>${esc(p.nombre)}</h2>${cuerpo}</div>`;
   } else if (g.fase === 'espera' && g.es_final) {
@@ -2742,7 +2793,7 @@ const TUTO = [
       <rect width="64" height="76" rx="12" fill="${c}"/><text x="32" y="40" text-anchor="middle" font-size="28">${e}</text>
       <text x="32" y="64" text-anchor="middle" font-family="Work Sans,sans-serif" font-weight="700" font-size="11" fill="${i === 2 ? '#fff' : '#1B1440'}">${n}</text></g>
       ${i < 2 ? `<path d="M${82 + i * 84} 72 l12 0 m-5 -6 l6 6 l-6 6" stroke="#FFFDF6" stroke-width="3" fill="none" stroke-linecap="round"/>` : ''}`).join('')}</svg>` },
-  { t: '1 · Sé el líder 👑', p: 'Juega la prueba de la semana (un solo intento). El líder sale mitad de tu puntaje y mitad de las misiones secretas que cumpliste la semana pasada. El líder no puede salir esa semana.',
+  { t: '1 · Sé el líder 👑', p: 'Juega la prueba de la semana (un solo intento). El líder sale 30% de tu puntaje en la prueba y 70% de lo que hiciste la semana: misiones cumplidas, cuánto jugaste, tus récords y los duelos que ganaste. El líder no puede salir esa semana.',
     svg: `<svg viewBox="0 0 260 150"><path d="M60 100 L48 50 L78 72 L100 40 L122 72 L152 50 L140 100 Z" fill="#FFD54A" stroke="#1B1440" stroke-width="4" stroke-linejoin="round"/>
       <circle cx="100" cy="40" r="7" fill="#D7263D"/><circle cx="48" cy="50" r="6" fill="#D7263D"/><circle cx="152" cy="50" r="6" fill="#D7263D"/>
       <rect x="56" y="100" width="88" height="14" rx="4" fill="#FFD54A" stroke="#1B1440" stroke-width="4"/>
@@ -2836,7 +2887,7 @@ async function abrirFicha(id) {
   {
     const pr = t => (est.practicas || []).find(x => x.id === id && x.juego === t);
     const fila = (t, n) => { const x = pr(t); return `<div class="tile"><b>${x?.mejor ?? 0}</b><small>${n} · mejor de ${x?.partidas ?? 0} ${x?.partidas === 1 ? 'partida' : 'partidas'}</small></div>`; };
-    h += `<h3>${esYo ? 'Mis prácticas' : 'Prácticas'}</h3><div class="tiles" style="margin-top:4px">${fila('memoria', 'Memoria')}${fila('adeudo', 'Adeudo')}</div>`;
+    h += `<h3>${esYo ? 'Mis prácticas' : 'Prácticas'}</h3><div class="tiles" style="margin-top:4px">${fila('memoria', 'Memoria')}${fila('adeudo', 'Adeudo')}${fila('billetes', 'Billetes')}</div>`;
   }
   if (esYo) {
     h += `<button class="btn tinta" id="ficha-tienda" style="margin-top:14px">🛍️ Personalizar mi monito</button>`;
@@ -3585,7 +3636,7 @@ function pintarEconomia() {
   $('#c-misiones').innerHTML = tarjetaMision(g) || `<div class="juego-card"><p>${g.semana === 0 ? 'Las misiones secretas empiezan cuando abra la casa (semana 1).' : 'Esta semana no hay misiones.'}</p>
     <p class="ayuda">Cada semana cada habitante recibe 5 misiones secretas sobre sus compañeros. Las que cumplas te dan billetes y cuentan la mitad para ser líder la semana siguiente.</p></div>`;
   // pestaña Jugar: Monster Crazy y las prácticas con sus récords
-  $('#c-jugar').innerHTML = tarjetaDuelos() + tarjetaMonster() + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
+  $('#c-jugar').innerHTML = tarjetaDuelos() + tarjetaMonster() + tarjetaPractica('billetes') + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
   // botones
   const C = $('#s-casa');
   C.querySelector('[data-ver-billetes]').onclick = abrirBilletes;
@@ -3729,7 +3780,7 @@ function tarjetaMonster() {
   let h = `<div class="monster-card"><div class="ed">EDICIÓN ALFA BROTHER · NUEVO</div><h3>MONSTER CRAZY <span style="color:#FFD54A">2.0</span></h3>
     <div class="monster-caras">${caras.map(j => avatar(j, 38)).join('')}<div class="av" style="width:38px;height:38px;background:#050207;font-size:20px">💀</div></div>
     <p>Las caras de tus compañeros salen sobre el monstruo: deslízales el dedo antes de que se acabe el tiempo. <b>Desde la oleada 16 salen círculos negros 💀: si los tocas, pierdes un corazón</b> (y cada 3 oleadas sale uno más).</p>
-    <p style="font-size:.85rem;color:#FFD54A">Tu récord: <b>${mio('monster2').toLocaleString('es-MX')}</b> · ${est.yo.rol === 'jugador' ? 'La primera partida del día paga $100 y romper el récord de la casa, $200.' : 'Como público, la primera partida del día te da $100, pero tu puntaje no entra a los récords de la casa.'}</p>
+    <p style="font-size:.85rem;color:#FFD54A">Tu récord: <b>${mio('monster2').toLocaleString('es-MX')}</b> · ${est.yo.rol === 'jugador' ? 'Cada partida paga hasta $50 según qué tan bien te vaya (máximo $2,000 al día por jugar). Los récords se reinician cada semana.' : 'Como público también ganas hasta $50 por partida según tu puntaje, pero tu puntaje no entra a los récords de la casa.'}</p>
     <button class="btn" data-monster="monster2">🎮 Jugar</button></div>`;
   if (monster1Disponible()) h += `<div class="monster-card" style="border-color:#7A3FB5;box-shadow:none"><div class="ed">⏳ SOLO HASTA HOY</div><h3 style="font-size:1.4rem">MONSTER CRAZY</h3>
     <p>La versión de siempre, sin círculos negros. Mañana se retira, pero tu récord se queda guardado en la casa.</p>
@@ -3778,7 +3829,7 @@ const MONSTER = (() => {
         const r = await rpc('guardar_practica', { p_token: token, p_juego: j, p_puntaje: Math.round(d.puntuacion || 0) });
         store.del(llave(j));
         enviar({ type: 'monsterResult', ok: true, record: r.mejor, esRecord: r.record, premio: r.premio,
-          aviso: r.premio ? '' : 'Ya cobraste la partida de hoy. ¡Mañana hay más billetes!',
+          aviso: r.premio ? '' : r.hoy >= 2000 ? 'Ya juntaste los $2,000 de hoy por jugar. ¡Mañana hay más!' : '',
           top: (r.top || []).map(x => ({ nombre: x.nombre, puntos: x.mejor, yo: x.id === est.yo.id })) });
       } catch (e) { enviar({ type: 'monsterResult', ok: false }); }
       finally { mandando = false; }
@@ -4820,7 +4871,9 @@ const DUELO = (() => {
     }
     if (d.juego === 'globo' && d.ganador) det = `<p class="du-det">💦 ${gane ? `¡Bañaste a ${esc(r.nombre)}!` : `${esc(r.nombre)} te bañó. ¡A secarse!`}</p>`;
     if (d.datos?.rindio) det = `<p class="du-det">🏳️ ${d.datos.rindio === k() ? 'Te rendiste' : `${esc(r.nombre)} se rindió`}.</p>`;
-    const dinero = d.bot ? 'Práctica: no se gana ni se pierde nada.' : empate ? (d.apuesta ? 'Te devolvimos tu apuesta.' : '') : gane ? (d.apuesta ? `+${fmt$(d.apuesta * 2)}` : '¡Puro orgullo!') : (d.apuesta ? `−${fmt$(d.apuesta)}` : 'No perdiste billetes… solo la dignidad.');
+    const pagoJ = !d.bot && d.datos?.pago?.[k()] ? ` · +${fmt$(d.datos.pago[k()])} por jugar` : '';
+    const dinero0 = d.bot ? 'Práctica: no se gana ni se pierde nada.' : empate ? (d.apuesta ? 'Te devolvimos tu apuesta.' : '') : gane ? (d.apuesta ? `+${fmt$(d.apuesta * 2)}` : '¡Puro orgullo!') : (d.apuesta ? `−${fmt$(d.apuesta)}` : 'No perdiste billetes… solo la dignidad.');
+    const dinero = (dinero0 + pagoJ).replace(/^ · /, '');
     caja().innerHTML = `<div class="du-pant du-centro">
       <div class="du-top"><span class="du-x-esp"></span><b class="du-tit-j">${j.ic} ${esc(j.nombre)}</b><span class="du-x-esp"></span></div>
       <div class="du-vs">${monito(yoJ(), { tam: 72, cara: gane ? '🏆' : empate ? '🤝' : '😭', clase: gane ? 'festeja' : empate ? '' : 'triste' })}<span class="du-vs-t">VS</span>${monito(r, { tam: 72, cara: gane ? '😭' : empate ? '🤝' : '🏆', clase: gane ? 'triste' : empate ? '' : 'festeja' })}</div>
@@ -4911,7 +4964,7 @@ const TV = (() => {
   const prod = (a, b, sep = ' ') => a.flatMap(x => b.map(y => x + sep + y));
   const llenar = (t, c) => t.replace(/\{(\w+)\}/g, (_, k) => c[k] ?? '');
   const fmt = n => Number(n || 0).toLocaleString('es-MX');
-  const JUEGOS = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo' };
+  const JUEGOS = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes' };
 
   // ---------- el guion ----------
   // Exclamaciones para armar las reacciones
@@ -5689,14 +5742,15 @@ function tarjetaRecords() {
       || '<div class="r"><span class="ayuda">Nadie todavía</span></div>'}
       <div class="r" style="margin-top:4px;color:#C9C3EE"><span>Tu mejor</span><span>${mio?.mejor ?? 0}</span></div></div>`;
   };
-  return `<div class="juego-card"><h3>🏆 Récords de la casa <small>Juegos y prácticas</small></h3>
-    <div class="record-cols">${col('monster2', 'Monster Crazy 2.0')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}</div>
-    <p class="ayuda" style="margin-top:6px">La primera partida de cada juego al día paga $100 y romper un récord de la casa, $200.</p></div>`;
+  return `<div class="juego-card"><h3>🏆 Récords de la semana <small>Juegos y prácticas</small></h3>
+    <div class="record-cols">${col('monster2', 'Monster Crazy 2.0')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}${col('billetes', 'Billetes verdes')}</div>
+    <p class="ayuda" style="margin-top:6px">Los récords vuelven a cero cada semana y cuentan para ser líder. Cada partida paga hasta $50 según tu puntaje (máximo $2,000 al día por jugar).</p></div>`;
 }
 // Las prácticas de las pruebas del líder, cada una en su tarjeta (con el mismo estilo que Monster Crazy)
 const ESTILO_PRACTICA = {
   memoria: { clase: 'pr-memoria', ed: 'PRÁCTICA · PRUEBA DEL LÍDER', titulo: 'MEMORIA DE EXPEDIENTES', icono: '🗂️', boton: '🗂️ Practicar' },
   adeudo: { clase: 'pr-adeudo', ed: 'PRÁCTICA · PRUEBA DEL LÍDER', titulo: 'CALCULA EL ADEUDO', icono: '🧮', boton: '🧮 Practicar' },
+  billetes: { clase: 'pr-billetes', ed: 'NUEVO · PRUEBA DEL LÍDER', titulo: 'CUENTA LOS BILLETES VERDES', icono: '💵', boton: '💵 Practicar' },
 };
 function tarjetaPractica(juego) {
   const e = ESTILO_PRACTICA[juego], p = PRUEBAS[juego];
@@ -5705,7 +5759,7 @@ function tarjetaPractica(juego) {
   return `<div class="monster-card ${e.clase}"><div class="ed">${e.ed}</div><h3>${e.titulo} <span class="pr-ic">${e.icono}</span></h3>
     <p>${esc(p.desc)}</p>
     ${top.length ? `<div class="pr-top">${top.map((r, i) => `<span>${['🥇', '🥈', '🥉'][i]} ${esc(porId(r.id)?.nombre || '?')} <b>${r.mejor.toLocaleString('es-MX')}</b></span>`).join('')}</div>` : ''}
-    <p class="pr-rec">Tu récord: <b>${(mio?.mejor || 0).toLocaleString('es-MX')}</b> · ${est.yo.rol === 'jugador' ? 'La primera partida del día paga $100 y romper el récord de la casa, $200.' : 'Como público, la primera partida del día te da $100, pero tu puntaje no entra a los récords de la casa.'}</p>
+    <p class="pr-rec">Tu récord: <b>${(mio?.mejor || 0).toLocaleString('es-MX')}</b> · ${est.yo.rol === 'jugador' ? 'Cada partida paga hasta $50 según qué tan bien te vaya (máximo $2,000 al día por jugar). Los récords se reinician cada semana.' : 'Como público también ganas hasta $50 por partida según tu puntaje, pero tu puntaje no entra a los récords de la casa.'}</p>
     <button class="btn" data-practicar="${juego}">${e.boton}</button></div>`;
 }
 
@@ -5721,8 +5775,9 @@ async function abrirBilletes() {
     <h3 style="margin-top:12px">Cómo ganar más</h3>
     <ul style="margin:4px 0 0;padding-left:18px;font-size:.92rem">
       <li>Entrar al juego cada día: <b>$200</b></li>
-      <li>Primera práctica del día de cada juego: <b>$100</b></li>
-      <li>Romper un récord de la casa: <b>$200</b></li>
+      <li>Cada partida de los juegos: <b>hasta $50</b> según qué tan bien te vaya</li>
+      <li>Cada duelo que juegues (ganes o pierdas): <b>$50</b> (contra el Reportero no cuenta)</li>
+      <li>Por jugar puedes juntar hasta <b>$2,000 al día</b></li>
       <li>Cada misión secreta cumplida: <b>$300</b>, hasta 5 por semana (y $50 a quien te ayude)</li>
       <li>Atinarle a las apuestas del líder, del eliminado y de la encuesta</li></ul>
     <button class="btn tinta" id="bi-tienda" style="margin-top:12px">🛍️ Ir a la tienda del monito</button>
@@ -6260,6 +6315,7 @@ function abrirPrueba() {
       $('#p-volver').classList.add('hidden');
       if (r.prueba === 'trivia') jugarTrivia(r.preguntas);
       else if (r.prueba === 'memoria') jugarMemoria();
+      else if (r.prueba === 'billetes') jugarBilletes();
       else jugarAdeudo();
     } catch (e) { mostrarError($('#p-error'), e); }
   };
@@ -6272,7 +6328,7 @@ function abrirPractica(tipo) {
     <h2>${esc(p.nombre)}</h2><p>${esc(p.desc)}</p>
     <p>Esto es solo para entrenar: puedes jugar las veces que quieras.</p>
     <div style="margin-top:16px"><button class="btn" id="p-empezar">Empezar práctica</button></div>`;
-  $('#p-empezar').onclick = () => { tipo === 'memoria' ? jugarMemoria(true) : jugarAdeudo(true); };
+  $('#p-empezar').onclick = () => { tipo === 'memoria' ? jugarMemoria(true) : tipo === 'billetes' ? jugarBilletes(true) : jugarAdeudo(true); };
   mostrar('s-prueba');
 }
 async function finPractica(html, tipo, puntaje = 0) {
@@ -6281,8 +6337,9 @@ async function finPractica(html, tipo, puntaje = 0) {
   let extra = '';
   try {
     const r = await rpc('guardar_practica', { p_token: token, p_juego: tipo, p_puntaje: puntaje });
-    if (r.record) { extra += `<p style="font-weight:800">🏆 ¡Nuevo récord de la casa!${r.premio - (r.premio_dia || 0) >= 200 ? ' +$200' : ''}</p>`; lluviaBilletes(20); SFX.tocar('fanfarria'); }
-    if (r.premio_dia) extra += `<p>💵 +$${r.premio_dia} por tu primera práctica de hoy</p>`;
+    if (r.record) { extra += `<p style="font-weight:800">🏆 ¡Nuevo récord de la semana!</p>`; lluviaBilletes(20); SFX.tocar('fanfarria'); }
+    extra += r.pago ? `<p>💵 <b>+${fmt$(r.pago)}</b> por jugar (entre mejor te va, más ganas)</p>`
+      : r.hoy >= 2000 ? '<p>💵 Ya juntaste los $2,000 de hoy por jugar. ¡Mañana hay más!</p>' : '<p>💵 Esta vez no alcanzó para billetes. ¡Échale más ganas!</p>';
   } catch { }
   $('#p-volver').classList.remove('hidden');
   $('#p-caja').innerHTML = `<div class="folio"><span>Práctica terminada</span><span>No cuenta</span></div>${gradaFiesta()}${html}${extra}
@@ -6488,6 +6545,117 @@ function jugarAdeudo(practica = false) {
   siguiente();
 }
 
+/* ---- 💵 Cuenta los billetes verdes (como contar goombas: pasan billetes y solo cuentas los verdes) ---- */
+function jugarBilletes(practica = false) {
+  const RONDAS = 5;
+  // en la prueba todos ven la misma secuencia; en la práctica cambia cada vez
+  const rnd = practica ? Math.random : (s => () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; })(est.juego.semana * 7919 + 101);
+  const entre = (a, b) => a + rnd() * (b - a);
+  const OTROS = ['#E86AA6', '#4D8DFF', '#9B6BFF', '#FF9F43', '#F2C94C'];
+  const caja = $('#p-caja');
+  const G = gradas();
+  const yo = porId(est.yo.id) || est.yo;
+  let puntaje = 0, fuera = false;
+  const rondas = [];
+  caja.innerHTML = `<div class="marcador"><span id="bv-r">Ronda 1 de ${RONDAS}</span><span id="bv-p">0 pts</span></div>
+    ${G.arriba}<div class="bv-esc" id="bv-esc">
+      <div class="bv-casas"></div><div class="bv-calle"></div><div class="bv-pista" id="bv-pista"></div>
+      <svg class="bv-bino" viewBox="0 0 100 60" preserveAspectRatio="none" aria-hidden="true"><path fill-rule="evenodd" d="M0 0H100V60H0Z M5 30a22 22 0 1 0 44 0a22 22 0 1 0 -44 0Z M51 30a22 22 0 1 0 44 0a22 22 0 1 0 -44 0Z"/></svg>
+      <div class="bv-aviso" id="bv-aviso"></div></div>
+    <div class="bv-abajo" id="bv-abajo"></div>${G.abajo}`;
+  const pista = $('#bv-pista'), aviso = $('#bv-aviso'), abajo = $('#bv-abajo');
+  const vigente = () => !fuera && pantalla === 's-prueba' && document.body.contains(pista);
+  const avisar = (t, ms = 1100) => new Promise(r => { aviso.innerHTML = t; aviso.classList.add('on'); setTimeout(() => { aviso.classList.remove('on'); r(); }, ms); });
+  const billete = c => `<div class="bv-b" style="--c:${c}"><b>$</b><i class="bv-pie a"></i><i class="bv-pie b"></i></div>`;
+
+  // Una ronda: pasan billetes de colores; tú cuentas (con el contador) los verdes
+  async function jugarRonda(k) {
+    const n = 7 + k * 3, verdes = Math.round(n * entre(.38, .58)), ventana = 5600 + k * 900;
+    const W = pista.clientWidth;
+    const cosas = Array.from({ length: n }, (_, i) => ({ verde: i < verdes })).sort(() => rnd() - .5);
+    let t = 0;
+    cosas.forEach((x, i) => {
+      // a partir de la ronda 3 vienen en bolitas, y de la 4 también de regreso y algunos se detienen
+      const bolita = k >= 2 && rnd() < .35;
+      t = bolita && i ? t + entre(90, 200) : entre(0, ventana);
+      x.t = t; x.dur = Math.max(1200, entre(2500, 3200) - k * 330);
+      x.atras = k >= 3 && rnd() < .3; x.pausa = k >= 3 && rnd() < .25;
+      x.y = entre(28, 74); x.c = x.verde ? '#2E9E57' : OTROS[Math.floor(rnd() * OTROS.length)];
+    });
+    let clicks = 0;
+    abajo.innerHTML = `<div class="bv-cont">${monito(yo, { tam: 38, cara: '👀', nombre: false })}
+      <button class="bv-click" id="bv-click">🔢 <span>¡Clic!</span><small>Cuenta aquí los verdes</small></button></div>`;
+    const btn = $('#bv-click'), mm = $('.bv-cont .mm');
+    btn.onclick = () => { clicks++; SFX.tocar('tic'); btn.classList.remove('pum'); void btn.offsetWidth; btn.classList.add('pum'); };
+    await avisar(`Ronda ${k + 1}<small>Cuenta solo los billetes <b class="bv-verde">VERDES</b></small>`, 1500);
+    if (!vigente()) return null;
+    SFX.tocar('tadan');
+    const fin = Math.max(...cosas.map(x => x.t + x.dur + (x.pausa ? 700 : 0)));
+    cosas.forEach(x => setTimeout(() => {
+      if (!vigente()) return;
+      const el = document.createElement('div');
+      el.className = 'bv-ir'; el.style.top = x.y + '%'; el.innerHTML = billete(x.c);
+      if (x.atras) el.firstElementChild.classList.add('atras');
+      pista.appendChild(el);
+      const a = -70, b = W + 20, [ini, fn] = x.atras ? [b, a] : [a, b];
+      const pasos = x.pausa ? [{ transform: `translateX(${ini}px)` }, { transform: `translateX(${(ini + fn) / 2}px)`, offset: .42 },
+        { transform: `translateX(${(ini + fn) / 2}px)`, offset: .62 }, { transform: `translateX(${fn}px)` }]
+        : [{ transform: `translateX(${ini}px)` }, { transform: `translateX(${fn}px)` }];
+      el.animate(pasos, { duration: x.dur + (x.pausa ? 700 : 0), easing: 'linear', fill: 'forwards' }).onfinish = () => el.remove();
+    }, x.t));
+    await sleep(fin + 300);
+    if (!vigente()) return null;
+    // ¿cuántos verdes pasaron?
+    expresar(mm, '🤔', '', 0);
+    let resp = clicks, listo;
+    const hecho = new Promise(r => listo = r);
+    abajo.innerHTML = `<div class="bv-preg"><p>¿Cuántos billetes <b class="bv-verde">verdes</b> pasaron?</p>
+      <div class="bv-num"><button id="bv-menos" aria-label="Menos">−</button><b id="bv-n">${resp}</b><button id="bv-mas" aria-label="Más">+</button></div>
+      <div class="barra"><i id="bv-t" style="width:100%"></i></div>
+      <button class="btn" id="bv-ok">¡Listo!</button></div>`;
+    const pinta = () => { $('#bv-n').textContent = resp; };
+    $('#bv-menos').onclick = () => { resp = Math.max(0, resp - 1); SFX.tocar('clic'); pinta(); };
+    $('#bv-mas').onclick = () => { resp = Math.min(40, resp + 1); SFX.tocar('clic'); pinta(); };
+    $('#bv-ok').onclick = () => listo();
+    const t0 = performance.now(), LIM = 15000;
+    const iv = setInterval(() => {
+      const ms = performance.now() - t0, b = $('#bv-t');
+      if (!b || !vigente()) { clearInterval(iv); listo(); return; }
+      b.style.width = Math.max(0, 100 - ms / LIM * 100) + '%';
+      if (ms >= LIM) listo();
+    }, 100);
+    await hecho; clearInterval(iv);
+    if (!vigente()) return null;
+    const dif = Math.abs(resp - verdes), pts = [200, 120, 50][dif] || 0;
+    puntaje += pts; $('#bv-p').textContent = puntaje + ' pts';
+    abajo.innerHTML = `<div class="bv-res ${dif ? (pts ? 'casi' : 'mal') : 'bien'}"><span>Pasaron <b>${verdes}</b> verdes · dijiste <b>${resp}</b></span>
+      <strong>${dif === 0 ? '¡Exacto! +200' : pts ? `¡Casi! +${pts}` : 'Ni cerca 😅 +0'}</strong></div>`;
+    animarGradas(caja, dif === 0 ? 'bien' : pts ? 'nervios' : 'mal');
+    SFX.tocar(dif === 0 ? 'caja' : pts ? 'tac' : 'buzzer');
+    if (dif === 0) lluviaBilletes(8);
+    rondas.push({ verdes, resp, pts });
+    await sleep(2200);
+    return pts;
+  }
+
+  (async () => {
+    for (let k = 0; k < RONDAS; k++) {
+      $('#bv-r').textContent = `Ronda ${k + 1} de ${RONDAS}`;
+      const r = await jugarRonda(k);
+      if (r === null) { fuera = true; return; }
+    }
+    const exactos = rondas.filter(r => r.verdes === r.resp).length;
+    const html = `<h2>${exactos === RONDAS ? '¡Ojo de cobrador! 🦅' : exactos >= 3 ? '¡Bien contado!' : '¡Se te escaparon varios!'}</h2>
+      <p>${exactos} de ${RONDAS} rondas exactas.</p>
+      <div class="bv-tabla">${rondas.map((r, i) => `<span>Ronda ${i + 1}</span><span>${r.verdes} verdes</span><span>dijiste ${r.resp}</span><b>+${r.pts}</b>`).join('')}</div>
+      <p>Puntaje: <b class="display" style="font-size:2rem">${puntaje}</b></p>`;
+    if (practica) return finPractica(html, 'billetes', puntaje);
+    caja.innerHTML = '<h2>Guardando…</h2>';
+    try { await enviarPuntaje(puntaje); finPrueba(html); }
+    catch (e) { finPrueba(`<h2>No se guardó</h2><p>${esc(mensajeError(e))}</p>`); }
+  })();
+}
+
 /* =====================================================================
    GALA DE ELIMINACIÓN
    ===================================================================== */
@@ -6526,8 +6694,8 @@ const PASARELA = (() => {
   const de = arr => arr[Math.floor(rnd() * arr.length)];
   const pts = n => `${n} ${n === 1 ? 'punto' : 'puntos'}`;
   const lista = ns => ns.length <= 1 ? (ns[0] || '') : ns.slice(0, -1).join(', ') + ' y ' + ns[ns.length - 1];
-  const PRUEBA_N = { memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', trivia: 'la trivia' };
-  const JUEGO_N = { monster2: 'Monster Crazy 2.0', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo' };
+  const PRUEBA_N = { memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', trivia: 'la trivia', billetes: 'Cuenta los billetes verdes' };
+  const JUEGO_N = { monster2: 'Monster Crazy 2.0', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes' };
 
   // ---------- la voz de Ricky ----------
   function elegirVoz() {
@@ -7147,12 +7315,11 @@ async function adminJuego(C) {
   }
   if (c.fase === 'prueba') {
     const ints = await q(sb.from('intentos').select('*').eq('semana', c.semana).order('puntaje', { ascending: false, nullsFirst: false }));
-    const misPrev = await q(sb.from('misiones').select('jugador_id,cumplida').eq('semana', c.semana - 1));
-    const top = tablaLider(ints, misPrev)[0];
+    const top = (await tablaLider())[0];
     h += `<div class="adm-caja"><h3>Prueba en curso</h3>
-      <p>${ints.filter(i => i.terminado).length} de ${act.length} ya jugaron. Va ganando: <b>${top ? esc(nombreDe(top.jugador_id)) + ` (${top.total} pts: prueba ${top.puntaje} + ${top.mis} misiones)` : 'nadie'}</b></p>
+      <p>${ints.filter(i => i.terminado).length} de ${act.length} ya jugaron. Va ganando: <b>${top ? esc(nombreDe(top.jugador_id)) + ` (${top.total} pts)` : 'nadie'}</b></p>
       <label class="campo" for="ad-lider">Líder</label>
-      <select class="in" id="ad-lider"><option value="">Automático: mejor puntaje (prueba + misiones)</option>${act.map(j => `<option value="${j.id}">${esc(j.nombre)}</option>`).join('')}</select>
+      <select class="in" id="ad-lider"><option value="">Automático: mejor puntaje (prueba + semana)</option>${act.map(j => `<option value="${j.id}">${esc(j.nombre)}</option>`).join('')}</select>
       <div class="adm-acciones"><button class="btn" id="ad-cerrar-prueba">Cerrar prueba y nombrar líder</button></div></div>`;
   }
   if (c.fase === 'espera') {
@@ -7304,26 +7471,18 @@ async function adminVotos(C) {
 }
 
 /* ---- Pruebas ---- */
-// Igual que _tabla_lider en la base: mitad prueba (contra el mejor) y mitad misiones de la semana pasada
-function tablaLider(ints, misPrev) {
-  const val = ints.filter(i => i.puntaje !== null && i.terminado && (j => j?.estado === 'activo' && j?.rol === 'jugador')(adm.jug.find(j => j.id === i.jugador_id)));
-  const max = Math.max(1, ...val.map(i => Math.max(0, i.puntaje)));
-  return val.map(i => {
-    const mis = Math.min(5, misPrev.filter(m => m.jugador_id === i.jugador_id && m.cumplida).length);
-    return { ...i, mis, total: Math.round((50 * Math.max(0, i.puntaje) / max + 10 * mis) * 10) / 10 };
-  }).sort((a, b) => b.total - a.total || b.puntaje - a.puntaje || new Date(a.terminado) - new Date(b.terminado));
-}
+// La tabla del líder la calcula la base (30% prueba + 70% misiones, jugar, récords y duelos)
+const tablaLider = async () => (await rpc('admin_tabla_lider')) || [];
 
 async function adminPruebas(C) {
   const c = adm.cfg;
   const ints = c.semana ? await q(sb.from('intentos').select('*').eq('semana', c.semana).order('puntaje', { ascending: false, nullsFirst: false })) : [];
-  const misPrev = c.semana > 1 ? await q(sb.from('misiones').select('jugador_id,cumplida').eq('semana', c.semana - 1)) : [];
-  const tabla = tablaLider(ints, misPrev), fuera = ints.filter(i => !tabla.some(t => t.jugador_id === i.jugador_id));
+  const tabla = c.semana ? await tablaLider() : [], fuera = ints.filter(i => !tabla.some(t => t.jugador_id === i.jugador_id));
   C.innerHTML = `<div class="adm-caja"><h3>Puntajes de la semana ${c.semana}</h3>
     ${c.prueba ? `<p class="ayuda">${esc(PRUEBAS[c.prueba].nombre)}</p>` : ''}
-    <p class="ayuda">El líder sale mitad de la prueba (su puntaje contra el mejor, hasta 50) y mitad de las misiones cumplidas la semana pasada (10 cada una, hasta 50).</p>
+    <p class="ayuda">El líder sale 30% de la prueba (contra el mejor) y 70% en 4 partes de 17.5: misiones de la semana pasada (de 5), lo que jugó, sus récords y duelos ganados (contra quien más tiene).</p>
     ${tabla.map((i, k) => `<div class="adm-fila"><div class="info"><b>${k + 1}. ${esc(nombreDe(i.jugador_id))}</b>
-      <small>Prueba ${i.puntaje} · ${i.mis} misiones · ${new Date(i.terminado).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</small></div>
+      <small>Prueba ${i.puntaje} (${i.p_prueba}) · ${i.misiones} misiones (${i.p_mis}) · ${i.jugadas} jugadas (${i.p_jug}) · récords ${Math.round(i.rec * 100)}% (${i.p_rec}) · ${i.duelos_g} duelos (${i.p_duel})</small></div>
       <span class="pill ${k === 0 ? 'verde' : ''}">${i.total}</span></div>`).join('')}
     ${fuera.map(i => `<div class="adm-fila"><div class="info"><b>${esc(nombreDe(i.jugador_id))}</b>
       <small>${i.puntaje === null ? 'Incompleto' : 'Ya no está en la casa'}</small></div><span class="pill">${i.puntaje ?? 0}</span></div>`).join('')}
@@ -7439,7 +7598,7 @@ async function adminExtras(C, seccion) {
   const diaNota = dia => { const t = new Date(dia + 'T12:00:00Z').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' }); return t.charAt(0).toUpperCase() + t.slice(1); };
   const manana = dia => diaNota(diaMas(dia, 1)).toLowerCase();       // la fecha en que sale ese noticiero
   const opcionesDia = actual => [...Array(7).keys()].map(k => diaMas(sigDia, k)).map(dd => `<option value="${dd}" ${dd === actual ? 'selected' : ''}>📺 ${esc(diaNota(diaMas(dd, 1)))}, 9 a.m.${dd === sigDia ? ' (el siguiente)' : ''}</option>`).join('');
-  const JUEGOS_REC = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy (clásico)', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo' };
+  const JUEGOS_REC = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy (clásico)', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes' };
   const ahora = Date.now();
   const estadoEnc = e => +new Date(e.abre) > ahora ? `Programada: abre ${fmtFecha(e.abre)}` : +new Date(e.cierra) > ahora ? `Abierta hasta ${fmtFecha(e.cierra)}` : 'Cerrada';
   const ricos = [...adm.jug].sort((a, b) => (b.billetes ?? 0) - (a.billetes ?? 0));
