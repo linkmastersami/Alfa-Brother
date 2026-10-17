@@ -1055,6 +1055,9 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .chip-eco.dinero{background:#1E8E5A;box-shadow:none}
 /* botón de la tienda: el contorno brilla y parpadea */
 #c-tienda{animation:tienda-brilla 1.6s ease-in-out infinite}
+/* juegos nuevos en Jugar: el contorno brilla y parpadea igual que la tienda */
+.monster-card.nuevo-brilla{animation:juego-brilla 1.6s ease-in-out infinite;border-color:#FFD54A}
+@keyframes juego-brilla{0%,100%{box-shadow:inset 0 0 0 2px #FFD54A,0 0 0 0 rgba(255,213,74,0)}50%{box-shadow:inset 0 0 0 3px #FFB347,0 0 20px 6px rgba(255,170,60,.85)}}
 @keyframes tienda-brilla{0%,100%{box-shadow:inset 0 0 0 2px #FFD54A,0 0 0 0 rgba(255,213,74,0)}50%{box-shadow:inset 0 0 0 3px #FFB347,0 0 18px 6px rgba(255,170,60,.85)}}
 @media (prefers-reduced-motion:reduce){#c-tienda{animation:none;box-shadow:inset 0 0 0 2px #FFD54A}}
 .chip-eco.sube{animation:pulso .7s}
@@ -1855,7 +1858,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 56;
+const APP_VERSION       = 57;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -3791,7 +3794,7 @@ function pintarEconomia() {
   $('#c-misiones').innerHTML = tarjetaMision(g) || `<div class="juego-card"><p>${g.semana === 0 ? 'Las misiones secretas empiezan cuando abra la casa (semana 1).' : 'Esta semana no hay misiones.'}</p>
     <p class="ayuda">Cada semana cada habitante recibe 5 misiones secretas sobre sus compañeros. Las que cumplas te dan billetes y cuentan para ser líder esa misma semana (hasta que cierre la prueba).</p></div>`;
   // pestaña Jugar: Monster Crazy y las prácticas con sus récords
-  $('#c-jugar').innerHTML = tarjetasDuelos() + tarjetaMarcadorDuelos() + tarjetaMonster() + tarjetaPractica('billetes') + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
+  $('#c-jugar').innerHTML = tarjetasDuelos(true) + tarjetaPractica('billetes') + tarjetasDuelos(false) + tarjetaMarcadorDuelos() + tarjetaMonster() + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
   // botones
   const C = $('#s-casa');
   C.querySelector('[data-ver-billetes]').onclick = abrirBilletes;
@@ -4022,9 +4025,10 @@ const DUELOS_JUEGOS = {            // en este orden salen en Jugar
   calculo: { nombre: 'Cálculo rápido', ic: '➕✖️', oculto: true, desc: 'Las mismas 10 operaciones para los dos. Gana quien tenga más buenas; si empatan, el más rápido.' },
 };
 // Cada duelo tiene su propia tarjeta en Jugar (como Monster Crazy y las prácticas)
-function tarjetasDuelos() {
+const JUEGOS_NUEVOS = ['penales', 'billetes'];   // van hasta arriba y su contorno brilla
+function tarjetasDuelos(nuevos) {
   const hab = est.yo.rol === 'jugador';
-  return Object.entries(DUELOS_JUEGOS).filter(([, j]) => !j.oculto).map(([k, j]) => `<div class="monster-card du-card ${j.clase}"><div class="ed">${j.ed}</div><h3>${j.titulo} <span class="pr-ic">${j.ic}</span></h3>
+  return Object.entries(DUELOS_JUEGOS).filter(([k, j]) => !j.oculto && JUEGOS_NUEVOS.includes(k) === !!nuevos).map(([k, j]) => `<div class="monster-card du-card ${j.clase}${JUEGOS_NUEVOS.includes(k) ? ' nuevo-brilla' : ''}"><div class="ed">${j.ed}</div><h3>${j.titulo} <span class="pr-ic">${j.ic}</span></h3>
     <p>${esc(j.desc)}</p>
     <p class="du-card-nota">${hab ? 'Reta a otro habitante (aunque ya haya salido de la casa) y pongan la misma apuesta: el que gana se lleva lo de los dos, y los dos ganan $50 por jugar. Para practicar, reta al Reportero 🧑‍💼.' : 'Los duelos son solo para los habitantes de la casa.'}</p>
     ${hab ? `<button class="btn" data-duelo="${k}">⚔️ Desafiar</button>` : ''}</div>`).join('');
@@ -6094,7 +6098,7 @@ function tarjetaPractica(juego) {
   const e = ESTILO_PRACTICA[juego], p = PRUEBAS[juego];
   const mio = (est.practicas || []).find(x => x.id === est.yo.id && x.juego === juego);
   const top = (est.records || []).filter(r => r.juego === juego);
-  return `<div class="monster-card ${e.clase}"><div class="ed">${e.ed}</div><h3>${e.titulo} <span class="pr-ic">${e.icono}</span></h3>
+  return `<div class="monster-card ${e.clase}${JUEGOS_NUEVOS.includes(juego) ? ' nuevo-brilla' : ''}"><div class="ed">${e.ed}</div><h3>${e.titulo} <span class="pr-ic">${e.icono}</span></h3>
     <p>${esc(p.desc)}</p>
     ${top.length ? `<div class="pr-top">${top.map((r, i) => `<span>${['🥇', '🥈', '🥉'][i]} ${esc(porId(r.id)?.nombre || '?')} <b>${r.mejor.toLocaleString('es-MX')}</b></span>`).join('')}</div>` : ''}
     <p class="pr-rec">Tu récord: <b>${(mio?.mejor || 0).toLocaleString('es-MX')}</b> · ${est.yo.rol === 'jugador' ? 'Cada partida paga hasta $50 según qué tan bien te vaya (máximo $2,000 al día por jugar). Los récords se reinician cada semana.' : 'Como público también ganas hasta $50 por partida según tu puntaje, pero tu puntaje no entra a los récords de la casa.'}</p>

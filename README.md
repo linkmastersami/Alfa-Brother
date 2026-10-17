@@ -191,6 +191,7 @@ Versión 53: al reportero se le puede mandar una foto; la producción la ve, la 
 Versión 54: nuevo duelo Penales ⚽🧤 (volado, se alternan tirador y portero, 6 segundos para escoger, 5 tiros cada quien, se acaba si ya no se alcanza, muerte súbita con contorno rojo que late).
 Versión 55: cada duelo tiene su propia tarjeta en Jugar (Penales primero), el marcador de duelos va aparte y se quitó Cálculo rápido.
 Versión 56: en los penales el portero y el balón llegan juntos; si ataja, el balón pega en sus manos y rebota sin entrar a la red.
+Versión 57: Penales y Cuenta los billetes verdes van hasta arriba en Jugar y su contorno brilla como el botón de la tienda.
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.
