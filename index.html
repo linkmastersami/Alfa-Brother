@@ -1792,7 +1792,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 50;
+const APP_VERSION       = 51;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -5278,14 +5278,13 @@ const TV = (() => {
   function guion() {
     diaN = Math.floor(Date.parse(d.dia + 'T12:00:00Z') / 864e5); usos = {}; exclUsadas = new Set(); reacs = [];
     const L = [], titulares = [];
-    // k = llave del relleno que la producción puede cambiar (saludo, albures, remates, despedida…)
+    // k = llave del relleno fijo que la producción puede cambiar (saludo, albur de entrada, arranque y despedida)
     const di = (q, t, cara, k) => L.push({ q, t, cara, k });
     const bloque = (b, k) => b.forEach(([q, t], i) => di(q, t, undefined, k ? k + ':' + i : undefined));
-    let puentes = 0;
     let notas = 0;
     const nota = (titular, partes) => {
       titulares.push(titular);
-      if (notas > 0 && notas % 3 === 0) bloque(frase('puente', PUENTES, 3), 'puente' + (++puentes));     // un albur cada tantas noticias
+      if (notas > 0 && notas % 3 === 0) bloque(frase('puente', PUENTES, 3));     // un albur cada tantas noticias (depende de cuántas noticias haya: no se edita)
       notas++;
       partes.forEach(([q, t, cara, k]) => di(q, t, cara, k));
     };
@@ -5294,7 +5293,7 @@ const TV = (() => {
     bloque(frase('albur', ALBURES), 'albur');
     bloque([frase('arranque', ARRANQUES)], 'arranque');
     let turno = 'e';
-    const dos = (titular, entrada, react, cara) => { const q = turno; turno = otro(turno); nota(titular, [[q, entrada, cara], [otro(q), react, undefined, 'r:' + titular]]); };
+    const dos = (titular, entrada, react, cara) => { const q = turno; turno = otro(turno); nota(titular, [[q, entrada, cara], [otro(q), react]]); };
     const n = s => s || 'alguien';
     // galas
     for (const g of d.galas || []) {
@@ -7757,7 +7756,7 @@ async function adminExtras(C, seccion) {
           ${ya ? '' : `<button type="button" class="mini" data-tvn-edit="${n.dia}">Editar</button><button type="button" class="mini" data-tvn-del="${n.dia}">Borrar</button>`}</div>`; }).join('') || '<p class="ayuda">Todavía no hay notas.</p>'}
     </form>
     <div class="adm-caja" data-sec="noticiero" id="tvg"><h3>📝 Relleno del siguiente noticiero</h3>
-      <p class="ayuda">Aquí cambias lo que no depende de lo que pase en el día: el saludo, los albures, los remates de cada noticia y la despedida. Las noticias (en gris) se arman solas con lo que vaya pasando. El noticiero que ya salió no se toca.</p>
+      <p class="ayuda">Aquí cambias solo lo fijo, lo que no depende de lo que pase en el día: el saludo, el albur de entrada, el arranque y la despedida. Todo lo demás (en gris, con 🔒) se arma solo con lo que vaya pasando. El noticiero que ya salió no se toca.</p>
       <div class="adm-acciones"><button type="button" class="btn sec chico" id="tvg-sig">Ver el guion del siguiente noticiero</button></div>
       <div id="tvg-zona"></div></div>
     <div class="adm-caja" data-sec="noticiero"><h3>🎤 Lo que le contaron al reportero</h3>
@@ -7915,12 +7914,12 @@ async function adminExtras(C, seccion) {
     const cambios = datos.cambios || {};
     const orig = TV.guionDe({ ...datos, cambios: {} }).lineas;
     const LOC = { e: 'Elber', a: 'Rosa' };
-    const tipo = k => k.startsWith('r:') ? '😂 Remate' : k.startsWith('saludo') ? '👋 Saludo' : k.startsWith('salida') ? '👋 Despedida' : k.startsWith('arranque') ? '🎬 Arranque' : '🍑 Albur';
+    const tipo = k => k.startsWith('saludo') ? '👋 Saludo' : k.startsWith('salida') ? '👋 Despedida' : k.startsWith('arranque') ? '🎬 Arranque' : '🍑 Albur de entrada';
     z.innerHTML = `<p style="margin:10px 0 4px"><b>📺 Noticiero del ${esc(manana(datos.dia))}</b> ${Object.keys(cambios).length ? `<span class="pill verde">${Object.keys(cambios).length} cambios</span>` : ''}</p>
       <div id="tvg-lista">${orig.map((l, n) => l.k
         ? `<div class="tvg-l" data-k="${esc(l.k)}"><div class="tvg-cab"><span>${n + 1}.</span><b>🎙️ ${LOC[l.q]}</b><small>${tipo(l.k)}</small>${cambios[l.k] ? '<small class="tvg-cambio">✏️ cambiado</small>' : ''}</div>
             <textarea class="in" rows="2" maxlength="600" data-orig="${esc(l.t)}">${esc(cambios[l.k] || l.t)}</textarea></div>`
-        : `<div class="tvg-l fija"><div class="tvg-cab"><span>${n + 1}.</span><b>🎙️ ${LOC[l.q]}</b><small>📰 Noticia (se arma sola)</small></div><p>${esc(l.t)}</p></div>`).join('')}</div>
+        : `<div class="tvg-l fija"><div class="tvg-cab"><span>${n + 1}.</span><b>🎙️ ${LOC[l.q]}</b><small>🔒 Se arma solo con lo del día</small></div><p>${esc(l.t)}</p></div>`).join('')}</div>
       <div class="adm-acciones"><button type="button" class="btn chico" id="tvg-guardar">Guardar cambios</button>${Object.keys(cambios).length ? '<button type="button" class="btn sec chico" id="tvg-orig">Quitar todos mis cambios</button>' : ''}</div>`;
     $('#tvg-guardar').onclick = async () => {
       const nuevos = {};

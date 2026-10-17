@@ -1,5 +1,5 @@
--- ALFA BROTHER · ACTUALIZACIÓN v50: cambiar el relleno del siguiente noticiero (saludo, albures, remates, despedida)
--- Pégala en SQL Editor → Run. (Sirve aunque ya hayas corrido la v49 o no.)
+-- ALFA BROTHER · ACTUALIZACIÓN v50: cambiar lo fijo del siguiente noticiero (saludo, albur de entrada, arranque, despedida)
+-- Pégala en SQL Editor → Run. 
 
 create table if not exists public.noticiero_guiones (
   dia       date primary key,
