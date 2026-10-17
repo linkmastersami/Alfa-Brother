@@ -963,7 +963,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .vista-tog{display:flex;gap:6px;margin:-2px 0 10px}
 .vista-tog button{appearance:none;border:0;border-radius:999px;padding:6px 12px;font-weight:700;font-size:.85rem;background:var(--noche-2);color:#C9C3EE;cursor:pointer}
 .vista-tog button[aria-selected="true"]{background:var(--luz);color:var(--texto)}
-.sala{position:relative;isolation:isolate;width:100%;aspect-ratio:100/150;border-radius:14px;overflow:hidden;background:#3B2E8C;touch-action:manipulation;user-select:none;-webkit-user-select:none;cursor:pointer;box-shadow:inset 0 0 0 3px #1B1440}
+.sala{position:relative;isolation:isolate;width:100%;aspect-ratio:100/172;border-radius:14px;overflow:hidden;background:#3B2E8C;touch-action:manipulation;user-select:none;-webkit-user-select:none;cursor:pointer;box-shadow:inset 0 0 0 3px #1B1440}
 .sala-fondo{position:absolute;inset:0;width:100%;height:100%}
 .sala-actores{position:absolute;inset:0}
 .sala-vivo{position:absolute;top:6px;right:8px;font-size:.72rem;font-weight:700;color:#fff;background:rgba(27,20,64,.75);border-radius:999px;padding:2px 8px;pointer-events:none}
@@ -1081,6 +1081,17 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .prueba-abre{display:grid;justify-items:center;gap:2px;background:#1B1440;color:#fff;border-radius:12px;padding:10px;margin:10px 0}
 .prueba-abre b{font:900 1.8rem Anton,Impact,sans-serif;color:#FFD54A}
 .prueba-abre small{color:#C9C3EE}
+.fs-chips{display:flex;gap:6px;overflow-x:auto;padding:4px 0;scrollbar-width:none}
+.fs-chips button{flex:none;appearance:none;border:2px solid #D9D2B8;background:#fff;border-radius:999px;padding:6px 12px;font-weight:700;font-size:.85rem;color:var(--texto);cursor:pointer}
+.fs-chips button.on{background:var(--texto);border-color:var(--texto);color:#fff}
+.fs-caja{margin-top:6px}
+.fs-caja h4{margin:12px 0 4px;font-size:.95rem}
+.fs-tit{display:flex;gap:6px;flex-wrap:wrap}
+.fs-tit span{background:#FFF3C4;border-radius:999px;padding:2px 10px;font-weight:700;font-size:.82rem;margin-bottom:6px}
+.fs-sub{font-size:.85rem;margin:8px 0 0}
+.fs-voto{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(27,20,64,.08)}
+.fs-voto span{flex:1;min-width:0;font-weight:700}
+.fs-voto small{display:block;font-weight:500;color:var(--suave);font-style:italic}
 .lider-f{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;font-size:.86rem;padding:2px 0}
 .lider-f small{opacity:.75}
 .mis-item{display:flex;gap:10px;align-items:flex-start;margin-top:8px}
@@ -1451,7 +1462,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
   <div class="seccion-t"><span>Habitantes</span><small id="c-cuenta"></small></div>
   <div id="c-sala-box">
     <div class="sala" id="sala">
-      <svg class="sala-fondo" viewBox="0 0 100 150" preserveAspectRatio="none" aria-hidden="true">
+      <svg class="sala-fondo" viewBox="0 0 100 172" preserveAspectRatio="none" aria-hidden="true">
         <defs>
           <pattern id="tapiz" width="6" height="46" patternUnits="userSpaceOnUse"><rect width="6" height="46" fill="#2A2160"/><rect width="3" height="46" fill="#2E2468"/></pattern>
         </defs>
@@ -1459,6 +1470,11 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
         <rect y="44" width="100" height="106" fill="#3B2E8C"/>
         <g stroke="#33287A" stroke-width=".5"><line x1="0" y1="54" x2="100" y2="54"/><line x1="0" y1="66" x2="100" y2="66"/><line x1="0" y1="80" x2="100" y2="80"/><line x1="0" y1="96" x2="100" y2="96"/><line x1="0" y1="114" x2="100" y2="114"/><line x1="0" y1="134" x2="100" y2="134"/></g>
         <rect y="43" width="100" height="2.4" fill="#1B1440"/>
+        <!-- v45: banca de los eliminados (siguen en la casa, pero aparte) -->
+        <rect y="150" width="100" height="22" fill="#241B57"/><rect y="149.4" width="100" height="1.2" fill="#1B1440"/>
+        <rect x="4" y="164.6" width="92" height="2.6" rx="1" fill="#6B4A2E"/><rect x="4" y="163.4" width="92" height="1.4" rx=".7" fill="#8A6240"/>
+        <rect x="8" y="167" width="1.6" height="2.4" fill="#4A321F"/><rect x="90.4" y="167" width="1.6" height="2.4" fill="#4A321F"/>
+        <text x="50" y="170.9" text-anchor="middle" font-family="Work Sans,sans-serif" font-weight="700" font-size="2.3" fill="#8F86C9" letter-spacing=".3">BANCA DE LOS ELIMINADOS</text>
         <!-- puerta del confesionario -->
         <g class="puerta"><rect x="4" y="13" width="15" height="31" rx="1" fill="#D7263D"/>
         <rect x="6" y="16" width="11" height="10" rx=".6" fill="#B01E33"/><rect x="6" y="29" width="11" height="12" rx=".6" fill="#B01E33"/>
@@ -1764,7 +1780,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 44;
+const APP_VERSION       = 45;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -2892,10 +2908,10 @@ async function abrirFicha(id) {
   const lider = semanas.filter(x => x.lider).length + (est.juego.lider_id === id && !est.galas.includes(est.juego.semana) ? 1 : 0);
   const max = Math.max(1, ...conPuntos.map(x => x.fila.puntos));
   let h = cab + `<div class="tiles">
-      <div class="tile"><b>${total}</b><small>puntos recibidos</small></div>
+      <div class="tile"><b>${total}</b><small>puntos negativos</small></div>
       <div class="tile"><b>${lider}</b><small>${lider === 1 ? 'vez líder' : 'veces líder'}</small></div></div>`;
   if (j.rol === 'jugador') {
-    h += `<h3>Puntos por semana</h3>` + (conPuntos.length
+    h += `<h3>Puntos negativos por semana</h3>` + (conPuntos.length
       ? `<div class="barras">${conPuntos.map(x => `<div class="barra-sem"><span>Semana ${x.s}</span><i style="width:${x.fila.puntos / max * 100}%"></i><span>${x.fila.puntos}</span></div>`).join('')}</div>`
       : '<p class="ayuda">Todavía no hay galas. Los puntos se ven después de cada gala.</p>');
   }
@@ -2904,13 +2920,14 @@ async function abrirFicha(id) {
     const fila = (t, n) => { const x = pr(t); return `<div class="tile"><b>${x?.mejor ?? 0}</b><small>${n} · mejor de ${x?.partidas ?? 0} ${x?.partidas === 1 ? 'partida' : 'partidas'}</small></div>`; };
     h += `<h3>${esYo ? 'Mis prácticas' : 'Prácticas'}</h3><div class="tiles" style="margin-top:4px">${fila('memoria', 'Memoria')}${fila('adeudo', 'Adeudo')}${fila('billetes', 'Billetes')}</div>`;
   }
+  // v45: lo de cada semana (por quién votaste y lo que te escribieron solo lo ves tú)
+  if (j.rol === 'jugador' && est.juego.semana > 0) {
+    const sems = Array.from({ length: est.juego.semana }, (_, i) => est.juego.semana - i);
+    h += `<h3>${esYo ? 'Mi semana' : 'Su semana'}</h3><div class="fs-chips">${sems.map(n => `<button data-fs="${n}" class="${n === est.juego.semana ? 'on' : ''}">Semana ${n}</button>`).join('')}</div>
+      <div id="ficha-sem" class="fs-caja"><p class="ayuda">Cargando…</p></div>`;
+  }
   if (esYo) {
     h += `<button class="btn tinta" id="ficha-tienda" style="margin-top:14px">🛍️ Personalizar mi monito</button>`;
-    // motivos agrupados: el mismo texto se muestra una vez con cuántas veces se lo escribieron
-    const cuenta = new Map();
-    for (const x of conPuntos) for (const m of x.fila.motivos) { const k = m.t.trim(); cuenta.set(k, (cuenta.get(k) || 0) + 1); }
-    const motivos = [...cuenta].sort((a, b) => b[1] - a[1]);
-    if (motivos.length) h += `<h3>Lo que te han escrito</h3><ul class="motivos" style="margin:6px 0 0">${motivos.map(([m, n]) => `<li>“${esc(m)}”${n > 1 ? ` <em>×${n}</em>` : ''}</li>`).join('')}</ul>`;
     if (SALA.soyActor()) h += `<h3>Ponte un emoji</h3><div class="emoji-envio">${EMOJIS.map(e => `<button data-mio="${e}">${e}</button>`).join('')}</div>`;
   } else if (j.rol === 'jugador') {
     h += `<h3>Mándale un emoji</h3>` + (SALA.enVivo()
@@ -2922,6 +2939,32 @@ async function abrirFicha(id) {
   h += `<button class="btn sec" id="ficha-cerrar" style="margin-top:16px;color:var(--texto)">Cerrar</button>`;
   caja.innerHTML = h;
   $('#ficha-cerrar').onclick = cerrarFicha;
+  const verSemana = async n => {
+    $$('[data-fs]', caja).forEach(b => b.classList.toggle('on', +b.dataset.fs === n));
+    const z = $('#ficha-sem'); if (!z) return;
+    z.innerHTML = '<p class="ayuda">Cargando…</p>';
+    let d;
+    try { d = await rpc('ficha_semana', { p_token: token, p_id: id, p_semana: n }); } catch (e) { z.innerHTML = `<p class="ayuda">${esc(mensajeError(e))}</p>`; return; }
+    if (!$('#ficha-sem') || !$(`[data-fs="${n}"].on`, caja)) return;
+    const NJ = { memoria: 'Memoria', adeudo: 'Adeudo', billetes: 'Billetes', monster2: 'Monster 2.0', monster: 'Monster' };
+    const t = (b, txt) => `<div class="tile"><b>${b}</b><small>${txt}</small></div>`;
+    let x = `<div class="fs-tit">${d.lider ? '<span>👑 Fue líder</span>' : ''}${d.eliminado ? '<span>🚪 Salió esa semana</span>' : ''}</div>
+      <div class="tiles">${t(d.revelada ? d.puntos : '?', d.revelada ? 'puntos negativos' : 'puntos negativos (se saben en la pasarela)')}
+      ${t(`${d.duelos_g} / ${d.duelos}`, 'duelos ganados / jugados')}${t(`${d.misiones} / 5`, 'misiones cumplidas')}
+      ${t(d.partidas, d.partidas === 1 ? 'partida jugada' : 'partidas jugadas')}${t(fmt$(d.generado), 'billetes generados')}
+      ${t(d.encuestas, d.encuestas === 1 ? 'encuesta votada' : 'encuestas votadas')}${t(`${d.apuestas_g} / ${d.apuestas_p}`, 'apuestas ganadas / perdidas')}</div>`;
+    const mej = Object.entries(d.mejores || {});
+    if (mej.length) x += `<p class="fs-sub">🏆 Mejores puntajes de esa semana: ${mej.map(([k, v]) => `${NJ[k] || k} <b>${Number(v).toLocaleString('es-MX')}</b>`).join(' · ')}</p>`;
+    if (d.votos) x += `<h4>🗳️ Tu voto de esa semana</h4>` + (d.votos.length
+      ? d.votos.map(v => `<div class="fs-voto">${avatar(porId(v.id) || { nombre: v.nombre }, 26)}<span>${esc(v.nombre)}${v.motivo ? `<small>“${esc(v.motivo)}”</small>` : ''}</span><b>${v.puntos} ${v.puntos === 1 ? 'punto' : 'puntos'}</b></div>`).join('')
+      : '<p class="ayuda">No votaste esa semana.</p>');
+    if (d.motivos) x += `<h4>✉️ Lo que te escribieron esa semana</h4>` + (d.motivos.length
+      ? `<ul class="motivos" style="margin:6px 0 0">${d.motivos.map(m => `<li>“${esc(m)}”</li>`).join('')}</ul>` : '<p class="ayuda">Nadie te escribió motivo.</p>');
+    else if (esYo && !d.revelada) x += '<p class="ayuda" style="margin-top:8px">Lo que te escribieron se ve después de la pasarela.</p>';
+    z.innerHTML = x;
+  };
+  $$('[data-fs]', caja).forEach(b => b.onclick = () => { SFX.tocar('clic'); verSemana(+b.dataset.fs); });
+  if ($('#ficha-sem')) verSemana(est.juego.semana);
   $$('[data-envia]', caja).forEach(b => b.onclick = () => { cerrarFicha(); SALA.enviarEmoji(id, b.dataset.envia); });
   const reto = $('#ficha-reto'); if (reto) reto.onclick = () => { cerrarFicha(); SALA.retar(id); };
   const ft = $('#ficha-tienda'); if (ft) ft.onclick = () => { cerrarFicha(); abrirTienda(); };
@@ -2978,11 +3021,18 @@ const SALA = (() => {
   const azar = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   const lerp = (a, b, e) => a + (b - a) * e;
   const suave = e => e < .5 ? 2 * e * e : 1 - Math.pow(-2 * e + 2, 2) / 2;
-  const ALTO = 150;
+  const ALTO = 172;
   const limitar = (x, y) => [Math.max(6, Math.min(94, x)), Math.max(56, Math.min(146, y))];
 
   // ---------- quién camina solo ----------
-  const enCasaIds = () => [...actores.values()].filter(a => a.enSala).map(a => a.id).sort();
+  const enCasaIds = () => [...actores.values()].filter(a => a.enSala && !a.elim).map(a => a.id).sort();
+  // los eliminados se sientan en su banca, abajo, cada quien en su lugar
+  const BANCA_Y = 165.6;
+  function lugarBanca(id) {
+    const l = [...actores.values()].filter(a => a.enSala && a.elim).map(a => a.id).sort(), n = l.length, i = l.indexOf(id);
+    const paso = Math.min(13, 84 / Math.max(1, n - 1));
+    return { x: 50 + (i - (n - 1) / 2) * paso, y: BANCA_Y };
+  }
   // Dos grupos que se turnan las sillas (cada uno con sus asientos), desfasados medio bloque,
   // así no se levantan todos al mismo tiempo. En cada bloque, algunos de cada grupo se sientan.
   const grupo = id => hash('g' + id) % 2;
@@ -3098,6 +3148,7 @@ const SALA = (() => {
     const el = a.el;
     const medalla = est.juego.fin ? MEDALLA[est.podio?.find(x => x.id === j.id)?.lugar] : null;
     const e = j.estilo || {};
+    a.elim = j.estado !== 'activo';
     const firma = [j.nombre, !!fotos[j.id], j.id === est.juego.lider_id, j.id === miId, medalla, JSON.stringify(e), j.estado].join('|');
     if (a.firma === firma) return;
     a.firma = firma;
@@ -3108,6 +3159,7 @@ const SALA = (() => {
     $('.mono-corona', el).classList.toggle('hidden', !medalla && (j.id !== est.juego.lider_id || j.estado !== 'activo'));
     el.classList.toggle('yo', j.id === miId);
     el.classList.toggle('apagado', j.estado !== 'activo');
+    a.elim = j.estado !== 'activo';
     $('.mono-sombrero', el).textContent = e.sombrero || '';
     $('.mono-lentes', el).textContent = e.lentes || '';
     $('.mono-mano', el).textContent = e.mano || '';
@@ -3349,6 +3401,7 @@ const SALA = (() => {
       if (!a.enSala) continue;
       let p;
       if (ahora < a.ocupado) p = { x: a.congelado.x, y: a.congelado.y, mueve: false, izq: a.mira };
+      else if (a.elim) { const b = lugarBanca(a.id); p = { x: b.x, y: b.y, mueve: false, izq: false, sentado: { banca: true } }; }
       else if (!camina(a.id) && a.ctrl) {
         const c = a.ctrl, e = c.dur ? Math.min(1, (ahora - c.t0) / c.dur) : 1;
         p = { x: lerp(c.fx, c.tx, e), y: lerp(c.fy, c.ty, e), mueve: e < 1, izq: c.tx < c.fx };
@@ -3365,7 +3418,8 @@ const SALA = (() => {
       a.x = p.x; a.y = p.y; a.p = p;
     }
     // que no se encimen: se empujan un poco solo al dibujar (igual en todos los celulares)
-    const lista = [...actores.values()].filter(a => a.enSala);
+    const lista = [...actores.values()].filter(a => a.enSala && !(a.elim && a.y > 150));
+    const banca = [...actores.values()].filter(a => a.enSala && a.elim && a.y > 150);
     for (const a of lista) { a.rx = a.x; a.ry = a.y; }
     const SEP = 9;
     for (let vuelta = 0; vuelta < 4; vuelta++) {
@@ -3382,8 +3436,9 @@ const SALA = (() => {
       }
       for (const a of lista) [a.rx, a.ry] = limitar(a.rx, a.ry);   // sin salirse de la sala
     }
-    for (const a of lista) {
-      const [x, y] = limitar(a.rx, a.ry), p = a.p;
+    for (const a of banca) { a.rx = a.x; a.ry = a.y; }
+    for (const a of [...lista, ...banca]) {
+      const [x, y] = a.elim && a.y > 150 ? [a.rx, a.ry] : limitar(a.rx, a.ry), p = a.p;
       const baja = p.sentado ? 2.6 / 100 * W : 0;      // sentado: el cuerpo baja hasta la silla
       a.el.style.transform = `translate3d(${(x / 100 * W).toFixed(1)}px, ${(y / ALTO * H + baja).toFixed(1)}px, 0) translateY(-100%)`;
       a.el.style.zIndex = Math.round(y * 10);

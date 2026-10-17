@@ -181,6 +181,7 @@ Versión 41: Billetes verdes con rondas sin fin: cada ronda más billetes y más
 Versión 42: en Billetes verdes a cada quien le salen billetes distintos, también en la prueba del líder.
 Versión 43: el líder sigue siéndolo hasta que se nombra el siguiente; para ser líder solo cuenta lo de esa semana (misiones de la semana incluidas); en noticias, pasarela y billetes se muestra quién generó más billetes en la semana, no quién tiene más.
 Versión 44: la semana puede empezar y la prueba del líder abrir más tarde (hora en la agenda o en el panel, con botón "Abrir ya"); mientras, todos ven la cuenta regresiva y pueden practicar.
+Versión 45: arreglada "Mi ficha" (se quedaba cargando); la ficha dice "puntos negativos" y tiene selector de semana con todo lo de esa semana (tu voto y lo que te escribieron solo lo ves tú); los eliminados se sientan en su banca abajo de la sala.
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.
