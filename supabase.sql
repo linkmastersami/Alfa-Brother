@@ -248,7 +248,7 @@ create table if not exists public.practicas (
 
 -- v16: Monster Crazy también guarda récord (y paga como las prácticas)
 alter table public.practicas drop constraint if exists practicas_juego_check;
-alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster','monster2'));   -- v17: Monster Crazy 2.0
+alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster','monster2','billetes'));   -- v17: Monster Crazy 2.0
 -- v40: Cuenta los billetes verdes (práctica y prueba del líder) y registro de cada partida (paga según el puntaje)
 alter table public.practicas drop constraint if exists practicas_juego_check;
 alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster','monster2','billetes'));
@@ -834,7 +834,7 @@ begin
                      when c.ag_semana = c.semana + 1 and c.ag_voto_ini > now() then 'espera'
                      else 'votacion' end,
          prueba = case when v_final then null else p_prueba end,
-         es_final = v_final, lider_id = null, eliminado_id = null,
+         es_final = v_final, lider_id = case when v_final then null else c.lider_id end, eliminado_id = null,   -- v43: el líder sigue hasta que se nombra el siguiente
          empatados = '{}', gala_revelada = false, actualizado = now()
    where id = 1;
   insert into public.sucesos (tipo, dato) values ('semana', jsonb_build_object('semana', c.semana + 1, 'prueba', case when v_final then null else p_prueba end, 'final', v_final));
@@ -848,19 +848,30 @@ end $$;
 -- Prueba: tu puntaje contra el mejor de la semana (hasta 50). Misiones: 10 por cada una (hasta 50).
 -- Solo cuenta quien jugó la prueba. Empate: mejor prueba, luego quien terminó primero.
 -- v40: el líder sale 30% de la prueba y 70% repartido en 4 partes iguales (17.5 cada una):
---   misiones cumplidas la semana pasada (de 5) · lo que jugó (prácticas + duelos) · sus récords · duelos ganados.
--- "La semana" va desde que empezó la semana pasada hasta que cierra la prueba.
+--   misiones cumplidas (de 5) · lo que jugó (prácticas + duelos) · sus récords · duelos ganados.
+-- v43: todo cuenta solo desde que empezó esta semana hasta que cierra la prueba.
+create or replace function public._ini_semana(p_semana int)
+returns timestamptz language sql stable security definer set search_path = public as $$
+  select coalesce((select s.creado from public.sucesos s where s.tipo = 'semana' and (s.dato->>'semana')::int = p_semana
+                    order by s.id desc limit 1), now() - interval '7 days')
+$$;
+-- v43: lo que cada quien generó desde una fecha (todo lo que entró y salió, menos lo que gastó en la tienda)
+create or replace function public._generado(p_desde timestamptz)
+returns table (jugador_id uuid, generado int) language sql stable security definer set search_path = public as $$
+  select j.id, coalesce((select sum(m.monto) from public.movimientos m
+                          where m.jugador_id = j.id and m.creado >= p_desde and m.concepto not like 'Tienda: %'), 0)::int
+    from public.jugadores j
+$$;
 create or replace function public._stats_lider(p_semana int)
 returns table (jugador_id uuid, misiones int, jugadas int, duelos_g int, rec numeric)
 language sql stable security definer set search_path = public as $$
-  with v as (select coalesce((select s.creado from public.sucesos s where s.tipo = 'semana' and (s.dato->>'semana')::int = p_semana - 1
-                                order by s.id desc limit 1), now() - interval '7 days') as ini),
+  with v as (select public._ini_semana(p_semana) as ini),     -- v43: solo lo de esta semana (desde que empezó hasta que cierra la prueba)
   pa as (select p.jugador_id, p.juego, count(*) as n, max(p.puntaje) as mejor
            from public.partidas p, v where p.creado >= v.ini and p.juego <> 'duelo' group by 1, 2),
   tops as (select pa.juego, max(pa.mejor) as top from pa join public.jugadores jj on jj.id = pa.jugador_id and jj.rol = 'jugador'
             where pa.juego in ('monster2', 'memoria', 'adeudo', 'billetes') group by pa.juego having max(pa.mejor) > 0)
   select j.id,
-    least(5, (select count(*) from public.misiones m where m.semana = p_semana - 1 and m.jugador_id = j.id and m.cumplida is not null))::int,
+    least(5, (select count(*) from public.misiones m where m.semana = p_semana and m.jugador_id = j.id and m.cumplida is not null))::int,
     ((select coalesce(sum(pa.n), 0) from pa where pa.jugador_id = j.id)
       + (select count(*) from public.duelos d, v where d.estado = 'terminado' and j.id in (d.reta, d.retado) and d.fin >= v.ini))::int,
     (select count(*) from public.duelos d, v where d.estado = 'terminado' and d.ganador = j.id and d.fin >= v.ini)::int,
@@ -915,7 +926,7 @@ begin
     select t.jugador_id into v_lider from public._tabla_lider(c.semana) t limit 1;
   end if;
   update public.config
-     set lider_id = v_lider,
+     set lider_id = coalesce(v_lider, c.lider_id),        -- v43: si nadie jugó la prueba, se queda el líder anterior
          fase = case when c.ag_semana = c.semana and c.ag_voto_ini > now() then 'espera' else 'votacion' end,
          actualizado = now()
    where id = 1;
@@ -1624,8 +1635,9 @@ begin
   return jsonb_build_object('billetes', yo.billetes, 'movimientos',
     (select coalesce(jsonb_agg(jsonb_build_object('monto', m.monto, 'concepto', m.concepto, 'creado', m.creado) order by m.creado desc, m.id desc), '[]'::jsonb)
        from (select * from public.movimientos where jugador_id = yo.id order by creado desc, id desc limit 40) m),
-    'ranking', (select coalesce(jsonb_agg(jsonb_build_object('id', j.id, 'nombre', j.nombre, 'billetes', j.billetes) order by j.billetes desc, j.nombre), '[]'::jsonb)
-       from public.jugadores j));
+    -- v43: quién generó más esta semana (no quién tiene más guardado)
+    'ranking', (select coalesce(jsonb_agg(jsonb_build_object('id', j.id, 'nombre', j.nombre, 'billetes', g.generado) order by g.generado desc, j.nombre), '[]'::jsonb)
+       from public._generado(public._ini_semana((select semana from public.config where id = 1))) g join public.jugadores j on j.id = g.jugador_id));
 end $$;
 
 -- La producción da o quita billetes (premios especiales)
@@ -2198,9 +2210,12 @@ begin
     'votantes', (select count(distinct votante_id) from public.votos where not es_publico and creado >= v_ini and creado < v_fin),
     'nuevos', (select coalesce(jsonb_agg(jsonb_build_object('id', id, 'nombre', nombre, 'rol', rol) order by creado), '[]'::jsonb)
         from public.jugadores where rol = 'jugador' and creado >= v_ini and creado < v_fin),
-    'jugaron', (select count(distinct m.jugador_id) from public.movimientos m join public.jugadores j on j.id = m.jugador_id and j.rol = 'jugador'
-                 where m.concepto = 'Práctica del día' and m.creado >= v_ini and m.creado < v_fin),
-    'rico', (select jsonb_build_object('id', id, 'nombre', nombre, 'billetes', billetes) from public.jugadores where rol = 'jugador' order by billetes desc, nombre limit 1),
+    'jugaron', (select count(distinct p.jugador_id) from public.partidas p join public.jugadores j on j.id = p.jugador_id and j.rol = 'jugador'
+                 where p.juego <> 'duelo' and p.creado >= v_ini and p.creado < v_fin),
+    -- v43: el que más billetes generó en la semana
+    'rico', (select jsonb_build_object('id', j.id, 'nombre', j.nombre, 'billetes', g.generado)
+               from public._generado(public._ini_semana((select semana from public.config where id = 1))) g join public.jugadores j on j.id = g.jugador_id and j.rol = 'jugador'
+              where g.generado > 0 order by g.generado desc, j.nombre limit 1),
     -- v20: por juego, solo el récord con que terminó el día y quién lo tenía antes
     'records', (select coalesce(jsonb_agg(x.r), '[]'::jsonb) from (
         select jsonb_build_object('juego', g.juego,
@@ -2619,7 +2634,9 @@ begin
           from public.sucesos s join public.jugadores j on j.id = s.jugador_id
          where s.tipo = 'record' and s.creado >= v_ini and s.dato->>'juego' <> 'monster'
          order by s.dato->>'juego', s.id desc) x),
-    'rico', (select jsonb_build_object('nombre', nombre, 'billetes', billetes) from public.jugadores where rol = 'jugador' order by billetes desc, nombre limit 1));
+    'rico', (select jsonb_build_object('nombre', j.nombre, 'billetes', g.generado)
+               from public._generado(public._ini_semana(p_semana)) g join public.jugadores j on j.id = g.jugador_id and j.rol = 'jugador'
+              where g.generado > 0 order by g.generado desc, j.nombre limit 1));
 end $$;
 
 -- Cierra un empate de la pasarela: lo decidió el líder, la producción o la suerte
