@@ -1792,7 +1792,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 51;
+const APP_VERSION       = 52;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -7755,9 +7755,9 @@ async function adminExtras(C, seccion) {
           <small style="white-space:normal;display:block">${Array.isArray(n.guion) && n.guion.length ? n.guion.map(x => `<b>${x.q === 'e' ? 'Elber' : 'Rosa'}:</b> ${esc(x.t)}${x.cara ? ` <i>(📸 ${esc(nombreDe(x.cara))})</i>` : ''}`).join('<br>') : esc(n.texto)}</small><small style="display:block;color:${ya ? '#8E88B5' : '#1E8E5A'};font-weight:600">${ya ? '✔ Ya salió: ya no se puede cambiar' : 'Todavía no sale: la puedes cambiar'}</small></div>
           ${ya ? '' : `<button type="button" class="mini" data-tvn-edit="${n.dia}">Editar</button><button type="button" class="mini" data-tvn-del="${n.dia}">Borrar</button>`}</div>`; }).join('') || '<p class="ayuda">Todavía no hay notas.</p>'}
     </form>
-    <div class="adm-caja" data-sec="noticiero" id="tvg"><h3>📝 Relleno del siguiente noticiero</h3>
-      <p class="ayuda">Aquí cambias solo lo fijo, lo que no depende de lo que pase en el día: el saludo, el albur de entrada, el arranque y la despedida. Todo lo demás (en gris, con 🔒) se arma solo con lo que vaya pasando. El noticiero que ya salió no se toca.</p>
-      <div class="adm-acciones"><button type="button" class="btn sec chico" id="tvg-sig">Ver el guion del siguiente noticiero</button></div>
+    <div class="adm-caja" data-sec="noticiero" id="tvg"><h3>📝 Saludo y despedida del siguiente noticiero</h3>
+      <p class="ayuda">Aquí cambias lo fijo del siguiente noticiero: el saludo, el albur de entrada, el arranque y la despedida. Las noticias se arman solas con lo que pase en el día.</p>
+      <div class="adm-acciones"><button type="button" class="btn sec chico" id="tvg-sig">Cargar saludo y despedida</button></div>
       <div id="tvg-zona"></div></div>
     <div class="adm-caja" data-sec="noticiero"><h3>🎤 Lo que le contaron al reportero</h3>
       <p class="ayuda">Los habitantes le cuentan noticias al reportero y te llegan aquí con su nombre. Con «Usar» se agregan a las noticias de arriba para que las acomodes.</p>
@@ -7916,10 +7916,8 @@ async function adminExtras(C, seccion) {
     const LOC = { e: 'Elber', a: 'Rosa' };
     const tipo = k => k.startsWith('saludo') ? '👋 Saludo' : k.startsWith('salida') ? '👋 Despedida' : k.startsWith('arranque') ? '🎬 Arranque' : '🍑 Albur de entrada';
     z.innerHTML = `<p style="margin:10px 0 4px"><b>📺 Noticiero del ${esc(manana(datos.dia))}</b> ${Object.keys(cambios).length ? `<span class="pill verde">${Object.keys(cambios).length} cambios</span>` : ''}</p>
-      <div id="tvg-lista">${orig.map((l, n) => l.k
-        ? `<div class="tvg-l" data-k="${esc(l.k)}"><div class="tvg-cab"><span>${n + 1}.</span><b>🎙️ ${LOC[l.q]}</b><small>${tipo(l.k)}</small>${cambios[l.k] ? '<small class="tvg-cambio">✏️ cambiado</small>' : ''}</div>
-            <textarea class="in" rows="2" maxlength="600" data-orig="${esc(l.t)}">${esc(cambios[l.k] || l.t)}</textarea></div>`
-        : `<div class="tvg-l fija"><div class="tvg-cab"><span>${n + 1}.</span><b>🎙️ ${LOC[l.q]}</b><small>🔒 Se arma solo con lo del día</small></div><p>${esc(l.t)}</p></div>`).join('')}</div>
+      <div id="tvg-lista">${orig.filter(l => l.k).map(l => `<div class="tvg-l" data-k="${esc(l.k)}"><div class="tvg-cab"><b>🎙️ ${LOC[l.q]}</b><small>${tipo(l.k)}</small>${cambios[l.k] ? '<small class="tvg-cambio">✏️ cambiado</small>' : ''}</div>
+            <textarea class="in" rows="2" maxlength="600" data-orig="${esc(l.t)}">${esc(cambios[l.k] || l.t)}</textarea></div>`).join('')}</div>
       <div class="adm-acciones"><button type="button" class="btn chico" id="tvg-guardar">Guardar cambios</button>${Object.keys(cambios).length ? '<button type="button" class="btn sec chico" id="tvg-orig">Quitar todos mis cambios</button>' : ''}</div>`;
     $('#tvg-guardar').onclick = async () => {
       const nuevos = {};
