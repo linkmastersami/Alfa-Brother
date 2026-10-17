@@ -1855,7 +1855,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 55;
+const APP_VERSION       = 56;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -4782,20 +4782,24 @@ const DUELO = (() => {
       tir.classList.add('corre'); poner(tir, POS.tirPie, 700); await sleep(700);
       tir.classList.remove('corre'); tir.classList.add('patea'); SFX.tocar('patada');
       const [mx, my] = META[r.s];
-      poner(bal, [mx, my], 430); bal.style.fontSize = '17px';
-      // el portero se avienta (o se queda en el centro)
-      setTimeout(() => {
-        const giro = por.querySelector('.pen-giro');
-        if (r.p === 1) { por.classList.add('brinca'); }
-        else { por.style.transition = 'left 420ms ease-out'; por.style.left = (r.p === 0 ? 31 : 69) + '%'; giro.style.transform = `rotate(${r.p === 0 ? -72 : 72}deg)`; }
-      }, 60);
-      await sleep(470);
+      // si ataja, el balón va a las manos del portero (no a la red); llegan juntos
+      const ATAJA = [[26, 32], [50, 28], [74, 32]];
+      const [bx, by] = r.g ? [mx, my] : ATAJA[r.s];
+      const VUELO = 420;
+      bal.style.transition = `left ${VUELO}ms linear, top ${VUELO}ms cubic-bezier(.2,.6,.4,1)`;
+      bal.style.left = bx + '%'; bal.style.top = by + '%'; bal.style.fontSize = '17px';
+      // el portero se avienta (o se queda en el centro) al mismo tiempo que sale el balón
+      const giro = por.querySelector('.pen-giro');
+      if (r.p === 1) { por.classList.add('brinca'); }
+      else { por.style.transition = `left ${VUELO}ms ease-out`; por.style.left = (r.p === 0 ? 40 : 60) + '%'; giro.style.transform = `rotate(${r.p === 0 ? -72 : 72}deg)`; }
+      await sleep(VUELO);
       tir.classList.remove('patea'); por.classList.remove('brinca');
       if (r.g) {
         $('#pen-red').classList.add('sacude'); grito('¡GOOOL!', 'gol'); SFX.tocar('gol');
         expresar(G.mTir, '🤩', 'festeja', 0); expresar(G.mPor, '😵', 'triste', 0);
       } else {
-        poner(bal, [mx + (r.s === 2 ? 10 : r.s === 0 ? -10 : 8), 48], 380); bal.classList.add('rebota');
+        // rebota desde las manos del portero hacia afuera y abajo
+        poner(bal, [r.s === 0 ? 14 : r.s === 2 ? 86 : 62, 62], 420); bal.classList.add('rebota');
         grito('¡ATAJADA!', 'ataja'); SFX.tocar('sello');
         expresar(G.mPor, '😎', 'festeja', 0); expresar(G.mTir, '😩', 'triste', 0);
       }
