@@ -336,6 +336,9 @@ create table if not exists public.reportajes (
   usado      boolean not null default false,
   creado     timestamptz not null default now()
 );
+-- v54: Penales ⚽🧤
+alter table public.duelos drop constraint if exists duelos_juego_check;
+alter table public.duelos add constraint duelos_juego_check check (juego in ('ppt', 'globo', 'calculo', 'camino', 'penales'));
 -- v53: el reportero también recibe una foto (jpeg comprimido)
 alter table public.reportajes add column if not exists foto text;
 
@@ -2339,12 +2342,12 @@ revoke all on function public._noticiero_aviso() from public, anon, authenticate
 create or replace function public._duelo_nombre(p_juego text)
 returns text language sql immutable as $$
   select case p_juego when 'ppt' then 'Boxeo' when 'globo' then 'Globo explosivo'
-                      when 'calculo' then 'Cálculo rápido' else 'El camino correcto' end
+                      when 'calculo' then 'Cálculo rápido' when 'penales' then 'Penales' else 'El camino correcto' end
 $$;
 -- Tiempo máximo de cada juego (después de eso se cierra solo)
 create or replace function public._duelo_limite(p_juego text)
 returns interval language sql immutable as $$
-  select case p_juego when 'ppt' then interval '180 seconds' when 'globo' then interval '60 seconds'
+  select case p_juego when 'ppt' then interval '180 seconds' when 'globo' then interval '60 seconds' when 'penales' then interval '300 seconds'
                       when 'calculo' then interval '100 seconds' else interval '240 seconds' end
 $$;
 
@@ -2389,6 +2392,10 @@ begin
       if a > b then v_g := d.reta; elsif b > a then v_g := d.retado;
       elsif d.datos->'pend' ? 'a' and not d.datos->'pend' ? 'b' then v_g := d.reta;
       elsif d.datos->'pend' ? 'b' and not d.datos->'pend' ? 'a' then v_g := d.retado; end if;
+    elsif d.juego = 'penales' then          -- gana quien lleva más goles
+      select count(*) filter (where t->>'t' = 'a' and (t->>'g')::boolean), count(*) filter (where t->>'t' = 'b' and (t->>'g')::boolean)
+        into a, b from jsonb_array_elements(coalesce(d.datos->'tiros', '[]'::jsonb)) t;
+      if a > b then v_g := d.reta; elsif b > a then v_g := d.retado; end if;
     elsif d.juego = 'camino' then           -- gana quien llegó más lejos
       a := coalesce((d.datos->>'fa')::int, 0); b := coalesce((d.datos->>'fb')::int, 0);
       if a > b then v_g := d.reta; elsif b > a then v_g := d.retado; end if;
@@ -2445,7 +2452,7 @@ begin
   if yo.rol <> 'jugador' then raise exception 'DUELO_SOLO_HABITANTES'; end if;
   select * into r from public.jugadores where id = p_rival;
   if not found or r.rol <> 'jugador' or r.id = yo.id then raise exception 'DUELO_RIVAL_INVALIDO'; end if;
-  if p_juego is null or p_juego not in ('ppt', 'globo', 'calculo', 'camino') then raise exception 'OPCION_INVALIDA'; end if;
+  if p_juego is null or p_juego not in ('ppt', 'globo', 'calculo', 'camino', 'penales') then raise exception 'OPCION_INVALIDA'; end if;
   if p_apuesta is null or p_apuesta < 0 or p_apuesta > 5000 then raise exception 'DUELO_APUESTA'; end if;
   if p_apuesta > yo.billetes then raise exception 'SIN_BILLETES'; end if;
   perform public._cerrar_duelos();
@@ -2516,6 +2523,8 @@ begin
       'plazoa', now() + interval '11 seconds', 'plazob', now() + interval '11 seconds');
   elsif d.juego = 'globo' then
     v_datos := jsonb_build_object('bombeos', 18);           -- v31: globo explosivo (sube y baja el mango)
+  elsif d.juego = 'penales' then                             -- v54: penales; el volado decide quién tira primero
+    v_datos := jsonb_build_object('tiros', '[]'::jsonb, 'pend', '{}'::jsonb, 'primero', case when random() < .5 then 'a' else 'b' end);
   else
     v_datos := jsonb_build_object('rondas', '[]'::jsonb, 'va', 3, 'vb', 3, 'mult', 1, 'pend', '{}'::jsonb);   -- boxeo: 3 corazones
   end if;
@@ -2621,6 +2630,40 @@ begin
                                                'bloq' || k, now() + interval '4 seconds', 'plazo' || k, now() + interval '10 seconds',
                                                'c' || k, coalesce((d.datos->>('c' || k))::int, 0) + 1);
       update public.duelos set datos = d.datos where id = d.id;
+    end if;
+
+  elsif d.juego = 'penales' then
+    -- ⚽🧤 PENALES (v54): {"ronda": n, "lado": 0 izq | 1 centro | 2 der}. Se alternan: tira uno y tapa el otro.
+    -- 5 tiros cada quien; se acaba antes si ya no se puede alcanzar; si empatan, muerte súbita.
+    n := jsonb_array_length(d.datos->'tiros');
+    m := (p_dato->>'lado')::int;
+    if (p_dato->>'ronda')::int is distinct from n or m is null or m not between 0 and 2 or d.datos->'pend' ? k then
+      return public._duelo_vista(d.id, yo.id);
+    end if;
+    v := d.datos->'pend' || jsonb_build_object(k, jsonb_build_object('l', m));
+    if v ? 'a' and v ? 'b' then
+      -- quién tira en este turno: el del volado en los pares, el otro en los nones
+      w := case when n % 2 = 0 then d.datos->>'primero' else case when d.datos->>'primero' = 'a' then 'b' else 'a' end end;
+      pw := case when w = 'a' then 'b' else 'a' end;
+      ma := (v->w->>'l')::int; mb := (v->pw->>'l')::int;          -- ma = tiro, mb = portero
+      d.datos := d.datos || jsonb_build_object('pend', '{}'::jsonb,
+        'tiros', d.datos->'tiros' || jsonb_build_array(jsonb_build_object('t', w, 's', ma, 'p', mb, 'g', ma <> mb)));
+      update public.duelos set datos = d.datos where id = d.id;
+      -- ¿ya se decidió?
+      select count(*) filter (where t->>'t' = 'a'), count(*) filter (where t->>'t' = 'b'),
+             count(*) filter (where t->>'t' = 'a' and (t->>'g')::boolean), count(*) filter (where t->>'t' = 'b' and (t->>'g')::boolean)
+        into va, vb, ga, gb from jsonb_array_elements(d.datos->'tiros') t;
+      if va <= 5 and vb <= 5 then
+        if ga + (5 - va) < gb then perform public._terminar_duelo(d.id, d.retado);
+        elsif gb + (5 - vb) < ga then perform public._terminar_duelo(d.id, d.reta);
+        end if;
+      elsif va = vb and ga <> gb then                              -- muerte súbita: cada par de tiros
+        perform public._terminar_duelo(d.id, case when ga > gb then d.reta else d.retado end);
+      end if;
+      if va = 5 and vb = 5 and ga <> gb then perform public._terminar_duelo(d.id, case when ga > gb then d.reta else d.retado end); end if;
+      if va >= 40 then perform public._terminar_duelo(d.id, null); end if;
+    else
+      update public.duelos set datos = jsonb_set(d.datos, '{pend}', v) where id = d.id;
     end if;
 
   elsif d.juego = 'ppt' then

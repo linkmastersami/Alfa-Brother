@@ -393,6 +393,47 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .faltan-p.yo .av{box-shadow:0 0 0 3px #FFD54A}
 .faltan-p.fuera .av{filter:grayscale(1);opacity:.7}
 .faltan p{margin:4px 0 0;font-size:.86rem;color:#E8E4FF}
+/* ⚽🧤 Penales */
+.pen{flex:1;display:flex;flex-direction:column;gap:8px}
+.pen-marc{display:grid;gap:4px;background:rgba(0,0,0,.28);border-radius:14px;padding:8px 10px}
+.pen-fila{display:flex;align-items:center;gap:8px}
+.pen-fila b{width:64px;font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#C9C3EE}
+.pen-fila.yo b{color:#FFD54A}
+.pen-fila span{flex:1;display:flex;gap:4px;flex-wrap:wrap}
+.pen-fila i{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center;font-style:normal;font-size:.75rem}
+.pen-fila i.g{background:#1e8e5a}.pen-fila i.f{background:#a5283b;color:#fff;font-weight:900}
+.pen-fila strong{font:900 1.3rem Anton,Impact,sans-serif;color:#FFD54A;min-width:20px;text-align:right}
+.pen-esc{position:relative;height:370px;border-radius:18px;overflow:hidden;background:repeating-linear-gradient(180deg,#2f8f3f 0 34px,#3aa04b 34px 68px)}
+.pen-grada{position:absolute;left:0;right:0;top:0;height:16%;background:radial-gradient(circle at 10% 60%,#e94 2px,transparent 3px) 0 0/14px 10px,radial-gradient(circle at 60% 30%,#48f 2px,transparent 3px) 0 0/11px 9px,linear-gradient(#2a2160,#3b2e8c);border-bottom:3px solid #fff3}
+.pen-arco{position:absolute;left:20%;right:20%;top:13%;height:28%;border:5px solid #fff;border-bottom:0;border-radius:4px 4px 0 0;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.pen-red{position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.35) 0 1px,transparent 1px 9px),repeating-linear-gradient(0deg,rgba(255,255,255,.35) 0 1px,transparent 1px 9px);background-color:rgba(0,0,0,.15)}
+.pen-red.sacude{animation:pen-red .5s ease-out 2}
+@keyframes pen-red{30%{transform:scale(1.04,.96) translateY(-3px)}60%{transform:scale(.98,1.03)}}
+.pen-area{position:absolute;left:6%;right:6%;top:41%;height:42%;border:3px solid rgba(255,255,255,.75);border-top:0;transform:perspective(300px) rotateX(18deg);transform-origin:top}
+.pen-area::before{content:"";position:absolute;left:0;right:0;top:-3px;height:3px;background:rgba(255,255,255,.75)}
+.pen-punto{position:absolute;left:50%;top:77%;width:10px;height:6px;margin:-3px -5px;border-radius:50%;background:#fff}
+.pen-mono{position:absolute;width:0;height:0}
+.pen-giro{position:absolute;left:0;bottom:0;transform-origin:50% 90%;transition:transform 420ms ease-out;translate:-50% 0}
+.pen-mono.corre .pen-giro{animation:pen-corre .18s ease-in-out infinite alternate}
+@keyframes pen-corre{to{translate:-50% -6px}}
+.pen-mono.patea .pen-giro{animation:pen-patea .3s ease-out}
+@keyframes pen-patea{40%{transform:rotate(-14deg)}}
+.pen-mono.brinca .pen-giro{animation:pen-brinca .45s ease-out}
+@keyframes pen-brinca{45%{translate:-50% -22px}}
+.pen-balon{position:absolute;font-size:26px;line-height:1;transform:translate(-50%,-50%);z-index:3;filter:drop-shadow(0 3px 2px rgba(0,0,0,.4))}
+.pen-balon.rebota{animation:pen-rebota .4s ease-out}
+@keyframes pen-rebota{50%{margin-top:-18px}}
+.pen-grito{position:absolute;left:0;right:0;top:46%;text-align:center;font:900 2.8rem Anton,Impact,sans-serif;color:#FFD54A;text-shadow:0 3px 0 #000,0 0 18px #000;opacity:0;transform:scale(.4);transition:.25s;pointer-events:none;z-index:4}
+.pen-grito.on{opacity:1;transform:none}
+.pen-grito.ataja{color:#7fd1ff}.pen-grito.volado{font-size:2rem;color:#fff}
+.pen-rol{min-height:2.6em}
+.pen-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pen-btns button{appearance:none;border:0;border-radius:14px;background:#1e8e5a;color:#fff;font-weight:800;font-size:.85rem;padding:10px 4px;box-shadow:0 5px 0 #0e4d30;display:grid;justify-items:center;gap:2px;cursor:pointer;touch-action:manipulation}
+.pen-btns button span{font-size:1.6rem}
+.pen-btns button:disabled{opacity:.45}
+.pen-btns button:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 #0e4d30}
+.du-pant.pen-muerte{box-shadow:inset 0 0 0 5px #ff2a3d;animation:pen-latido 1s ease-in-out infinite}
+@keyframes pen-latido{0%,100%{box-shadow:inset 0 0 0 3px rgba(255,42,61,.6)}15%{box-shadow:inset 0 0 0 9px #ff2a3d,inset 0 0 40px rgba(255,42,61,.55)}30%{box-shadow:inset 0 0 0 4px rgba(255,42,61,.7)}45%{box-shadow:inset 0 0 0 8px #ff2a3d,inset 0 0 30px rgba(255,42,61,.45)}}
 /* 💵 Cuenta los billetes verdes */
 .bv-esc{position:relative;height:230px;border-radius:14px;overflow:hidden;background:linear-gradient(#8fd3ff 0%,#c9ecff 38%,#9ccf6a 38%,#7fb84f 58%,#6b6b78 58%,#5b5b66 100%);margin:6px 0}
 .bv-casas{position:absolute;left:0;right:0;top:18%;height:22%;background:
@@ -1801,7 +1842,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 53;
+const APP_VERSION       = 54;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -1963,6 +2004,10 @@ const SFX = (() => {
     inflar(f = 0) { tono({ f: 300 + f * 700, f2: 360 + f * 760, d: .06, tipo: 'triangle', v: .07 }); },
     pop() { ruido({ d: .18, v: .55, filtro: 2600 }); tono({ f: 220, f2: 60, d: .2, v: .3 }); },
     caida() { tono({ f: 880, f2: 110, d: .7, tipo: 'triangle', v: .16 }); ruido({ t: .62, d: .18, v: .4, filtro: 500 }); },
+    // penales: silbatazo, patada al balón y el grito de gol de la tribuna
+    silbato() { for (let i = 0; i < 16; i++) tono({ f: i % 2 ? 2950 : 3250, t: i * .03, d: .035, tipo: 'sine', v: .09 }); tono({ f: 3100, t: .5, d: .25, v: .08 }); },
+    patada() { tono({ f: 140, f2: 50, d: .12, v: .6 }); ruido({ d: .06, v: .4, filtro: 1800 }); },
+    gol() { ruido({ d: 1.6, v: .22, filtro: 900, tipo: 'bandpass', q: .6 }); ruido({ t: .1, d: 1.4, v: .12, filtro: 2400, tipo: 'bandpass', q: .8 }); [523, 659, 784, 1047].forEach((f, i) => tono({ f, t: .1 + i * .12, d: .3, tipo: 'triangle', v: .12 })); },
     // puente de cristal: se rompe, la piedra rebota (tunk) y el pasito sobre el cristal
     cristal() { ruido({ d: .35, v: .45, filtro: 3000, tipo: 'highpass' }); ruido({ t: .04, d: .5, v: .18, filtro: 6000, tipo: 'bandpass', q: 2 }); for (let i = 0; i < 8; i++) tono({ f: 2500 + Math.random() * 3500, t: Math.random() * .3, d: .06 + Math.random() * .14, tipo: 'triangle', v: .05 }); },
     tink() { tono({ f: 3200, d: .2, v: .12 }); tono({ f: 4800, t: .01, d: .14, v: .05 }); tono({ f: 1600, t: .02, d: .1, tipo: 'triangle', v: .06 }); },
@@ -3959,6 +4004,7 @@ const DUELOS_JUEGOS = {
   ppt: { nombre: 'Boxeo', ic: '🤜🤛', desc: 'Piedra, papel o tijeras a golpes: 3 corazones cada quien y un poder por pelea (🛡️ escudo o ⚡ golpe doble). Si empatan, la siguiente vale doble. Gana el último en pie.' },
   globo: { nombre: 'Globo explosivo', ic: '🎈💥', desc: 'En la feria: sube y baja el mango de tu bomba para inflar el globo de agua que cuelga sobre tu rival. El primero que lo revienta ¡lo baña y gana!' },
   calculo: { nombre: 'Cálculo rápido', ic: '➕✖️', desc: 'Las mismas 10 operaciones para los dos. Gana quien tenga más buenas; si empatan, el más rápido.' },
+  penales: { nombre: 'Penales', ic: '⚽🧤', desc: 'Tanda de penales: se alternan, uno tira y el otro tapa (izquierda, centro o derecha). Si el portero adivina, ¡atajada! 5 tiros cada quien; si empatan, muerte súbita. El volado decide quién tira primero.' },
   camino: { nombre: 'El camino correcto', ic: '🪟', desc: 'Puente de cristal: 10 fases de 2 cristales y 6 segundos por paso. Si pisas el falso se rompe para los dos, te caes y regresas a la salida. Tienes una 🪨 piedra para probar un cristal. Gana el primero en llegar a la meta.' },
 };
 function tarjetaDuelos() {
@@ -4206,7 +4252,7 @@ const DUELO = (() => {
       try { await jugada({ rendir: true }); avisar(otroId()); } catch (e) { toast(mensajeError(e)); r.disabled = false; return; }
       resultado();
     };
-    ({ ppt: jPPT, globo: jGlobo, calculo: jCalculo, camino: jCamino })[d.juego]();
+    ({ ppt: jPPT, globo: jGlobo, calculo: jCalculo, camino: jCamino, penales: jPenales })[d.juego]();
     abrirCaja();
     cuenta().then(() => { if (modo === 'juego') { G.arranca?.(); if (d.bot) botArranca(); } });
     poll = setInterval(sincronizar, 1100);
@@ -4625,6 +4671,142 @@ const DUELO = (() => {
     $('#c-op').innerHTML = '¿Listo?'; info('yo', '0/10'); info('otro', '0/10');
   }
 
+  // ⚽🧤 PENALES: se alternan, uno tira y el otro tapa (izquierda, centro o derecha). 5 cada quien, luego muerte súbita.
+  function jPenales() {
+    const z = $('#du-zona');
+    caja().querySelector('.du-ring').classList.add('hidden');
+    const D = () => d.datos, LADOS = ['Izquierda', 'Centro', 'Derecha'], FLE = ['⬅️', '⬆️', '➡️'], A_LADO = ['a la izquierda', 'al centro', 'a la derecha'];
+    const tiradorDe = n => n % 2 === 0 ? D().primero : (D().primero === 'a' ? 'b' : 'a');
+    const jDe = x => x === k() ? yoJ() : otroJ();
+    const nomDe = x => x === k() ? 'Tú' : nomOtro();
+    z.innerHTML = `<div class="pen">
+      <div class="pen-marc" id="pen-marc"></div>
+      <div class="pen-esc" id="pen-esc">
+        <div class="pen-grada"></div>
+        <div class="pen-arco"><div class="pen-red" id="pen-red"></div></div>
+        <div class="pen-area"></div><div class="pen-punto"></div>
+        <div class="pen-mono" id="pen-por"><div class="pen-giro"></div></div>
+        <div class="pen-mono" id="pen-tir"><div class="pen-giro"></div></div>
+        <div class="pen-balon" id="pen-balon">⚽</div>
+        <div class="pen-grito" id="pen-grito"></div>
+      </div>
+      <p class="du-msg pen-rol" id="pen-rol"></p>
+      <div class="barra"><i id="pen-t" style="width:100%"></i></div>
+      <div class="pen-btns">${[0, 1, 2].map(i => `<button data-lado="${i}" disabled><span>${FLE[i]}</span>${LADOS[i]}</button>`).join('')}</div></div>`;
+    const escena = $('#pen-esc'), por = $('#pen-por'), tir = $('#pen-tir'), bal = $('#pen-balon');
+    const POS = { por: [50, 41], tir: [40, 99], tirPie: [45.5, 83], balon: [50, 77] };
+    const META = [[29, 21], [50, 19], [71, 21]];
+    const poner = (el, [x, y], ms = 0) => { el.style.transition = ms ? `left ${ms}ms ease-in, top ${ms}ms ease-in` : 'none'; el.style.left = x + '%'; el.style.top = y + '%'; if (!ms) void el.offsetWidth; };
+    const grito = (t, cls = '') => { const g = $('#pen-grito'); g.textContent = t; g.className = 'pen-grito on ' + cls; setTimeout(() => g.classList.remove('on'), 1500); };
+    function pintarMarc() {
+      const ts = D().tiros || [];
+      const fila = x => {
+        const mios = ts.filter(t => t.t === x), n = Math.max(5, mios.length + (ts.length >= 10 ? 0 : 0));
+        const goles = mios.filter(t => t.g).length;
+        return `<div class="pen-fila ${x === k() ? 'yo' : ''}">${avatar(jDe(x), 26)}<b>${esc2(nomDe(x))}</b>
+          <span>${Array.from({ length: n }, (_, i) => mios[i] ? (mios[i].g ? '<i class="g">⚽</i>' : '<i class="f">✖</i>') : '<i></i>').join('')}</span><strong>${goles}</strong></div>`;
+      };
+      $('#pen-marc').innerHTML = fila(D().primero) + fila(D().primero === 'a' ? 'b' : 'a');
+    }
+    const esc2 = t => esc(t);
+    function colocar(n) {
+      const t = tiradorDe(n), p = t === 'a' ? 'b' : 'a';
+      tir.querySelector('.pen-giro').innerHTML = monito(jDe(t), { tam: 50, nombre: false });
+      por.querySelector('.pen-giro').innerHTML = monito(jDe(p), { tam: 42, nombre: false });
+      G.mTir = $('.mm', tir); G.mPor = $('.mm', por);
+      por.style.transform = ''; por.querySelector('.pen-giro').style.transform = '';
+      poner(por, POS.por); poner(tir, POS.tir); poner(bal, POS.balon); bal.style.fontSize = '';
+      bal.classList.remove('rebota'); $('#pen-red').classList.remove('sacude');
+      const muerte = n >= 10;
+      caja().querySelector('.du-pant').classList.toggle('pen-muerte', muerte);
+      if (muerte && n % 2 === 0) { SFX.tocar('latido'); setTimeout(() => SFX.tocar('latido'), 900); }
+      return { t, p };
+    }
+    const botones = on => $$('.pen-btns [data-lado]').forEach(b => b.disabled = !on);
+    let tick = null;
+    function ronda() {
+      if (modo !== 'juego') return;
+      G.n = (D().tiros || []).length; G.elegida = null; G.animando = false;
+      const { t } = colocar(G.n);
+      const tiro = t === k();
+      const muerte = G.n >= 10;
+      $('#pen-rol').innerHTML = (muerte ? '💀 <b>MUERTE SÚBITA</b> · ' : '') + (tiro ? '⚽ <b>Te toca TIRAR</b>: ¿a dónde la mandas?' : '🧤 <b>Te toca TAPAR</b>: ¿a dónde te avientas?');
+      $$('.pen-btns [data-lado]').forEach((b, i) => b.innerHTML = `<span>${FLE[i]}</span>${tiro ? LADOS[i] : ['Aviéntate a la izquierda', 'Quédate en el centro', 'Aviéntate a la derecha'][i]}`);
+      expresar(G.mTir, tiro ? '🤔' : '😏', '', 0); expresar(G.mPor, tiro ? '😏' : '🤔', '', 0);
+      pintarMarc(); botones(true);
+      clearInterval(tick);
+      G.limite = Date.now() + 6000;
+      tick = setInterval(() => {
+        const q = Math.max(0, G.limite - Date.now()), b = $('#pen-t');
+        if (!b || modo !== 'juego') { clearInterval(tick); return; }
+        b.style.width = q / 60 + '%';
+        if (q <= 0 && G.elegida === null) { const m = Math.floor(Math.random() * 3); elegir(m, true); }
+        if (q <= 0) clearInterval(tick);
+      }, 100);
+    }
+    async function elegir(m, auto = false) {
+      if (G.elegida !== null || modo !== 'juego' || G.animando) return;
+      G.elegida = m; clearInterval(tick); botones(false);
+      SFX.tocar('clic');
+      $('#pen-rol').innerHTML = `${auto ? '⏰ ¡Se acabó el tiempo! Te tocó ' + A_LADO[m] + '. ' : ''}Esperando a ${esc(nomOtro())}…`;
+      try { await jugada({ ronda: G.n, lado: m }); avisar(otroId()); } catch { }
+      alVer();
+    }
+    $$('.pen-btns [data-lado]').forEach(b => b.onclick = () => elegir(+b.dataset.lado));
+    async function patear(r, idx) {
+      G.animando = true; clearInterval(tick); botones(false);
+      colocar(idx);
+      const yoTiro = r.t === k();
+      $('#pen-rol').innerHTML = `${yoTiro ? 'Tiraste' : `${esc(nomOtro())} tiró`} <b>${A_LADO[r.s]}</b>…`;
+      expresar(G.mTir, '😤', '', 0); expresar(G.mPor, '😬', 'susto', 0);
+      SFX.tocar('silbato'); await sleep(650);
+      tir.classList.add('corre'); poner(tir, POS.tirPie, 700); await sleep(700);
+      tir.classList.remove('corre'); tir.classList.add('patea'); SFX.tocar('patada');
+      const [mx, my] = META[r.s];
+      poner(bal, [mx, my], 430); bal.style.fontSize = '17px';
+      // el portero se avienta (o se queda en el centro)
+      setTimeout(() => {
+        const giro = por.querySelector('.pen-giro');
+        if (r.p === 1) { por.classList.add('brinca'); }
+        else { por.style.transition = 'left 420ms ease-out'; por.style.left = (r.p === 0 ? 31 : 69) + '%'; giro.style.transform = `rotate(${r.p === 0 ? -72 : 72}deg)`; }
+      }, 60);
+      await sleep(470);
+      tir.classList.remove('patea'); por.classList.remove('brinca');
+      if (r.g) {
+        $('#pen-red').classList.add('sacude'); grito('¡GOOOL!', 'gol'); SFX.tocar('gol');
+        expresar(G.mTir, '🤩', 'festeja', 0); expresar(G.mPor, '😵', 'triste', 0);
+      } else {
+        poner(bal, [mx + (r.s === 2 ? 10 : r.s === 0 ? -10 : 8), 48], 380); bal.classList.add('rebota');
+        grito('¡ATAJADA!', 'ataja'); SFX.tocar('sello');
+        expresar(G.mPor, '😎', 'festeja', 0); expresar(G.mTir, '😩', 'triste', 0);
+      }
+      const ts = D().tiros || [];
+      const vistos = ts.slice(0, idx + 1);
+      const fila = x => vistos.filter(t => t.t === x);
+      // marcador hasta este tiro
+      const guardado = D().tiros; D().tiros = vistos; pintarMarc(); D().tiros = guardado;
+      await sleep(1900);
+      G.vistos = idx + 1;
+      if (d.estado === 'terminado' && G.vistos >= (D().tiros || []).length) { G.animando = false; resultado(); return; }
+      if ((D().tiros || []).length > G.vistos) { patear(D().tiros[G.vistos], G.vistos); return; }
+      ronda();
+    }
+    G.vistos = (D().tiros || []).length;
+    G.al = v => {
+      const ts = v.datos.tiros || [];
+      if (ts.length > G.vistos && !G.animando) { patear(ts[G.vistos], G.vistos); return; }
+      if (G.animando) return;
+      if (v.datos.pend?.[o()]) expresar(G.mOtro2 || (tiradorDe(G.n) === o() ? G.mTir : G.mPor), '✅', '', 0);
+    };
+    G.arranca = () => {
+      ronda();
+      if (D().pend?.[k()]) { G.elegida = -1; clearInterval(tick); botones(false); $('#pen-rol').textContent = `Esperando a ${nomOtro()}…`; }
+    };
+    colocar(G.vistos); pintarMarc();
+    $('#pen-rol').innerHTML = `🪙 <b>Volado:</b> empieza tirando <b>${esc(nomDe(D().primero))}</b>`;
+    grito('🪙 Volado', 'volado');
+  }
+
   // 🪟 El camino correcto: PUENTE DE CRISTAL. 10 fases de 2 cristales, 6 segundos por paso,
   // si pisas el falso se rompe (para los dos), te caes y regresas a la salida. Una 🪨 piedra para probar un cristal.
   function jCamino() {
@@ -4833,6 +5015,7 @@ const DUELO = (() => {
     }
     if (juego === 'camino') { const opc = Array(10).fill(2); return { opc, camino: opc.map(n => rand(n)), rotos: opc.map(() => []), fa: 0, fb: 0, ca: 0, cb: 0 }; }
     if (juego === 'globo') return { bombeos: 18 };
+    if (juego === 'penales') return { tiros: [], pend: {}, primero: Math.random() < .5 ? 'a' : 'b' };
     return { rondas: [], va: 3, vb: 3, mult: 1, pend: {} };
   }
   function practicar(juego) {
@@ -4930,6 +5113,21 @@ const DUELO = (() => {
       if (dato.lado >= 0 && D.rotos[f].includes(dato.lado)) return d;
       if (dato.lado === D.camino[f]) { D.fa++; D.cola = dato.lado; D.ulta = 'ok'; D.plazoa = iso(Date.now() + 6000); if (D.fa >= D.opc.length) finBot(yoId()); }
       else { if (dato.lado >= 0) D.rotos[f].push(dato.lado); D.fa = 0; D.ca++; D.ulta = dato.lado < 0 ? 'tiempo' : 'cae'; delete D.cola; D.plazoa = iso(Date.now() + 10000); }
+    } else if (d.juego === 'penales') {
+      if (dato.ronda !== D.tiros.length || D.pend.a != null) return d;
+      D.pend.a = dato.lado;
+      G.botT = setTimeout(() => {
+        if (d?.estado !== 'jugando') return;
+        const n = D.tiros.length, t = n % 2 === 0 ? D.primero : (D.primero === 'a' ? 'b' : 'a');
+        const b = Math.floor(Math.random() * 3), s = t === 'a' ? D.pend.a : b, p = t === 'a' ? b : D.pend.a;
+        D.tiros.push({ t, s, p, g: s !== p }); D.pend = {};
+        const c = x => D.tiros.filter(q => q.t === x), g = x => c(x).filter(q => q.g).length;
+        const va = c('a').length, vb = c('b').length, ga = g('a'), gb = g('b');
+        if (va <= 5 && vb <= 5) { if (ga + 5 - va < gb) finBot('bot'); else if (gb + 5 - vb < ga) finBot(yoId()); }
+        else if (va === vb && ga !== gb) finBot(ga > gb ? yoId() : 'bot');
+        if (va === 5 && vb === 5 && ga !== gb) finBot(ga > gb ? yoId() : 'bot');
+        alVer();
+      }, alAzar(400, 1300));
     } else if (d.juego === 'ppt') {
       if (dato.ronda !== D.rondas.length || D.pend.a != null) return d;
       D.pend.a = dato.mano;
@@ -4963,6 +5161,7 @@ const DUELO = (() => {
     const gane = d.ganador === yoId(), empate = !d.ganador, r = otroJ(), j = J[d.juego];
     let det = '';
     if (d.juego === 'ppt') { const c = n => '❤️'.repeat(Math.max(0, n ?? 0)) || '🖤'; det = `<p class="du-det">Corazones: tú ${c(d.datos['v' + k()])} · ${esc(r.nombre)} ${c(d.datos['v' + o()])} · ${d.datos.rondas?.length || 0} rondas</p>`; }
+    else if (d.juego === 'penales') { const g = x => (d.datos.tiros || []).filter(t => t.t === x && t.g).length; det = `<p class="du-det">⚽ Penales: tú <b>${g(k())}</b> · ${esc(r.nombre)} <b>${g(o())}</b>${(d.datos.tiros || []).length > 10 ? ' (en muerte súbita)' : ''}</p>`; }
     else if (d.juego === 'camino') { const c1 = d.datos['c' + k()] || 0, c2 = d.datos['c' + o()] || 0; det = `<p class="du-det">Te caíste ${c1} ${c1 === 1 ? 'vez' : 'veces'} · ${esc(r.nombre)} se cayó ${c2} ${c2 === 1 ? 'vez' : 'veces'}</p>`; }
     else if (d.juego === 'calculo') {
       const a = d.res_yo, b = d.res_otro && !d.res_otro.listo ? d.res_otro : null;

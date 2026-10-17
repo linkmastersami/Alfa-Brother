@@ -188,6 +188,7 @@ Versión 48: en la información de la semana de la ficha hay un botón para ver 
 Versión 49-50: en el panel (Noticiero) se puede cambiar lo fijo del siguiente noticiero (saludo, albur de entrada, arranque y despedida); todo lo que depende del día se arma solo y el que ya salió no se toca.
 Versión 51-52: en el panel solo aparecen las líneas fijas que sí se pueden editar (saludo, albur de entrada, arranque y despedida).
 Versión 53: al reportero se le puede mandar una foto; la producción la ve, la puede usar en la noticia (o quitarla) y en la tele sale en grande.
+Versión 54: nuevo duelo Penales ⚽🧤 (volado, se alternan tirador y portero, 6 segundos para escoger, 5 tiros cada quien, se acaba si ya no se alcanza, muerte súbita con contorno rojo que late).
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.
