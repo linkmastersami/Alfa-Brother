@@ -1078,6 +1078,9 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .elegir-hab label:has(input:checked){border-color:var(--tinta);background:#E8ECFF}
 .elegir-hab input{position:absolute;opacity:0;pointer-events:none}
 .elegir-hab small{color:var(--suave);font-weight:500}
+.prueba-abre{display:grid;justify-items:center;gap:2px;background:#1B1440;color:#fff;border-radius:12px;padding:10px;margin:10px 0}
+.prueba-abre b{font:900 1.8rem Anton,Impact,sans-serif;color:#FFD54A}
+.prueba-abre small{color:#C9C3EE}
 .lider-f{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;font-size:.86rem;padding:2px 0}
 .lider-f small{opacity:.75}
 .mis-item{display:flex;gap:10px;align-items:flex-start;margin-top:8px}
@@ -1761,7 +1764,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 43;
+const APP_VERSION       = 44;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -1780,6 +1783,7 @@ const ERRORES = {
   BLOQUEADO: 'Demasiados intentos. Espera 10 minutos o pide que te reinicien el PIN.',
   FOTO_INVALIDA: 'No se pudo usar esa foto. Prueba con otra.',
   PRUEBA_CERRADA: 'La prueba ya está cerrada.',
+  PRUEBA_NO_ABRE: 'La prueba todavía no abre. ¡Ve practicando!',
   NO_PARTICIPA: 'Solo los habitantes activos compiten por el liderazgo.',
   YA_JUGASTE: 'Ya usaste tu intento de esta semana.',
   SIN_INTENTO: 'No encontramos tu intento. Recarga la página.',
@@ -2108,6 +2112,7 @@ function proximoEvento(g) {
   const a = g.agenda; if (!a) return null;
   const entreSemanas = g.fase === 'registro' || (g.fase === 'gala' && g.gala_revelada);
   if (entreSemanas && a.semana === g.semana + 1 && a.prueba_ini) return { t: a.prueba_ini, txt: g.semana === 0 ? 'La casa abre' : g.activos <= 3 ? 'Empieza la gran final' : `Empieza la semana ${a.semana}` };
+  if (pruebaCerrada(g)) return { t: g.prueba_abre, txt: 'La prueba abre' };
   if (a.semana !== g.semana) return null;
   const m = { prueba: [a.prueba_fin, 'La prueba cierra'], espera: [a.voto_ini, 'La votación abre'], votacion: [a.voto_fin, 'La votación cierra'],
               decision: [a.gala, 'La gala empieza'], gala: [g.gala_revelada ? null : a.gala, g.es_final ? 'La gran final empieza' : 'La gala empieza'] }[g.fase];
@@ -2426,6 +2431,10 @@ function pintarAccion() {
     if (!soyHabitanteActivo) cuerpo = `<p>${yo.rol === 'espectador' ? 'El público no compite por el liderazgo.' : 'Ya no estás en la casa, así que no compites por el liderazgo. Tu voto sí sigue contando.'}</p>`;
     else if (mi_intento?.terminado) cuerpo = `<p>Tu puntaje: <b class="display" style="font-size:1.6rem">${mi_intento.puntaje}</b></p><p class="ayuda">El líder se anuncia cuando cierre la prueba.</p>`;
     else if (mi_intento) cuerpo = `<p>Tu intento quedó incompleto y cuenta como cero.</p>`;
+    else if (pruebaCerrada(g)) cuerpo = `<p>${esc(p.desc)}</p>
+      <div class="prueba-abre" data-hasta="${g.prueba_abre}"><small>La prueba abre en</small><b class="js-falta">${faltaTexto(new Date(g.prueba_abre) - Date.now())}</b><small>${esc(fechaLarga(g.prueba_abre))}</small></div>
+      <p>Mientras, practícalo cuantas veces quieras: tu práctica no cuenta, pero sí te da billetes.</p>
+      <button class="btn sec" id="a-practicar" style="color:var(--texto)">🎮 Practicar ahora</button>`;
     else cuerpo = `<p>${esc(p.desc)}</p><p><b>Solo tienes un intento.</b></p><button class="btn" id="a-jugar">Jugar la prueba</button>`;
     // v40: 30% la prueba y 70% lo que hiciste la semana (misiones, jugar, récords y duelos ganados)
     if (soyHabitanteActivo && est.mi_lider) {
@@ -2498,6 +2507,7 @@ function pintarAccion() {
   if (!enFoco) extra.innerHTML = g.semana === 0 ? `<div style="height:8px"></div>` + pintarExtrasSala() : '';
   conectarSalaEspera();
   $('#a-jugar')?.addEventListener('click', abrirPrueba);
+  $('#a-practicar')?.addEventListener('click', () => PRUEBAS[est.juego.prueba] && est.juego.prueba !== 'trivia' ? abrirPractica(est.juego.prueba) : irTab('jugar'));
   $('#a-votar')?.addEventListener('click', irAlConfesionario);
   $$('[data-decide]').forEach(b => b.onclick = async () => {
     const j = porId(b.dataset.decide);
@@ -3662,11 +3672,13 @@ function pintarEconomia() {
 }
 
 /* ---------- ¿Qué me toca hoy? (lo primero que ve cada quien) ---------- */
+const pruebaCerrada = g => g.fase === 'prueba' && g.prueba_abre && new Date(g.prueba_abre) > Date.now();   // v44: la prueba abre más tarde
+const fechaLarga = t => new Date(t).toLocaleString('es-MX', { weekday: 'long', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 const diaCorto = t => new Date(t).toLocaleString('es-MX', { weekday: 'short', hour: 'numeric' }).replace('.', '');
 function calendarioSemana(g) {
   if (g.semana === 0 || g.fin) return '';
   const a = g.agenda && g.agenda.semana === g.semana ? g.agenda : null;
-  const pasos = g.es_final ? [] : [{ n: 'Prueba', f: ['prueba'], t: a?.prueba_ini }];
+  const pasos = g.es_final ? [] : [{ n: 'Prueba', f: ['prueba'], t: g.prueba_abre || a?.prueba_abre || a?.prueba_ini }];
   pasos.push({ n: 'Votación', f: ['espera', 'votacion', 'decision'], t: a?.voto_ini }, { n: 'Gala', f: ['gala'], t: a?.gala });
   const actual = pasos.findIndex(p => p.f.includes(g.fase));
   return `<div class="cal">${pasos.map((p, i) => {
@@ -3679,7 +3691,8 @@ function pendientesHoy() {
   const items = [];   // { ic, tx, sub, btn, accion, ok }
   const habitante = yo.rol === 'jugador', activo = habitante && yo.estado === 'activo';
   if (g.semana > 0 && !g.fin) {
-    if (g.fase === 'prueba' && activo) items.push(mi_intento?.terminado
+    if (g.fase === 'prueba' && activo && pruebaCerrada(g)) items.push({ ic: '⏳', tx: 'La prueba del líder abre pronto', sub: `${fechaLarga(g.prueba_abre)} · mientras, practica`, btn: 'Practicar', accion: 'jugar' });
+    else if (g.fase === 'prueba' && activo) items.push(mi_intento?.terminado
       ? { ic: '✅', tx: 'Ya jugaste la prueba del líder', sub: `Tu puntaje: ${mi_intento.puntaje}`, ok: true }
       : { ic: '👑', tx: 'Juega la prueba del líder', sub: 'Solo tienes un intento', btn: 'Jugar', accion: 'prueba' });
     if (g.fase === 'espera') items.push({ ic: '🗳️', tx: 'Prepara tu voto', sub: 'La votación abre pronto; ya puedes entrar al confesionario', btn: 'Ir', accion: 'votar' });
@@ -6117,7 +6130,7 @@ function abrirAgenda() {
     h += `<h2>${a.semana === g.semana ? 'Esta semana' : 'La próxima semana'}</h2>`;
     if (prox) h += `<div class="proximo" data-hasta="${prox.t}"><span>${esc(prox.txt)} en</span><b class="js-falta">${faltaTexto(new Date(prox.t) - ahora)}</b><small>${esc(fmtFecha(prox.t))}</small></div>`;
     const final = a.semana === g.semana ? g.es_final : g.activos <= 3;
-    if (!final) h += fila('👑', `Prueba del líder${a.prueba && PRUEBAS[a.prueba] ? ': ' + esc(PRUEBAS[a.prueba].nombre) : ''}`, `Abre ${fecha(a.prueba_ini)}<br>Cierra ${fecha(a.prueba_fin)}`, a.prueba_ini, a.prueba_fin);
+    if (!final) h += fila('👑', `Prueba del líder${a.prueba && PRUEBAS[a.prueba] ? ': ' + esc(PRUEBAS[a.prueba].nombre) : ''}`, `Abre ${fecha(a.prueba_abre || a.prueba_ini)}<br>Cierra ${fecha(a.prueba_fin)}`, a.prueba_abre || a.prueba_ini, a.prueba_fin);
     h += fila('🗳️', final ? 'Votación de la gran final' : 'Votación', `Abre ${fecha(a.voto_ini)}<br>Cierra ${fecha(a.voto_fin)}`, a.voto_ini, a.voto_fin);
     h += fila('🎤', final ? 'Gran final' : 'Gala de eliminación', `${fecha(a.gala)}`, a.gala, null);
   }
@@ -7300,7 +7313,8 @@ async function adminJuego(C) {
     <p class="ayuda">${finalAg ? '¡Es la gran final! No hay prueba ni líder: al empezar se abre la votación (o espera a la hora que pongas).' : 'El juego avanza solo a estas horas. Deja vacío lo que quieras hacer a mano. Si hay empate y el líder no decide antes de la gala, el programa elige al azar.'}</p>
     <div class="agenda-grid">
       ${entre && !finalAg ? `<label for="ag-prueba">Prueba del líder</label><select class="in" id="ag-prueba">${Object.entries(PRUEBAS).map(([k, v]) => `<option value="${k}" ${ag.ag_prueba === k ? 'selected' : ''}>${esc(v.nombre)}</option>`).join('')}</select>` : ''}
-      ${entre ? campo('ag-prueba-ini', finalAg ? 'Empieza la gran final' : semAg === 1 ? 'Abre la casa (empieza la prueba)' : 'Empieza la prueba', ag.ag_prueba_ini) : ''}
+      ${entre ? campo('ag-prueba-ini', finalAg ? 'Empieza la gran final' : semAg === 1 ? 'Abre la casa (empieza la semana)' : 'Empieza la semana (misiones nuevas)', ag.ag_prueba_ini) : ''}
+      ${entre && !finalAg ? campo('ag-prueba-abre', 'Se puede jugar la prueba desde (vacío = desde que empieza)', ag.ag_prueba_abre) : ''}
       ${finalAg ? '' : campo('ag-prueba-fin', 'Cierra la prueba (se nombra líder)', ag.ag_prueba_fin)}
       ${campo('ag-voto-ini', 'Abre la votación', ag.ag_voto_ini)}
       ${campo('ag-voto-fin', 'Cierra la votación', ag.ag_voto_fin)}
@@ -7334,6 +7348,10 @@ async function adminJuego(C) {
     const top = (await tablaLider())[0];
     h += `<div class="adm-caja"><h3>Prueba en curso</h3>
       <p>${ints.filter(i => i.terminado).length} de ${act.length} ya jugaron. Va ganando: <b>${top ? esc(nombreDe(top.jugador_id)) + ` (${top.total} pts)` : 'nadie'}</b></p>
+      <label class="campo" for="ad-abre">Se puede jugar desde</label>
+      <input class="in" type="datetime-local" id="ad-abre" value="${aInputLocal(c.prueba_abre)}">
+      <p class="ayuda">${c.prueba_abre && new Date(c.prueba_abre) > Date.now() ? `Todavía no abre: abre el ${esc(fmtFecha(c.prueba_abre))}. Mientras, todos pueden practicar.` : 'Ya está abierta.'}</p>
+      <div class="adm-acciones"><button class="btn sec chico" id="ad-abre-guardar">Guardar hora</button><button class="btn sec chico" id="ad-abre-ya">Abrir ya</button></div>
       <label class="campo" for="ad-lider">Líder</label>
       <select class="in" id="ad-lider"><option value="">Automático: mejor puntaje (prueba + semana)</option>${act.map(j => `<option value="${j.id}">${esc(j.nombre)}</option>`).join('')}</select>
       <div class="adm-acciones"><button class="btn" id="ad-cerrar-prueba">Cerrar prueba y nombrar líder</button></div></div>`;
@@ -7416,9 +7434,10 @@ async function adminJuego(C) {
     const val = id => { const v = $('#' + id)?.value; return v ? new Date(v).toISOString() : null; };
     const datos = { semana: semAg, prueba: $('#ag-prueba')?.value || c.ag_prueba || c.prueba || 'memoria',
       prueba_ini: entre ? val('ag-prueba-ini') : c.ag_prueba_ini, prueba_fin: val('ag-prueba-fin'),
+      prueba_abre: entre ? val('ag-prueba-abre') : c.ag_prueba_abre,
       voto_ini: val('ag-voto-ini'), voto_fin: val('ag-voto-fin'), gala: val('ag-gala'), repetir: $('#ag-repetir').checked };
     // que las horas vayan en orden
-    const orden = [datos.prueba_ini, datos.prueba_fin, datos.voto_ini, datos.voto_fin, datos.gala].filter(Boolean).map(x => +new Date(x));
+    const orden = [datos.prueba_ini, datos.prueba_abre, datos.prueba_fin, datos.voto_ini, datos.voto_fin, datos.gala].filter(Boolean).map(x => +new Date(x));
     if (orden.some((t, i) => i && t < orden[i - 1])) return toast('Las horas deben ir en orden: prueba → votación → gala', 4000);
     if (datos.prueba === 'trivia' && entre) toast('Recuerda tener preguntas de trivia activas', 3500);
     accion('admin_set_agenda', { p: datos }, 'Agenda guardada');
@@ -7428,6 +7447,8 @@ async function adminJuego(C) {
     const id = await accion('admin_cerrar_prueba', { p_lider: $('#ad-lider').value || null });
     toast(id ? 'Líder: ' + nombreDe(id) : 'Prueba cerrada sin líder');
   });
+  $('#ad-abre-guardar')?.addEventListener('click', () => { const v = $('#ad-abre').value; accion('admin_prueba_abre', { p_cuando: v ? new Date(v).toISOString() : null }, v ? 'La prueba abre a esa hora' : 'La prueba ya está abierta'); });
+  $('#ad-abre-ya')?.addEventListener('click', () => accion('admin_prueba_abre', { p_cuando: null }, '¡Prueba abierta! Ya les avisamos'));
   $('#ad-lider2')?.addEventListener('change', e => accion('admin_set_lider', { p_id: e.target.value || null }, 'Líder actualizado'));
   $('#ad-cerrar-vot')?.addEventListener('click', async () => {
     if (!confirm('¿Cerrar la votación?')) return;

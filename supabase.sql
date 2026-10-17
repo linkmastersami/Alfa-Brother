@@ -111,6 +111,9 @@ alter table public.config add column if not exists ag_voto_ini   timestamptz;
 alter table public.config add column if not exists ag_voto_fin   timestamptz;
 alter table public.config add column if not exists ag_gala       timestamptz;
 alter table public.config add column if not exists ag_repetir    boolean not null default true;
+-- v44: la semana puede empezar (misiones, récords) y la prueba abrir más tarde
+alter table public.config add column if not exists prueba_abre    timestamptz;
+alter table public.config add column if not exists ag_prueba_abre timestamptz;
 -- nueva fase 'espera': la prueba ya cerró pero la votación todavía no abre
 alter table public.config drop constraint if exists config_fase_check;
 alter table public.config add constraint config_fase_check
@@ -558,8 +561,8 @@ begin
       'inicio_at', c.inicio_at, 'fin', v_fin, 'es_final', c.es_final,
       'agenda', case when c.ag_semana in (c.semana, c.semana + 1) then jsonb_build_object(
         'semana', c.ag_semana, 'prueba', c.ag_prueba, 'prueba_ini', c.ag_prueba_ini, 'prueba_fin', c.ag_prueba_fin,
-        'voto_ini', c.ag_voto_ini, 'voto_fin', c.ag_voto_fin, 'gala', c.ag_gala) end,
-      'semana', c.semana, 'fase', c.fase, 'prueba', c.prueba, 'cupo', c.cupo,
+        'prueba_abre', c.ag_prueba_abre, 'voto_ini', c.ag_voto_ini, 'voto_fin', c.ag_voto_fin, 'gala', c.ag_gala) end,
+      'semana', c.semana, 'fase', c.fase, 'prueba', c.prueba, 'cupo', c.cupo, 'prueba_abre', c.prueba_abre,
       'lider_id', c.lider_id,
       'gala_revelada', c.gala_revelada,
       'empatados', case when c.fase = 'decision' then to_jsonb(c.empatados) else '[]'::jsonb end,
@@ -663,6 +666,7 @@ begin
   yo := public._yo(p_token);
   select * into c from public.config where id = 1;
   if c.fase <> 'prueba' then raise exception 'PRUEBA_CERRADA'; end if;
+  if c.prueba_abre > now() then raise exception 'PRUEBA_NO_ABRE'; end if;
   if yo.rol <> 'jugador' or yo.estado <> 'activo' then raise exception 'NO_PARTICIPA'; end if;
 
   insert into public.intentos (semana, jugador_id, prueba) values (c.semana, yo.id, c.prueba)
@@ -834,7 +838,8 @@ begin
                      when c.ag_semana = c.semana + 1 and c.ag_voto_ini > now() then 'espera'
                      else 'votacion' end,
          prueba = case when v_final then null else p_prueba end,
-         es_final = v_final, lider_id = case when v_final then null else c.lider_id end, eliminado_id = null,   -- v43: el líder sigue hasta que se nombra el siguiente
+         es_final = v_final, lider_id = case when v_final then null else c.lider_id end, eliminado_id = null,
+         prueba_abre = case when not v_final and c.ag_semana = c.semana + 1 and c.ag_prueba_abre > now() then c.ag_prueba_abre end,   -- v43: el líder sigue hasta que se nombra el siguiente
          empatados = '{}', gala_revelada = false, actualizado = now()
    where id = 1;
   insert into public.sucesos (tipo, dato) values ('semana', jsonb_build_object('semana', c.semana + 1, 'prueba', case when v_final then null else p_prueba end, 'final', v_final));
@@ -1058,12 +1063,12 @@ begin
   end if;
   if (select count(*) from public.jugadores where rol = 'jugador' and estado = 'activo') <= 1 then
     -- fue la gran final: se apaga la agenda para que no empiece otra semana
-    update public.config set ag_semana = null, ag_prueba_ini = null, ag_prueba_fin = null,
+    update public.config set ag_semana = null, ag_prueba_ini = null, ag_prueba_fin = null, ag_prueba_abre = null,
            ag_voto_ini = null, ag_voto_fin = null, ag_gala = null where id = 1;
   elsif c.ag_repetir and c.ag_semana = c.semana then
     update public.config
        set ag_semana = ag_semana + 1,
-           ag_prueba_ini = ag_prueba_ini + interval '7 days', ag_prueba_fin = ag_prueba_fin + interval '7 days',
+           ag_prueba_ini = ag_prueba_ini + interval '7 days', ag_prueba_fin = ag_prueba_fin + interval '7 days', ag_prueba_abre = ag_prueba_abre + interval '7 days',
            ag_voto_ini = ag_voto_ini + interval '7 days', ag_voto_fin = ag_voto_fin + interval '7 days',
            ag_gala = ag_gala + interval '7 days'
      where id = 1;
@@ -1093,7 +1098,7 @@ returns void language plpgsql security definer set search_path = public as $$
 begin
   perform public._solo_admin();
   if p is null then
-    update public.config set ag_semana = null, ag_prueba = null, ag_prueba_ini = null, ag_prueba_fin = null,
+    update public.config set ag_semana = null, ag_prueba = null, ag_prueba_ini = null, ag_prueba_fin = null, ag_prueba_abre = null,
            ag_voto_ini = null, ag_voto_fin = null, ag_gala = null, actualizado = now() where id = 1;
     return;
   end if;
@@ -1103,6 +1108,7 @@ begin
          ag_prueba     = coalesce(p->>'prueba', 'memoria'),
          ag_prueba_ini = nullif(p->>'prueba_ini', '')::timestamptz,
          ag_prueba_fin = nullif(p->>'prueba_fin', '')::timestamptz,
+         ag_prueba_abre = nullif(p->>'prueba_abre', '')::timestamptz,
          ag_voto_ini   = nullif(p->>'voto_ini', '')::timestamptz,
          ag_voto_fin   = nullif(p->>'voto_fin', '')::timestamptz,
          ag_gala       = nullif(p->>'gala', '')::timestamptz,
@@ -1110,6 +1116,36 @@ begin
          actualizado   = now()
    where id = 1;
 end $$;
+
+-- v44: la producción decide desde cuándo se puede jugar la prueba de esta semana (null = ya)
+create or replace function public.admin_prueba_abre(p_cuando timestamptz)
+returns void language plpgsql security definer set search_path = public as $$
+declare c public.config; v_n text;
+begin
+  perform public._solo_admin();
+  select * into c from public.config where id = 1;
+  if c.fase <> 'prueba' then raise exception 'FASE_INCORRECTA'; end if;
+  update public.config set prueba_abre = case when p_cuando > now() then p_cuando end, actualizado = now() where id = 1;
+  if p_cuando is null or p_cuando <= now() then
+    v_n := case c.prueba when 'trivia' then 'Trivia de la oficina' when 'memoria' then 'Memoria de expedientes'
+                         when 'adeudo' then 'Calcula el adeudo' when 'billetes' then 'Cuenta los billetes verdes' else 'la prueba' end;
+    perform public._avisar('🏆 ¡Ya abrió la prueba del líder!', format('Ya puedes jugar %s. Solo tienes un intento.', v_n));
+  end if;
+end $$;
+-- El reloj avisa cuando llega la hora de la prueba
+create or replace function public._prueba_abre_aviso()
+returns void language plpgsql security definer set search_path = public as $$
+declare c public.config; v_n text;
+begin
+  select * into c from public.config where id = 1;
+  if c.fase <> 'prueba' or c.prueba_abre is null or c.prueba_abre > now() then return; end if;
+  update public.config set prueba_abre = null where id = 1 and prueba_abre is not null and prueba_abre <= now();
+  if not found then return; end if;
+  v_n := case c.prueba when 'trivia' then 'Trivia de la oficina' when 'memoria' then 'Memoria de expedientes'
+                       when 'adeudo' then 'Calcula el adeudo' when 'billetes' then 'Cuenta los billetes verdes' else 'la prueba' end;
+  perform public._avisar('🏆 ¡Ya abrió la prueba del líder!', format('Ya puedes jugar %s. Solo tienes un intento.', v_n));
+end $$;
+revoke all on function public._prueba_abre_aviso() from public, anon, authenticated;
 
 -- El panel también empuja la agenda al abrirse
 create or replace function public.admin_tick()
@@ -1352,8 +1388,14 @@ begin
     v_prueba := case new.prueba when 'trivia' then 'Trivia de la oficina' when 'memoria' then 'Memoria de expedientes'
                                 when 'adeudo' then 'Calcula el adeudo' when 'billetes' then 'Cuenta los billetes verdes' else 'la prueba' end;
     if new.fase = 'prueba' and (old.fase <> 'prueba' or new.semana <> old.semana) then
-      perform public._avisar(format('🏆 Semana %s: prueba del líder', new.semana),
-                             format('Ya puedes jugar %s. Solo tienes un intento.', v_prueba));
+      if new.prueba_abre > now() then        -- v44: la semana empezó, pero la prueba abre más tarde
+        perform public._avisar(format('📅 ¡Empezó la semana %s!', new.semana),
+          format('Ya tienes misiones nuevas. La prueba del líder (%s) abre el %s; mientras, ve practicando.', v_prueba,
+                 to_char(new.prueba_abre at time zone 'America/Mexico_City', 'DD/MM "a las" HH24:MI')));
+      else
+        perform public._avisar(format('🏆 Semana %s: prueba del líder', new.semana),
+                               format('Ya puedes jugar %s. Solo tienes un intento.', v_prueba));
+      end if;
     elsif new.fase = 'espera' and old.fase <> 'espera' then
       if new.es_final then
         perform public._avisar('🏁 ¡Llegamos a la gran final!', 'Sin prueba ni líder: todo se decide con los votos. Ya puedes preparar tu voto.');
@@ -1421,6 +1463,7 @@ begin
   begin perform public._noticiero_aviso(); exception when others then null; end;
   begin perform public._cerrar_duelos(); exception when others then null; end;
   begin perform public._empate_vencido(); exception when others then null; end;
+  begin perform public._prueba_abre_aviso(); exception when others then null; end;
 end $$;
 
 do $$ begin
