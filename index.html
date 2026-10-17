@@ -1858,7 +1858,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 58;
+const APP_VERSION       = 59;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -3938,7 +3938,7 @@ const monster1Disponible = () => Date.now() < MONSTER1_HASTA;
 function tarjetaMonster() {
   const mio = j => (est.practicas || []).find(p => p.id === est.yo.id && p.juego === j)?.mejor || 0;
   const caras = [...est.jugadores].sort(() => Math.random() - 0.5).slice(0, 6);
-  let h = `<div class="monster-card"><div class="ed">EDICIÓN ALFA BROTHER · NUEVO</div><h3>MONSTER CRAZY <span style="color:#FFD54A">2.0</span></h3>
+  let h = `<div class="monster-card"><div class="ed">EDICIÓN ALFA BROTHER · 1 JUGADOR</div><h3>MONSTER CRAZY <span style="color:#FFD54A">2.0</span></h3>
     <div class="monster-caras">${caras.map(j => avatar(j, 38)).join('')}<div class="av" style="width:38px;height:38px;background:#050207;font-size:20px">💀</div></div>
     <p>Las caras de tus compañeros salen sobre el monstruo: deslízales el dedo antes de que se acabe el tiempo. <b>Desde la oleada 16 salen círculos negros 💀: si los tocas, pierdes un corazón</b> (y cada 3 oleadas sale uno más).</p>
     <p style="font-size:.85rem;color:#FFD54A">Tu récord: <b>${mio('monster2').toLocaleString('es-MX')}</b> · ${est.yo.rol === 'jugador' ? 'Cada partida paga hasta $50 según qué tan bien te vaya (máximo $2,000 al día por jugar). Los récords se reinician cada semana.' : 'Como público también ganas hasta $50 por partida según tu puntaje, pero tu puntaje no entra a los récords de la casa.'}</p>
@@ -6091,9 +6091,9 @@ function tarjetaRecords() {
 }
 // Las prácticas de las pruebas del líder, cada una en su tarjeta (con el mismo estilo que Monster Crazy)
 const ESTILO_PRACTICA = {
-  memoria: { clase: 'pr-memoria', ed: 'PRÁCTICA · PRUEBA DEL LÍDER', titulo: 'MEMORIA DE EXPEDIENTES', icono: '🗂️', boton: '🗂️ Practicar' },
-  adeudo: { clase: 'pr-adeudo', ed: 'PRÁCTICA · PRUEBA DEL LÍDER', titulo: 'CALCULA EL ADEUDO', icono: '🧮', boton: '🧮 Practicar' },
-  billetes: { clase: 'pr-billetes', ed: 'NUEVO · PRUEBA DEL LÍDER', titulo: 'CUENTA LOS BILLETES VERDES', icono: '💵', boton: '💵 Practicar' },
+  memoria: { clase: 'pr-memoria', ed: '1 JUGADOR', titulo: 'MEMORIA DE EXPEDIENTES', icono: '🗂️', boton: '🗂️ Jugar' },
+  adeudo: { clase: 'pr-adeudo', ed: '1 JUGADOR', titulo: 'CALCULA EL ADEUDO', icono: '🧮', boton: '🧮 Jugar' },
+  billetes: { clase: 'pr-billetes', ed: 'NUEVO · 1 JUGADOR', titulo: 'CUENTA LOS BILLETES VERDES', icono: '💵', boton: '💵 Jugar' },
 };
 function tarjetaPractica(juego) {
   const e = ESTILO_PRACTICA[juego], p = PRUEBAS[juego];
