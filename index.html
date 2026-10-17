@@ -204,7 +204,7 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .rep-intro .ic{font-size:2.4rem;flex:none}
 .rep-intro p{margin:0}
 /* el reportero de la sala (arriba a la derecha, junto al reloj) */
-.reportero{position:absolute;left:89%;top:39%;transform:translate(-50%,-100%);display:flex;align-items:flex-end;cursor:pointer;z-index:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.3))}
+.reportero{position:absolute;left:89%;top:34%;transform:translate(-50%,-100%);display:flex;align-items:flex-end;cursor:pointer;z-index:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.3))}
 .rep-mono{position:relative;display:flex;flex-direction:column;align-items:center;width:calc(var(--u)*12)}
 .rep-cara{font-size:calc(var(--u)*9.4);line-height:1;animation:rep-mira 3.2s ease-in-out infinite}
 .rep-cuerpo{width:calc(var(--u)*9);height:calc(var(--u)*11.4);margin-top:calc(var(--u)*-.8);overflow:visible}
@@ -940,7 +940,7 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .confesionario .formato{animation:entra-conf .5s ease-out both}
 @keyframes entra-conf{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .candado{margin-top:16px;background:var(--noche);color:var(--luz);border-radius:10px;padding:10px 12px;font-weight:700;text-align:center}
-.puerta-aviso{position:absolute;left:11.5%;top:5%;transform:translateX(-50%);background:var(--luz);color:var(--texto);font-weight:800;font-size:.75rem;padding:2px 8px;border-radius:999px;pointer-events:none;animation:latido 1s ease-in-out infinite;z-index:2}
+.puerta-aviso{position:absolute;left:11.5%;top:4.4%;transform:translateX(-50%);background:var(--luz);color:var(--texto);font-weight:800;font-size:.75rem;padding:2px 8px;border-radius:999px;pointer-events:none;animation:latido 1s ease-in-out infinite;z-index:2}
 @keyframes latido{50%{transform:translateX(-50%) scale(1.15)}}
 .sala.votando .sala-fondo .puerta{filter:drop-shadow(0 0 2px #FFD54A)}
 /* lo que hay que tocar parpadea: la tele (el ojo) y el reloj hasta la primera vez; la puerta el día de votar */
@@ -1780,7 +1780,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 45;
+const APP_VERSION       = 46;
 /* ===================================================================== */
 
 const PRUEBAS = {
