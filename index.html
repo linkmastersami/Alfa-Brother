@@ -1087,7 +1087,9 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .tvg-cab button[data-tq]{appearance:none;border:2px solid #D9D2B8;background:#fff;border-radius:999px;padding:3px 9px;font-weight:700;font-size:.8rem;cursor:pointer}
 .tvg-cab button[data-tq].on{background:var(--texto);border-color:var(--texto);color:#fff}
 .tvg-cab small{color:var(--suave)}
-.tvg-cab .tvg-x{margin-left:auto}
+.tvg-l.fija{opacity:.6}
+.tvg-l.fija p{margin:0;font-size:.88rem}
+.tvg-cambio{color:#1E8E4A!important;font-weight:700}
 .fs-pleg{margin-top:16px;border:2px solid #D9D2B8;border-radius:14px;padding:12px}
 .fs-cab span:first-child{flex:1;font:900 1.15rem Anton,Impact,sans-serif}
 .fs-pleg .pleg-cuerpo{margin-top:10px}
@@ -1790,7 +1792,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 49;
+const APP_VERSION       = 50;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -5276,21 +5278,23 @@ const TV = (() => {
   function guion() {
     diaN = Math.floor(Date.parse(d.dia + 'T12:00:00Z') / 864e5); usos = {}; exclUsadas = new Set(); reacs = [];
     const L = [], titulares = [];
-    const di = (q, t, cara) => L.push({ q, t, cara });
-    const bloque = b => b.forEach(([q, t]) => di(q, t));
+    // k = llave del relleno que la producción puede cambiar (saludo, albures, remates, despedida…)
+    const di = (q, t, cara, k) => L.push({ q, t, cara, k });
+    const bloque = (b, k) => b.forEach(([q, t], i) => di(q, t, undefined, k ? k + ':' + i : undefined));
+    let puentes = 0;
     let notas = 0;
     const nota = (titular, partes) => {
       titulares.push(titular);
-      if (notas > 0 && notas % 3 === 0) bloque(frase('puente', PUENTES, 3));     // un albur cada tantas noticias
+      if (notas > 0 && notas % 3 === 0) bloque(frase('puente', PUENTES, 3), 'puente' + (++puentes));     // un albur cada tantas noticias
       notas++;
-      partes.forEach(([q, t, cara]) => di(q, t, cara));
+      partes.forEach(([q, t, cara, k]) => di(q, t, cara, k));
     };
     const otro = q => q === 'e' ? 'a' : 'e';
-    bloque(frase('saludo', SALUDOS));
-    bloque(frase('albur', ALBURES));
-    bloque([frase('arranque', ARRANQUES)]);
+    bloque(frase('saludo', SALUDOS), 'saludo');
+    bloque(frase('albur', ALBURES), 'albur');
+    bloque([frase('arranque', ARRANQUES)], 'arranque');
     let turno = 'e';
-    const dos = (titular, entrada, react, cara) => { const q = turno; turno = otro(turno); nota(titular, [[q, entrada, cara], [otro(q), react]]); };
+    const dos = (titular, entrada, react, cara) => { const q = turno; turno = otro(turno); nota(titular, [[q, entrada, cara], [otro(q), react, undefined, 'r:' + titular]]); };
     const n = s => s || 'alguien';
     // galas
     for (const g of d.galas || []) {
@@ -5380,9 +5384,12 @@ const TV = (() => {
     if (titulares.length === 0) nota('😴 No pasó nada', frase('nada', T.nada));
     if (d.rico) dos(`💵 ${d.rico.nombre} es quien más billetes ha generado esta semana`, llenar(frase('rico_in', T.rico_in), { n: d.rico.nombre, b: fmt(d.rico.billetes) }), reaccion('rico_j', NEUTRO, T.rico_j, {}), d.rico.id);
     const ini = L.length;
-    bloque(frase('salida', SALIDAS));
+    bloque(frase('salida', SALIDAS), 'salida');
     L[ini].salida = true;
     groserias(L);
+    // v49: lo que la producción cambió del relleno (las noticias siempre se arman solas)
+    const cam = d.cambios || {};
+    for (const l of L) if (l.k && typeof cam[l.k] === 'string' && cam[l.k].trim()) l.t = cam[l.k];
     return { lineas: L, titulares };
   }
 
@@ -5458,7 +5465,7 @@ const TV = (() => {
     SFX.pausaParaGala(true);
     try { d = await rpc('noticiero', avance ? { p_token: token, p_avance: true } : { p_token: token }); }
     catch (e) { $('#m-tv').innerHTML = `<div class="tv-cargando">No se pudo sintonizar: ${esc(mensajeError(e))}<br><button class="btn" style="margin-top:14px">Cerrar</button></div>`; $('#m-tv .btn').onclick = cerrar; return; }
-    const g = d.editado?.lineas?.length ? { lineas: d.editado.lineas, titulares: d.editado.titulares || [] } : guion();   // v49: guion editado por la producción
+    const g = guion();
     lineas = g.lineas; i = 0;
     armar();
     const cinta = g.titulares.join('   •   ');
@@ -7749,9 +7756,9 @@ async function adminExtras(C, seccion) {
           <small style="white-space:normal;display:block">${Array.isArray(n.guion) && n.guion.length ? n.guion.map(x => `<b>${x.q === 'e' ? 'Elber' : 'Rosa'}:</b> ${esc(x.t)}${x.cara ? ` <i>(📸 ${esc(nombreDe(x.cara))})</i>` : ''}`).join('<br>') : esc(n.texto)}</small><small style="display:block;color:${ya ? '#8E88B5' : '#1E8E5A'};font-weight:600">${ya ? '✔ Ya salió: ya no se puede cambiar' : 'Todavía no sale: la puedes cambiar'}</small></div>
           ${ya ? '' : `<button type="button" class="mini" data-tvn-edit="${n.dia}">Editar</button><button type="button" class="mini" data-tvn-del="${n.dia}">Borrar</button>`}</div>`; }).join('') || '<p class="ayuda">Todavía no hay notas.</p>'}
     </form>
-    <div class="adm-caja" data-sec="noticiero" id="tvg"><h3>📝 Guion completo del noticiero</h3>
-      <p class="ayuda">Aquí ves todo lo que van a decir Elber y Rosa y puedes cambiar lo que quieras. Al guardar, ese noticiero se queda tal cual: si después pasan más cosas, ya no se agregan solas (para eso está "Volver al original").</p>
-      <div class="adm-acciones"><button type="button" class="btn sec chico" id="tvg-aire">Cargar el último (al aire)</button><button type="button" class="btn sec chico" id="tvg-sig">Cargar el siguiente (cómo va)</button></div>
+    <div class="adm-caja" data-sec="noticiero" id="tvg"><h3>📝 Relleno del siguiente noticiero</h3>
+      <p class="ayuda">Aquí cambias lo que no depende de lo que pase en el día: el saludo, los albures, los remates de cada noticia y la despedida. Las noticias (en gris) se arman solas con lo que vaya pasando. El noticiero que ya salió no se toca.</p>
+      <div class="adm-acciones"><button type="button" class="btn sec chico" id="tvg-sig">Ver el guion del siguiente noticiero</button></div>
       <div id="tvg-zona"></div></div>
     <div class="adm-caja" data-sec="noticiero"><h3>🎤 Lo que le contaron al reportero</h3>
       <p class="ayuda">Los habitantes le cuentan noticias al reportero y te llegan aquí con su nombre. Con «Usar» se agregan a las noticias de arriba para que las acomodes.</p>
@@ -7900,46 +7907,37 @@ async function adminExtras(C, seccion) {
   });
   $('#tvn-ver').onclick = () => TV.abrir();
   $('#tvn-manana').onclick = () => TV.abrir(true);
-  // v49: editar el guion completo
-  const cargarGuionTv = async avance => {
+  // v49: cambiar el relleno del siguiente noticiero (saludo, albures, remates y despedida)
+  const cargarGuionTv = async () => {
     const z = $('#tvg-zona'); z.innerHTML = '<p class="ayuda">Cargando…</p>';
     let datos;
-    try { datos = await rpc('noticiero', avance ? { p_token: token, p_avance: true } : { p_token: token }); } catch (x) { z.innerHTML = `<p class="ayuda">${esc(mensajeError(x))}</p>`; return; }
-    const gen = TV.guionDe(datos), ed = datos.editado;
-    const lin = ed?.lineas?.length ? ed.lineas : gen.lineas, tit = ed ? (ed.titulares || []) : gen.titulares;
+    try { datos = await rpc('noticiero', { p_token: token, p_avance: true }); } catch (x) { z.innerHTML = `<p class="ayuda">${esc(mensajeError(x))}</p>`; return; }
+    const cambios = datos.cambios || {};
+    const orig = TV.guionDe({ ...datos, cambios: {} }).lineas;
     const LOC = { e: 'Elber', a: 'Rosa' };
-    const fila = (l, k) => `<div class="tvg-l" data-cara="${esc(l.cara || '')}"><div class="tvg-cab"><span>${k + 1}.</span>${['e', 'a'].map(q => `<button type="button" data-tq="${q}" class="${l.q === q ? 'on' : ''}">🎙️ ${LOC[q]}</button>`).join('')}${l.cara ? `<small>📸 ${esc(nombreDe(l.cara))}</small>` : ''}<button type="button" class="mini tvg-x" aria-label="Quitar línea">✕</button></div>
-      <textarea class="in" rows="2" maxlength="600">${esc(l.t || '')}</textarea></div>`;
-    z.innerHTML = `<p style="margin:10px 0 4px"><b>📺 Noticiero del ${esc(manana(datos.dia))}</b> ${ed ? '<span class="pill verde">Editado</span>' : '<span class="pill">Generado solo</span>'}</p>
-      <div id="tvg-lista">${lin.map(fila).join('')}</div>
-      <div class="adm-acciones"><button type="button" class="btn sec chico" id="tvg-mas">➕ Agregar línea al final</button></div>
-      <label class="campo" for="tvg-tit">Titulares de la cinta de abajo (uno por renglón)</label>
-      <textarea class="in" id="tvg-tit" rows="4">${esc(tit.join('\n'))}</textarea>
-      <div class="adm-acciones"><button type="button" class="btn chico" id="tvg-guardar">Guardar guion</button>${ed ? '<button type="button" class="btn sec chico" id="tvg-orig">Volver al original</button>' : ''}</div>`;
-    const lista = $('#tvg-lista');
-    const enlazar = () => {
-      $$('.tvg-l', lista).forEach(el => {
-        $$('[data-tq]', el).forEach(b => b.onclick = () => { $$('[data-tq]', el).forEach(x => x.classList.toggle('on', x === b)); });
-        $('.tvg-x', el).onclick = () => { el.remove(); $$('.tvg-cab>span', lista).forEach((s, i) => s.textContent = (i + 1) + '.'); };
-      });
-    };
-    enlazar();
-    $('#tvg-mas').onclick = () => { lista.insertAdjacentHTML('beforeend', fila({ q: 'e', t: '' }, lista.children.length)); enlazar(); lista.lastElementChild.querySelector('textarea').focus(); };
+    const tipo = k => k.startsWith('r:') ? '😂 Remate' : k.startsWith('saludo') ? '👋 Saludo' : k.startsWith('salida') ? '👋 Despedida' : k.startsWith('arranque') ? '🎬 Arranque' : '🍑 Albur';
+    z.innerHTML = `<p style="margin:10px 0 4px"><b>📺 Noticiero del ${esc(manana(datos.dia))}</b> ${Object.keys(cambios).length ? `<span class="pill verde">${Object.keys(cambios).length} cambios</span>` : ''}</p>
+      <div id="tvg-lista">${orig.map((l, n) => l.k
+        ? `<div class="tvg-l" data-k="${esc(l.k)}"><div class="tvg-cab"><span>${n + 1}.</span><b>🎙️ ${LOC[l.q]}</b><small>${tipo(l.k)}</small>${cambios[l.k] ? '<small class="tvg-cambio">✏️ cambiado</small>' : ''}</div>
+            <textarea class="in" rows="2" maxlength="600" data-orig="${esc(l.t)}">${esc(cambios[l.k] || l.t)}</textarea></div>`
+        : `<div class="tvg-l fija"><div class="tvg-cab"><span>${n + 1}.</span><b>🎙️ ${LOC[l.q]}</b><small>📰 Noticia (se arma sola)</small></div><p>${esc(l.t)}</p></div>`).join('')}</div>
+      <div class="adm-acciones"><button type="button" class="btn chico" id="tvg-guardar">Guardar cambios</button>${Object.keys(cambios).length ? '<button type="button" class="btn sec chico" id="tvg-orig">Quitar todos mis cambios</button>' : ''}</div>`;
     $('#tvg-guardar').onclick = async () => {
-      const lineas = $$('.tvg-l', lista).map(el => ({ q: $('[data-tq].on', el)?.dataset.tq || 'e', t: $('textarea', el).value.trim(), cara: el.dataset.cara || undefined })).filter(l => l.t);
-      if (!lineas.length) return toast('El guion no puede quedar vacío');
-      const titulares = $('#tvg-tit').value.split('\n').map(x => x.trim()).filter(Boolean);
-      try { await q(sb.from('noticiero_guiones').delete().eq('dia', datos.dia)); await q(sb.from('noticiero_guiones').insert({ dia: datos.dia, lineas, titulares, editado: new Date().toISOString() })); toast('📝 Guion guardado'); cargarGuionTv(avance); }
-      catch (x) { toast(mensajeError(x)); }
+      const nuevos = {};
+      $$('#tvg-lista .tvg-l[data-k]').forEach(el => { const t = $('textarea', el), v = t.value.trim(); if (v && v !== t.dataset.orig) nuevos[el.dataset.k] = v; });
+      try {
+        await q(sb.from('noticiero_guiones').delete().eq('dia', datos.dia));
+        if (Object.keys(nuevos).length) await q(sb.from('noticiero_guiones').insert({ dia: datos.dia, cambios: nuevos, editado: new Date().toISOString() }));
+        toast(Object.keys(nuevos).length ? '📝 Cambios guardados' : 'Sin cambios: queda el original'); cargarGuionTv();
+      } catch (x) { toast(mensajeError(x)); }
     };
     const bo = $('#tvg-orig');
     if (bo) bo.onclick = async () => {
-      if (!confirm('¿Borrar tus cambios y que el noticiero se vuelva a generar solo?')) return;
-      try { await q(sb.from('noticiero_guiones').delete().eq('dia', datos.dia)); toast('Listo: vuelve a ser el original'); cargarGuionTv(avance); } catch (x) { toast(mensajeError(x)); }
+      if (!confirm('¿Quitar todos tus cambios del siguiente noticiero?')) return;
+      try { await q(sb.from('noticiero_guiones').delete().eq('dia', datos.dia)); toast('Listo: queda el original'); cargarGuionTv(); } catch (x) { toast(mensajeError(x)); }
     };
   };
-  $('#tvg-aire').onclick = () => cargarGuionTv(false);
-  $('#tvg-sig').onclick = () => cargarGuionTv(true);
+  $('#tvg-sig').onclick = () => cargarGuionTv();
   $$('[data-tvn-edit]').forEach(b => b.onclick = () => { adm.tvnDia = b.dataset.tvnEdit; cargarAdmin().then?.(() => $('#tvn-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); });
   $$('[data-tvn-del]').forEach(b => b.onclick = async () => {
     if (!confirm(`¿Borrar la nota del ${diaNota(b.dataset.tvnDel)}?`)) return;

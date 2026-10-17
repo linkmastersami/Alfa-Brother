@@ -318,12 +318,15 @@ alter table public.noticiero_notas add column if not exists guion jsonb;
 alter table public.noticiero_notas drop constraint if exists noticiero_notas_texto_check;
 alter table public.noticiero_notas add constraint noticiero_notas_texto_check check (char_length(texto) between 1 and 4000);
 -- v49: la producción puede editar el guion completo de un noticiero (si existe, se usa tal cual)
+-- (solo el relleno: saludo, albures, remates y despedida; las noticias siempre se arman solas)
 create table if not exists public.noticiero_guiones (
   dia       date primary key,
-  lineas    jsonb not null,          -- [{"q":"e"|"a","t":"...","cara":id}]
-  titulares text[] not null default '{}',
+  cambios   jsonb not null default '{}'::jsonb,   -- {"saludo:0": "texto", "r:💀 Fulano salió…": "texto"}
   editado   timestamptz not null default now()
 );
+alter table public.noticiero_guiones add column if not exists cambios jsonb not null default '{}'::jsonb;
+alter table public.noticiero_guiones drop column if exists lineas;
+alter table public.noticiero_guiones drop column if exists titulares;
 
 -- v22: el reportero del Noticierazo: los habitantes le cuentan noticias y le llegan a la producción
 create table if not exists public.reportajes (
@@ -2235,7 +2238,7 @@ begin
   end if;
   return jsonb_build_object(
     'dia', v_dia, 'avance', p_avance,
-    'editado', (select jsonb_build_object('lineas', g.lineas, 'titulares', to_jsonb(g.titulares)) from public.noticiero_guiones g where g.dia = v_dia),
+    'cambios', (select g.cambios from public.noticiero_guiones g where g.dia = v_dia),
     'galas', (select coalesce(jsonb_agg(h.resultados order by h.semana), '[]'::jsonb)
         from public.historial h where h.creado >= v_ini and h.creado < v_fin),
     'sucesos', (select coalesce(jsonb_agg(jsonb_build_object('tipo', s.tipo, 'id', s.jugador_id, 'nombre', j.nombre, 'dato', s.dato) order by s.id), '[]'::jsonb)

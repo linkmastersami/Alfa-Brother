@@ -1,12 +1,14 @@
--- ALFA BROTHER · ACTUALIZACIÓN v49: guion del noticiero editable desde el panel
--- Pégala en SQL Editor → Run.
+-- ALFA BROTHER · ACTUALIZACIÓN v50: cambiar el relleno del siguiente noticiero (saludo, albures, remates, despedida)
+-- Pégala en SQL Editor → Run. (Sirve aunque ya hayas corrido la v49 o no.)
 
 create table if not exists public.noticiero_guiones (
   dia       date primary key,
-  lineas    jsonb not null,
-  titulares text[] not null default '{}',
+  cambios   jsonb not null default '{}'::jsonb,
   editado   timestamptz not null default now()
 );
+alter table public.noticiero_guiones add column if not exists cambios jsonb not null default '{}'::jsonb;
+alter table public.noticiero_guiones drop column if exists lineas;
+alter table public.noticiero_guiones drop column if exists titulares;
 alter table public.noticiero_guiones enable row level security;
 drop policy if exists admin_todo on public.noticiero_guiones;
 create policy admin_todo on public.noticiero_guiones for all to authenticated using (public.es_admin()) with check (public.es_admin());
@@ -24,7 +26,7 @@ begin
   end if;
   return jsonb_build_object(
     'dia', v_dia, 'avance', p_avance,
-    'editado', (select jsonb_build_object('lineas', g.lineas, 'titulares', to_jsonb(g.titulares)) from public.noticiero_guiones g where g.dia = v_dia),
+    'cambios', (select g.cambios from public.noticiero_guiones g where g.dia = v_dia),
     'galas', (select coalesce(jsonb_agg(h.resultados order by h.semana), '[]'::jsonb)
         from public.historial h where h.creado >= v_ini and h.creado < v_fin),
     'sucesos', (select coalesce(jsonb_agg(jsonb_build_object('tipo', s.tipo, 'id', s.jugador_id, 'nombre', j.nombre, 'dato', s.dato) order by s.id), '[]'::jsonb)
