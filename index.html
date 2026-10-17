@@ -1858,7 +1858,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 57;
+const APP_VERSION       = 58;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -3794,7 +3794,7 @@ function pintarEconomia() {
   $('#c-misiones').innerHTML = tarjetaMision(g) || `<div class="juego-card"><p>${g.semana === 0 ? 'Las misiones secretas empiezan cuando abra la casa (semana 1).' : 'Esta semana no hay misiones.'}</p>
     <p class="ayuda">Cada semana cada habitante recibe 5 misiones secretas sobre sus compañeros. Las que cumplas te dan billetes y cuentan para ser líder esa misma semana (hasta que cierre la prueba).</p></div>`;
   // pestaña Jugar: Monster Crazy y las prácticas con sus récords
-  $('#c-jugar').innerHTML = tarjetasDuelos(true) + tarjetaPractica('billetes') + tarjetasDuelos(false) + tarjetaMarcadorDuelos() + tarjetaMonster() + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
+  $('#c-jugar').innerHTML = tarjetasDuelos(true) + tarjetaPractica('billetes') + tarjetasDuelos(false) + tarjetaMonster() + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
   // botones
   const C = $('#s-casa');
   C.querySelector('[data-ver-billetes]').onclick = abrirBilletes;
@@ -4033,11 +4033,11 @@ function tarjetasDuelos(nuevos) {
     <p class="du-card-nota">${hab ? 'Reta a otro habitante (aunque ya haya salido de la casa) y pongan la misma apuesta: el que gana se lleva lo de los dos, y los dos ganan $50 por jugar. Para practicar, reta al Reportero 🧑‍💼.' : 'Los duelos son solo para los habitantes de la casa.'}</p>
     ${hab ? `<button class="btn" data-duelo="${k}">⚔️ Desafiar</button>` : ''}</div>`).join('');
 }
-function tarjetaMarcadorDuelos() {
+// marcador de duelos: va dentro de la tarjeta de Récords de la semana
+function marcadorDuelos() {
   const marc = (est.duelos_marcador || []).slice(0, 5);
-  return `<div class="juego-card"><h3>⚔️ Marcador de duelos <small>Todos los juegos</small></h3>
-    <div class="du-marc">${marc.length ? marc.map((m, i) => `<div class="${m.id === est.yo.id ? 'yo' : ''}"><span>${['🥇', '🥈', '🥉', '4.', '5.'][i]} ${esc(porId(m.id)?.nombre || '?')}</span><span>${m.g} ${m.g === 1 ? 'ganado' : 'ganados'} · ${m.p} ${m.p === 1 ? 'perdido' : 'perdidos'}</span></div>`).join('')
-      : '<div><span style="color:#C9C3EE">Nadie ha jugado todavía. ¡Estrénalo!</span></div>'}</div></div>`;
+  return `<div class="du-marc"><b>⚔️ Marcador de duelos · todos los juegos</b>${marc.length ? marc.map((m, i) => `<div class="${m.id === est.yo.id ? 'yo' : ''}"><span>${['🥇', '🥈', '🥉', '4.', '5.'][i]} ${esc(porId(m.id)?.nombre || '?')}</span><span>${m.g} ${m.g === 1 ? 'ganado' : 'ganados'} · ${m.p} ${m.p === 1 ? 'perdido' : 'perdidos'}</span></div>`).join('')
+      : '<div><span style="color:#C9C3EE">Nadie ha jugado todavía. ¡Estrénalo!</span></div>'}</div>`;
 }
 const DUELO = (() => {
   const J = DUELOS_JUEGOS;
@@ -6084,8 +6084,9 @@ function tarjetaRecords() {
       || '<div class="r"><span class="ayuda">Nadie todavía</span></div>'}
       <div class="r" style="margin-top:4px;color:#C9C3EE"><span>Tu mejor</span><span>${mio?.mejor ?? 0}</span></div></div>`;
   };
-  return `<div class="juego-card"><h3>🏆 Récords de la semana <small>Juegos y prácticas</small></h3>
+  return `<div class="juego-card"><h3>🏆 Récords de la semana <small>Juegos y duelos</small></h3>
     <div class="record-cols">${col('monster2', 'Monster Crazy 2.0')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}${col('billetes', 'Billetes verdes')}</div>
+    ${marcadorDuelos()}
     <p class="ayuda" style="margin-top:6px">Los récords vuelven a cero cada semana y cuentan para ser líder. Cada partida paga hasta $50 según tu puntaje (máximo $2,000 al día por jugar).</p></div>`;
 }
 // Las prácticas de las pruebas del líder, cada una en su tarjeta (con el mismo estilo que Monster Crazy)
