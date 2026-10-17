@@ -427,6 +427,11 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .monster-card.pr-billetes{background:radial-gradient(circle at 50% 0%,#1f6b3f,#06180e 75%);border-color:#5CFF95;box-shadow:0 0 22px rgba(92,255,149,.25)}
 .monster-card.pr-billetes h3{color:#9CFFC0;text-shadow:0 0 14px #1e8e5a}
 .monster-card.pr-billetes .btn{background:#2E9E57;box-shadow:0 5px 0 #14663f}
+.bv-balon{width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#8ff0a8,#2E9E57 60%,#1d6b3a);border:2px solid rgba(0,0,0,.35);animation:bv-bote .3s ease-in-out infinite alternate}
+@keyframes bv-bote{to{translate:0 -8px}}
+.bv-trebol{font-size:26px;line-height:1;animation:bv-trote .25s ease-in-out infinite alternate}
+.bv-num button.chico{width:44px;height:44px;font-size:.95rem}
+.bv-num{gap:10px}
 /* 🪟 Puente de cristal (v33) */
 .pz{flex:1;display:flex;flex-direction:column;gap:8px}
 .pz-top{display:flex;align-items:center;gap:10px}
@@ -1756,13 +1761,13 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 40;
+const APP_VERSION       = 41;
 /* ===================================================================== */
 
 const PRUEBAS = {
   trivia:  { nombre: 'Trivia de la oficina',   desc: 'Preguntas sobre la oficina y los compañeros. Tienes 12 segundos por pregunta; contestar rápido da puntos extra.' },
   memoria: { nombre: 'Memoria de expedientes', desc: 'Voltea los expedientes y encuentra los 8 pares. Gana quien termine más rápido y con menos errores.' },
-  billetes: { nombre: 'Cuenta los billetes verdes', desc: 'Pasan billetes de colores corriendo por la calle y tú los ves con binoculares. Cuenta solo los VERDES (usa el botón ¡Clic! para llevar la cuenta) y al final di cuántos pasaron. 5 rondas, cada vez más rápido: exacto +200, por 1 +120, por 2 +50.' },
+  billetes: { nombre: 'Cuenta los billetes verdes', desc: 'Pasan billetes de colores corriendo por la calle y tú los ves con binoculares. Cuenta solo los billetes VERDES (usa el botón ¡Clic! para llevar la cuenta; ojo con los balones y tréboles) y al final di cuántos pasaron. Rondas sin fin, cada vez más billetes y más rápido: si atinas el número exacto sigues (+100 y bono por rapidez); si fallas, se acaba.' },
   adeudo:  { nombre: 'Calcula el adeudo',      desc: 'Tienes 2 minutos para cobrar cuentas de la oficina. Empiezas en fácil (mensualidades, +100); si aciertas subes a pagaré (+150) y luego a difícil (+300), donde te quedas hasta que falles. Un error resta 50 y te regresa a fácil.' },
 };
 const ERRORES = {
@@ -6545,19 +6550,26 @@ function jugarAdeudo(practica = false) {
   siguiente();
 }
 
-/* ---- 💵 Cuenta los billetes verdes (como contar goombas: pasan billetes y solo cuentas los verdes) ---- */
+/* ---- 💵 Cuenta los billetes verdes (como contar goombas). Rondas infinitas: cada vez más billetes y más rápido;
+        solo sigues si atinas el número exacto ---- */
 function jugarBilletes(practica = false) {
-  const RONDAS = 5;
   // en la prueba todos ven la misma secuencia; en la práctica cambia cada vez
   const rnd = practica ? Math.random : (s => () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; })(est.juego.semana * 7919 + 101);
   const entre = (a, b) => a + rnd() * (b - a);
+  const entero = (a, b) => Math.floor(entre(a, b + 1));
   const OTROS = ['#E86AA6', '#4D8DFF', '#9B6BFF', '#FF9F43', '#F2C94C'];
+  // cuántos billetes salen en cada ronda (de la 6 en adelante, 10 más cada vez)
+  const CUANTOS = [[4, 7], [9, 14], [15, 20], [20, 30], [40, 50]];
+  const rango = k => CUANTOS[k] || [50 + 10 * (k - 5), 60 + 10 * (k - 5)];
+  // qué tan rápido cruzan (ms): las rondas 3 y 4 ya van a la velocidad de antes de la 5, y de ahí cada vez más
+  const velocidad = k => k === 0 ? entre(2500, 3200) : k === 1 ? entre(2150, 2850) : k <= 3 ? entre(1250, 1850)
+    : Math.max(420, entre(850, 1200) * Math.pow(.9, k - 4));
   const caja = $('#p-caja');
   const G = gradas();
   const yo = porId(est.yo.id) || est.yo;
   let puntaje = 0, fuera = false;
   const rondas = [];
-  caja.innerHTML = `<div class="marcador"><span id="bv-r">Ronda 1 de ${RONDAS}</span><span id="bv-p">0 pts</span></div>
+  caja.innerHTML = `<div class="marcador"><span id="bv-r">Ronda 1</span><span id="bv-p">0 pts</span></div>
     ${G.arriba}<div class="bv-esc" id="bv-esc">
       <div class="bv-casas"></div><div class="bv-calle"></div><div class="bv-pista" id="bv-pista"></div>
       <svg class="bv-bino" viewBox="0 0 100 60" preserveAspectRatio="none" aria-hidden="true"><path fill-rule="evenodd" d="M0 0H100V60H0Z M5 30a22 22 0 1 0 44 0a22 22 0 1 0 -44 0Z M51 30a22 22 0 1 0 44 0a22 22 0 1 0 -44 0Z"/></svg>
@@ -6566,42 +6578,45 @@ function jugarBilletes(practica = false) {
   const pista = $('#bv-pista'), aviso = $('#bv-aviso'), abajo = $('#bv-abajo');
   const vigente = () => !fuera && pantalla === 's-prueba' && document.body.contains(pista);
   const avisar = (t, ms = 1100) => new Promise(r => { aviso.innerHTML = t; aviso.classList.add('on'); setTimeout(() => { aviso.classList.remove('on'); r(); }, ms); });
-  const billete = c => `<div class="bv-b" style="--c:${c}"><b>$</b><i class="bv-pie a"></i><i class="bv-pie b"></i></div>`;
+  const cosaHtml = x => x.tipo === 'balon' ? '<div class="bv-balon"></div>' : x.tipo === 'trebol' ? '<div class="bv-trebol">🍀</div>'
+    : `<div class="bv-b" style="--c:${x.c}"><b>$</b><i class="bv-pie a"></i><i class="bv-pie b"></i></div>`;
 
-  // Una ronda: pasan billetes de colores; tú cuentas (con el contador) los verdes
+  // Una ronda: pasan billetes (y cosas verdes para confundir); regresa {ok, pts} o null si se salió
   async function jugarRonda(k) {
-    const n = 7 + k * 3, verdes = Math.round(n * entre(.38, .58)), ventana = 5600 + k * 900;
+    const [a, b] = rango(k), n = entero(a, b), verdes = Math.round(n * entre(.36, .55));
+    const engaños = k >= 2 ? Math.round(n * entre(.08, .16)) : 0;      // balones y tréboles verdes desde la ronda 3
+    const ventana = Math.min(14000, Math.max(4200, n * (k >= 4 ? 210 : 330)));
     const W = pista.clientWidth;
-    const cosas = Array.from({ length: n }, (_, i) => ({ verde: i < verdes })).sort(() => rnd() - .5);
+    const cosas = [...Array.from({ length: n }, (_, i) => ({ verde: i < verdes, tipo: 'billete' })),
+      ...Array.from({ length: engaños }, () => ({ verde: false, tipo: rnd() < .5 ? 'balon' : 'trebol' }))].sort(() => rnd() - .5);
     let t = 0;
     cosas.forEach((x, i) => {
-      // a partir de la ronda 3 vienen en bolitas, y de la 4 también de regreso y algunos se detienen
-      const bolita = k >= 2 && rnd() < .35;
-      t = bolita && i ? t + entre(90, 200) : entre(0, ventana);
-      x.t = t; x.dur = Math.max(1200, entre(2500, 3200) - k * 330);
-      x.atras = k >= 3 && rnd() < .3; x.pausa = k >= 3 && rnd() < .25;
+      const bolita = k >= 2 && rnd() < (k >= 4 ? .5 : .35);
+      t = bolita && i ? t + entre(70, 170) : entre(0, ventana);
+      x.t = t; x.dur = velocidad(k);
+      x.atras = k >= 3 && rnd() < (k >= 4 ? .45 : .3); x.pausa = k >= 3 && rnd() < (k >= 4 ? .35 : .22);
       x.y = entre(28, 74); x.c = x.verde ? '#2E9E57' : OTROS[Math.floor(rnd() * OTROS.length)];
     });
     let clicks = 0;
     abajo.innerHTML = `<div class="bv-cont">${monito(yo, { tam: 38, cara: '👀', nombre: false })}
-      <button class="bv-click" id="bv-click">🔢 <span>¡Clic!</span><small>Cuenta aquí los verdes</small></button></div>`;
+      <button class="bv-click" id="bv-click">🔢 <span>¡Clic!</span><small>Cuenta aquí los billetes verdes</small></button></div>`;
     const btn = $('#bv-click'), mm = $('.bv-cont .mm');
     btn.onclick = () => { clicks++; SFX.tocar('tic'); btn.classList.remove('pum'); void btn.offsetWidth; btn.classList.add('pum'); };
-    await avisar(`Ronda ${k + 1}<small>Cuenta solo los billetes <b class="bv-verde">VERDES</b></small>`, 1500);
+    await avisar(`Ronda ${k + 1}<small>Cuenta solo los <b class="bv-verde">BILLETES VERDES</b>${engaños ? '<br>¡Ojo! No cuentes los balones ni los tréboles' : ''}</small>`, k === 2 ? 2200 : 1500);
     if (!vigente()) return null;
     SFX.tocar('tadan');
-    const fin = Math.max(...cosas.map(x => x.t + x.dur + (x.pausa ? 700 : 0)));
+    const fin = Math.max(...cosas.map(x => x.t + x.dur + (x.pausa ? 600 : 0)));
     cosas.forEach(x => setTimeout(() => {
       if (!vigente()) return;
       const el = document.createElement('div');
-      el.className = 'bv-ir'; el.style.top = x.y + '%'; el.innerHTML = billete(x.c);
+      el.className = 'bv-ir'; el.style.top = x.y + '%'; el.innerHTML = cosaHtml(x);
       if (x.atras) el.firstElementChild.classList.add('atras');
       pista.appendChild(el);
       const a = -70, b = W + 20, [ini, fn] = x.atras ? [b, a] : [a, b];
       const pasos = x.pausa ? [{ transform: `translateX(${ini}px)` }, { transform: `translateX(${(ini + fn) / 2}px)`, offset: .42 },
         { transform: `translateX(${(ini + fn) / 2}px)`, offset: .62 }, { transform: `translateX(${fn}px)` }]
         : [{ transform: `translateX(${ini}px)` }, { transform: `translateX(${fn}px)` }];
-      el.animate(pasos, { duration: x.dur + (x.pausa ? 700 : 0), easing: 'linear', fill: 'forwards' }).onfinish = () => el.remove();
+      el.animate(pasos, { duration: x.dur + (x.pausa ? 600 : 0), easing: 'linear', fill: 'forwards' }).onfinish = () => el.remove();
     }, x.t));
     await sleep(fin + 300);
     if (!vigente()) return null;
@@ -6610,44 +6625,45 @@ function jugarBilletes(practica = false) {
     let resp = clicks, listo;
     const hecho = new Promise(r => listo = r);
     abajo.innerHTML = `<div class="bv-preg"><p>¿Cuántos billetes <b class="bv-verde">verdes</b> pasaron?</p>
-      <div class="bv-num"><button id="bv-menos" aria-label="Menos">−</button><b id="bv-n">${resp}</b><button id="bv-mas" aria-label="Más">+</button></div>
+      <div class="bv-num"><button class="chico" data-d="-5">−5</button><button data-d="-1" aria-label="Menos">−</button><b id="bv-n">${resp}</b><button data-d="1" aria-label="Más">+</button><button class="chico" data-d="5">+5</button></div>
       <div class="barra"><i id="bv-t" style="width:100%"></i></div>
       <button class="btn" id="bv-ok">¡Listo!</button></div>`;
-    const pinta = () => { $('#bv-n').textContent = resp; };
-    $('#bv-menos').onclick = () => { resp = Math.max(0, resp - 1); SFX.tocar('clic'); pinta(); };
-    $('#bv-mas').onclick = () => { resp = Math.min(40, resp + 1); SFX.tocar('clic'); pinta(); };
+    $$('.bv-num [data-d]').forEach(x => x.onclick = () => { resp = Math.max(0, Math.min(200, resp + +x.dataset.d)); SFX.tocar('clic'); $('#bv-n').textContent = resp; });
     $('#bv-ok').onclick = () => listo();
     const t0 = performance.now(), LIM = 15000;
     const iv = setInterval(() => {
-      const ms = performance.now() - t0, b = $('#bv-t');
-      if (!b || !vigente()) { clearInterval(iv); listo(); return; }
-      b.style.width = Math.max(0, 100 - ms / LIM * 100) + '%';
+      const ms = performance.now() - t0, bb = $('#bv-t');
+      if (!bb || !vigente()) { clearInterval(iv); listo(); return; }
+      bb.style.width = Math.max(0, 100 - ms / LIM * 100) + '%';
       if (ms >= LIM) listo();
     }, 100);
     await hecho; clearInterval(iv);
     if (!vigente()) return null;
-    const dif = Math.abs(resp - verdes), pts = [200, 120, 50][dif] || 0;
+    const ok = resp === verdes;
+    // 100 por ronda atinada + hasta 75 de bono por contestar rápido (así casi no hay empates)
+    const pts = ok ? 100 + Math.round(Math.max(0, LIM - (performance.now() - t0)) / 200) : 0;
     puntaje += pts; $('#bv-p').textContent = puntaje + ' pts';
-    abajo.innerHTML = `<div class="bv-res ${dif ? (pts ? 'casi' : 'mal') : 'bien'}"><span>Pasaron <b>${verdes}</b> verdes · dijiste <b>${resp}</b></span>
-      <strong>${dif === 0 ? '¡Exacto! +200' : pts ? `¡Casi! +${pts}` : 'Ni cerca 😅 +0'}</strong></div>`;
-    animarGradas(caja, dif === 0 ? 'bien' : pts ? 'nervios' : 'mal');
-    SFX.tocar(dif === 0 ? 'caja' : pts ? 'tac' : 'buzzer');
-    if (dif === 0) lluviaBilletes(8);
-    rondas.push({ verdes, resp, pts });
-    await sleep(2200);
-    return pts;
+    abajo.innerHTML = `<div class="bv-res ${ok ? 'bien' : 'mal'}"><span>Pasaron <b>${verdes}</b> verdes · dijiste <b>${resp}</b></span>
+      <strong>${ok ? `¡Exacto! +${pts}` : '¡Fallaste! Se acabó 😵'}</strong></div>`;
+    animarGradas(caja, ok ? 'bien' : 'mal');
+    SFX.tocar(ok ? 'caja' : 'buzzer');
+    if (ok) lluviaBilletes(Math.min(20, 6 + k * 2));
+    rondas.push({ n: k + 1, verdes, resp, pts });
+    await sleep(ok ? 2000 : 2600);
+    return { ok };
   }
 
   (async () => {
-    for (let k = 0; k < RONDAS; k++) {
-      $('#bv-r').textContent = `Ronda ${k + 1} de ${RONDAS}`;
+    for (let k = 0; ; k++) {
+      $('#bv-r').textContent = `Ronda ${k + 1}`;
       const r = await jugarRonda(k);
       if (r === null) { fuera = true; return; }
+      if (!r.ok) break;
     }
-    const exactos = rondas.filter(r => r.verdes === r.resp).length;
-    const html = `<h2>${exactos === RONDAS ? '¡Ojo de cobrador! 🦅' : exactos >= 3 ? '¡Bien contado!' : '¡Se te escaparon varios!'}</h2>
-      <p>${exactos} de ${RONDAS} rondas exactas.</p>
-      <div class="bv-tabla">${rondas.map((r, i) => `<span>Ronda ${i + 1}</span><span>${r.verdes} verdes</span><span>dijiste ${r.resp}</span><b>+${r.pts}</b>`).join('')}</div>
+    const pasadas = rondas.filter(r => r.pts).length;
+    const html = `<h2>${pasadas >= 5 ? '¡Ojo de cobrador! 🦅' : pasadas >= 3 ? '¡Bien contado!' : pasadas ? '¡Se te escaparon!' : '¡A la primera! 😅'}</h2>
+      <p>Llegaste a la ronda <b>${rondas.length}</b> (${pasadas} ${pasadas === 1 ? 'atinada' : 'atinadas'}).</p>
+      <div class="bv-tabla">${rondas.map(r => `<span>Ronda ${r.n}</span><span>${r.verdes} verdes</span><span>dijiste ${r.resp}</span><b>${r.pts ? '+' + r.pts : '✗'}</b>`).join('')}</div>
       <p>Puntaje: <b class="display" style="font-size:2rem">${puntaje}</b></p>`;
     if (practica) return finPractica(html, 'billetes', puntaje);
     caja.innerHTML = '<h2>Guardando…</h2>';

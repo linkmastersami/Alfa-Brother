@@ -177,6 +177,7 @@ Versión 37: especial de Halloween en la tienda 🎃 (sombreros, máscaras, colo
 Versión 38: el botón de la tienda brilla y parpadea.
 Versión 39: 28 misiones nuevas de actividades (duelos, hacer algo, hacer algo juntos y de Halloween).
 Versión 40: nueva prueba y práctica "Cuenta los billetes verdes" 💵; el líder sale 30% prueba y 70% de la semana (misiones, jugar, récords y duelos ganados); los récords se reinician cada semana; cada partida paga hasta $50 según el puntaje y cada duelo $50 (tope $2,000 al día); ya no se paga por récord ni por la primera práctica.
+Versión 41: Billetes verdes con rondas sin fin: cada ronda más billetes y más rápido (con balones y tréboles verdes para confundir); solo sigues si atinas el número exacto.
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.

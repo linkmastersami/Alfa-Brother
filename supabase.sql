@@ -1898,7 +1898,7 @@ create or replace function public._pago_jugar(p_yo uuid, p_juego text, p_puntaje
 returns int language plpgsql security definer set search_path = public as $$
 declare v int; v_ref numeric; v_hoy int;
 begin
-  v_ref := case p_juego when 'memoria' then 713 when 'adeudo' then 1450 when 'billetes' then 1000 else 54228 end;
+  v_ref := case p_juego when 'memoria' then 713 when 'adeudo' then 1450 when 'billetes' then 500 else 54228 end;
   v := coalesce(p_fijo, round(50 * least(1, greatest(coalesce(p_puntaje, 0), 0) / v_ref))::int);
   select coalesce(sum(pago), 0) into v_hoy from public.partidas
    where jugador_id = p_yo and creado >= (public._hoy()::timestamp at time zone 'America/Mexico_City');
@@ -1923,7 +1923,7 @@ declare
 begin
   yo := public._yo(p_token);
   if p_juego not in ('memoria', 'adeudo', 'monster', 'monster2', 'billetes') then raise exception 'JUEGO_INVALIDO'; end if;
-  v := least(greatest(coalesce(p_puntaje, 0), 0), case p_juego when 'memoria' then 1000 when 'billetes' then 1000 when 'adeudo' then 20000 else 5000000 end);
+  v := least(greatest(coalesce(p_puntaje, 0), 0), case p_juego when 'memoria' then 1000 when 'billetes' then 20000 when 'adeudo' then 20000 else 5000000 end);
   select coalesce(max(p2.mejor), 0) into v_rec from public.practicas p2 join public.jugadores j on j.id = p2.jugador_id and j.rol = 'jugador' where p2.juego = p_juego;
   insert into public.practicas (jugador_id, juego) values (yo.id, p_juego) on conflict do nothing;
   select * into p from public.practicas where jugador_id = yo.id and juego = p_juego for update;
