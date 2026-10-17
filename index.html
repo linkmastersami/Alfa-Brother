@@ -1783,7 +1783,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 47;
+const APP_VERSION       = 48;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -2951,7 +2951,9 @@ async function abrirFicha(id) {
     if (d.motivos) x += `<h4>✉️ Lo que te escribieron esa semana</h4>` + (d.motivos.length
       ? `<ul class="motivos" style="margin:6px 0 0">${d.motivos.map(m => `<li>“${esc(m)}”</li>`).join('')}</ul>` : '<p class="ayuda">Nadie te escribió motivo.</p>');
     else if (esYo && !d.revelada) x += '<p class="ayuda" style="margin-top:8px">Lo que te escribieron se ve después de la pasarela.</p>';
+    if ((est.galas || []).includes(n)) x += `<button class="btn sec" id="fs-gala" style="margin-top:12px;color:var(--texto)">📺 Ver la pasarela de la semana ${n}</button>`;
     z.innerHTML = x;
+    const bg = $('#fs-gala'); if (bg) bg.onclick = () => { cerrarFicha(); abrirGala(n, false); };
   };
   $$('[data-fs]', caja).forEach(b => b.onclick = () => { SFX.tocar('clic'); verSemana(+b.dataset.fs); });
   if ($('#ficha-sem')) verSemana(est.juego.semana);

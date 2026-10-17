@@ -184,6 +184,7 @@ Versión 44: la semana puede empezar y la prueba del líder abrir más tarde (ho
 Versión 45: arreglada "Mi ficha" (se quedaba cargando); la ficha dice "puntos negativos" y tiene selector de semana con todo lo de esa semana (tu voto y lo que te escribieron solo lo ves tú); los eliminados se sientan en su banca abajo de la sala.
 Versión 46: el reportero regresa a su esquina (la sala creció con la banca).
 Versión 47: la ficha empieza con personalizar el monito y los emojis; abajo, plegable, la información de la semana (puntos negativos, si fue líder, partidas y todo lo demás).
+Versión 48: en la información de la semana de la ficha hay un botón para ver la pasarela de esa semana.
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.
