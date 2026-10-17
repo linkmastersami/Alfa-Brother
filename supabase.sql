@@ -2452,7 +2452,7 @@ begin
   if yo.rol <> 'jugador' then raise exception 'DUELO_SOLO_HABITANTES'; end if;
   select * into r from public.jugadores where id = p_rival;
   if not found or r.rol <> 'jugador' or r.id = yo.id then raise exception 'DUELO_RIVAL_INVALIDO'; end if;
-  if p_juego is null or p_juego not in ('ppt', 'globo', 'calculo', 'camino', 'penales') then raise exception 'OPCION_INVALIDA'; end if;
+  if p_juego is null or p_juego not in ('ppt', 'globo', 'camino', 'penales') then raise exception 'OPCION_INVALIDA'; end if;   -- v55: ya no hay Cálculo rápido
   if p_apuesta is null or p_apuesta < 0 or p_apuesta > 5000 then raise exception 'DUELO_APUESTA'; end if;
   if p_apuesta > yo.billetes then raise exception 'SIN_BILLETES'; end if;
   perform public._cerrar_duelos();

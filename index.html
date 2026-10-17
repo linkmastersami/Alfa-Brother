@@ -286,6 +286,19 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .tv-aviso{font-size:.8rem;color:#C9C3EE}
 #m-monster{position:fixed;inset:0;z-index:300;background:#0a0510}
 /* ---------- ⚔️ Duelos ---------- */
+.monster-card.du-penales{background:radial-gradient(circle at 50% 0%,#1f7a35,#06200e 75%);border-color:#7CFF8A;box-shadow:0 0 22px rgba(124,255,138,.25)}
+.monster-card.du-penales h3{color:#B8FFC0;text-shadow:0 0 14px #2ecc55}
+.monster-card.du-penales .btn{background:#1e8e3a;box-shadow:0 5px 0 #0e4d20}
+.monster-card.du-boxeo{background:radial-gradient(circle at 50% 0%,#7a1220,#1c0408 75%);border-color:#ff4d5e;box-shadow:0 0 22px rgba(255,77,94,.28)}
+.monster-card.du-boxeo h3{color:#ff8a96;text-shadow:0 0 14px #ff2a3d}
+.monster-card.du-boxeo .btn{background:#c21d33;box-shadow:0 5px 0 #6e0f1c}
+.monster-card.du-globo{background:radial-gradient(circle at 50% 0%,#7a2a6e,#1c0618 75%);border-color:#ff7ad9;box-shadow:0 0 22px rgba(255,122,217,.25)}
+.monster-card.du-globo h3{color:#ffb3ec;text-shadow:0 0 14px #ff3fc6}
+.monster-card.du-globo .btn{background:#b0308f;box-shadow:0 5px 0 #601a4e}
+.monster-card.du-camino{background:radial-gradient(circle at 50% 0%,#1b5c74,#04161f 75%);border-color:#7fe3ff;box-shadow:0 0 22px rgba(127,227,255,.25)}
+.monster-card.du-camino h3{color:#bff1ff;text-shadow:0 0 14px #2ec8ff}
+.monster-card.du-camino .btn{background:#1f86a8;box-shadow:0 5px 0 #104a5e}
+.du-card-nota{font-size:.82rem!important;opacity:.85}
 .monster-card.pr-duelo{background:radial-gradient(circle at 50% 0%,#5a2a08,#1a0b04 75%);border-color:#ffb02e;box-shadow:0 0 22px rgba(255,170,40,.28)}
 .monster-card.pr-duelo h3{color:#FFC94A;text-shadow:0 0 14px #ff8a00}
 .du-juegos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 4px}
@@ -1842,7 +1855,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 54;
+const APP_VERSION       = 55;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -3778,7 +3791,7 @@ function pintarEconomia() {
   $('#c-misiones').innerHTML = tarjetaMision(g) || `<div class="juego-card"><p>${g.semana === 0 ? 'Las misiones secretas empiezan cuando abra la casa (semana 1).' : 'Esta semana no hay misiones.'}</p>
     <p class="ayuda">Cada semana cada habitante recibe 5 misiones secretas sobre sus compañeros. Las que cumplas te dan billetes y cuentan para ser líder esa misma semana (hasta que cierre la prueba).</p></div>`;
   // pestaña Jugar: Monster Crazy y las prácticas con sus récords
-  $('#c-jugar').innerHTML = tarjetaDuelos() + tarjetaMonster() + tarjetaPractica('billetes') + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
+  $('#c-jugar').innerHTML = tarjetasDuelos() + tarjetaMarcadorDuelos() + tarjetaMonster() + tarjetaPractica('billetes') + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
   // botones
   const C = $('#s-casa');
   C.querySelector('[data-ver-billetes]').onclick = abrirBilletes;
@@ -4000,20 +4013,26 @@ const MONSTER = (() => {
   return { abrir, cerrar, mandarPendiente };
 })();
 /* ---------- ⚔️ Duelos entre habitantes (2 jugadores, con apuesta) ---------- */
-const DUELOS_JUEGOS = {
-  ppt: { nombre: 'Boxeo', ic: '🤜🤛', desc: 'Piedra, papel o tijeras a golpes: 3 corazones cada quien y un poder por pelea (🛡️ escudo o ⚡ golpe doble). Si empatan, la siguiente vale doble. Gana el último en pie.' },
-  globo: { nombre: 'Globo explosivo', ic: '🎈💥', desc: 'En la feria: sube y baja el mango de tu bomba para inflar el globo de agua que cuelga sobre tu rival. El primero que lo revienta ¡lo baña y gana!' },
-  calculo: { nombre: 'Cálculo rápido', ic: '➕✖️', desc: 'Las mismas 10 operaciones para los dos. Gana quien tenga más buenas; si empatan, el más rápido.' },
-  penales: { nombre: 'Penales', ic: '⚽🧤', desc: 'Tanda de penales: se alternan, uno tira y el otro tapa (izquierda, centro o derecha). Si el portero adivina, ¡atajada! 5 tiros cada quien; si empatan, muerte súbita. El volado decide quién tira primero.' },
-  camino: { nombre: 'El camino correcto', ic: '🪟', desc: 'Puente de cristal: 10 fases de 2 cristales y 6 segundos por paso. Si pisas el falso se rompe para los dos, te caes y regresas a la salida. Tienes una 🪨 piedra para probar un cristal. Gana el primero en llegar a la meta.' },
+const DUELOS_JUEGOS = {            // en este orden salen en Jugar
+  penales: { nombre: 'Penales', ic: '⚽🧤', clase: 'du-penales', ed: 'NUEVO · DUELO 1 VS 1', titulo: 'PENALES', desc: 'Tanda de penales: se alternan, uno tira y el otro tapa (izquierda, centro o derecha). Si el portero adivina, ¡atajada! 5 tiros cada quien; si empatan, muerte súbita. El volado decide quién tira primero.' },
+  ppt: { nombre: 'Boxeo', ic: '🤜🤛', clase: 'du-boxeo', ed: 'DUELO 1 VS 1', titulo: 'BOXEO', desc: 'Piedra, papel o tijeras a golpes: 3 corazones cada quien y un poder por pelea (🛡️ escudo o ⚡ golpe doble). Si empatan, la siguiente vale doble. Gana el último en pie.' },
+  globo: { nombre: 'Globo explosivo', ic: '🎈💥', clase: 'du-globo', ed: 'DUELO 1 VS 1', titulo: 'GLOBO EXPLOSIVO', desc: 'En la feria: sube y baja el mango de tu bomba para inflar el globo de agua que cuelga sobre tu rival. El primero que lo revienta ¡lo baña y gana!' },
+  camino: { nombre: 'El camino correcto', ic: '🪟', clase: 'du-camino', ed: 'DUELO 1 VS 1', titulo: 'EL CAMINO CORRECTO', desc: 'Puente de cristal: 10 fases de 2 cristales y 6 segundos por paso. Si pisas el falso se rompe para los dos, te caes y regresas a la salida. Tienes una 🪨 piedra para probar un cristal. Gana el primero en llegar a la meta.' },
+  // ya no se puede retar a este, pero se queda para los duelos viejos (historial y fichas)
+  calculo: { nombre: 'Cálculo rápido', ic: '➕✖️', oculto: true, desc: 'Las mismas 10 operaciones para los dos. Gana quien tenga más buenas; si empatan, el más rápido.' },
 };
-function tarjetaDuelos() {
-  const marc = (est.duelos_marcador || []).slice(0, 5);
+// Cada duelo tiene su propia tarjeta en Jugar (como Monster Crazy y las prácticas)
+function tarjetasDuelos() {
   const hab = est.yo.rol === 'jugador';
-  return `<div class="monster-card pr-duelo"><div class="ed">NUEVO · 2 JUGADORES</div><h3>DUELOS <span class="pr-ic">⚔️</span></h3>
-    <p>${hab ? 'Escoge un juego y reta a otro habitante (aunque ya lo hayan sacado de la casa). Ponen la misma apuesta y el que gana se lleva lo de los dos. ¿Quieres practicar? Escoge al Reportero 🧑‍💼: con él no se gana ni se pierde nada.' : 'Los duelos son solo para los habitantes de la casa. Tú puedes ver el marcador.'}</p>
-    ${hab ? `<div class="du-juegos">${Object.entries(DUELOS_JUEGOS).map(([k, j]) => `<button data-duelo="${k}"><span>${j.ic}</span><b>${j.nombre}</b></button>`).join('')}</div>` : ''}
-    <div class="du-marc"><b>🏆 Marcador de duelos</b>${marc.length ? marc.map((m, i) => `<div class="${m.id === est.yo.id ? 'yo' : ''}"><span>${['🥇', '🥈', '🥉', '4.', '5.'][i]} ${esc(porId(m.id)?.nombre || '?')}</span><span>${m.g} ${m.g === 1 ? 'ganado' : 'ganados'} · ${m.p} ${m.p === 1 ? 'perdido' : 'perdidos'}</span></div>`).join('')
+  return Object.entries(DUELOS_JUEGOS).filter(([, j]) => !j.oculto).map(([k, j]) => `<div class="monster-card du-card ${j.clase}"><div class="ed">${j.ed}</div><h3>${j.titulo} <span class="pr-ic">${j.ic}</span></h3>
+    <p>${esc(j.desc)}</p>
+    <p class="du-card-nota">${hab ? 'Reta a otro habitante (aunque ya haya salido de la casa) y pongan la misma apuesta: el que gana se lleva lo de los dos, y los dos ganan $50 por jugar. Para practicar, reta al Reportero 🧑‍💼.' : 'Los duelos son solo para los habitantes de la casa.'}</p>
+    ${hab ? `<button class="btn" data-duelo="${k}">⚔️ Desafiar</button>` : ''}</div>`).join('');
+}
+function tarjetaMarcadorDuelos() {
+  const marc = (est.duelos_marcador || []).slice(0, 5);
+  return `<div class="juego-card"><h3>⚔️ Marcador de duelos <small>Todos los juegos</small></h3>
+    <div class="du-marc">${marc.length ? marc.map((m, i) => `<div class="${m.id === est.yo.id ? 'yo' : ''}"><span>${['🥇', '🥈', '🥉', '4.', '5.'][i]} ${esc(porId(m.id)?.nombre || '?')}</span><span>${m.g} ${m.g === 1 ? 'ganado' : 'ganados'} · ${m.p} ${m.p === 1 ? 'perdido' : 'perdidos'}</span></div>`).join('')
       : '<div><span style="color:#C9C3EE">Nadie ha jugado todavía. ¡Estrénalo!</span></div>'}</div></div>`;
 }
 const DUELO = (() => {
@@ -4060,7 +4079,7 @@ const DUELO = (() => {
     if (est?.yo.rol !== 'jugador') { toast('Los duelos son solo para los habitantes de la casa.'); return; }
     if (modo) return;
     if (est.duelo) { revisar(); if (!modo) toast('Ya tienes un duelo pendiente.'); return; }
-    juegoK = J[juego] ? juego : 'ppt'; rivalSel = null; modo = 'elegir';
+    juegoK = J[juego] && !J[juego].oculto ? juego : 'penales'; rivalSel = null; modo = 'elegir';
     apuesta = Math.min(100, Math.max(0, est.billetes || 0));
     pintarElegir(); abrirCaja(); SFX.tocar('swish');
   }
