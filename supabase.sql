@@ -251,10 +251,10 @@ create table if not exists public.practicas (
 
 -- v16: Monster Crazy también guarda récord (y paga como las prácticas)
 alter table public.practicas drop constraint if exists practicas_juego_check;
-alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster','monster2','billetes'));   -- v17: Monster Crazy 2.0
+alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster','monster2','billetes','cobranza'));   -- v17: Monster Crazy 2.0
 -- v40: Cuenta los billetes verdes (práctica y prueba del líder) y registro de cada partida (paga según el puntaje)
 alter table public.practicas drop constraint if exists practicas_juego_check;
-alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster','monster2','billetes'));
+alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster','monster2','billetes','cobranza'));
 alter table public.config drop constraint if exists config_prueba_check;
 alter table public.config add constraint config_prueba_check check (prueba in ('trivia','memoria','adeudo','billetes'));
 create table if not exists public.partidas (
@@ -889,7 +889,7 @@ language sql stable security definer set search_path = public as $$
   pa as (select p.jugador_id, p.juego, count(*) as n, max(p.puntaje) as mejor
            from public.partidas p, v where p.creado >= v.ini and p.juego <> 'duelo' group by 1, 2),
   tops as (select pa.juego, max(pa.mejor) as top from pa join public.jugadores jj on jj.id = pa.jugador_id and jj.rol = 'jugador'
-            where pa.juego in ('monster2', 'memoria', 'adeudo', 'billetes') group by pa.juego having max(pa.mejor) > 0)
+            where pa.juego in ('monster2', 'memoria', 'adeudo', 'billetes', 'cobranza') group by pa.juego having max(pa.mejor) > 0)
   select j.id,
     least(5, (select count(*) from public.misiones m where m.semana = p_semana and m.jugador_id = j.id and m.cumplida is not null))::int,
     ((select coalesce(sum(pa.n), 0) from pa where pa.jugador_id = j.id)
@@ -1968,7 +1968,7 @@ create or replace function public._pago_jugar(p_yo uuid, p_juego text, p_puntaje
 returns int language plpgsql security definer set search_path = public as $$
 declare v int; v_ref numeric; v_hoy int;
 begin
-  v_ref := case p_juego when 'memoria' then 713 when 'adeudo' then 1450 when 'billetes' then 500 else 54228 end;
+  v_ref := case p_juego when 'memoria' then 713 when 'adeudo' then 1450 when 'billetes' then 500 when 'cobranza' then 60000 else 54228 end;   -- v60: Cobranza furiosa
   v := coalesce(p_fijo, round(50 * least(1, greatest(coalesce(p_puntaje, 0), 0) / v_ref))::int);
   select coalesce(sum(pago), 0) into v_hoy from public.partidas
    where jugador_id = p_yo and creado >= (public._hoy()::timestamp at time zone 'America/Mexico_City');
@@ -1992,7 +1992,7 @@ declare
   v_record boolean := false;
 begin
   yo := public._yo(p_token);
-  if p_juego not in ('memoria', 'adeudo', 'monster', 'monster2', 'billetes') then raise exception 'JUEGO_INVALIDO'; end if;
+  if p_juego not in ('memoria', 'adeudo', 'monster', 'monster2', 'billetes', 'cobranza') then raise exception 'JUEGO_INVALIDO'; end if;
   v := least(greatest(coalesce(p_puntaje, 0), 0), case p_juego when 'memoria' then 1000 when 'billetes' then 20000 when 'adeudo' then 20000 else 5000000 end);
   select coalesce(max(p2.mejor), 0) into v_rec from public.practicas p2 join public.jugadores j on j.id = p2.jugador_id and j.rol = 'jugador' where p2.juego = p_juego;
   insert into public.practicas (jugador_id, juego) values (yo.id, p_juego) on conflict do nothing;
@@ -2286,7 +2286,7 @@ begin
           'actual', (select jsonb_build_object('id', p.jugador_id, 'nombre', j.nombre, 'puntos', p.mejor)
                        from public.practicas p join public.jugadores j on j.id = p.jugador_id and j.rol = 'jugador'
                       where p.juego = g.juego and p.mejor > 0 order by p.mejor desc limit 1)) as r
-          from (values (1, 'monster2'), (3, 'memoria'), (4, 'adeudo'), (5, 'billetes')) g(o, juego) order by g.o) x   -- v26: sin Monster Crazy clásico (ya se retiró)
+          from (values (1, 'monster2'), (3, 'memoria'), (4, 'adeudo'), (5, 'billetes'), (6, 'cobranza')) g(o, juego) order by g.o) x   -- v26: sin Monster Crazy clásico (ya se retiró)
         where x.r->'actual' <> 'null'::jsonb),
     -- v24: duelos del día (solo los que alguien ganó)
     'duelos', jsonb_build_object(

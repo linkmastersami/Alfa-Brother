@@ -1055,6 +1055,47 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .chip-eco.dinero{background:#1E8E5A;box-shadow:none}
 /* botón de la tienda: el contorno brilla y parpadea */
 #c-tienda{animation:tienda-brilla 1.6s ease-in-out infinite}
+/* 🎯 Cobranza furiosa */
+.cf-card{background:radial-gradient(circle at 50% 0%,#6b3a12,#1c0f05 75%);border-color:#FFB347}
+.cf-card h3{color:#FFB347}
+#m-cobranza{position:fixed;inset:0;z-index:300;background:#2b3a67;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;font-family:"Work Sans",sans-serif}
+.cf-lienzo{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.cf-vigia{position:absolute;left:0;top:0;pointer-events:none;will-change:transform;transform-origin:0 0}
+.cf-vigia .mm .bi{transform:rotate(128deg)}
+.cf-vigia .mm .bd{transform:rotate(-58deg)}
+.cf-vigia .mm-cab{transform:rotate(6deg)}
+.cf-vigia .mm.festeja .bi{transform:rotate(62deg)}
+.cf-bino{position:absolute;top:calc(34px/8.4*6.4);left:calc(50% + 4px);width:26px;transform:translateX(-50%) rotate(-6deg);z-index:4;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
+.cf-vigia .mm.festeja ~ .cf-bino{opacity:0}
+.cf-dice{position:absolute;left:0;top:0;translate:0 -100%;z-index:2;pointer-events:none;background:#FFFDF6;color:#1b1430;border-radius:12px 12px 12px 3px;padding:5px 9px;font-size:.8rem;font-weight:800;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.35);transform:scale(0);transform-origin:0 100%;transition:transform .18s cubic-bezier(.2,1.6,.4,1)}
+.cf-dice.on{transform:scale(1)}
+.cf-hud{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(env(safe-area-inset-top) + 10px) 14px 8px;color:#fff;pointer-events:none;text-shadow:0 2px 4px rgba(0,0,0,.5)}
+.cf-hud>div{display:flex;flex-direction:column;align-items:center;gap:2px}
+.cf-nivel{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.2rem;letter-spacing:1px}
+.cf-vidas{font-size:.9rem}
+.cf-pts{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.4rem;color:#FFD54A;min-width:70px;text-align:right}
+.cf-x{pointer-events:auto;width:40px;height:40px;border-radius:50%;border:0;background:rgba(0,0,0,.4);color:#fff;font-size:1.1rem}
+.cf-cola{position:absolute;left:12px;bottom:calc(env(safe-area-inset-bottom) + 12px);display:flex;gap:6px;pointer-events:none}
+.cf-cola span{width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.35);display:grid;place-items:center;font-size:20px;opacity:.75}
+.cf-cola span.ya{background:#FFD54A;opacity:1;box-shadow:0 0 0 3px rgba(255,213,74,.35)}
+.cf-aviso{position:absolute;left:50%;top:22%;transform:translate(-50%,-50%) scale(.6);opacity:0;pointer-events:none;text-align:center;color:#fff;transition:transform .25s cubic-bezier(.2,1.6,.4,1),opacity .2s}
+.cf-aviso.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.cf-aviso b{display:block;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:2.1rem;color:#FFD54A;text-shadow:0 3px 0 #7a3d00,0 6px 14px rgba(0,0,0,.5);white-space:nowrap}
+.cf-aviso small{display:block;font-weight:700;font-size:.95rem;text-shadow:0 2px 4px rgba(0,0,0,.6)}
+.cf-panel{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;gap:10px;padding:24px 22px;background:rgba(18,10,30,.82);color:#fff;overflow:auto;text-align:center}
+.cf-panel.on{display:flex}
+.cf-panel p{margin:0;color:#E4E0FF}
+.cf-tit{font-family:Anton,Impact,sans-serif;font-size:2.6rem;line-height:1;color:#FFB347;text-shadow:0 4px 0 #7a3d00}
+.cf-tit span{color:#FF4D5E}
+.cf-tiros{display:grid;gap:6px;text-align:left;margin:4px 0}
+.cf-tiros div{display:grid;grid-template-columns:34px 1fr;column-gap:8px;align-items:center;background:rgba(255,255,255,.07);border-radius:10px;padding:6px 10px}
+.cf-tiros span{grid-row:span 2;font-size:24px;text-align:center}
+.cf-tiros b{font-size:.9rem}
+.cf-tiros small{color:#C9C3EE;font-size:.78rem}
+.cf-chico{font-size:.82rem}
+.cf-final b{display:block;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:3rem;color:#FFD54A}
+.cf-final small{color:#C9C3EE}
+.cf-panel .btn.sec{color:#fff;box-shadow:inset 0 0 0 2px #6E5FD0}
 /* juegos nuevos en Jugar: el contorno brilla y parpadea igual que la tienda */
 .monster-card.nuevo-brilla{animation:juego-brilla 1.6s ease-in-out infinite;border-color:#FFD54A}
 @keyframes juego-brilla{0%,100%{box-shadow:inset 0 0 0 2px #FFD54A,0 0 0 0 rgba(255,213,74,0)}50%{box-shadow:inset 0 0 0 3px #FFB347,0 0 20px 6px rgba(255,170,60,.85)}}
@@ -1858,7 +1899,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 59;
+const APP_VERSION       = 60;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -3031,7 +3072,7 @@ async function abrirFicha(id) {
     let d;
     try { d = await rpc('ficha_semana', { p_token: token, p_id: id, p_semana: n }); } catch (e) { z.innerHTML = `<p class="ayuda">${esc(mensajeError(e))}</p>`; return; }
     if (!$('#ficha-sem') || !$(`[data-fs="${n}"].on`, caja)) return;
-    const NJ = { memoria: 'Memoria', adeudo: 'Adeudo', billetes: 'Billetes', monster2: 'Monster 2.0', monster: 'Monster' };
+    const NJ = { memoria: 'Memoria', adeudo: 'Adeudo', billetes: 'Billetes', cobranza: 'Cobranza', monster2: 'Monster 2.0', monster: 'Monster' };
     const t = (b, txt) => `<div class="tile"><b>${b}</b><small>${txt}</small></div>`;
     let x = `<div class="fs-tit">${d.eliminado ? '<span>🚪 Salió esa semana</span>' : ''}</div>
       <div class="tiles">${t(d.revelada ? d.puntos : '?', d.revelada ? 'puntos negativos' : 'puntos negativos (se saben en la pasarela)')}${t(d.lider ? '👑 Sí' : 'No', 'fue líder')}
@@ -3794,7 +3835,7 @@ function pintarEconomia() {
   $('#c-misiones').innerHTML = tarjetaMision(g) || `<div class="juego-card"><p>${g.semana === 0 ? 'Las misiones secretas empiezan cuando abra la casa (semana 1).' : 'Esta semana no hay misiones.'}</p>
     <p class="ayuda">Cada semana cada habitante recibe 5 misiones secretas sobre sus compañeros. Las que cumplas te dan billetes y cuentan para ser líder esa misma semana (hasta que cierre la prueba).</p></div>`;
   // pestaña Jugar: Monster Crazy y las prácticas con sus récords
-  $('#c-jugar').innerHTML = tarjetasDuelos(true) + tarjetaPractica('billetes') + tarjetasDuelos(false) + tarjetaMonster() + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
+  $('#c-jugar').innerHTML = tarjetaCobranza() + tarjetasDuelos(true) + tarjetaPractica('billetes') + tarjetasDuelos(false) + tarjetaMonster() + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
   // botones
   const C = $('#s-casa');
   C.querySelector('[data-ver-billetes]').onclick = abrirBilletes;
@@ -3811,6 +3852,7 @@ function pintarEconomia() {
   $$('#c-jugar [data-practicar]').forEach(b => b.onclick = () => abrirPractica(b.dataset.practicar));
   ['#c-dinero', '#c-misiones', '#c-jugar'].forEach(sel => plegarTarjetas($(sel)));
   $$('#c-jugar [data-monster]').forEach(b => b.onclick = () => MONSTER.abrir(b.dataset.monster));
+  $$('#c-jugar [data-cobranza]').forEach(b => b.onclick = () => COBRANZA.abrir());
   $$('#c-jugar [data-duelo]').forEach(b => b.onclick = () => DUELO.elegir(b.dataset.duelo));
 }
 
@@ -5290,7 +5332,7 @@ const TV = (() => {
   const prod = (a, b, sep = ' ') => a.flatMap(x => b.map(y => x + sep + y));
   const llenar = (t, c) => t.replace(/\{(\w+)\}/g, (_, k) => c[k] ?? '');
   const fmt = n => Number(n || 0).toLocaleString('es-MX');
-  const JUEGOS = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes' };
+  const JUEGOS = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa' };
 
   // ---------- el guion ----------
   // Exclamaciones para armar las reacciones
@@ -6085,7 +6127,7 @@ function tarjetaRecords() {
       <div class="r" style="margin-top:4px;color:#C9C3EE"><span>Tu mejor</span><span>${mio?.mejor ?? 0}</span></div></div>`;
   };
   return `<div class="juego-card"><h3>🏆 Récords de la semana <small>Juegos y duelos</small></h3>
-    <div class="record-cols">${col('monster2', 'Monster Crazy 2.0')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}${col('billetes', 'Billetes verdes')}</div>
+    <div class="record-cols">${col('monster2', 'Monster Crazy 2.0')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}${col('billetes', 'Billetes verdes')}${col('cobranza', 'Cobranza furiosa')}</div>
     ${marcadorDuelos()}
     <p class="ayuda" style="margin-top:6px">Los récords vuelven a cero cada semana y cuentan para ser líder. Cada partida paga hasta $50 según tu puntaje (máximo $2,000 al día por jugar).</p></div>`;
 }
@@ -6105,6 +6147,708 @@ function tarjetaPractica(juego) {
     <p class="pr-rec">Tu récord: <b>${(mio?.mejor || 0).toLocaleString('es-MX')}</b> · ${est.yo.rol === 'jugador' ? 'Cada partida paga hasta $50 según qué tan bien te vaya (máximo $2,000 al día por jugar). Los récords se reinician cada semana.' : 'Como público también ganas hasta $50 por partida según tu puntaje, pero tu puntaje no entra a los récords de la casa.'}</p>
     <button class="btn" data-practicar="${juego}">${e.boton}</button></div>`;
 }
+
+/* =====================================================================
+   🎯 COBRANZA FURIOSA (1 jugador): con la resortera tumbas las torres de la
+   oficina donde se esconden los morosos (las caras de tus compañeros).
+   Tu monito está junto a la resortera con binoculares y te va dirigiendo.
+   Niveles sin fin; si se te acaban los tiros y quedan morosos pierdes un ❤️.
+   La física es Matter.js (se carga solo cuando abres el juego).
+   ===================================================================== */
+function tarjetaCobranza() {
+  const mio = (est.practicas || []).find(p => p.id === est.yo.id && p.juego === 'cobranza')?.mejor || 0;
+  const caras = (est.jugadores || []).filter(j => j.id !== est.yo.id).sort(() => Math.random() - 0.5).slice(0, 5);
+  return `<div class="monster-card cf-card nuevo-brilla"><div class="ed">NUEVO · 1 JUGADOR</div><h3>COBRANZA FURIOSA <span class="pr-ic">🎯</span></h3>
+    <div class="monster-caras">${caras.map(j => avatar(j, 36)).join('')}<div class="av" style="width:36px;height:36px;background:#3a2410;font-size:20px">🐷</div></div>
+    <p>Los morosos se escondieron en torres de cajas, vidrios y archiveros. Jala la liga de la resortera, suelta y tumba a todos. Tu monito te dirige con sus binoculares 🔭. Algunos tiros tienen poder: tócale a la pantalla mientras vuelan.</p>
+    <p class="pr-rec">Tu récord: <b>${mio.toLocaleString('es-MX')}</b> · ${est.yo.rol === 'jugador' ? 'Cada partida paga hasta $50 según qué tan bien te vaya (máximo $2,000 al día por jugar). Los récords se reinician cada semana.' : 'Como público también ganas hasta $50 por partida según tu puntaje, pero tu puntaje no entra a los récords de la casa.'}</p>
+    <button class="btn" data-cobranza>🎯 Jugar</button></div>`;
+}
+const COBRANZA = (() => {
+  const URLS = ['https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js',
+    'https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js'];
+  let cargando = null;
+  function cargarMotor() {
+    if (window.Matter) return Promise.resolve();
+    if (cargando) return cargando;
+    cargando = new Promise((ok, mal) => {
+      let i = 0;
+      const intenta = () => {
+        if (i >= URLS.length) { cargando = null; mal(new Error('MOTOR')); return; }
+        const s = document.createElement('script'); s.src = URLS[i++]; s.async = true;
+        s.onload = () => window.Matter ? ok() : intenta();
+        s.onerror = () => { s.remove(); intenta(); };
+        document.head.appendChild(s);
+      };
+      intenta();
+    });
+    return cargando;
+  }
+
+  // ---- el mundo (unidades del juego; el suelo está en y = SUELO) ----
+  const MUNDO_W = 790, SUELO = 600, VW = 430;
+  const HONDA = { x: 104, y: SUELO - 104 };      // donde descansa el tiro en la liga
+  const JALON = 80, VMAX = 15.2, G = 0.2778;      // G = gravedad por paso (Matter a 60 fps)
+  const DANO = 0.05;                              // energía del choque → daño
+  const MAT = {
+    caja:      { vida: 9,  dens: .0012, pts: 200 },
+    vidrio:    { vida: 3.5, dens: .0010, pts: 300 },
+    archivero: { vida: 22, dens: .0030, pts: 500 },
+    garrafon:  { vida: 8,  dens: .0020, pts: 300 },
+  };
+  const PROY = {
+    cochi: { ic: '🐷', nom: 'Cochinito', r: 15, dens: .0065, tip: 'El tiro de siempre' },
+    clip:  { ic: '📎', nom: 'Clip', r: 13, dens: .0055, tip: 'Toca en el aire: se abre en 3 clips' },
+    garra: { ic: '💧', nom: 'Garrafón', r: 17, dens: .0120, tip: 'Toca en el aire: cae en picada' },
+    sello: { ic: '🔴', nom: 'Sello PAGADO', r: 15, dens: .0060, tip: 'Toca en el aire: ¡explota!' },
+    celu:  { ic: '📱', nom: 'Celular', r: 13, dens: .0060, tip: 'Toca en el aire: sale disparado' },
+  };
+  const PTS_MOROSO = 5000, PTS_TIRO_SOBRA = 3000;
+
+  let M = null;              // Matter
+  let raiz = null, lienzo = null, ctx = null, vigia = null;
+  let engine = null, raf = 0, ultimoT = 0, acum = 0;
+  let W = 0, H = 0, DPR = 1, zoom = 1, camX = 0, camMeta = 0, camManual = false;
+  let st = null;             // estado de la partida
+  let caras = {};            // imágenes de las caras (id → Image)
+  let jalando = null, paneo = null;
+  const azar = (a, b) => a + Math.random() * (b - a);
+
+  // ---------------------------------------------------------------- abrir / cerrar
+  function abrir() {
+    if (raiz) return;
+    raiz = document.createElement('div');
+    raiz.id = 'm-cobranza';
+    raiz.innerHTML = `<canvas class="cf-lienzo"></canvas>
+      <div class="cf-dice"></div><div class="cf-vigia">${monito(est.yo, { tam: 34, nombre: false, estilo: { ...(est.yo.estilo || porId(est.yo.id)?.estilo || {}), lentes: null, mano: null } })}
+        <svg class="cf-bino" viewBox="0 0 30 14" aria-hidden="true"><rect x="1" y="1.5" width="12" height="11" rx="4" fill="#1d1d24"/><rect x="17" y="1.5" width="12" height="11" rx="4" fill="#1d1d24"/><rect x="11" y="5" width="8" height="4" fill="#444"/><circle cx="7" cy="7" r="3.2" fill="#7fd3ff"/><circle cx="23" cy="7" r="3.2" fill="#7fd3ff"/></svg></div>
+      <div class="cf-hud"><button class="cf-x" aria-label="Salir">✕</button><div><b class="cf-nivel">NIVEL 1</b><span class="cf-vidas"></span></div><b class="cf-pts">0</b></div>
+      <div class="cf-cola"></div><div class="cf-aviso"></div><div class="cf-panel"></div>`;
+    document.body.appendChild(raiz);
+    lienzo = $('.cf-lienzo', raiz); ctx = lienzo.getContext('2d'); vigia = $('.cf-vigia', raiz);
+    $('.cf-x', raiz).onclick = salir;
+    lienzo.addEventListener('pointerdown', abajo);
+    lienzo.addEventListener('pointermove', mueve);
+    lienzo.addEventListener('pointerup', arriba);
+    lienzo.addEventListener('pointercancel', arriba);
+    window.addEventListener('resize', medir);
+    medir();
+    precargarCaras();
+    portada();
+    ultimoT = performance.now(); raf = requestAnimationFrame(cuadro);
+  }
+  function cerrar() {
+    cancelAnimationFrame(raf); raf = 0;
+    window.removeEventListener('resize', medir);
+    if (engine && M) { M.World.clear(engine.world, false); M.Engine.clear(engine); }
+    engine = null; st = null; jalando = null; paneo = null;
+    raiz?.remove(); raiz = null;
+    refrescar();
+  }
+  function salir() {
+    if (st && st.vivo && st.puntos > 0) {
+      if (!confirm('¿Terminar la partida? Se guardan los puntos que llevas.')) return;
+      finPartida(); return;
+    }
+    cerrar();
+  }
+  function medir() {
+    if (!raiz) return;
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    W = raiz.clientWidth; H = raiz.clientHeight;
+    lienzo.width = Math.round(W * DPR); lienzo.height = Math.round(H * DPR);
+    zoom = W / H > 1.1 ? Math.min(W / MUNDO_W, H / 470) : W / VW;
+  }
+  const vistaW = () => W / zoom, vistaH = () => H / zoom;
+  const camY = () => SUELO - vistaH() * (W / H > 1.1 ? .86 : .78);
+  const camMax = () => Math.max(0, MUNDO_W - vistaW());
+  const aPantalla = (x, y) => ({ x: (x - camX) * zoom, y: (y - camY()) * zoom });
+  const aMundo = (sx, sy) => ({ x: sx / zoom + camX, y: sy / zoom + camY() });
+
+  function precargarCaras() {
+    caras = {};
+    for (const j of est.jugadores || []) {
+      if (!fotos[j.id]) continue;
+      const im = new Image(); im.src = fotos[j.id]; caras[j.id] = im;
+    }
+  }
+  function decir(txt, ms = 1800) {
+    const d = $('.cf-dice', raiz); if (!d) return;
+    d.textContent = txt; d.classList.add('on');
+    clearTimeout(d._t); if (ms) d._t = setTimeout(() => d.classList.remove('on'), ms);
+  }
+  function aviso(html, ms = 1600) {
+    const a = $('.cf-aviso', raiz); if (!a) return;
+    a.innerHTML = html; a.classList.remove('on'); void a.offsetWidth; a.classList.add('on');
+    clearTimeout(a._t); a._t = setTimeout(() => a.classList.remove('on'), ms);
+  }
+
+  // ---------------------------------------------------------------- portada y final
+  function portada() {
+    const p = $('.cf-panel', raiz);
+    const mio = (est.practicas || []).find(x => x.id === est.yo.id && x.juego === 'cobranza')?.mejor || 0;
+    p.innerHTML = `<div class="cf-tit">COBRANZA<br><span>FURIOSA</span></div>
+      <p>Los morosos se escondieron en las torres de la oficina. <b>Jala la liga hacia atrás y suelta</b> para lanzar. Tumba a todos antes de que se te acaben los tiros.</p>
+      <div class="cf-tiros">${Object.values(PROY).map(t => `<div><span>${t.ic}</span><b>${t.nom}</b><small>${t.tip}</small></div>`).join('')}</div>
+      <p class="cf-chico">Morosos ${PTS_MOROSO.toLocaleString('es-MX')} pts · tiro que te sobre ${PTS_TIRO_SOBRA.toLocaleString('es-MX')} pts · 3 ❤️. Tu récord: <b>${mio.toLocaleString('es-MX')}</b></p>
+      <button class="btn" id="cf-va" disabled>Cargando…</button>`;
+    p.classList.add('on');
+    cargarMotor().then(() => {
+      M = window.Matter;
+      const b = $('#cf-va', raiz); if (!b) return;
+      b.disabled = false; b.textContent = '🎯 ¡A cobrar!';
+      b.onclick = () => { p.classList.remove('on'); nuevaPartida(); };
+    }).catch(() => {
+      const b = $('#cf-va', raiz); if (!b) return;
+      b.disabled = false; b.textContent = 'No cargó el juego · reintentar';
+      b.onclick = () => { cerrar(); abrir(); };
+    });
+  }
+  async function finPartida() {
+    if (!st || !st.vivo) return;
+    st.vivo = false;
+    const puntos = st.puntos, nivel = st.nivel;
+    guardarPractica('cobranza', puntos);
+    const p = $('.cf-panel', raiz);
+    p.innerHTML = `<div class="cf-tit">¡SE ACABÓ<br><span>LA COBRANZA!</span></div>
+      <div class="cf-final"><b>${puntos.toLocaleString('es-MX')}</b><small>puntos · llegaste al nivel ${nivel} · ${st.cobrados} ${st.cobrados === 1 ? 'moroso cobrado' : 'morosos cobrados'}</small></div>
+      <div class="cf-res">Guardando…</div>
+      <div style="display:grid;gap:10px;margin-top:14px"><button class="btn" id="cf-otra">🎯 Jugar otra vez</button><button class="btn sec" id="cf-salir">Regresar a la casa</button></div>`;
+    p.classList.add('on');
+    $('#cf-otra', raiz).onclick = () => { p.classList.remove('on'); nuevaPartida(); };
+    $('#cf-salir', raiz).onclick = cerrar;
+    SFX.tocar('caja');
+    let h = '';
+    try {
+      const r = await rpc('guardar_practica', { p_token: token, p_juego: 'cobranza', p_puntaje: puntos });
+      if (r.record) { h += '<p style="font-weight:800;color:#FFD54A">🏆 ¡Nuevo récord de la semana!</p>'; lluviaBilletes(20); SFX.tocar('fanfarria'); }
+      h += r.pago ? `<p>💵 <b>+${fmt$(r.pago)}</b> por jugar (entre mejor te va, más ganas)</p>`
+        : r.hoy >= 2000 ? '<p>💵 Ya juntaste los $2,000 de hoy por jugar. ¡Mañana hay más!</p>' : '<p>💵 Esta vez no alcanzó para billetes. ¡Échale más ganas!</p>';
+      if ((r.top || []).length) h += `<div class="pr-top">${r.top.slice(0, 3).map((x, i) => `<span>${['🥇', '🥈', '🥉'][i]} ${esc(x.nombre)} <b>${x.mejor.toLocaleString('es-MX')}</b></span>`).join('')}</div>`;
+    } catch (e) { h = `<p>No se pudo guardar: ${esc(mensajeError(e))}</p>`; }
+    const res = $('.cf-res', raiz); if (res) res.innerHTML = h;
+  }
+
+  // ---------------------------------------------------------------- partida y niveles
+  function nuevaPartida() {
+    st = { vivo: true, nivel: 1, puntos: 0, vidas: 3, cobrados: 0 };
+    armarNivel();
+  }
+  function crearMotor() {
+    if (engine) { M.World.clear(engine.world, false); M.Engine.clear(engine); }
+    engine = M.Engine.create({ enableSleeping: true, positionIterations: 10, velocityIterations: 8 });
+    const piso = M.Bodies.rectangle(MUNDO_W / 2, SUELO + 60, MUNDO_W + 1400, 120, { isStatic: true, friction: 1 });
+    piso.cf = { tipo: 'piso' };
+    M.Composite.add(engine.world, piso);
+    M.Events.on(engine, 'collisionStart', choques);
+  }
+  function cuerpo(b, datos) { b.cf = datos; M.Composite.add(engine.world, b); return b; }
+  function bloque(x, y, w, h, mat) {
+    return cuerpo(M.Bodies.rectangle(x, y, w, h, { density: MAT[mat].dens, friction: .9, frictionStatic: 1.2, restitution: .02, sleepThreshold: 40 }),
+      { tipo: 'bloque', mat, vida: MAT[mat].vida, max: MAT[mat].vida, w, h });
+  }
+  function garrafon(x, y) {
+    return cuerpo(M.Bodies.circle(x, y, 15, { density: MAT.garrafon.dens, friction: .7, restitution: .1, sleepThreshold: 40 }),
+      { tipo: 'bloque', mat: 'garrafon', vida: MAT.garrafon.vida, max: MAT.garrafon.vida, r: 15 });
+  }
+  function moroso(x, y, j) {
+    return cuerpo(M.Bodies.circle(x, y, 17, { density: .0016, friction: .8, restitution: .05, sleepThreshold: 40 }),
+      { tipo: 'moroso', vida: 3.2, max: 3.2, r: 17, j });
+  }
+  function armarNivel() {
+    crearMotor();
+    const n = st.nivel;
+    const nMor = Math.min(2 + Math.floor((n - 1) / 2), 7);
+    const nTor = n <= 1 ? 1 : n <= 4 ? 2 : 3;
+    const otros = (est.jugadores || []).filter(j => j.id !== est.yo.id);
+    const pool = (otros.length ? otros : est.jugadores).slice().sort(() => Math.random() - .5);
+    let iCara = 0;
+    const cara = () => pool[iCara++ % pool.length];
+    const mats = n <= 1 ? ['caja'] : n <= 2 ? ['caja', 'caja', 'vidrio'] : n <= 4 ? ['caja', 'vidrio', 'archivero'] : ['caja', 'vidrio', 'archivero', 'archivero'];
+    const matDe = () => mats[Math.floor(Math.random() * mats.length)];
+    // reparte los morosos entre las torres
+    const porTorre = Array(nTor).fill(0);
+    for (let i = 0; i < nMor; i++) porTorre[i % nTor]++;
+    const x0 = 420, x1 = 770, paso = (x1 - x0) / nTor;
+    porTorre.forEach((m, t) => {
+      const cx = x0 + paso * (t + .5) + azar(-12, 12);
+      const ancho = azar(78, 100);
+      let base = SUELO;
+      const pisos = Math.min(m, 4);
+      for (let p = 0; p < pisos; p++) {
+        const alto = azar(64, 80), mat = matDe();
+        const dx = ancho / 2 - 8;
+        bloque(cx - dx, base - alto / 2, 16, alto, mat);
+        bloque(cx + dx, base - alto / 2, 16, alto, mat);
+        moroso(cx, base - 17.5, cara());
+        // vidrio de ventanilla al frente en niveles altos
+        if (n >= 3 && Math.random() < .45) bloque(cx - dx - 14, base - alto * .45, 10, alto * .9, 'vidrio');
+        bloque(cx, base - alto - 8, ancho + 22, 16, Math.random() < .5 ? mat : matDe());
+        base -= alto + 16;
+      }
+      // morosos que no cupieron: en el piso, junto a la torre, cuidados por cajas
+      for (let e = pisos; e < m; e++) {
+        const sx = cx + (e % 2 ? -1 : 1) * (ancho / 2 + 36);
+        moroso(sx, SUELO - 17.5, cara());
+        bloque(sx - 26, SUELO - 22, 16, 44, 'caja');
+      }
+      // adorno arriba: garrafón o caja
+      if (Math.random() < .6) garrafon(cx, base - 16); else bloque(cx, base - 18, 34, 36, 'caja');
+    });
+    // tiros: 1 más que los morosos; el primero siempre es el cochinito
+    const especiales = ['clip', 'garra', 'sello', 'celu'];
+    st.cola = ['cochi'];
+    for (let i = 1; i < nMor + 1; i++) st.cola.push(Math.random() < .3 ? 'cochi' : especiales[Math.floor(Math.random() * especiales.length)]);
+    st.morosos = nMor; st.tiros = 0; st.fase = 'acomodo'; st.danoOn = false; st.activos = []; st.parts = []; st.textos = [];
+    st.tAcomodo = performance.now();
+    camX = camMax(); camMeta = camMax(); camManual = false;
+    pintarHud();
+    aviso(`<b>NIVEL ${n}</b><small>${nMor} morosos · ${st.cola.length} tiros</small>`, 1900);
+    decir(n === 1 ? '¡Ahí están los morosos! 🧐' : azarDe(['¡Más morosos! 🧐', '¡A cobrarles! 💪', 'Veo ' + nMor + ' morosos 🔭']), 2000);
+    setTimeout(() => { if (st && st.fase === 'acomodo') { st.danoOn = true; listo(); } }, 1700);
+  }
+  function listo() {
+    st.fase = 'listo'; camManual = false; camMeta = 0;
+    const t = st.cola[0];
+    if (t && t !== 'cochi' && !st.vistos?.[t]) { st.vistos = { ...(st.vistos || {}), [t]: 1 }; decir(PROY[t].ic + ' ' + PROY[t].tip, 3000); }
+    pintarHud();
+  }
+  function pintarHud() {
+    if (!raiz || !st) return;
+    $('.cf-nivel', raiz).textContent = 'NIVEL ' + st.nivel;
+    $('.cf-vidas', raiz).textContent = '❤️'.repeat(st.vidas) + '🖤'.repeat(Math.max(0, 3 - st.vidas));
+    $('.cf-pts', raiz).textContent = st.puntos.toLocaleString('es-MX');
+    $('.cf-cola', raiz).innerHTML = (st.cola || []).map((t, i) => `<span class="${i === 0 && st.fase !== 'volando' && st.fase !== 'esperando' ? 'ya' : ''}">${PROY[t].ic}</span>`).join('');
+  }
+  function sumar(p, x, y, txt = null, color = '#FFD54A') {
+    st.puntos += p;
+    st.textos.push({ x, y, txt: txt || p.toLocaleString('es-MX'), color, t: 0, grande: !!txt });
+    pintarHud();
+  }
+
+  // ---------------------------------------------------------------- choques y daño
+  function choques(ev) {
+    if (!st || !st.danoOn) return;
+    for (const par of ev.pairs) {
+      const a = par.bodyA, b = par.bodyB;
+      const rv = Math.hypot(a.velocity.x - b.velocity.x, a.velocity.y - b.velocity.y);
+      if (rv < 1.1) continue;
+      const ma = a.isStatic ? Infinity : a.mass, mb = b.isStatic ? Infinity : b.mass;
+      const mred = isFinite(ma) && isFinite(mb) ? ma * mb / (ma + mb) : (isFinite(ma) ? ma : mb);
+      const e = mred * rv * rv * DANO;
+      lastimar(a, e); lastimar(b, e);
+      if (e > 2 && (a.cf?.tipo === 'tiro' || b.cf?.tipo === 'tiro')) SFX.tocar('patada');
+    }
+  }
+  function lastimar(b, d) {
+    if (!b.cf || b.cf.muerto) return;
+    if (b.cf.tipo === 'moroso') d *= 2.6;
+    else if (b.cf.tipo !== 'bloque') return;
+    b.cf.vida -= d;
+    if (b.cf.vida <= 0) romper(b);
+  }
+  function romper(b, sinPuntos = false) {
+    if (b.cf.muerto) return;
+    b.cf.muerto = true;
+    const { x, y } = b.position;
+    M.Composite.remove(engine.world, b);
+    despertar();
+    if (b.cf.tipo === 'moroso') {
+      st.morosos--; st.cobrados++;
+      sumar(PTS_MOROSO, x, y - 20, '¡COBRADO!', '#FF4D5E');
+      for (let i = 0; i < 12; i++) st.parts.push({ x, y, vx: azar(-4, 4), vy: azar(-7, -2), t: 0, vida: 60, ic: '💵', s: azar(12, 18), r: azar(0, 6) });
+      SFX.tocar('sello'); SFX.tocar('caja');
+      decir(azarDe(['¡Cobrado! 💪', '¡Ese ya pagó! 💵', '¡Uno menos! 😎', '¡Así se cobra! 🔥']), 1600);
+      expresar($('.mm', vigia), '🤩', 'festeja', 1200, '');
+    } else {
+      const m = b.cf.mat;
+      if (!sinPuntos) sumar(MAT[m].pts, x, y);
+      const col = { caja: '#B07A45', vidrio: '#BFE6FF', archivero: '#8A94A6', garrafon: '#5FB7FF' }[m];
+      for (let i = 0; i < 9; i++) st.parts.push({ x: x + azar(-10, 10), y: y + azar(-10, 10), vx: azar(-3, 3), vy: azar(-5, -1), t: 0, vida: 40, col, s: azar(3, 7), r: azar(0, 6) });
+      SFX.tocar(m === 'vidrio' ? 'cristal' : m === 'garrafon' ? 'pop' : 'patada');
+    }
+  }
+  function despertar() { for (const b of M.Composite.allBodies(engine.world)) if (!b.isStatic) M.Sleeping.set(b, false); }
+
+  // ---------------------------------------------------------------- tirar
+  function lanzar(dx, dy) {
+    const tipo = st.cola.shift();
+    // quita los tiros anteriores que se quedaron tirados
+    for (const b of st.activos) if (!b.cf.muerto) { b.cf.muerto = true; M.Composite.remove(engine.world, b); }
+    const d = Math.min(JALON, Math.hypot(dx, dy)), ang = Math.atan2(-dy, -dx);
+    const v = VMAX * d / JALON;
+    const P = PROY[tipo];
+    const b = M.Bodies.circle(HONDA.x, HONDA.y, P.r, { density: P.dens, friction: .6, frictionAir: 0, restitution: .25 });
+    b.cf = { tipo: 'tiro', proy: tipo, r: P.r, poder: tipo !== 'cochi', minX: 1e9 };
+    M.Composite.add(engine.world, b);
+    M.Body.setVelocity(b, { x: Math.cos(ang) * v, y: Math.sin(ang) * v });
+    M.Body.setAngularVelocity(b, .12);
+    st.activos = [b]; st.principal = b; st.tiros++;
+    st.fase = 'volando'; st.tLanz = performance.now(); camManual = false;
+    SFX.tocar('swish');
+    decir(azarDe(['¡Fuego! 🔥', '¡Dale! 💪', '¡Cóbrale! 💵', '¡Ahí va! 🎯']), 1200);
+    pintarHud();
+  }
+  function poder() {
+    const b = st.principal;
+    if (!b || !b.cf.poder || b.cf.muerto) return;
+    b.cf.poder = false;
+    const v = b.velocity, t = b.cf.proy;
+    if (t === 'clip') {
+      for (const da of [-.2, .2]) {
+        const c = M.Bodies.circle(b.position.x, b.position.y, PROY.clip.r, { density: PROY.clip.dens, friction: .6, frictionAir: 0, restitution: .25 });
+        c.cf = { tipo: 'tiro', proy: 'clip', r: PROY.clip.r };
+        M.Composite.add(engine.world, c);
+        const a = Math.atan2(v.y, v.x) + da, s = Math.hypot(v.x, v.y);
+        M.Body.setVelocity(c, { x: Math.cos(a) * s, y: Math.sin(a) * s });
+        st.activos.push(c);
+      }
+      SFX.tocar('tink');
+    } else if (t === 'garra') {
+      M.Body.setVelocity(b, { x: v.x * .25, y: 19 });
+      SFX.tocar('caida');
+    } else if (t === 'celu') {
+      const s = Math.min(27, Math.hypot(v.x, v.y) * 1.9), a = Math.atan2(v.y, v.x);
+      M.Body.setVelocity(b, { x: Math.cos(a) * s, y: Math.sin(a) * s });
+      try { navigator.vibrate?.(80); } catch { }
+      SFX.tocar('telefono');
+    } else if (t === 'sello') {
+      explotar(b);
+    }
+  }
+  function explotar(b) {
+    const { x, y } = b.position, R = 115;
+    b.cf.muerto = true; M.Composite.remove(engine.world, b);
+    for (const o of M.Composite.allBodies(engine.world)) {
+      if (o.isStatic || !o.cf) continue;
+      const dx = o.position.x - x, dy = o.position.y - y, dist = Math.hypot(dx, dy);
+      if (dist > R) continue;
+      const f = 1 - dist / R;
+      M.Sleeping.set(o, false);
+      M.Body.setVelocity(o, { x: o.velocity.x + dx / (dist || 1) * 11 * f, y: o.velocity.y + dy / (dist || 1) * 11 * f - 3 * f });
+      lastimar(o, 14 * f);
+    }
+    st.parts.push({ x, y, t: 0, vida: 50, sello: true });
+    for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; st.parts.push({ x, y, vx: Math.cos(a) * 6, vy: Math.sin(a) * 6, t: 0, vida: 30, col: '#E53935', s: 6, r: 0 }); }
+    SFX.tocar('pop'); SFX.tocar('sello');
+  }
+
+  // ---------------------------------------------------------------- dedo
+  function abajo(ev) {
+    if (!st || !st.vivo || $('.cf-panel.on', raiz)) return;
+    lienzo.setPointerCapture?.(ev.pointerId);
+    const r = lienzo.getBoundingClientRect(), sx = ev.clientX - r.left, sy = ev.clientY - r.top;
+    if (st.fase === 'volando') { poder(); return; }
+    if (st.fase === 'listo') {
+      const p = aMundo(sx, sy);
+      if (Math.hypot(p.x - HONDA.x, p.y - HONDA.y) < 75 || (sx < W * .45 && sy > H * .35)) {
+        if (camX > 30) camMeta = 0;
+        jalando = { id: ev.pointerId, dx: 0, dy: 0, sx, sy };
+        SFX.tocar('inflar', 0);
+        return;
+      }
+    }
+    paneo = { id: ev.pointerId, sx, cam: camX };
+  }
+  function mueve(ev) {
+    const r = lienzo.getBoundingClientRect(), sx = ev.clientX - r.left, sy = ev.clientY - r.top;
+    if (jalando && ev.pointerId === jalando.id) {
+      let dx = (sx - jalando.sx) / zoom, dy = (sy - jalando.sy) / zoom;
+      const d = Math.hypot(dx, dy);
+      if (d > JALON) { dx *= JALON / d; dy *= JALON / d; }
+      if (dx > 18) dx = 18;          // no se puede jalar hacia los morosos
+      const antes = Math.hypot(jalando.dx, jalando.dy);
+      jalando.dx = dx; jalando.dy = dy;
+      const ahora = Math.hypot(dx, dy);
+      if (Math.floor(ahora / 18) !== Math.floor(antes / 18)) SFX.tocar('inflar', ahora / JALON);
+    } else if (paneo && ev.pointerId === paneo.id) {
+      camManual = true;
+      camX = camMeta = Math.max(0, Math.min(camMax(), paneo.cam - (sx - paneo.sx) / zoom));
+    }
+  }
+  function arriba(ev) {
+    if (jalando && ev.pointerId === jalando.id) {
+      const { dx, dy } = jalando; jalando = null;
+      if (Math.hypot(dx, dy) > 14 && st.fase === 'listo') lanzar(dx, dy);
+    }
+    if (paneo && ev.pointerId === paneo.id) paneo = null;
+  }
+
+  // ---------------------------------------------------------------- ciclo
+  function cuadro(t) {
+    raf = requestAnimationFrame(cuadro);
+    const dt = Math.min(100, t - ultimoT); ultimoT = t;
+    if (engine && st) {
+      acum += dt;
+      let pasos = 0;
+      while (acum >= 1000 / 60 && pasos < 4) { M.Engine.update(engine, 1000 / 60); acum -= 1000 / 60; pasos++; revisar(); }
+      if (pasos === 4) acum = 0;
+    }
+    camara();
+    pintar();
+  }
+  function revisar() {
+    // lo que se sale del mundo
+    for (const b of M.Composite.allBodies(engine.world)) {
+      if (b.isStatic || !b.cf || b.cf.muerto) continue;
+      if (b.position.y > SUELO + 150 || b.position.x < -250 || b.position.x > MUNDO_W + 450) {
+        if (b.cf.tipo === 'tiro') { b.cf.muerto = true; M.Composite.remove(engine.world, b); }
+        else romper(b, true);
+      }
+    }
+    if (st.fase === 'volando') {
+      const b = st.principal;
+      const quietos = st.activos.every(x => x.cf.muerto || x.speed < .35);
+      if (performance.now() - st.tLanz > 900 && quietos || performance.now() - st.tLanz > 6500) { st.fase = 'esperando'; st.tEspera = performance.now(); }
+      if (b && !b.cf.muerto) b.cf.ultX = b.position.x;
+    } else if (st.fase === 'esperando') {
+      const todo = M.Composite.allBodies(engine.world).filter(b => !b.isStatic && !b.cf?.muerto);
+      const calma = todo.every(b => b.isSleeping || (b.speed < .22 && b.angularSpeed < .02));
+      const ya = performance.now() - st.tEspera;
+      if ((calma && ya > 500) || ya > 5000) terminarTiro();
+    }
+  }
+  function terminarTiro() {
+    if (st.morosos <= 0) {
+      st.fase = 'fin';
+      const sobra = st.cola.length;
+      setTimeout(() => {
+        if (!st) return;
+        if (sobra) sumar(PTS_TIRO_SOBRA * sobra, HONDA.x + 40, HONDA.y - 60, `+${(PTS_TIRO_SOBRA * sobra).toLocaleString('es-MX')} por ${sobra} ${sobra === 1 ? 'tiro' : 'tiros'}`, '#7CFFB2');
+        aviso(`<b>¡NIVEL ${st.nivel} COBRADO!</b><small>${sobra ? `Te sobraron ${sobra} ${sobra === 1 ? 'tiro' : 'tiros'} 💪` : '¡Justo a tiempo! 😅'}</small>`, 2000);
+        SFX.tocar('fanfarria'); expresar($('.mm', vigia), '🥳', 'festeja', 1800, '');
+        setTimeout(() => { if (st && st.vivo) { st.nivel++; armarNivel(); } }, 2300);
+      }, 300);
+      return;
+    }
+    if (!st.cola.length) {
+      st.fase = 'fin'; st.vidas--;
+      pintarHud(); SFX.tocar('buzzer'); expresar($('.mm', vigia), '😩', 'triste', 1800, '');
+      if (st.vidas <= 0) { aviso(`<b>¡SE ESCAPARON!</b><small>Quedaron ${st.morosos} ${st.morosos === 1 ? 'moroso' : 'morosos'}</small>`, 1800); setTimeout(finPartida, 1900); }
+      else {
+        aviso(`<b>¡SE ESCAPARON ${st.morosos}!</b><small>−1 ❤️ · otra vez el nivel ${st.nivel}</small>`, 2000);
+        setTimeout(() => { if (st && st.vivo) armarNivel(); }, 2300);
+      }
+      return;
+    }
+    // el vigía dice cómo corregir: compara dónde cayó el tiro con el moroso más cercano
+    const mor = M.Composite.allBodies(engine.world).filter(b => b.cf?.tipo === 'moroso' && !b.cf.muerto).map(b => b.position.x);
+    const cay = st.principal?.cf.ultX;
+    if (mor.length && cay != null && st.ultCobrados === st.cobrados) {
+      const cerca = Math.min(...mor);
+      decir(cay < cerca - 40 ? azarDe(['¡Más fuerte! 💪', 'Te quedaste corto 🔭', 'Jálale más 🔭']) : cay > Math.max(...mor) + 60 ? azarDe(['¡Te pasaste! Más suave 🔭', 'Menos fuerza 🔭']) : azarDe(['¡Casi! Otra vez 🔭', 'Por ahí va 🔭']), 2200);
+    }
+    st.ultCobrados = st.cobrados;
+    listo();
+  }
+  function camara() {
+    if (!st) return;
+    if (st.fase === 'volando' || st.fase === 'esperando') {
+      const b = st.principal;
+      if (b && !b.cf.muerto && !camManual) camMeta = Math.max(camMeta, Math.min(camMax(), b.position.x - vistaW() * .4));
+    } else if (st.fase === 'acomodo') camMeta = camMax();
+    camMeta = Math.max(0, Math.min(camMax(), camMeta));
+    if (!camManual || st.fase !== 'listo') camX += (camMeta - camX) * (st.fase === 'listo' ? .06 : .1);
+  }
+
+  // ---------------------------------------------------------------- dibujo
+  function pintar() {
+    if (!ctx) return;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    // pared de la oficina
+    const gr = ctx.createLinearGradient(0, 0, 0, H);
+    gr.addColorStop(0, '#2b3a67'); gr.addColorStop(.55, '#46598f'); gr.addColorStop(1, '#5b6ea6');
+    ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
+    ctx.setTransform(DPR * zoom, 0, 0, DPR * zoom, -camX * zoom * DPR, -camY() * zoom * DPR);
+    fondo();
+    if (!st) { resortera(null); return; }
+    resortera(st.fase === 'listo' ? st.cola[0] : null);
+    if (st.fase === 'listo' && jalando) mira();
+    if (engine) for (const b of M.Composite.allBodies(engine.world)) {
+      if (!b.cf || b.cf.muerto) continue;
+      if (b.cf.tipo === 'bloque') b.cf.mat === 'garrafon' ? pintarGarrafon(b.position.x, b.position.y, b.angle, b.cf.r, b.cf.vida / b.cf.max) : pintarBloque(b);
+      else if (b.cf.tipo === 'moroso') pintarMoroso(b);
+      else if (b.cf.tipo === 'tiro') pintarTiro(b.cf.proy, b.position.x, b.position.y, b.angle, b.cf.r);
+    }
+    particulas();
+    // monito vigía junto a la resortera
+    const p = aPantalla(HONDA.x - 50, SUELO), k = zoom * 1.25;
+    vigia.style.transform = `translate(${p.x}px, ${p.y}px) scale(${k}) translate(-50%, -100%)`;
+    const d = $('.cf-dice', raiz);
+    d.style.left = Math.max(8, Math.min(p.x - 14, W - d.offsetWidth - 8)) + 'px';
+    d.style.top = (p.y - vigia.offsetHeight * k - 10) + 'px';
+  }
+  function fondo() {
+    const y0 = camY(), vh = vistaH();
+    // ventanas con la ciudad (se mueven más lento: parallax)
+    ctx.save(); ctx.translate(camX * .45, 0);
+    for (let i = 0; i < 6; i++) {
+      const x = 40 + i * 170, y = SUELO - 300, w = 110, h = 140;
+      ctx.fillStyle = '#18234a'; ctx.fillRect(x - 6, y - 6, w + 12, h + 12);
+      const cg = ctx.createLinearGradient(0, y, 0, y + h); cg.addColorStop(0, '#ffb36b'); cg.addColorStop(1, '#ffd9a0');
+      ctx.fillStyle = cg; ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = '#6b4a8a';
+      for (let k = 0; k < 5; k++) { const bh = 30 + ((i * 7 + k * 13) % 5) * 18; ctx.fillRect(x + k * 24, y + h - bh, 20, bh); }
+      ctx.fillStyle = '#18234a'; ctx.fillRect(x + w / 2 - 3, y, 6, h); ctx.fillRect(x, y + h / 2 - 3, w, 6);
+    }
+    ctx.restore();
+    // lámparas del techo
+    ctx.save(); ctx.translate(camX * .3, 0);
+    for (let i = 0; i < 5; i++) {
+      const x = 90 + i * 200, y = SUELO - 470;
+      ctx.strokeStyle = '#18234a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y0 - 10); ctx.lineTo(x, y); ctx.stroke();
+      ctx.fillStyle = '#18234a'; ctx.beginPath(); ctx.moveTo(x - 30, y + 18); ctx.lineTo(x + 30, y + 18); ctx.lineTo(x + 14, y); ctx.lineTo(x - 14, y); ctx.fill();
+      const lg = ctx.createRadialGradient(x, y + 20, 2, x, y + 20, 90); lg.addColorStop(0, 'rgba(255,230,150,.35)'); lg.addColorStop(1, 'rgba(255,230,150,0)');
+      ctx.fillStyle = lg; ctx.fillRect(x - 90, y + 18, 180, 90);
+      ctx.fillStyle = '#FFE9A8'; ctx.beginPath(); ctx.ellipse(x, y + 19, 22, 4, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+    // letrero
+    ctx.save(); ctx.translate(camX * .2, 0);
+    ctx.fillStyle = '#FFD54A'; ctx.font = '900 34px Anton, Impact, sans-serif'; ctx.textAlign = 'center';
+    ctx.globalAlpha = .18; ctx.fillText('COBRANZA FURIOSA', 400, SUELO - 340); ctx.globalAlpha = 1;
+    // reloj
+    ctx.beginPath(); ctx.arc(700, SUELO - 380, 24, 0, Math.PI * 2); ctx.fillStyle = '#FFFDF6'; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = '#18234a'; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(700, SUELO - 380); ctx.lineTo(700, SUELO - 397); ctx.moveTo(700, SUELO - 380); ctx.lineTo(712, SUELO - 374); ctx.lineWidth = 3; ctx.stroke();
+    ctx.restore();
+    // zoclo y piso de loseta
+    ctx.fillStyle = '#2a1d3d'; ctx.fillRect(camX - 50, SUELO - 14, vistaW() + 100, 14);
+    ctx.fillStyle = '#8a6a4a'; ctx.fillRect(camX - 50, SUELO, vistaW() + 100, y0 + vh - SUELO + 50);
+    ctx.strokeStyle = 'rgba(0,0,0,.18)'; ctx.lineWidth = 2;
+    for (let x = Math.floor((camX - 50) / 60) * 60; x < camX + vistaW() + 60; x += 60) { ctx.beginPath(); ctx.moveTo(x, SUELO); ctx.lineTo(x - 30, y0 + vh); ctx.stroke(); }
+    for (let y = SUELO + 26; y < y0 + vh; y += 34) { ctx.beginPath(); ctx.moveTo(camX - 50, y); ctx.lineTo(camX + vistaW() + 50, y); ctx.stroke(); }
+    // planta
+    ctx.font = '46px system-ui'; ctx.textAlign = 'center'; ctx.fillText('🪴', 30, SUELO - 4);
+  }
+  function resortera(cargado) {
+    const x = HONDA.x, y = HONDA.y;
+    const pos = jalando ? { x: x + jalando.dx, y: y + jalando.dy } : { x, y };
+    const atras = { x: x + 12, y: y - 4 }, frente = { x: x - 12, y: y - 4 };
+    ctx.lineCap = 'round';
+    // brazo de atrás + liga de atrás
+    ctx.strokeStyle = '#6b3f1d'; ctx.lineWidth = 9;
+    ctx.beginPath(); ctx.moveTo(x, SUELO); ctx.lineTo(x, y + 34); ctx.lineTo(atras.x, atras.y); ctx.stroke();
+    ctx.strokeStyle = '#E8A33D'; ctx.lineWidth = 5;
+    if (cargado || jalando) { ctx.beginPath(); ctx.moveTo(atras.x, atras.y); ctx.lineTo(pos.x + 8, pos.y); ctx.stroke(); }
+    if (cargado) pintarTiro(cargado, pos.x, pos.y, 0, PROY[cargado].r);
+    // brazo de enfrente + liga de enfrente
+    ctx.strokeStyle = '#7d4a22'; ctx.lineWidth = 9;
+    ctx.beginPath(); ctx.moveTo(x, y + 34); ctx.lineTo(frente.x, frente.y); ctx.stroke();
+    ctx.strokeStyle = '#F2B54F'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(frente.x, frente.y); ctx.lineTo(cargado || jalando ? pos.x - 8 : atras.x, cargado || jalando ? pos.y : atras.y); ctx.stroke();
+  }
+  function mira() {
+    const { dx, dy } = jalando, d = Math.min(JALON, Math.hypot(dx, dy));
+    if (d < 14) return;
+    const ang = Math.atan2(-dy, -dx), v = VMAX * d / JALON;
+    let px = HONDA.x + dx, py = HONDA.y + dy, vx = Math.cos(ang) * v, vy = Math.sin(ang) * v;
+    ctx.fillStyle = 'rgba(255,255,255,.85)';
+    for (let i = 1; i <= 34; i++) {
+      vy += G; px += vx; py += vy;
+      if (i % 3 === 0) { ctx.beginPath(); ctx.arc(px, py, 3.2 - i * .06, 0, Math.PI * 2); ctx.fill(); }
+    }
+  }
+  function pintarTiro(t, x, y, a, r) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(a);
+    if (t === 'garra') { ctx.restore(); pintarGarrafon(x, y, a, r, 1); return; }
+    if (t === 'sello') {
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fillStyle = '#C62828'; ctx.fill();
+      ctx.lineWidth = 2.5; ctx.strokeStyle = '#FFCDD2'; ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.font = `900 ${r * .48}px Anton, Impact, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('PAGADO', 0, 1);
+    } else {
+      ctx.font = `${r * 2.2}px system-ui, "Apple Color Emoji", "Segoe UI Emoji", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(PROY[t].ic, 0, r * .1);
+    }
+    ctx.restore();
+  }
+  function pintarGarrafon(x, y, a, r, salud) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(a);
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fillStyle = 'rgba(120,195,255,.55)'; ctx.fill();
+    ctx.save(); ctx.clip(); ctx.fillStyle = 'rgba(40,140,240,.75)'; ctx.fillRect(-r, -r * .1, r * 2, r * 1.2); ctx.restore();
+    ctx.lineWidth = 2; ctx.strokeStyle = '#d8f0ff'; ctx.stroke();
+    ctx.fillStyle = '#1565C0'; ctx.fillRect(-r * .35, -r - 5, r * .7, 7);
+    if (salud < .6) grietas(r * 1.4, r * 1.4);
+    ctx.restore();
+  }
+  function pintarBloque(b) {
+    const { w, h, mat } = b.cf, salud = b.cf.vida / b.cf.max;
+    ctx.save(); ctx.translate(b.position.x, b.position.y); ctx.rotate(b.angle);
+    if (mat === 'caja') {
+      ctx.fillStyle = '#C8925A'; ctx.fillRect(-w / 2, -h / 2, w, h);
+      ctx.strokeStyle = '#7a5230'; ctx.lineWidth = 2; ctx.strokeRect(-w / 2 + 1, -h / 2 + 1, w - 2, h - 2);
+      ctx.fillStyle = 'rgba(230,200,140,.8)';
+      if (w > h) ctx.fillRect(-w / 2, -2, w, 4); else ctx.fillRect(-2, -h / 2, 4, h);
+    } else if (mat === 'vidrio') {
+      ctx.fillStyle = 'rgba(175,225,255,.45)'; ctx.fillRect(-w / 2, -h / 2, w, h);
+      ctx.strokeStyle = 'rgba(230,248,255,.95)'; ctx.lineWidth = 1.5; ctx.strokeRect(-w / 2, -h / 2, w, h);
+      ctx.beginPath(); ctx.moveTo(-w / 2 + 2, h / 4); ctx.lineTo(w / 4, -h / 2 + 2); ctx.stroke();
+    } else {
+      ctx.fillStyle = '#8A94A6'; ctx.fillRect(-w / 2, -h / 2, w, h);
+      ctx.strokeStyle = '#4b5263'; ctx.lineWidth = 2; ctx.strokeRect(-w / 2 + 1, -h / 2 + 1, w - 2, h - 2);
+      ctx.fillStyle = '#d6dbe4';
+      if (h > w) for (let k = 1; k < 4; k++) { ctx.fillRect(-w / 2 + 2, -h / 2 + h * k / 4 - 1, w - 4, 2); ctx.fillRect(-2, -h / 2 + h * (k - .5) / 4 - 1.5, 4, 3); }
+      else for (let k = 1; k < 4; k++) { ctx.fillRect(-w / 2 + w * k / 4 - 1, -h / 2 + 2, 2, h - 4); }
+    }
+    if (salud < .65) grietas(w, h);
+    ctx.restore();
+  }
+  function grietas(w, h) {
+    ctx.strokeStyle = 'rgba(30,20,10,.7)'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(-w * .3, -h * .35); ctx.lineTo(-w * .05, -h * .05); ctx.lineTo(-w * .2, h * .15); ctx.lineTo(w * .1, h * .35);
+    ctx.moveTo(w * .25, -h * .3); ctx.lineTo(w * .05, -h * .05); ctx.stroke();
+  }
+  function pintarMoroso(b) {
+    const { r, j } = b.cf, x = b.position.x, y = b.position.y;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(b.angle);
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fillStyle = j.color || colorDe(j.nombre); ctx.fill();
+    const im = caras[j.id];
+    if (im && im.complete && im.naturalWidth) {
+      ctx.save(); ctx.clip();
+      const s = Math.max(2 * r / im.naturalWidth, 2 * r / im.naturalHeight);
+      ctx.drawImage(im, -im.naturalWidth * s / 2, -im.naturalHeight * s / 2, im.naturalWidth * s, im.naturalHeight * s);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = '#fff'; ctx.font = `${j.emoji ? r * 1.2 : r}px ${j.emoji ? 'system-ui' : 'Anton, Impact, sans-serif'}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(j.emoji || String(j.nombre || '?').trim().charAt(0).toUpperCase(), 0, 1);
+    }
+    ctx.lineWidth = 3; ctx.strokeStyle = b.cf.vida / b.cf.max < .6 ? '#FF4D5E' : '#FFFDF6'; ctx.stroke();
+    ctx.restore();
+    // letrerito "DEBE" sobre la cabeza (no gira)
+    ctx.fillStyle = '#E53935'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - 15, y - r - 13, 30, 11, 3) : ctx.rect(x - 15, y - r - 13, 30, 11); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = '900 8px "Work Sans", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('DEBE', x, y - r - 7.2);
+  }
+  function particulas() {
+    for (const p of st.parts) {
+      p.t++;
+      const a = 1 - p.t / p.vida;
+      if (p.sello) {
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(-.25); ctx.globalAlpha = Math.max(0, a);
+        const s = 1 + (1 - a) * .4;
+        ctx.scale(s, s);
+        ctx.strokeStyle = '#E53935'; ctx.lineWidth = 5; ctx.strokeRect(-70, -22, 140, 44);
+        ctx.fillStyle = '#E53935'; ctx.font = '900 34px Anton, Impact, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('PAGADO', 0, 2);
+        ctx.restore(); continue;
+      }
+      p.x += p.vx; p.y += p.vy; p.vy += .25; p.r += .1;
+      ctx.save(); ctx.globalAlpha = Math.max(0, a); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+      if (p.ic) { ctx.font = `${p.s}px system-ui`; ctx.textAlign = 'center'; ctx.fillText(p.ic, 0, 0); }
+      else { ctx.fillStyle = p.col; ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s); }
+      ctx.restore();
+    }
+    st.parts = st.parts.filter(p => p.t < p.vida);
+    for (const t of st.textos) {
+      t.t++;
+      ctx.save(); ctx.globalAlpha = Math.max(0, 1 - t.t / 70);
+      ctx.font = `900 ${t.grande ? 22 : 15}px Anton, Impact, sans-serif`; ctx.textAlign = 'center';
+      ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.strokeText(t.txt, t.x, t.y - t.t * .6);
+      ctx.fillStyle = t.color; ctx.fillText(t.txt, t.x, t.y - t.t * .6);
+      ctx.restore();
+    }
+    st.textos = st.textos.filter(t => t.t < 70);
+  }
+  return { abrir, cerrar, _st: () => st, _nivel: n => { if (st) { st.nivel = n; armarNivel(); } }, _lanzar: (dx, dy) => st && st.fase === 'listo' && lanzar(dx, dy), _poder: () => poder() };
+})();
 
 /* ---------- mis billetes ---------- */
 async function abrirBilletes() {
@@ -7048,8 +7792,8 @@ const PASARELA = (() => {
   const de = arr => arr[Math.floor(rnd() * arr.length)];
   const pts = n => `${n} ${n === 1 ? 'punto' : 'puntos'}`;
   const lista = ns => ns.length <= 1 ? (ns[0] || '') : ns.slice(0, -1).join(', ') + ' y ' + ns[ns.length - 1];
-  const PRUEBA_N = { memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', trivia: 'la trivia', billetes: 'Cuenta los billetes verdes' };
-  const JUEGO_N = { monster2: 'Monster Crazy 2.0', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes' };
+  const PRUEBA_N = { memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', trivia: 'la trivia', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa' };
+  const JUEGO_N = { monster2: 'Monster Crazy 2.0', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa' };
 
   // ---------- la voz de Ricky ----------
   function elegirVoz() {
@@ -7961,7 +8705,7 @@ async function adminExtras(C, seccion) {
   const diaNota = dia => { const t = new Date(dia + 'T12:00:00Z').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' }); return t.charAt(0).toUpperCase() + t.slice(1); };
   const manana = dia => diaNota(diaMas(dia, 1)).toLowerCase();       // la fecha en que sale ese noticiero
   const opcionesDia = actual => [...Array(7).keys()].map(k => diaMas(sigDia, k)).map(dd => `<option value="${dd}" ${dd === actual ? 'selected' : ''}>📺 ${esc(diaNota(diaMas(dd, 1)))}, 9 a.m.${dd === sigDia ? ' (el siguiente)' : ''}</option>`).join('');
-  const JUEGOS_REC = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy (clásico)', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes' };
+  const JUEGOS_REC = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy (clásico)', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa' };
   const ahora = Date.now();
   const estadoEnc = e => +new Date(e.abre) > ahora ? `Programada: abre ${fmtFecha(e.abre)}` : +new Date(e.cierra) > ahora ? `Abierta hasta ${fmtFecha(e.cierra)}` : 'Cerrada';
   const ricos = [...adm.jug].sort((a, b) => (b.billetes ?? 0) - (a.billetes ?? 0));
