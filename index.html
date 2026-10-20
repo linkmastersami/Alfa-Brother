@@ -1084,6 +1084,14 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .cf-aviso small{display:block;font-weight:700;font-size:.95rem;text-shadow:0 2px 4px rgba(0,0,0,.6)}
 .cf-panel{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;gap:10px;padding:24px 22px;background:rgba(18,10,30,.82);color:#fff;overflow:auto;text-align:center}
 .cf-panel.on{display:flex}
+#m-cobranza.ancho .cf-panel{padding:14px 28px;gap:8px}
+#m-cobranza.ancho .cf-tit{font-size:2rem}
+#m-cobranza.ancho .cf-tit br{display:none}
+#m-cobranza.ancho .cf-tit span{margin-left:.3em}
+#m-cobranza.ancho .cf-tiros{grid-template-columns:repeat(3,1fr)}
+#m-cobranza.ancho .cf-panel .btn{max-width:420px;width:100%;margin:0 auto}
+#m-cobranza.ancho .cf-final b{font-size:2.4rem}
+#m-cobranza.girado .cf-hud{padding-top:10px}
 .cf-panel p{margin:0;color:#E4E0FF}
 .cf-tit{font-family:Anton,Impact,sans-serif;font-size:2.6rem;line-height:1;color:#FFB347;text-shadow:0 4px 0 #7a3d00}
 .cf-tit span{color:#FF4D5E}
@@ -1899,7 +1907,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 60;
+const APP_VERSION       = 61;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -6252,16 +6260,33 @@ const COBRANZA = (() => {
     }
     cerrar();
   }
+  // El juego siempre se ve horizontal: si el celular está parado, giramos la pantalla del juego 90°
+  // (como si hubieras volteado el celular hacia la izquierda) y tú lo agarras de lado.
+  let girado = false;
   function medir() {
     if (!raiz) return;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    girado = vh > vw * 1.05;
+    Object.assign(raiz.style, girado
+      ? { inset: 'auto', top: '0', left: '0', width: vh + 'px', height: vw + 'px', transformOrigin: '0 0', transform: `translateX(${vw}px) rotate(90deg)` }
+      : { inset: '', top: '', left: '', width: '', height: '', transformOrigin: '', transform: '' });
+    raiz.classList.toggle('girado', girado);
     DPR = Math.min(2, window.devicePixelRatio || 1);
     W = raiz.clientWidth; H = raiz.clientHeight;
+    raiz.classList.toggle('ancho', W / H > 1.1);
     lienzo.width = Math.round(W * DPR); lienzo.height = Math.round(H * DPR);
-    zoom = W / H > 1.1 ? Math.min(W / MUNDO_W, H / 470) : W / VW;
+    zoom = W / H > 1.1 ? Math.min(W / MUNDO_W, H / 450) : W / VW;
+  }
+  // dónde tocó el dedo, en las coordenadas del juego (aunque esté girado)
+  function local(ev) {
+    if (girado) return { sx: ev.clientY, sy: window.innerWidth - ev.clientX };
+    const r = lienzo.getBoundingClientRect();
+    return { sx: ev.clientX - r.left, sy: ev.clientY - r.top };
   }
   const vistaW = () => W / zoom, vistaH = () => H / zoom;
-  const camY = () => SUELO - vistaH() * (W / H > 1.1 ? .86 : .78);
-  const camMax = () => Math.max(0, MUNDO_W - vistaW());
+  const camY = () => SUELO - vistaH() * (W / H > 1.1 ? .88 : .78);
+  const camMin = () => Math.min(0, (MUNDO_W - vistaW()) / 2);   // si cabe todo, queda centrado
+  const camMax = () => Math.max(camMin(), MUNDO_W - vistaW());
   const aPantalla = (x, y) => ({ x: (x - camX) * zoom, y: (y - camY()) * zoom });
   const aMundo = (sx, sy) => ({ x: sx / zoom + camX, y: sy / zoom + camY() });
 
@@ -6408,7 +6433,7 @@ const COBRANZA = (() => {
     setTimeout(() => { if (st && st.fase === 'acomodo') { st.danoOn = true; listo(); } }, 1700);
   }
   function listo() {
-    st.fase = 'listo'; camManual = false; camMeta = 0;
+    st.fase = 'listo'; camManual = false; camMeta = camMin();
     const t = st.cola[0];
     if (t && t !== 'cochi' && !st.vistos?.[t]) { st.vistos = { ...(st.vistos || {}), [t]: 1 }; decir(PROY[t].ic + ' ' + PROY[t].tip, 3000); }
     pintarHud();
@@ -6537,12 +6562,12 @@ const COBRANZA = (() => {
   function abajo(ev) {
     if (!st || !st.vivo || $('.cf-panel.on', raiz)) return;
     lienzo.setPointerCapture?.(ev.pointerId);
-    const r = lienzo.getBoundingClientRect(), sx = ev.clientX - r.left, sy = ev.clientY - r.top;
+    const { sx, sy } = local(ev);
     if (st.fase === 'volando') { poder(); return; }
     if (st.fase === 'listo') {
       const p = aMundo(sx, sy);
       if (Math.hypot(p.x - HONDA.x, p.y - HONDA.y) < 75 || (sx < W * .45 && sy > H * .35)) {
-        if (camX > 30) camMeta = 0;
+        if (camX > camMin() + 30) camMeta = camMin();
         jalando = { id: ev.pointerId, dx: 0, dy: 0, sx, sy };
         SFX.tocar('inflar', 0);
         return;
@@ -6551,7 +6576,7 @@ const COBRANZA = (() => {
     paneo = { id: ev.pointerId, sx, cam: camX };
   }
   function mueve(ev) {
-    const r = lienzo.getBoundingClientRect(), sx = ev.clientX - r.left, sy = ev.clientY - r.top;
+    const { sx, sy } = local(ev);
     if (jalando && ev.pointerId === jalando.id) {
       let dx = (sx - jalando.sx) / zoom, dy = (sy - jalando.sy) / zoom;
       const d = Math.hypot(dx, dy);
@@ -6563,7 +6588,7 @@ const COBRANZA = (() => {
       if (Math.floor(ahora / 18) !== Math.floor(antes / 18)) SFX.tocar('inflar', ahora / JALON);
     } else if (paneo && ev.pointerId === paneo.id) {
       camManual = true;
-      camX = camMeta = Math.max(0, Math.min(camMax(), paneo.cam - (sx - paneo.sx) / zoom));
+      camX = camMeta = Math.max(camMin(), Math.min(camMax(), paneo.cam - (sx - paneo.sx) / zoom));
     }
   }
   function arriba(ev) {
@@ -6647,7 +6672,7 @@ const COBRANZA = (() => {
       const b = st.principal;
       if (b && !b.cf.muerto && !camManual) camMeta = Math.max(camMeta, Math.min(camMax(), b.position.x - vistaW() * .4));
     } else if (st.fase === 'acomodo') camMeta = camMax();
-    camMeta = Math.max(0, Math.min(camMax(), camMeta));
+    camMeta = Math.max(camMin(), Math.min(camMax(), camMeta));
     if (!camManual || st.fase !== 'listo') camX += (camMeta - camX) * (st.fase === 'listo' ? .06 : .1);
   }
 
@@ -6706,7 +6731,7 @@ const COBRANZA = (() => {
     // letrero
     ctx.save(); ctx.translate(camX * .2, 0);
     ctx.fillStyle = '#FFD54A'; ctx.font = '900 34px Anton, Impact, sans-serif'; ctx.textAlign = 'center';
-    ctx.globalAlpha = .18; ctx.fillText('COBRANZA FURIOSA', 400, SUELO - 340); ctx.globalAlpha = 1;
+    if (vistaH() > 520) { ctx.globalAlpha = .18; ctx.fillText('COBRANZA FURIOSA', 400, SUELO - 340); ctx.globalAlpha = 1; }
     // reloj
     ctx.beginPath(); ctx.arc(700, SUELO - 380, 24, 0, Math.PI * 2); ctx.fillStyle = '#FFFDF6'; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = '#18234a'; ctx.stroke();
     ctx.beginPath(); ctx.moveTo(700, SUELO - 380); ctx.lineTo(700, SUELO - 397); ctx.moveTo(700, SUELO - 380); ctx.lineTo(712, SUELO - 374); ctx.lineWidth = 3; ctx.stroke();
@@ -6718,7 +6743,7 @@ const COBRANZA = (() => {
     for (let x = Math.floor((camX - 50) / 60) * 60; x < camX + vistaW() + 60; x += 60) { ctx.beginPath(); ctx.moveTo(x, SUELO); ctx.lineTo(x - 30, y0 + vh); ctx.stroke(); }
     for (let y = SUELO + 26; y < y0 + vh; y += 34) { ctx.beginPath(); ctx.moveTo(camX - 50, y); ctx.lineTo(camX + vistaW() + 50, y); ctx.stroke(); }
     // planta
-    ctx.font = '46px system-ui'; ctx.textAlign = 'center'; ctx.fillText('🪴', 30, SUELO - 4);
+    ctx.font = '46px system-ui'; ctx.textAlign = 'center'; ctx.fillText('🪴', 0, SUELO - 4);
   }
   function resortera(cargado) {
     const x = HONDA.x, y = HONDA.y;
