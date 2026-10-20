@@ -196,6 +196,7 @@ Versión 58: el marcador de duelos ahora va dentro de la tarjeta de Récords de 
 Versión 59: los juegos individuales dicen "1 JUGADOR" y Monster Crazy ya no dice NUEVO.
 Versión 60: nuevo juego de 1 jugador, Cobranza furiosa 🎯 (resortera contra torres de la oficina con las caras de los compañeros como morosos). Corre actualizacion_v60_parte1.sql y parte2.
 Versión 61: Cobranza furiosa siempre se ve horizontal; si el celular está parado, el juego se gira solo y lo agarras de lado.
+Versión 62: en Cobranza furiosa los escombros que caen encima lastiman a los morosos y la pared que se rompe aplasta al moroso que tenía pegado.
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.

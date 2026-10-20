@@ -1907,7 +1907,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 61;
+const APP_VERSION       = 62;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -6457,6 +6457,12 @@ const COBRANZA = (() => {
     for (const par of ev.pairs) {
       const a = par.bodyA, b = par.bodyB;
       const rv = Math.hypot(a.velocity.x - b.velocity.x, a.velocity.y - b.velocity.y);
+      // a los morosos les duele cualquier cosa que les caiga encima (escombros, tablas, garrafones)
+      const mor = a.cf?.tipo === 'moroso' ? a : b.cf?.tipo === 'moroso' ? b : null;
+      if (mor && rv > .6) {
+        const otro = mor === a ? b : a;
+        if (!otro.isStatic) lastimar(mor, otro.mass * rv * rv * DANO * 4, true);
+      }
       if (rv < 1.1) continue;
       const ma = a.isStatic ? Infinity : a.mass, mb = b.isStatic ? Infinity : b.mass;
       const mred = isFinite(ma) && isFinite(mb) ? ma * mb / (ma + mb) : (isFinite(ma) ? ma : mb);
@@ -6465,9 +6471,9 @@ const COBRANZA = (() => {
       if (e > 2 && (a.cf?.tipo === 'tiro' || b.cf?.tipo === 'tiro')) SFX.tocar('patada');
     }
   }
-  function lastimar(b, d) {
+  function lastimar(b, d, directo = false) {
     if (!b.cf || b.cf.muerto) return;
-    if (b.cf.tipo === 'moroso') d *= 2.6;
+    if (b.cf.tipo === 'moroso' && !directo) d *= 2.6;
     else if (b.cf.tipo !== 'bloque') return;
     b.cf.vida -= d;
     if (b.cf.vida <= 0) romper(b);
@@ -6487,10 +6493,40 @@ const COBRANZA = (() => {
       expresar($('.mm', vigia), '🤩', 'festeja', 1200, '');
     } else {
       const m = b.cf.mat;
-      if (!sinPuntos) sumar(MAT[m].pts, x, y);
+      if (!sinPuntos) { sumar(MAT[m].pts, x, y); aplastar(b); }
       const col = { caja: '#B07A45', vidrio: '#BFE6FF', archivero: '#8A94A6', garrafon: '#5FB7FF' }[m];
       for (let i = 0; i < 9; i++) st.parts.push({ x: x + azar(-10, 10), y: y + azar(-10, 10), vx: azar(-3, 3), vy: azar(-5, -1), t: 0, vida: 40, col, s: azar(3, 7), r: azar(0, 6) });
       SFX.tocar(m === 'vidrio' ? 'cristal' : m === 'garrafon' ? 'pop' : 'patada');
+    }
+  }
+  // el bloque que se rompe se lleva a los morosos que tenía pegados (la pared los aplasta)
+  function aplastar(b) {
+    const c = Math.cos(-b.angle), s = Math.sin(-b.angle);
+    for (const o of M.Composite.allBodies(engine.world)) {
+      if (o.cf?.tipo !== 'moroso' || o.cf.muerto) continue;
+      const dx = o.position.x - b.position.x, dy = o.position.y - b.position.y;
+      let cerca;
+      if (b.cf.r) cerca = Math.hypot(dx, dy) - b.cf.r;
+      else {
+        const lx = dx * c - dy * s, ly = dx * s + dy * c;
+        const qx = Math.max(-b.cf.w / 2, Math.min(b.cf.w / 2, lx)), qy = Math.max(-b.cf.h / 2, Math.min(b.cf.h / 2, ly));
+        cerca = Math.hypot(lx - qx, ly - qy);
+      }
+      if (cerca < o.cf.r + 3) lastimar(o, 99, true);
+    }
+  }
+  // si un escombro se mueve encima de un moroso, lo va aplastando poco a poco
+  function presion() {
+    for (const par of engine.pairs.list) {
+      if (!par.isActive) continue;
+      const a = par.bodyA, b = par.bodyB;
+      const mor = a.cf?.tipo === 'moroso' ? a : b.cf?.tipo === 'moroso' ? b : null;
+      if (!mor) continue;
+      const otro = mor === a ? b : a;
+      if (otro.isStatic || !otro.cf || otro.cf.tipo === 'moroso') continue;
+      if (otro.position.y > mor.position.y - 10) continue;             // solo lo que está arriba
+      const v = Math.max(otro.speed, Math.abs(otro.angularVelocity) * 30);
+      if (v > .35) lastimar(mor, otro.mass * v * .05, true);
     }
   }
   function despertar() { for (const b of M.Composite.allBodies(engine.world)) if (!b.isStatic) M.Sleeping.set(b, false); }
@@ -6606,7 +6642,7 @@ const COBRANZA = (() => {
     if (engine && st) {
       acum += dt;
       let pasos = 0;
-      while (acum >= 1000 / 60 && pasos < 4) { M.Engine.update(engine, 1000 / 60); acum -= 1000 / 60; pasos++; revisar(); }
+      while (acum >= 1000 / 60 && pasos < 4) { M.Engine.update(engine, 1000 / 60); acum -= 1000 / 60; pasos++; if (st.danoOn) presion(); revisar(); }
       if (pasos === 4) acum = 0;
     }
     camara();
