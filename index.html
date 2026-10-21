@@ -1055,6 +1055,84 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .chip-eco.dinero{background:#1E8E5A;box-shadow:none}
 /* botón de la tienda: el contorno brilla y parpadea */
 #c-tienda{animation:tienda-brilla 1.6s ease-in-out infinite}
+/* 🕺 Sigue el ritmo */
+#m-baile{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;background:#12062a;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation;font-family:"Work Sans",sans-serif;--beat:.536s}
+.bl-hud{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(env(safe-area-inset-top) + 8px) 12px 6px;z-index:3}
+.bl-hud>div{text-align:center;line-height:1.1}
+.bl-hud>div b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.25rem;letter-spacing:1px;background:linear-gradient(90deg,#2ECC71,#3D8BFF,#FF4D5E,#FFD23F,#FF8A2A);-webkit-background-clip:text;background-clip:text;color:transparent}
+.bl-hud small{display:block;color:#C9C3EE;font-size:.78rem;font-weight:700}
+.bl-pts{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.35rem;color:#FFD23F;min-width:60px;text-align:right}
+.bl-x{width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:1.05rem}
+.bl-escena{--luz:#7b2ff7;position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:radial-gradient(ellipse at 50% 18%,#3a1670,#160733 70%)}
+.bl-escena::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 55%,var(--luz),transparent 65%);opacity:0;pointer-events:none}
+.bl-escena.flash::after{animation:bl-flash .45s ease-out}
+@keyframes bl-flash{0%{opacity:.55}100%{opacity:0}}
+.bl-luz{position:absolute;top:-10%;width:34%;height:120%;transform-origin:50% 0;opacity:.22;filter:blur(2px);pointer-events:none}
+.bl-luz.l1{left:-4%;background:linear-gradient(180deg,#FF4D5E,transparent 80%);clip-path:polygon(45% 0,55% 0,100% 100%,0 100%);animation:bl-barre 3.2s ease-in-out infinite alternate}
+.bl-luz.l2{left:33%;background:linear-gradient(180deg,#3D8BFF,transparent 80%);clip-path:polygon(45% 0,55% 0,100% 100%,0 100%);animation:bl-barre 2.6s ease-in-out infinite alternate-reverse}
+.bl-luz.l3{right:-4%;background:linear-gradient(180deg,#2ECC71,transparent 80%);clip-path:polygon(45% 0,55% 0,100% 100%,0 100%);animation:bl-barre 3.6s ease-in-out infinite alternate}
+@keyframes bl-barre{from{transform:rotate(-22deg)}to{transform:rotate(22deg)}}
+.bl-hilo{position:absolute;top:0;left:50%;width:2px;height:22px;background:#999;translate:-50% 0}
+.bl-bola{position:absolute;top:20px;left:50%;width:46px;height:46px;border-radius:50%;translate:-50% 0;background:repeating-conic-gradient(#e8e8f0 0 10deg,#9a9ab0 10deg 20deg),#ccc;box-shadow:0 0 18px rgba(255,255,255,.55),inset -8px -8px 14px rgba(0,0,0,.35);animation:bl-gira 4s linear infinite}
+@keyframes bl-gira{to{transform:rotate(360deg)}}
+.bl-piso{position:absolute;left:-10%;right:-10%;bottom:-6%;height:42%;display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(4,1fr);gap:4px;transform:perspective(320px) rotateX(52deg);transform-origin:50% 100%}
+.bl-piso i{border-radius:4px;background:#2a1450;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:background .25s,box-shadow .25s}
+.bl-piso i[data-c="0"]{--c:#2ECC71}.bl-piso i[data-c="1"]{--c:#3D8BFF}.bl-piso i[data-c="2"]{--c:#FF4D5E}.bl-piso i[data-c="3"]{--c:#FFD23F}.bl-piso i[data-c="4"]{--c:#FF8A2A}
+.bl-piso i{background:color-mix(in srgb,var(--c) 22%,#1d0b3c)}
+.bl-piso i.on{background:var(--c);box-shadow:0 0 18px var(--c);transition:none}
+.bl-publico{position:absolute;bottom:4%;display:flex;gap:2px;z-index:1}
+.bl-publico.izq{left:4px}.bl-publico.der{right:4px}
+.bl-bailarin{animation:bl-bob var(--beat) ease-in-out infinite alternate}
+@keyframes bl-bob{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-5px) rotate(2deg)}}
+.bl-ins{position:absolute;left:50%;bottom:16%;translate:-50% 0;z-index:2}
+.bl-nombre{position:absolute;left:50%;bottom:6%;translate:-50% 0;z-index:2;background:rgba(0,0,0,.45);border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:800;white-space:nowrap}
+.bl-afro{position:absolute;top:calc(var(--u)*1.6);left:50%;width:calc(var(--t)*1.62);height:calc(var(--t)*1.4);translate:-50% 0;border-radius:50%;z-index:0;background:radial-gradient(circle at 18% 40%,#3b2414 22%,transparent 23%),radial-gradient(circle at 82% 40%,#3b2414 22%,transparent 23%),radial-gradient(circle at 50% 12%,#3b2414 26%,transparent 27%),radial-gradient(circle at 30% 18%,#3b2414 22%,transparent 23%),radial-gradient(circle at 70% 18%,#3b2414 22%,transparent 23%),radial-gradient(circle at 50% 50%,#2b180c 55%,transparent 56%)}
+.bl-cartel{position:absolute;left:50%;top:30%;translate:-50% -50%;z-index:4;text-align:center;font-family:Anton,Impact,sans-serif;font-size:1.9rem;line-height:1.05;color:#fff;text-shadow:0 3px 0 #7b2ff7,0 6px 14px rgba(0,0,0,.6);white-space:nowrap;opacity:0;transform:scale(.6);transition:opacity .2s,transform .25s cubic-bezier(.2,1.6,.4,1);pointer-events:none}
+.bl-cartel.on{opacity:1;transform:scale(1)}
+.bl-cartel small{display:block;font-family:"Work Sans",sans-serif;font-weight:800;font-size:.95rem;text-shadow:0 2px 4px rgba(0,0,0,.6)}
+.bl-cartel.grande{font-size:2.4rem;color:#FFD23F;text-shadow:0 3px 0 #b5401e,0 6px 16px rgba(0,0,0,.6)}
+.bl-cartel.bien{color:#2ECC71}
+.bl-cartel.mal{color:#FF4D5E;text-shadow:0 3px 0 #5a0b14,0 6px 14px rgba(0,0,0,.6)}
+.bl-yo-zona{flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 14px 6px;background:linear-gradient(180deg,#1a0a38,#12062a)}
+.bl-puntos{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;min-height:14px;max-width:100%}
+.bl-puntos i{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .15s,transform .15s}
+.bl-puntos i.visto{background:rgba(255,255,255,.6)}
+.bl-puntos i.ok{transform:scale(1.15)}
+.bl-tiempo{width:70%;height:6px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;visibility:hidden}
+#m-baile.turno .bl-tiempo{visibility:visible}
+.bl-tiempo i{display:block;height:100%;background:linear-gradient(90deg,#FF4D5E,#FFD23F,#2ECC71);transform-origin:0 50%}
+.bl-botones{flex:none;display:flex;justify-content:center;gap:10px;padding:10px 10px calc(env(safe-area-inset-bottom) + 16px);background:#12062a}
+.bl-botones button{width:min(17vw,66px);height:min(17vw,66px);border-radius:50%;border:0;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--c) 55%,#fff),var(--c) 55%,color-mix(in srgb,var(--c) 70%,#000));box-shadow:0 5px 0 color-mix(in srgb,var(--c) 55%,#000),0 0 0 3px rgba(255,255,255,.15);transition:transform .08s,filter .2s;touch-action:manipulation}
+.bl-botones button:disabled{filter:saturate(.35) brightness(.6)}
+.bl-botones button.pica{animation:bl-pica .18s ease-out}
+@keyframes bl-pica{50%{transform:translateY(4px) scale(.94);box-shadow:0 1px 0 color-mix(in srgb,var(--c) 55%,#000),0 0 22px var(--c)}}
+.bl-botones button.era{filter:none;animation:bl-era .3s ease-in-out infinite alternate}
+@keyframes bl-era{to{transform:scale(1.15);box-shadow:0 0 0 4px #fff,0 0 26px var(--c)}}
+/* las poses (brazos y piernas del monito) */
+#m-baile .mm-cuerpo line{stroke-width:4.2}
+#m-baile .mm .bi,#m-baile .mm .bd,#m-baile .mm .pi,#m-baile .mm .pd{transition:transform .1s}
+#m-baile .mm{transition:translate .1s,rotate .1s}
+#m-baile .mm-cuerpo{position:relative;z-index:2}
+#m-baile .mm .bi,#m-baile .mm .bd{transform:scale(1.45)}
+#m-baile .mm.p-verde .bi{transform:rotate(78deg) scale(1.65)}#m-baile .mm.p-verde .bd{transform:rotate(-78deg) scale(1.65)}
+#m-baile .mm.p-azul .bd{transform:rotate(-100deg) scale(1.9)}#m-baile .mm.p-azul .bi{transform:rotate(-22deg) scale(1.4)}#m-baile .mm.p-azul .pd{transform:rotate(-14deg)}#m-baile .mm.p-azul{rotate:-9deg}
+#m-baile .mm.p-rojo .bi{transform:rotate(47deg) scale(1.6)}#m-baile .mm.p-rojo .bd{transform:rotate(-47deg) scale(1.6)}#m-baile .mm.p-rojo .pi{transform:rotate(10deg)}#m-baile .mm.p-rojo .pd{transform:rotate(-10deg)}
+#m-baile .mm.p-amarillo .bi{transform:rotate(22deg) scale(1.6)}#m-baile .mm.p-amarillo .bd{transform:rotate(-22deg) scale(1.6)}#m-baile .mm.p-amarillo .pi{transform:rotate(30deg)}#m-baile .mm.p-amarillo .pd{transform:rotate(-30deg)}#m-baile .mm.p-amarillo{translate:0 -16px}
+#m-baile .mm.p-naranja .pi{transform:rotate(40deg)}#m-baile .mm.p-naranja .pd{transform:rotate(-40deg)}#m-baile .mm.p-naranja .bi{transform:rotate(-14deg) scale(1.5)}#m-baile .mm.p-naranja .bd{transform:rotate(14deg) scale(1.5)}#m-baile .mm.p-naranja{translate:0 10px}
+.bl-panel{position:absolute;inset:0;z-index:10;display:none;flex-direction:column;justify-content:center;gap:10px;padding:24px 22px;background:rgba(14,5,32,.9);overflow:auto;text-align:center}
+.bl-panel.on{display:flex}
+.bl-panel p{margin:0;color:#E4E0FF}
+.bl-tit{font-family:Anton,Impact,sans-serif;font-size:2.7rem;line-height:1;color:#FFD23F;text-shadow:0 4px 0 #b5401e}
+.bl-tit span{color:#3D8BFF;text-shadow:0 4px 0 #142f6b}
+.bl-leyenda{display:grid;gap:6px;text-align:left}
+.bl-leyenda div{display:grid;grid-template-columns:26px 1fr;column-gap:10px;align-items:center;background:rgba(255,255,255,.07);border-radius:10px;padding:6px 10px}
+.bl-leyenda span{grid-row:span 2;width:24px;height:24px;border-radius:50%}
+.bl-leyenda b{font-size:.9rem}
+.bl-leyenda small{color:#C9C3EE;font-size:.78rem}
+.bl-chico{font-size:.84rem}
+.bl-final b{display:block;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:3rem;color:#FFD23F}
+.bl-final small{color:#C9C3EE}
+.bl-panel .btn.sec{color:#fff;box-shadow:inset 0 0 0 2px #6E5FD0}
 /* 🎯 Cobranza furiosa */
 .cf-card{background:radial-gradient(circle at 50% 0%,#6b3a12,#1c0f05 75%);border-color:#FFB347}
 .cf-card h3{color:#FFB347}
@@ -1907,7 +1985,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 62;
+const APP_VERSION       = 63;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -6911,6 +6989,286 @@ const COBRANZA = (() => {
   return { abrir, cerrar, _st: () => st, _nivel: n => { if (st) { st.nivel = n; armarNivel(); } }, _lanzar: (dx, dy) => st && st.fase === 'listo' && lanzar(dx, dy), _poder: () => poder() };
 })();
 
+/* =====================================================================
+   🕺 SIGUE EL RITMO (en prueba: solo desde el panel de admin)
+   El líder (con afro y lentes) enseña una secuencia de poses de colores;
+   tú la repites con los 5 botones. Empieza con 5 y cada ronda suma 2
+   (los mismos del principio + 2 nuevos). Un error y se acaba.
+   Cada color tiene SIEMPRE su mismo tono (verde el más grave … naranja el más agudo).
+   ===================================================================== */
+const BAILE = (() => {
+  const COL = [
+    { k: 'verde',    hex: '#2ECC71', nom: 'Verde',    pose: 'Brazos arriba en "Y"',       f: 261.63, nota: 'Do' },
+    { k: 'azul',     hex: '#3D8BFF', nom: 'Azul',     pose: 'Señala al cielo (disco)',     f: 293.66, nota: 'Re' },
+    { k: 'rojo',     hex: '#FF4D5E', nom: 'Rojo',     pose: 'Brazos abiertos',             f: 329.63, nota: 'Mi' },
+    { k: 'amarillo', hex: '#FFD23F', nom: 'Amarillo', pose: 'Salto de estrella',           f: 392.00, nota: 'Sol' },
+    { k: 'naranja',  hex: '#FF8A2A', nom: 'Naranja',  pose: 'Sentadilla',                  f: 440.00, nota: 'La' },
+  ];
+  const ESPERA = 3000;                  // tiempo máximo entre botón y botón
+  let raiz = null, st = null, timers = [];
+  const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
+  const limpiar = () => { timers.forEach(clearTimeout); timers = []; };
+
+  // ---------------------------------------------------------------- audio (música + tonos)
+  let ac = null, maestro = null, musGain = null, reloj = null, paso16 = 0, sigT = 0, bpm = 112;
+  const mudo = () => store.get('ab_mudo') === '1';
+  function audio() {
+    if (ac) { if (ac.state === 'suspended') ac.resume(); return ac; }
+    const C = window.AudioContext || window.webkitAudioContext; if (!C) return null;
+    ac = new C(); maestro = ac.createGain(); maestro.gain.value = mudo() ? 0 : .9; maestro.connect(ac.destination);
+    musGain = ac.createGain(); musGain.gain.value = .32; musGain.connect(maestro);
+    return ac;
+  }
+  let ruido = null;
+  function bufRuido() {
+    if (ruido) return ruido;
+    ruido = ac.createBuffer(1, ac.sampleRate * .5, ac.sampleRate);
+    const d = ruido.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return ruido;
+  }
+  function osc(t, f, d, { tipo = 'sine', v = .2, f2 = null, dest = musGain, filtro = null } = {}) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = tipo; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .006); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    let n = o; if (filtro) { const fl = ac.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = filtro; o.connect(fl); n = fl; }
+    n.connect(g); g.connect(dest); o.start(t); o.stop(t + d + .05);
+  }
+  function chss(t, d, v, f, tipo = 'highpass') {
+    const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = bufRuido(); fl.type = tipo; fl.frequency.value = f;
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    s.connect(fl); fl.connect(g); g.connect(musGain); s.start(t); s.stop(t + d + .02);
+  }
+  // Do – La m – Fa – Sol (en Do mayor, para que los tonos de colores suenen bonito encima)
+  const ACORDES = [[130.81, 164.81, 196.0], [110.0, 130.81, 164.81], [87.31, 110.0, 130.81], [98.0, 123.47, 146.83]];
+  function programar(t, p) {
+    const comp = Math.floor(p / 16) % 4, s = p % 16, ac3 = ACORDES[comp];
+    if (s % 4 === 0) osc(t, 120, .22, { f2: 42, v: .9 });                       // bombo
+    if (s === 4 || s === 12) chss(t, .14, .35, 1800, 'bandpass');               // palmada
+    if (s % 2 === 1) chss(t, .04, .16, 7000);                                    // hi-hat
+    if (s % 4 === 2) chss(t, .09, .12, 6000);
+    if ([0, 3, 6, 8, 11, 14].includes(s)) osc(t, ac3[0] / 2, .18, { tipo: 'sawtooth', v: .22, filtro: 520 });  // bajo
+    if (s === 0 || s === 8) ac3.forEach(f => osc(t, f * 2, .5, { tipo: 'triangle', v: .035 }));               // acorde
+  }
+  function musica(on) {
+    if (!audio()) return;
+    clearInterval(reloj); reloj = null;
+    if (!on) return;
+    paso16 = 0; sigT = ac.currentTime + .08;
+    reloj = setInterval(() => {
+      while (sigT < ac.currentTime + .14) { programar(sigT, paso16); sigT += 60 / bpm / 4; paso16++; }
+    }, 25);
+  }
+  // segundos hasta el próximo tiempo (para que el instructor baile al compás)
+  function alSiguienteTiempo() {
+    if (!ac || !reloj) return 0;
+    const dur16 = 60 / bpm / 4, faltan = (4 - paso16 % 4) % 4;
+    return Math.max(0, sigT + faltan * dur16 - ac.currentTime);
+  }
+  // el tono de cada color: el mismo sonido, solo más grave o más agudo (fijo por color)
+  function tono(i, cuando = 0) {
+    if (!audio()) return;
+    const t = ac.currentTime + cuando, f = COL[i].f;
+    osc(t, f, .45, { tipo: 'triangle', v: .5, dest: maestro });
+    osc(t, f * 2, .25, { tipo: 'sine', v: .16, dest: maestro });
+    osc(t, f * 3.01, .1, { tipo: 'sine', v: .06, dest: maestro });
+  }
+  function efecto(nombre) {
+    if (!audio()) return;
+    const t = ac.currentTime;
+    if (nombre === 'mal') { osc(t, 155, .45, { tipo: 'sawtooth', v: .25, dest: maestro, filtro: 1100 }); osc(t, 147, .45, { tipo: 'sawtooth', v: .25, dest: maestro, filtro: 1100 }); }
+    if (nombre === 'bien') [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => osc(t + i * .07, f, .25, { tipo: 'triangle', v: .22, dest: maestro }));
+    if (nombre === 'sigue') { chss(t, .3, .3, 2500, 'bandpass'); osc(t, 880, .12, { tipo: 'square', v: .08, dest: maestro }); osc(t + .12, 1318.5, .3, { tipo: 'square', v: .08, dest: maestro }); }
+  }
+
+  // ---------------------------------------------------------------- pantalla
+  function instructor() {
+    const g = est.juego || {};
+    const l = porId(g.lider_id);
+    return l || { id: 'instructor', nombre: 'Instructor', color: '#7b2ff7', emoji: '🕺' };
+  }
+  function conAfro(html) { return html.replace('<div class="mm-cab', '<span class="bl-afro"></span><div class="mm-cab'); }
+  function abrir() {
+    if (raiz) return;
+    const ins = instructor();
+    const estiloIns = { ...(ins.estilo || {}), sombrero: null, lentes: '🕶️', mano: null, mascota: null };
+    const otros = (est.jugadores || []).filter(j => j.id !== est.yo.id && j.id !== ins.id).sort(() => Math.random() - .5).slice(0, 6);
+    raiz = document.createElement('div');
+    raiz.id = 'm-baile';
+    raiz.innerHTML = `
+      <div class="bl-hud"><button class="bl-x" aria-label="Salir">✕</button><div><b>SIGUE EL RITMO</b><small class="bl-ronda">Modo prueba</small></div><b class="bl-pts">0</b></div>
+      <div class="bl-escena">
+        <div class="bl-luz l1"></div><div class="bl-luz l2"></div><div class="bl-luz l3"></div>
+        <div class="bl-hilo"></div><div class="bl-bola"></div>
+        <div class="bl-piso">${Array.from({ length: 20 }, (_, i) => `<i data-c="${(i * 3 + Math.floor(i / 5)) % 5}"></i>`).join('')}</div>
+        <div class="bl-publico izq">${otros.slice(0, 3).map(j => monito(j, { tam: 22, nombre: false })).join('')}</div>
+        <div class="bl-publico der">${otros.slice(3).map(j => monito(j, { tam: 22, nombre: false })).join('')}</div>
+        <div class="bl-bailarin bl-ins">${conAfro(monito(ins, { tam: 78, nombre: false, estilo: estiloIns }))}</div>
+        <div class="bl-nombre">👑 ${esc(ins.id === 'instructor' ? 'Instructor' : ins.nombre)}</div>
+        <div class="bl-cartel"></div>
+      </div>
+      <div class="bl-yo-zona">
+        <div class="bl-puntos"></div>
+        <div class="bl-bailarin bl-yo">${monito(est.yo, { tam: 52, nombre: false })}</div>
+        <div class="bl-tiempo"><i></i></div>
+      </div>
+      <div class="bl-botones">${COL.map((c, i) => `<button data-b="${i}" style="--c:${c.hex}" aria-label="${c.nom}" disabled></button>`).join('')}</div>
+      <div class="bl-panel"></div>`;
+    document.body.appendChild(raiz);
+    SFX.pausaParaGala(true);
+    $('.bl-x', raiz).onclick = cerrar;
+    $$('.bl-botones button', raiz).forEach(b => b.addEventListener('pointerdown', ev => { ev.preventDefault(); pulsar(+b.dataset.b); }));
+    portada();
+  }
+  function cerrar() {
+    limpiar(); musica(false); st = null;
+    raiz?.remove(); raiz = null;
+    SFX.pausaParaGala(false);
+  }
+  function portada() {
+    const p = $('.bl-panel', raiz);
+    p.innerHTML = `<div class="bl-tit">SIGUE EL<br><span>RITMO</span></div>
+      <p>El líder 👑 te enseña sus pasos: cada pose tiene un color y un tono. Cuando diga <b>¡Sigue el ritmo!</b>, repítelos en el mismo orden con los botones de abajo.</p>
+      <div class="bl-leyenda">${COL.map(c => `<div><span style="background:${c.hex}"></span><b>${c.nom}</b><small>${c.pose} · ${c.nota}</small></div>`).join('')}</div>
+      <p class="bl-chico">Empiezas con 5 pasos y cada ronda se agregan 2 (los mismos de antes + 2 nuevos). Tienes ${ESPERA / 1000} segundos entre paso y paso. <b>Un error y se acaba.</b></p>
+      <p class="bl-chico" style="color:#FFD23F">🧪 Modo prueba: solo lo ves tú y no se guarda.</p>
+      <button class="btn" id="bl-va">🕺 ¡A bailar!</button>`;
+    p.classList.add('on');
+    $('#bl-va', raiz).onclick = () => { p.classList.remove('on'); empezar(); };
+  }
+  function empezar() {
+    audio(); if (maestro) maestro.gain.value = mudo() ? 0 : .9;
+    bpm = 112;
+    st = { seq: [], ronda: 0, puntos: 0, pos: 0, fase: 'nada', mejor: 0 };
+    musica(true);
+    pintar();
+    later(nuevaRonda, 700);
+  }
+  function pintar() {
+    if (!raiz || !st) return;
+    $('.bl-pts', raiz).textContent = st.puntos.toLocaleString('es-MX');
+    $('.bl-ronda', raiz).textContent = st.ronda ? `Ronda ${st.ronda} · ${st.seq.length} pasos` : 'Modo prueba';
+  }
+  function cartel(txt, clase = '', ms = 1300) {
+    const c = $('.bl-cartel', raiz); if (!c) return;
+    c.className = 'bl-cartel ' + clase; c.innerHTML = txt; void c.offsetWidth; c.classList.add('on');
+    if (ms) later(() => c.classList.remove('on'), ms);
+  }
+  function puntitos(mostrados = 0, buenos = 0) {
+    const d = $('.bl-puntos', raiz);
+    d.innerHTML = st.seq.map((c, i) => `<i class="${i < buenos ? 'ok' : i < mostrados ? 'visto' : ''}" style="${i < buenos ? `background:${COL[c].hex}` : ''}"></i>`).join('');
+  }
+  function posar(sel, i) {
+    const el = $(sel + ' .mm', raiz); if (!el) return;
+    COL.forEach(c => el.classList.remove('p-' + c.k));
+    void el.offsetWidth;
+    el.classList.add('p-' + COL[i].k);
+    clearTimeout(el._pose); el._pose = setTimeout(() => el.classList.remove('p-' + COL[i].k), 380);
+    // se ilumina el piso y las luces del color
+    const esc2 = $('.bl-escena', raiz);
+    esc2.style.setProperty('--luz', COL[i].hex);
+    esc2.classList.remove('flash'); void esc2.offsetWidth; esc2.classList.add('flash');
+    $$('.bl-piso i', raiz).forEach(t => t.classList.toggle('on', +t.dataset.c === i));
+    clearTimeout(esc2._t); esc2._t = setTimeout(() => $$('.bl-piso i', raiz).forEach(t => t.classList.remove('on')), 340);
+  }
+  function botones(on) { $$('.bl-botones button', raiz).forEach(b => b.disabled = !on); raiz.classList.toggle('turno', on); }
+
+  // ---------------------------------------------------------------- rondas
+  function nuevaRonda() {
+    if (!st) return;
+    st.ronda++;
+    const agrega = st.ronda === 1 ? 5 : 2;
+    for (let i = 0; i < agrega; i++) st.seq.push(Math.floor(Math.random() * 5));
+    bpm = Math.min(140, 112 + (st.ronda - 1) * 4);       // cada ronda un poquito más rápido
+    raiz.style.setProperty('--beat', (60 / bpm) + 's');
+    st.fase = 'muestra'; st.pos = 0;
+    botones(false); pintar(); puntitos(0, 0);
+    expresar($('.bl-ins .mm', raiz), '😎', '', 0);
+    cartel(st.ronda === 1 ? '¡Mira mis pasos!' : `¡Ronda ${st.ronda}!<small>+2 pasos nuevos</small>`, '', 1300);
+    later(() => mostrar(0), 1500);
+  }
+  function mostrar(i) {
+    if (!st || st.fase !== 'muestra') return;
+    if (i >= st.seq.length) { later(turno, 450); return; }
+    const espera = alSiguienteTiempo();
+    tono(st.seq[i], espera);
+    later(() => {
+      if (!st) return;
+      posar('.bl-ins', st.seq[i]); puntitos(i + 1, 0);
+      later(() => mostrar(i + 1), Math.round(60 / bpm * 1000) - 30);
+    }, espera * 1000);
+  }
+  function turno() {
+    if (!st) return;
+    st.fase = 'turno'; st.pos = 0;
+    puntitos(0, 0);
+    cartel('¡SIGUE EL RITMO!', 'grande', 1100); efecto('sigue');
+    expresar($('.bl-ins .mm', raiz), '👀', '', 0);
+    expresar($('.bl-yo .mm', raiz), '😤', '', 0);
+    botones(true); reloj2();
+  }
+  // barra del tiempo que te queda para el siguiente paso
+  let tTurno = null;
+  function reloj2() {
+    clearTimeout(tTurno);
+    const b = $('.bl-tiempo i', raiz); if (!b) return;
+    b.style.transition = 'none'; b.style.transform = 'scaleX(1)'; void b.offsetWidth;
+    b.style.transition = `transform ${ESPERA}ms linear`; b.style.transform = 'scaleX(0)';
+    tTurno = later(() => fallo(null), ESPERA);
+  }
+  function pulsar(i) {
+    if (!st || st.fase !== 'turno') return;
+    const ok = st.seq[st.pos] === i;
+    tono(i); posar('.bl-yo', i);
+    const b = $(`.bl-botones [data-b="${i}"]`, raiz);
+    b.classList.remove('pica'); void b.offsetWidth; b.classList.add('pica');
+    if (!ok) { fallo(i); return; }
+    st.pos++; st.puntos += 100; pintar(); puntitos(0, st.pos);
+    if (st.pos >= st.seq.length) {
+      clearTimeout(tTurno); botones(false); st.fase = 'bien';
+      $('.bl-tiempo i', raiz).style.transition = 'none';
+      const bono = 50 * st.seq.length;
+      st.puntos += bono; st.mejor = st.seq.length; pintar();
+      later(() => {
+        efecto('bien');
+        cartel(`¡ESO! 🔥<small>+${bono} de bono</small>`, 'bien', 1300);
+        expresar($('.bl-ins .mm', raiz), '🤩', 'festeja', 1200, '😎');
+        expresar($('.bl-yo .mm', raiz), '🥳', 'festeja', 1200, '');
+        $$('.bl-publico .mm', raiz).forEach((m, k) => later(() => expresar(m, azarDe(['👏', '🎉', '🔥', '🙌']), 'festeja', 1100, ''), k * 70));
+      }, 250);
+      later(nuevaRonda, 1900);
+    } else reloj2();
+  }
+  function fallo(i) {
+    if (!st || st.fase !== 'turno') return;
+    st.fase = 'fin'; clearTimeout(tTurno); botones(false);
+    $('.bl-tiempo i', raiz).style.transition = 'none';
+    const tocaba = st.seq[st.pos];
+    efecto('mal'); musica(false);
+    cartel(i === null ? '¡SE TE FUE EL RITMO!<small>Se acabó el tiempo</small>' : '¡ESE NO ERA!', 'mal', 0);
+    expresar($('.bl-ins .mm', raiz), '🤦', 'triste', 0);
+    expresar($('.bl-yo .mm', raiz), '😵', 'triste', 0);
+    const b = $(`.bl-botones [data-b="${tocaba}"]`, raiz);
+    b.classList.add('era');
+    later(() => { b.classList.remove('era'); fin(tocaba); }, 1800);
+  }
+  function fin(tocaba) {
+    if (!raiz) return;
+    $('.bl-cartel', raiz).classList.remove('on');
+    const p = $('.bl-panel', raiz);
+    p.innerHTML = `<div class="bl-tit">¡SE ACABÓ<br><span>EL BAILE!</span></div>
+      <div class="bl-final"><b>${st.puntos.toLocaleString('es-MX')}</b><small>puntos · llegaste a la ronda ${st.ronda} · ${st.mejor ? `secuencia más larga: ${st.mejor} pasos` : 'no completaste ninguna ronda'}</small></div>
+      <p>Tocaba el <b style="color:${COL[tocaba].hex}">${COL[tocaba].nom.toLowerCase()}</b> (paso ${st.pos + 1} de ${st.seq.length}).</p>
+      <p class="bl-chico" style="color:#FFD23F">🧪 Modo prueba: este puntaje no se guarda.</p>
+      <div style="display:grid;gap:10px;margin-top:6px"><button class="btn" id="bl-otra">🕺 Bailar otra vez</button><button class="btn sec" id="bl-salir">Salir</button></div>`;
+    p.classList.add('on');
+    $('#bl-otra', raiz).onclick = () => { p.classList.remove('on'); limpiar(); empezar(); };
+    $('#bl-salir', raiz).onclick = cerrar;
+  }
+  return { abrir, cerrar, _st: () => st };
+})();
+document.addEventListener('click', e => { if (e.target.closest?.('[data-probar-baile]')) BAILE.abrir(); });
+
 /* ---------- mis billetes ---------- */
 async function abrirBilletes() {
   $('#bi-caja').innerHTML = `<div class="folio"><span>Billetes Alfa</span><span>💵</span></div><h2>${fmt$(est.billetes)}</h2><p class="ayuda">Cargando…</p>`;
@@ -8645,7 +9003,10 @@ async function adminPruebas(C) {
   const c = adm.cfg;
   const ints = c.semana ? await q(sb.from('intentos').select('*').eq('semana', c.semana).order('puntaje', { ascending: false, nullsFirst: false })) : [];
   const tabla = c.semana ? await tablaLider() : [], fuera = ints.filter(i => !tabla.some(t => t.jugador_id === i.jugador_id));
-  C.innerHTML = `<div class="adm-caja"><h3>Puntajes de la semana ${c.semana}</h3>
+  C.innerHTML = `<div class="adm-caja"><h3>🧪 Juegos en prueba</h3>
+    <p class="ayuda">Solo los ves tú desde aquí. No pagan ni guardan récords hasta que los publiquemos.</p>
+    <div class="fila-btn" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" data-probar-baile>🕺 Probar Sigue el ritmo</button></div></div>
+    <div class="adm-caja"><h3>Puntajes de la semana ${c.semana}</h3>
     ${c.prueba ? `<p class="ayuda">${esc(PRUEBAS[c.prueba].nombre)}</p>` : ''}
     <p class="ayuda">El líder sale 30% de la prueba (contra el mejor) y 70% en 4 partes de 17.5: misiones de esta semana (de 5), lo que jugó, sus récords y duelos ganados (contra quien más tiene).</p>
     ${tabla.map((i, k) => `<div class="adm-fila"><div class="info"><b>${k + 1}. ${esc(nombreDe(i.jugador_id))}</b>
