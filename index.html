@@ -1056,6 +1056,10 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 /* botón de la tienda: el contorno brilla y parpadea */
 #c-tienda{animation:tienda-brilla 1.6s ease-in-out infinite}
 /* 🕺 Sigue el ritmo */
+.bl-card{background:radial-gradient(circle at 50% 0%,#4a1a8a,#12062a 75%);border-color:#B57BFF}
+.bl-card h3{background:linear-gradient(90deg,#2ECC71,#3D8BFF,#FF4D5E,#FFD23F,#FF8A2A);-webkit-background-clip:text;background-clip:text;color:transparent}
+.bl-card-colores{display:flex;gap:8px;margin:6px 0}
+.bl-card-colores i{width:26px;height:26px;border-radius:50%;box-shadow:0 0 10px currentColor,inset 0 -3px 0 rgba(0,0,0,.25)}
 #m-baile{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;background:#12062a;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation;font-family:"Work Sans",sans-serif;--beat:.536s}
 .bl-hud{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(env(safe-area-inset-top) + 8px) 12px 6px;z-index:3}
 .bl-hud>div{text-align:center;line-height:1.1}
@@ -1988,7 +1992,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 65;
+const APP_VERSION       = 66;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -3161,7 +3165,7 @@ async function abrirFicha(id) {
     let d;
     try { d = await rpc('ficha_semana', { p_token: token, p_id: id, p_semana: n }); } catch (e) { z.innerHTML = `<p class="ayuda">${esc(mensajeError(e))}</p>`; return; }
     if (!$('#ficha-sem') || !$(`[data-fs="${n}"].on`, caja)) return;
-    const NJ = { memoria: 'Memoria', adeudo: 'Adeudo', billetes: 'Billetes', cobranza: 'Cobranza', monster2: 'Monster 2.0', monster: 'Monster' };
+    const NJ = { memoria: 'Memoria', adeudo: 'Adeudo', billetes: 'Billetes', cobranza: 'Cobranza', ritmo: 'Ritmo', monster2: 'Monster 2.0', monster: 'Monster' };
     const t = (b, txt) => `<div class="tile"><b>${b}</b><small>${txt}</small></div>`;
     let x = `<div class="fs-tit">${d.eliminado ? '<span>🚪 Salió esa semana</span>' : ''}</div>
       <div class="tiles">${t(d.revelada ? d.puntos : '?', d.revelada ? 'puntos negativos' : 'puntos negativos (se saben en la pasarela)')}${t(d.lider ? '👑 Sí' : 'No', 'fue líder')}
@@ -3924,7 +3928,7 @@ function pintarEconomia() {
   $('#c-misiones').innerHTML = tarjetaMision(g) || `<div class="juego-card"><p>${g.semana === 0 ? 'Las misiones secretas empiezan cuando abra la casa (semana 1).' : 'Esta semana no hay misiones.'}</p>
     <p class="ayuda">Cada semana cada habitante recibe 5 misiones secretas sobre sus compañeros. Las que cumplas te dan billetes y cuentan para ser líder esa misma semana (hasta que cierre la prueba).</p></div>`;
   // pestaña Jugar: Monster Crazy y las prácticas con sus récords
-  $('#c-jugar').innerHTML = tarjetaCobranza() + tarjetasDuelos(true) + tarjetaPractica('billetes') + tarjetasDuelos(false) + tarjetaMonster() + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
+  $('#c-jugar').innerHTML = tarjetaRitmo() + tarjetaCobranza() + tarjetasDuelos(true) + tarjetaPractica('billetes') + tarjetasDuelos(false) + tarjetaMonster() + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
   // botones
   const C = $('#s-casa');
   C.querySelector('[data-ver-billetes]').onclick = abrirBilletes;
@@ -3942,6 +3946,7 @@ function pintarEconomia() {
   ['#c-dinero', '#c-misiones', '#c-jugar'].forEach(sel => plegarTarjetas($(sel)));
   $$('#c-jugar [data-monster]').forEach(b => b.onclick = () => MONSTER.abrir(b.dataset.monster));
   $$('#c-jugar [data-cobranza]').forEach(b => b.onclick = () => COBRANZA.abrir());
+  $$('#c-jugar [data-ritmo]').forEach(b => b.onclick = () => BAILE.abrir());
   $$('#c-jugar [data-duelo]').forEach(b => b.onclick = () => DUELO.elegir(b.dataset.duelo));
 }
 
@@ -5421,7 +5426,7 @@ const TV = (() => {
   const prod = (a, b, sep = ' ') => a.flatMap(x => b.map(y => x + sep + y));
   const llenar = (t, c) => t.replace(/\{(\w+)\}/g, (_, k) => c[k] ?? '');
   const fmt = n => Number(n || 0).toLocaleString('es-MX');
-  const JUEGOS = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa' };
+  const JUEGOS = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo' };
 
   // ---------- el guion ----------
   // Exclamaciones para armar las reacciones
@@ -6216,7 +6221,7 @@ function tarjetaRecords() {
       <div class="r" style="margin-top:4px;color:#C9C3EE"><span>Tu mejor</span><span>${mio?.mejor ?? 0}</span></div></div>`;
   };
   return `<div class="juego-card"><h3>🏆 Récords de la semana <small>Juegos y duelos</small></h3>
-    <div class="record-cols">${col('monster2', 'Monster Crazy 2.0')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}${col('billetes', 'Billetes verdes')}${col('cobranza', 'Cobranza furiosa')}</div>
+    <div class="record-cols">${col('monster2', 'Monster Crazy 2.0')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}${col('billetes', 'Billetes verdes')}${col('cobranza', 'Cobranza furiosa')}${col('ritmo', 'Sigue el ritmo')}</div>
     ${marcadorDuelos()}
     <p class="ayuda" style="margin-top:6px">Los récords vuelven a cero cada semana y cuentan para ser líder. Cada partida paga hasta $50 según tu puntaje (máximo $2,000 al día por jugar).</p></div>`;
 }
@@ -7099,7 +7104,7 @@ const BAILE = (() => {
     raiz = document.createElement('div');
     raiz.id = 'm-baile';
     raiz.innerHTML = `
-      <div class="bl-hud"><button class="bl-x" aria-label="Salir">✕</button><div><b>SIGUE EL RITMO</b><small class="bl-ronda">Modo prueba</small></div><b class="bl-pts">0</b></div>
+      <div class="bl-hud"><button class="bl-x" aria-label="Salir">✕</button><div><b>SIGUE EL RITMO</b><small class="bl-ronda">¡A bailar!</small></div><b class="bl-pts">0</b></div>
       <div class="bl-escena">
         <div class="bl-luz l1"></div><div class="bl-luz l2"></div><div class="bl-luz l3"></div>
         <div class="bl-hilo"></div><div class="bl-bola"></div>
@@ -7119,7 +7124,7 @@ const BAILE = (() => {
       <div class="bl-panel"></div>`;
     document.body.appendChild(raiz);
     SFX.pausaParaGala(true);
-    $('.bl-x', raiz).onclick = cerrar;
+    $('.bl-x', raiz).onclick = salir;
     $$('.bl-botones button', raiz).forEach(b => b.addEventListener('pointerdown', ev => { ev.preventDefault(); pulsar(+b.dataset.b); }));
     portada();
   }
@@ -7134,7 +7139,7 @@ const BAILE = (() => {
       <p>El líder 👑 te enseña sus pasos: cada pose tiene un color y un tono. Cuando diga <b>¡Sigue el ritmo!</b>, repítelos en el mismo orden con los botones de abajo.</p>
       <div class="bl-leyenda">${COL.map(c => `<div><span style="background:${c.hex}"></span><b>${c.nom}</b><small>${c.pose} · ${c.nota}</small></div>`).join('')}</div>
       <p class="bl-chico">Empiezas con 4 pasos y cada ronda se agrega 1 (los mismos de antes + 1 nuevo). Tienes ${ESPERA / 1000} segundos entre paso y paso. <b>Un error y se acaba.</b></p>
-      <p class="bl-chico" style="color:#FFD23F">🧪 Modo prueba: solo lo ves tú y no se guarda.</p>
+      <p class="bl-chico" style="color:#FFD23F">Tu récord: <b>${((est.practicas || []).find(x => x.id === est.yo.id && x.juego === 'ritmo')?.mejor || 0).toLocaleString('es-MX')}</b> · cada partida paga hasta $50 según qué tan lejos llegues.</p>
       <button class="btn" id="bl-va">🕺 ¡A bailar!</button>`;
     p.classList.add('on');
     $('#bl-va', raiz).onclick = () => { p.classList.remove('on'); empezar(); };
@@ -7150,7 +7155,7 @@ const BAILE = (() => {
   function pintar() {
     if (!raiz || !st) return;
     $('.bl-pts', raiz).textContent = st.puntos.toLocaleString('es-MX');
-    $('.bl-ronda', raiz).textContent = st.ronda ? `Ronda ${st.ronda} · ${st.seq.length} pasos` : 'Modo prueba';
+    $('.bl-ronda', raiz).textContent = st.ronda ? `Ronda ${st.ronda} · ${st.seq.length} pasos` : '¡A bailar!';
   }
   function cartel(txt, clase = '', ms = 1300) {
     const c = $('.bl-cartel', raiz); if (!c) return;
@@ -7265,15 +7270,45 @@ const BAILE = (() => {
     p.innerHTML = `<div class="bl-tit">¡SE ACABÓ<br><span>EL BAILE!</span></div>
       <div class="bl-final"><b>${st.puntos.toLocaleString('es-MX')}</b><small>puntos · llegaste a la ronda ${st.ronda} · ${st.mejor ? `secuencia más larga: ${st.mejor} pasos` : 'no completaste ninguna ronda'}</small></div>
       <p>Tocaba el <b style="color:${COL[tocaba].hex}">${COL[tocaba].nom.toLowerCase()}</b> (paso ${st.pos + 1} de ${st.seq.length}).</p>
-      <p class="bl-chico" style="color:#FFD23F">🧪 Modo prueba: este puntaje no se guarda.</p>
+      <div class="bl-res">Guardando…</div>
       <div style="display:grid;gap:10px;margin-top:6px"><button class="btn" id="bl-otra">🕺 Bailar otra vez</button><button class="btn sec" id="bl-salir">Salir</button></div>`;
     p.classList.add('on');
     $('#bl-otra', raiz).onclick = () => { p.classList.remove('on'); limpiar(); empezar(); };
     $('#bl-salir', raiz).onclick = cerrar;
+    guardar(st.puntos).then(h => { const r = $('.bl-res', raiz); if (r) r.innerHTML = h; });
+  }
+  // guarda la partida (récord de la semana y lo que paga por jugar)
+  async function guardar(puntos) {
+    guardarPractica('ritmo', puntos);
+    let h = '';
+    try {
+      const r = await rpc('guardar_practica', { p_token: token, p_juego: 'ritmo', p_puntaje: puntos });
+      if (r.record) { h += '<p style="font-weight:800;color:#FFD23F">🏆 ¡Nuevo récord de la semana!</p>'; lluviaBilletes(20); SFX.tocar('fanfarria'); }
+      h += r.pago ? `<p>💵 <b>+${fmt$(r.pago)}</b> por jugar (entre más lejos llegas, más ganas)</p>`
+        : r.hoy >= 2000 ? '<p>💵 Ya juntaste los $2,000 de hoy por jugar. ¡Mañana hay más!</p>' : '<p>💵 Esta vez no alcanzó para billetes. ¡Échale más ganas!</p>';
+      if ((r.top || []).length) h += `<div class="pr-top">${r.top.slice(0, 3).map((x, i) => `<span>${['🥇', '🥈', '🥉'][i]} ${esc(x.nombre)} <b>${x.mejor.toLocaleString('es-MX')}</b></span>`).join('')}</div>`;
+    } catch (e) { h = `<p>No se pudo guardar: ${esc(mensajeError(e))}</p>`; }
+    return h;
+  }
+  function salir() {
+    if (st && st.puntos > 0 && st.fase !== 'fin') {
+      if (!confirm('¿Dejar de bailar? Se guardan los puntos que llevas.')) return;
+      const pts = st.puntos; st.fase = 'fin';
+      guardar(pts).then(() => refrescar());
+    }
+    cerrar();
   }
   return { abrir, cerrar, _st: () => st };
 })();
-document.addEventListener('click', e => { if (e.target.closest?.('[data-probar-baile]')) BAILE.abrir(); });
+function tarjetaRitmo() {
+  const mio = (est.practicas || []).find(p => p.id === est.yo.id && p.juego === 'ritmo')?.mejor || 0;
+  const l = porId(est.juego?.lider_id);
+  return `<div class="monster-card bl-card nuevo-brilla"><div class="ed">NUEVO · 1 JUGADOR</div><h3>SIGUE EL RITMO <span class="pr-ic">🕺</span></h3>
+    <div class="bl-card-colores">${['#2ECC71', '#3D8BFF', '#FF4D5E', '#FFD23F', '#FF8A2A'].map(c => `<i style="background:${c}"></i>`).join('')}</div>
+    <p>${l ? `<b>${esc(l.nombre)}</b> 👑, el líder de la semana,` : 'El líder 👑'} se pone su afro y sus lentes y te enseña sus pasos de baile: cada pose tiene un color y un tono. Repítelos en el mismo orden con los 5 botones. Empiezas con 4 pasos y cada ronda se agrega uno. ¡Un error y se acaba!</p>
+    <p class="pr-rec">Tu récord: <b>${mio.toLocaleString('es-MX')}</b> · ${est.yo.rol === 'jugador' ? 'Cada partida paga hasta $50 según qué tan bien te vaya (máximo $2,000 al día por jugar). Los récords se reinician cada semana.' : 'Como público también ganas hasta $50 por partida según tu puntaje, pero tu puntaje no entra a los récords de la casa.'}</p>
+    <button class="btn" data-ritmo>🕺 Jugar</button></div>`;
+}
 
 /* ---------- mis billetes ---------- */
 async function abrirBilletes() {
@@ -8217,8 +8252,8 @@ const PASARELA = (() => {
   const de = arr => arr[Math.floor(rnd() * arr.length)];
   const pts = n => `${n} ${n === 1 ? 'punto' : 'puntos'}`;
   const lista = ns => ns.length <= 1 ? (ns[0] || '') : ns.slice(0, -1).join(', ') + ' y ' + ns[ns.length - 1];
-  const PRUEBA_N = { memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', trivia: 'la trivia', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa' };
-  const JUEGO_N = { monster2: 'Monster Crazy 2.0', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa' };
+  const PRUEBA_N = { memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', trivia: 'la trivia', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo' };
+  const JUEGO_N = { monster2: 'Monster Crazy 2.0', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo' };
 
   // ---------- la voz de Ricky ----------
   function elegirVoz() {
@@ -9009,10 +9044,7 @@ async function adminPruebas(C) {
   const c = adm.cfg;
   const ints = c.semana ? await q(sb.from('intentos').select('*').eq('semana', c.semana).order('puntaje', { ascending: false, nullsFirst: false })) : [];
   const tabla = c.semana ? await tablaLider() : [], fuera = ints.filter(i => !tabla.some(t => t.jugador_id === i.jugador_id));
-  C.innerHTML = `<div class="adm-caja"><h3>🧪 Juegos en prueba</h3>
-    <p class="ayuda">Solo los ves tú desde aquí. No pagan ni guardan récords hasta que los publiquemos.</p>
-    <div class="fila-btn" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" data-probar-baile>🕺 Probar Sigue el ritmo</button></div></div>
-    <div class="adm-caja"><h3>Puntajes de la semana ${c.semana}</h3>
+  C.innerHTML = `<div class="adm-caja"><h3>Puntajes de la semana ${c.semana}</h3>
     ${c.prueba ? `<p class="ayuda">${esc(PRUEBAS[c.prueba].nombre)}</p>` : ''}
     <p class="ayuda">El líder sale 30% de la prueba (contra el mejor) y 70% en 4 partes de 17.5: misiones de esta semana (de 5), lo que jugó, sus récords y duelos ganados (contra quien más tiene).</p>
     ${tabla.map((i, k) => `<div class="adm-fila"><div class="info"><b>${k + 1}. ${esc(nombreDe(i.jugador_id))}</b>
@@ -9133,7 +9165,7 @@ async function adminExtras(C, seccion) {
   const diaNota = dia => { const t = new Date(dia + 'T12:00:00Z').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' }); return t.charAt(0).toUpperCase() + t.slice(1); };
   const manana = dia => diaNota(diaMas(dia, 1)).toLowerCase();       // la fecha en que sale ese noticiero
   const opcionesDia = actual => [...Array(7).keys()].map(k => diaMas(sigDia, k)).map(dd => `<option value="${dd}" ${dd === actual ? 'selected' : ''}>📺 ${esc(diaNota(diaMas(dd, 1)))}, 9 a.m.${dd === sigDia ? ' (el siguiente)' : ''}</option>`).join('');
-  const JUEGOS_REC = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy (clásico)', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa' };
+  const JUEGOS_REC = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy (clásico)', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo' };
   const ahora = Date.now();
   const estadoEnc = e => +new Date(e.abre) > ahora ? `Programada: abre ${fmtFecha(e.abre)}` : +new Date(e.cierra) > ahora ? `Abierta hasta ${fmtFecha(e.cierra)}` : 'Cerrada';
   const ricos = [...adm.jug].sort((a, b) => (b.billetes ?? 0) - (a.billetes ?? 0));
