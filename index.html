@@ -1082,6 +1082,8 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .bl-piso i.on{background:var(--c);box-shadow:0 0 18px var(--c);transition:none}
 .bl-publico{position:absolute;bottom:4%;display:flex;gap:2px;z-index:1}
 .bl-publico.izq{left:4px}.bl-publico.der{right:4px}
+.bl-publico .mm{animation:bl-bob var(--beat) ease-in-out infinite alternate}
+.bl-publico .mm:nth-child(2n){animation-direction:alternate-reverse}
 .bl-bailarin{animation:bl-bob var(--beat) ease-in-out infinite alternate}
 @keyframes bl-bob{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-5px) rotate(2deg)}}
 .bl-ins{position:absolute;left:50%;bottom:16%;translate:-50% 0;z-index:2}
@@ -1986,7 +1988,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 64;
+const APP_VERSION       = 65;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -7160,11 +7162,12 @@ const BAILE = (() => {
     d.innerHTML = st.seq.map((c, i) => `<i class="${i < buenos ? 'ok' : i < mostrados ? 'visto' : ''}" style="${i < buenos ? `background:${COL[c].hex}` : ''}"></i>`).join('');
   }
   function posar(sel, i) {
-    const el = $(sel + ' .mm', raiz); if (!el) return;
-    COL.forEach(c => el.classList.remove('p-' + c.k));
-    void el.offsetWidth;
-    el.classList.add('p-' + COL[i].k);
-    clearTimeout(el._pose); el._pose = setTimeout(() => el.classList.remove('p-' + COL[i].k), 380);
+    for (const el of $$(sel.split(',').map(x => x.trim() + ' .mm').join(','), raiz)) {
+      COL.forEach(c => el.classList.remove('p-' + c.k));
+      void el.offsetWidth;
+      el.classList.add('p-' + COL[i].k);
+      clearTimeout(el._pose); el._pose = setTimeout(() => el.classList.remove('p-' + COL[i].k), 380);
+    }
     // se ilumina el piso y las luces del color
     const esc2 = $('.bl-escena', raiz);
     esc2.style.setProperty('--luz', COL[i].hex);
@@ -7195,7 +7198,7 @@ const BAILE = (() => {
     tono(st.seq[i], espera);
     later(() => {
       if (!st) return;
-      posar('.bl-ins', st.seq[i]); puntitos(i + 1, 0);
+      posar('.bl-ins, .bl-publico', st.seq[i]); puntitos(i + 1, 0);    // el público imita al instructor
       const bt = $(`.bl-botones [data-b="${st.seq[i]}"]`, raiz);       // también se ilumina su botón
       if (bt) { bt.classList.remove('luce'); void bt.offsetWidth; bt.classList.add('luce'); clearTimeout(bt._l); bt._l = setTimeout(() => bt.classList.remove('luce'), 360); }
       later(() => mostrar(i + 1), Math.round(60 / bpm * 1000) - 30);
