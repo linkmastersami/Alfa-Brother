@@ -1101,9 +1101,10 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .bl-tiempo{width:70%;height:6px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;visibility:hidden}
 #m-baile.turno .bl-tiempo{visibility:visible}
 .bl-tiempo i{display:block;height:100%;background:linear-gradient(90deg,#FF4D5E,#FFD23F,#2ECC71);transform-origin:0 50%}
-.bl-botones{flex:none;display:flex;justify-content:center;gap:10px;padding:10px 10px calc(env(safe-area-inset-bottom) + 16px);background:#12062a}
+.bl-botones{flex:none;display:flex;justify-content:center;gap:10px;padding:12px 10px calc(env(safe-area-inset-bottom) + 54px);background:#12062a}
 .bl-botones button{width:min(17vw,66px);height:min(17vw,66px);border-radius:50%;border:0;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--c) 55%,#fff),var(--c) 55%,color-mix(in srgb,var(--c) 70%,#000));box-shadow:0 5px 0 color-mix(in srgb,var(--c) 55%,#000),0 0 0 3px rgba(255,255,255,.15);transition:transform .08s,filter .2s;touch-action:manipulation}
 .bl-botones button:disabled{filter:saturate(.35) brightness(.6)}
+.bl-botones button.luce{filter:none;transform:translateY(3px) scale(.96);box-shadow:0 2px 0 color-mix(in srgb,var(--c) 55%,#000),0 0 0 4px #fff,0 0 28px var(--c)}
 .bl-botones button.pica{animation:bl-pica .18s ease-out}
 @keyframes bl-pica{50%{transform:translateY(4px) scale(.94);box-shadow:0 1px 0 color-mix(in srgb,var(--c) 55%,#000),0 0 22px var(--c)}}
 .bl-botones button.era{filter:none;animation:bl-era .3s ease-in-out infinite alternate}
@@ -1985,7 +1986,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 63;
+const APP_VERSION       = 64;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -7130,7 +7131,7 @@ const BAILE = (() => {
     p.innerHTML = `<div class="bl-tit">SIGUE EL<br><span>RITMO</span></div>
       <p>El líder 👑 te enseña sus pasos: cada pose tiene un color y un tono. Cuando diga <b>¡Sigue el ritmo!</b>, repítelos en el mismo orden con los botones de abajo.</p>
       <div class="bl-leyenda">${COL.map(c => `<div><span style="background:${c.hex}"></span><b>${c.nom}</b><small>${c.pose} · ${c.nota}</small></div>`).join('')}</div>
-      <p class="bl-chico">Empiezas con 5 pasos y cada ronda se agregan 2 (los mismos de antes + 2 nuevos). Tienes ${ESPERA / 1000} segundos entre paso y paso. <b>Un error y se acaba.</b></p>
+      <p class="bl-chico">Empiezas con 4 pasos y cada ronda se agrega 1 (los mismos de antes + 1 nuevo). Tienes ${ESPERA / 1000} segundos entre paso y paso. <b>Un error y se acaba.</b></p>
       <p class="bl-chico" style="color:#FFD23F">🧪 Modo prueba: solo lo ves tú y no se guarda.</p>
       <button class="btn" id="bl-va">🕺 ¡A bailar!</button>`;
     p.classList.add('on');
@@ -7177,14 +7178,14 @@ const BAILE = (() => {
   function nuevaRonda() {
     if (!st) return;
     st.ronda++;
-    const agrega = st.ronda === 1 ? 5 : 2;
+    const agrega = st.ronda === 1 ? 4 : 1;
     for (let i = 0; i < agrega; i++) st.seq.push(Math.floor(Math.random() * 5));
     bpm = Math.min(140, 112 + (st.ronda - 1) * 4);       // cada ronda un poquito más rápido
     raiz.style.setProperty('--beat', (60 / bpm) + 's');
     st.fase = 'muestra'; st.pos = 0;
     botones(false); pintar(); puntitos(0, 0);
     expresar($('.bl-ins .mm', raiz), '😎', '', 0);
-    cartel(st.ronda === 1 ? '¡Mira mis pasos!' : `¡Ronda ${st.ronda}!<small>+2 pasos nuevos</small>`, '', 1300);
+    cartel(st.ronda === 1 ? '¡Mira mis pasos!' : `¡Ronda ${st.ronda}!<small>+1 paso nuevo</small>`, '', 1300);
     later(() => mostrar(0), 1500);
   }
   function mostrar(i) {
@@ -7195,6 +7196,8 @@ const BAILE = (() => {
     later(() => {
       if (!st) return;
       posar('.bl-ins', st.seq[i]); puntitos(i + 1, 0);
+      const bt = $(`.bl-botones [data-b="${st.seq[i]}"]`, raiz);       // también se ilumina su botón
+      if (bt) { bt.classList.remove('luce'); void bt.offsetWidth; bt.classList.add('luce'); clearTimeout(bt._l); bt._l = setTimeout(() => bt.classList.remove('luce'), 360); }
       later(() => mostrar(i + 1), Math.round(60 / bpm * 1000) - 30);
     }, espera * 1000);
   }
