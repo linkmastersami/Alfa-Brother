@@ -1992,7 +1992,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 66;
+const APP_VERSION       = 67;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -9044,16 +9044,27 @@ async function adminPruebas(C) {
   const c = adm.cfg;
   const ints = c.semana ? await q(sb.from('intentos').select('*').eq('semana', c.semana).order('puntaje', { ascending: false, nullsFirst: false })) : [];
   const tabla = c.semana ? await tablaLider() : [], fuera = ints.filter(i => !tabla.some(t => t.jugador_id === i.jugador_id));
+  // botón para borrar el intento de alguien y que pueda volver a hacer la prueba
+  const reini = id => ints.some(x => x.jugador_id === id)
+    ? `<button class="btn sec chico" style="margin-left:8px;padding:6px 10px;font-size:.8rem;flex:none" data-reiniciar-prueba="${id}">🔄 Reiniciar</button>` : '';
   C.innerHTML = `<div class="adm-caja"><h3>Puntajes de la semana ${c.semana}</h3>
     ${c.prueba ? `<p class="ayuda">${esc(PRUEBAS[c.prueba].nombre)}</p>` : ''}
     <p class="ayuda">El líder sale 30% de la prueba (contra el mejor) y 70% en 4 partes de 17.5: misiones de esta semana (de 5), lo que jugó, sus récords y duelos ganados (contra quien más tiene).</p>
     ${tabla.map((i, k) => `<div class="adm-fila"><div class="info"><b>${k + 1}. ${esc(nombreDe(i.jugador_id))}</b>
       <small>Prueba ${i.puntaje} (${i.p_prueba}) · ${i.misiones} misiones (${i.p_mis}) · ${i.jugadas} jugadas (${i.p_jug}) · récords ${Math.round(i.rec * 100)}% (${i.p_rec}) · ${i.duelos_g} duelos (${i.p_duel})</small></div>
-      <span class="pill ${k === 0 ? 'verde' : ''}">${i.total}</span></div>`).join('')}
+      <span class="pill ${k === 0 ? 'verde' : ''}">${i.total}</span>${reini(i.jugador_id)}</div>`).join('')}
     ${fuera.map(i => `<div class="adm-fila"><div class="info"><b>${esc(nombreDe(i.jugador_id))}</b>
-      <small>${i.puntaje === null ? 'Incompleto' : 'Ya no está en la casa'}</small></div><span class="pill">${i.puntaje ?? 0}</span></div>`).join('')}
-    ${ints.length ? '' : '<p class="ayuda">Nadie ha jugado todavía.</p>'}
+      <small>${i.puntaje === null ? 'Incompleto' : 'Ya no está en la casa'}</small></div><span class="pill">${i.puntaje ?? 0}</span>${reini(i.jugador_id)}</div>`).join('')}
+    ${ints.length ? '<p class="ayuda" style="margin-top:8px">🔄 Reiniciar borra el intento de esa persona para que vuelva a hacer la prueba desde cero (por ejemplo, si se le cerró la app o se le fue el internet).</p>' : '<p class="ayuda">Nadie ha jugado todavía.</p>'}
     </div>`;
+  $$('[data-reiniciar-prueba]', C).forEach(b => b.onclick = async () => {
+    const id = b.dataset.reiniciarPrueba, nom = nombreDe(id);
+    if (!confirm(`¿Reiniciar la prueba de ${nom}? Se borra su intento de esta semana y podrá volver a hacerla desde cero.`)) return;
+    b.disabled = true;
+    try { await q(sb.from('intentos').delete().eq('semana', c.semana).eq('jugador_id', id)); toast(`🔄 ${nom} ya puede volver a hacer la prueba`); }
+    catch (e) { toast(mensajeError(e), 4000); }
+    cargarAdmin();
+  });
 }
 
 /* ---- Trivia ---- */

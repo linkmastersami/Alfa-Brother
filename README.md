@@ -201,6 +201,7 @@ Versión 63: nuevo juego Sigue el ritmo 🕺 (en prueba: solo se abre desde el p
 Versión 64: Sigue el ritmo empieza con 4 pasos y sube de 1 en 1, los botones van más arriba y se iluminan con cada paso del instructor.
 Versión 65: en Sigue el ritmo el público imita las poses del instructor.
 Versión 66: Sigue el ritmo ya está en Jugar para todos (récords, pago por jugar y cuenta para el líder). Corre actualizacion_v66_parte1.sql y parte2.
+Versión 67: en el panel (Pruebas) hay un botón 🔄 Reiniciar para que alguien vuelva a hacer la prueba del líder.
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.
