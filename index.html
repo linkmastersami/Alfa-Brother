@@ -1055,6 +1055,41 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .chip-eco.dinero{background:#1E8E5A;box-shadow:none}
 /* botón de la tienda: el contorno brilla y parpadea */
 #c-tienda{animation:tienda-brilla 1.6s ease-in-out infinite}
+/* 🏓 Rompe Deudas */
+#m-rompe{position:fixed;inset:0;z-index:300;background:#1f2a4f;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;font-family:"Work Sans",sans-serif;color:#fff}
+.rd-lienzo{position:absolute;inset:0;width:100%;height:100%;display:block}
+.rd-yo{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none;will-change:transform;z-index:2}
+.rd-yo .mm-cuerpo{position:relative;z-index:2}
+.rd-yo .mm .bi{transform:rotate(100deg) scale(3)}
+.rd-yo .mm .bd{transform:rotate(-100deg) scale(3)}
+.rd-yo .mm.camina .pi{animation:sc-pi .2s ease-in-out infinite alternate}
+.rd-yo .mm.camina .pd{animation:sc-pi .2s ease-in-out infinite alternate-reverse}
+.rd-yo.atonta .mm{animation:rd-mareo .25s ease-in-out infinite alternate}
+@keyframes rd-mareo{from{rotate:-8deg}to{rotate:8deg}}
+.rd-hud{position:absolute;top:0;left:0;right:0;height:calc(env(safe-area-inset-top) + 48px);display:flex;align-items:center;gap:12px;padding:env(safe-area-inset-top) 12px 0;z-index:5;background:rgba(0,0,0,.25);font-weight:800}
+.rd-nivel{font-family:Anton,Impact,sans-serif;font-weight:400;letter-spacing:1px;margin-left:auto}
+.rd-pts{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.25rem;color:#FFD54A;min-width:70px;text-align:right}
+.rd-x{width:36px;height:36px;border-radius:50%;border:0;background:rgba(0,0,0,.4);color:#fff;font-size:1rem}
+.rd-aviso{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%) scale(.6);opacity:0;pointer-events:none;text-align:center;transition:transform .25s cubic-bezier(.2,1.6,.4,1),opacity .2s;z-index:6}
+.rd-aviso.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.rd-aviso b{display:block;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:2rem;color:#FFD54A;text-shadow:0 3px 0 #7a3d00,0 6px 14px rgba(0,0,0,.6);white-space:nowrap}
+.rd-aviso small{display:block;font-weight:800;text-shadow:0 2px 4px rgba(0,0,0,.7)}
+.rd-aviso em{display:block;margin-top:8px;font-style:normal;font-weight:800;color:#7CFFB2;animation:sc-late .6s ease-in-out infinite alternate}
+.rd-panel{position:absolute;inset:0;z-index:10;display:none;flex-direction:column;justify-content:center;align-items:center;gap:10px;padding:24px 22px;background:rgba(14,8,30,.9);overflow:auto;text-align:center}
+.rd-panel.on{display:flex}
+.rd-panel p{margin:0;color:#E4E0FF}
+.rd-tit{font-family:Anton,Impact,sans-serif;font-size:2.8rem;line-height:1;color:#FFD54A;text-shadow:0 4px 0 #b5401e}
+.rd-tit span{color:#7CFFB2;text-shadow:0 4px 0 #1b5e3a}
+.rd-leyenda{display:grid;grid-template-columns:1fr 1fr;gap:6px;text-align:left;font-size:.84rem;width:100%}
+.rd-leyenda div{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border-radius:8px;padding:6px 8px}
+.rd-leyenda i{flex:none;width:30px;height:15px;border-radius:2px;display:grid;place-items:center;font-style:normal;font-size:11px}
+.rd-leyenda .b-h{background:#f4f1e6}.rd-leyenda .b-c{background:#C8925A}.rd-leyenda .b-a{background:#8A94A6}.rd-leyenda .b-m{background:#E53935}.rd-leyenda .b-s{background:#2b2f3a;box-shadow:inset 0 0 0 2px #9aa0ab}
+.rd-poderes{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:.78rem}
+.rd-poderes span{background:rgba(255,255,255,.08);border-radius:999px;padding:3px 9px}
+.rd-chico{font-size:.82rem}
+.rd-final b{display:block;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:3rem;color:#FFD54A}
+.rd-final small{color:#C9C3EE}
+.rd-panel .btn.sec{color:#fff;box-shadow:inset 0 0 0 2px #6E5FD0}
 /* 🏃 Súper Cobrador */
 #m-super{position:fixed;inset:0;z-index:300;background:#000;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;font-family:"Work Sans",sans-serif;color:#fff}
 #m-super::after{content:"";position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .4s;z-index:8}
@@ -2046,7 +2081,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 70;
+const APP_VERSION       = 71;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -8354,6 +8389,532 @@ const SUPER = (() => {
 
 document.addEventListener('click', e => { if (e.target.closest?.('[data-probar-super]')) SUPER.abrir(); });
 
+/* =====================================================================
+   🏓 ROMPE DEUDAS (en prueba: solo desde el panel de admin)
+   Tipo Arkanoid: tu monito sostiene una tabla con las manos arriba y rebota
+   una bola de papel para romper hojas, cajas, archiveros y morosos.
+   8 niveles con figuras + el Moroso mayor; al vencerlo se da otra vuelta más rápida.
+   ===================================================================== */
+const ROMPE = (() => {
+  const MW = 360, COLS = 10, BW = 32, BH = 16, X0 = 20, Y0 = 74;
+  const TIPO = {
+    h: { vida: 1, pts: 50 },  c: { vida: 2, pts: 100 }, a: { vida: 3, pts: 150 },
+    m: { vida: 1, pts: 300 }, s: { vida: Infinity, pts: 0 },
+  };
+  const NIVELES = [
+    { nom: 'Primer día', m: ['hhhhhhhhhh', 'hhhhhhhhhh', 'cccccccccc', 'hhhhhhhhhh', 'hmhhmhhmhh'] },
+    { nom: 'El signo de pesos', m: ['....mm....', '..cccccc..', '.cc.hh....', '.cc.hh....', '..cccccc..', '....hh.cc.', '....hh.cc.', '..cccccc..', '....mm....'] },
+    { nom: 'La computadora', m: ['aaaaaaaaaa', 'ahhhhhhhha', 'ahmhhhhmha', 'ahhhhhhhha', 'ahhhmmhhha', 'aaaaaaaaaa', '....aa....', '..cccccc..'] },
+    { nom: 'El garrafón', m: ['...ssss...', '...hhhh...', '..cccccc..', '.chhhhhhc.', '.chmhhmhc.', '.chhhhhhc.', '.chhhhhhc.', '..cccccc..'] },
+    { nom: 'Cara de moroso', m: ['...cccc...', '..chhhhc..', '.chmhhmhc.', '.chhhhhhc.', '.chchhchc.', '.chhcchhc.', '..chhhhc..', '...cccc...'] },
+    { nom: 'Escritorios', m: ['mhmhmhmhmh', 'hhhhhhhhhh', 'ss.ss.ss.s', 'cccccccccc', 'aa.aa.aa.a', 'hhhhhhhhhh'] },
+    { nom: 'Pirámide de deudas', m: ['....mm....', '...cccc...', '..aahhaa..', '.cchhhhcc.', 'hhhhmmhhhh', 's.s.s.s.s.', 'cccccccccc'] },
+    { nom: 'Fin de mes', m: ['mcmcmcmcmc', 'cacacacaca', 'hshshshshs', 'amamamamam', 'cccccccccc', 'hhhhhhhhhh', 'aaaaaaaaaa'] },
+    { nom: 'El Moroso mayor', jefe: true, m: ['', '', '', '', '', '', '', '', '', 'hh.hhhh.hh', 'c..c..c..c'] },
+  ];
+  const PODERES = [
+    { k: 'cafe', ic: '☕', p: 18 }, { k: 'clips', ic: '📎', p: 16 }, { k: 'iman', ic: '🧲', p: 12 },
+    { k: 'grapas', ic: '🔫', p: 12 }, { k: 'lunes', ic: '🐌', p: 12 }, { k: 'vida', ic: '❤️', p: 5 }, { k: 'recorte', ic: '💀', p: 14 },
+  ];
+  const NOM_PODER = { cafe: '¡CAFÉ! Tabla larga', clips: '¡CLIPS! Triple bola', iman: '¡IMÁN!', grapas: '¡ENGRAPADORA!', lunes: '¡LUNES! Más lento', vida: '¡VIDA EXTRA!', recorte: '¡RECORTE DE PERSONAL!' };
+
+  let raiz = null, lienzo = null, ctx = null, yoEl = null;
+  let W = 0, H = 0, DPR = 1, zoom = 1, MH = 700;
+  let raf = 0, ultimoT = 0, acum = 0, st = null, caras = {};
+  const azar = (a, b) => a + Math.random() * (b - a);
+
+  // ---------------------------------------------------------------- audio
+  let ac = null, maestro = null, musG = null, reloj = null, paso = 0, sigT = 0;
+  const mudo = () => store.get('ab_mudo') === '1';
+  function audio() {
+    if (ac) { if (ac.state === 'suspended') ac.resume(); return ac; }
+    const C = window.AudioContext || window.webkitAudioContext; if (!C) return null;
+    ac = new C(); maestro = ac.createGain(); maestro.gain.value = mudo() ? 0 : .8; maestro.connect(ac.destination);
+    musG = ac.createGain(); musG.gain.value = .14; musG.connect(maestro);
+    return ac;
+  }
+  function osc(t, f, d, { tipo = 'square', v = .15, f2 = null, dest = null } = {}) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = tipo; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .004); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(g); g.connect(dest || maestro); o.start(t); o.stop(t + d + .05);
+  }
+  const N = n => 440 * Math.pow(2, (n - 69) / 12);
+  const MEL = [76, 0, 79, 76, 0, 72, 74, 0, 76, 0, 72, 0, 69, 0, 71, 72, 74, 0, 77, 74, 0, 71, 72, 0, 74, 0, 71, 0, 67, 0, 69, 71];
+  const BAJ = [45, 45, 52, 45, 41, 41, 48, 41, 43, 43, 50, 43, 40, 40, 47, 40];
+  function musica(on, bpm = 140) {
+    if (!audio()) return;
+    clearInterval(reloj); reloj = null; if (!on) return;
+    paso = 0; sigT = ac.currentTime + .05;
+    reloj = setInterval(() => {
+      const d8 = 60 / bpm / 2;
+      while (sigT < ac.currentTime + .15) {
+        const m = MEL[paso % MEL.length]; if (m) osc(sigT, N(m), d8 * .8, { v: .1, dest: musG });
+        if (paso % 2 === 0) osc(sigT, N(BAJ[(paso / 2) % BAJ.length]), d8 * 1.5, { tipo: 'triangle', v: .35, dest: musG });
+        sigT += d8; paso++;
+      }
+    }, 25);
+  }
+  function son(n, x = 0) {
+    if (!audio()) return;
+    const t = ac.currentTime;
+    const S = {
+      tabla: () => osc(t, 330, .07, { tipo: 'triangle', v: .3 }),
+      pared: () => osc(t, 220, .04, { tipo: 'triangle', v: .15 }),
+      bloque: () => osc(t, 520 + x * 120, .06, { v: .12 }),
+      rompe: () => { osc(t, 700 + x * 100, .08, { v: .12 }); osc(t + .04, 1050 + x * 100, .08, { v: .08 }); },
+      duro: () => osc(t, 160, .06, { tipo: 'square', v: .12 }),
+      poder: () => [523, 659, 784, 1047].forEach((f, i) => osc(t + i * .05, f, .08, { v: .12 })),
+      malo: () => [400, 300, 200].forEach((f, i) => osc(t + i * .08, f, .1, { tipo: 'sawtooth', v: .12 })),
+      pierde: () => [523, 466, 415, 349].forEach((f, i) => osc(t + i * .12, f, .14, { v: .14 })),
+      nivel: () => [523, 659, 784, 1047, 784, 1047].forEach((f, i) => osc(t + i * .09, f, .1, { v: .13 })),
+      grapa: () => osc(t, 1600, .04, { f2: 800, v: .06 }),
+      jefe: () => osc(t, 110, .3, { f2: 55, tipo: 'sawtooth', v: .25 }),
+      atonta: () => osc(t, 300, .4, { f2: 80, tipo: 'sawtooth', v: .15 }),
+    };
+    try { S[n]?.(); } catch { }
+  }
+
+  // ---------------------------------------------------------------- pantalla
+  function abrir() {
+    if (raiz) return;
+    raiz = document.createElement('div');
+    raiz.id = 'm-rompe';
+    raiz.innerHTML = `<canvas class="rd-lienzo"></canvas>
+      <div class="rd-yo">${monito(est.yo, { tam: 30, nombre: false })}</div>
+      <div class="rd-hud"><button class="rd-x" aria-label="Salir">✕</button><span class="rd-vidas"></span><b class="rd-nivel"></b><b class="rd-pts">0</b></div>
+      <div class="rd-aviso"></div><div class="rd-panel"></div>`;
+    document.body.appendChild(raiz);
+    lienzo = $('.rd-lienzo', raiz); ctx = lienzo.getContext('2d'); yoEl = $('.rd-yo', raiz);
+    $('.rd-x', raiz).onclick = salir;
+    raiz.addEventListener('pointerdown', dedo); raiz.addEventListener('pointermove', dedo);
+    raiz.addEventListener('pointerup', ev => { if (st) st.dedoAbajo = false; });
+    window.addEventListener('resize', medir);
+    medir();
+    caras = {};
+    for (const j of est.jugadores || []) if (fotos[j.id]) { const im = new Image(); im.src = fotos[j.id]; caras[j.id] = im; }
+    SFX.pausaParaGala(true);
+    portada();
+    ultimoT = performance.now(); raf = requestAnimationFrame(cuadro);
+  }
+  function cerrar() {
+    cancelAnimationFrame(raf); raf = 0; musica(false);
+    window.removeEventListener('resize', medir);
+    raiz?.remove(); raiz = null; st = null;
+    SFX.pausaParaGala(false);
+  }
+  function salir() {
+    if (st && st.fase !== 'fin' && st.puntos > 0 && !confirm('¿Salir de Rompe Deudas? Se pierde esta partida.')) return;
+    cerrar();
+  }
+  function medir() {
+    if (!raiz) return;
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    W = raiz.clientWidth; H = raiz.clientHeight;
+    lienzo.width = Math.round(W * DPR); lienzo.height = Math.round(H * DPR);
+    zoom = W / MW; MH = H / zoom;
+    if (st) st.tablaY = MH - 104;
+  }
+  function dedo(ev) {
+    if (!st || st.fase === 'fin' || $('.rd-panel.on', raiz)) return;
+    if (ev.target.closest('.rd-x')) return;
+    const r = raiz.getBoundingClientRect();
+    st.meta = (ev.clientX - r.left) / zoom;
+    if (ev.type === 'pointerdown') {
+      st.dedoAbajo = true;
+      // soltar la bola pegada en la tabla
+      for (const b of st.bolas) if (b.pegada != null) { soltar(b); }
+    }
+  }
+
+  // ---------------------------------------------------------------- partida
+  function portada() {
+    const p = $('.rd-panel', raiz);
+    p.innerHTML = `<div class="rd-tit">ROMPE<br><span>DEUDAS</span></div>
+      <p>Mueve el dedo de lado a lado para que tu monito acomode la tabla y rebote la bola de papel. Rompe todo lo de arriba para pasar de nivel.</p>
+      <div class="rd-leyenda">
+        <div><i class="b-h"></i> Hojas · 1 golpe</div><div><i class="b-c"></i> Cajas · 2 golpes</div>
+        <div><i class="b-a"></i> Archiveros · 3 golpes</div><div><i class="b-m">🙈</i> Morosos · ¡valen más!</div>
+        <div><i class="b-s"></i> Caja fuerte · no se rompe</div>
+      </div>
+      <div class="rd-poderes">${PODERES.map(x => `<span>${x.ic} ${NOM_PODER[x.k].replace(/¡|!/g, '')}</span>`).join('')}</div>
+      <p class="rd-chico">8 niveles y el Moroso mayor · 3 ❤️ · 🧪 Modo prueba: no se guarda.</p>
+      <button class="btn" id="rd-va">🏓 ¡A romper deudas!</button>`;
+    p.classList.add('on');
+    $('#rd-va', raiz).onclick = () => { p.classList.remove('on'); nueva(); };
+  }
+  function nueva() {
+    audio(); if (maestro) maestro.gain.value = mudo() ? 0 : .8;
+    st = { nivel: 0, vuelta: 0, vidas: 3, puntos: 0, x: MW / 2, meta: MW / 2, ancho: 64, efectos: {}, bolas: [], caps: [], balas: [], parts: [], textos: [], tiros: [], fase: 'jugando', rotos: 0, cobrados: 0 };
+    st.tablaY = MH - 104;
+    cargar(0);
+    musica(true);
+  }
+  function cargar(n) {
+    st.nivel = n;
+    const def = NIVELES[n];
+    st.bloques = [];
+    const parts = (est.jugadores || []).filter(j => j.rol === 'jugador' && j.id !== est.yo.id);
+    def.m.forEach((fila, r) => [...fila].forEach((ch, c) => {
+      if (!TIPO[ch]) return;
+      st.bloques.push({ x: X0 + c * BW, y: Y0 + r * BH, w: BW, h: BH, t: ch, vida: TIPO[ch].vida, max: TIPO[ch].vida, j: ch === 'm' ? azarDe(parts.length ? parts : est.jugadores) : null, golpe: 0 });
+    }));
+    st.jefe = def.jefe ? { x: MW / 2, y: 150, r: 38, vx: 1.4 + st.vuelta * .4, vida: 8, max: 8, inv: 0, tTiro: 90, j: azarDe(parts.length ? parts : est.jugadores) } : null;
+    st.caps = []; st.balas = []; st.tiros = [];
+    st.bolas = [nuevaBola()];
+    st.fase = 'jugando';
+    aviso(`<b>${def.jefe ? '¡JEFE FINAL!' : 'NIVEL ' + (n + 1)}</b><small>${def.nom}${st.vuelta ? ` · vuelta ${st.vuelta + 1}` : ''}</small><em>Toca para lanzar</em>`, 2200);
+    hud();
+  }
+  const rapidez = () => Math.min(9, (4.4 + st.nivel * .22 + st.vuelta * .8)) * (st.efectos.lunes ? .7 : 1);
+  function nuevaBola() { return { x: st.x, y: st.tablaY - 7, vx: 0, vy: 0, r: 6, pegada: 0, tPegada: 180 }; }
+  function soltar(b) {
+    const off = b.pegada / (st.ancho / 2);
+    const ang = off * .9 + azar(-.08, .08), s = rapidez();
+    b.vx = s * Math.sin(ang); b.vy = -s * Math.cos(ang); b.pegada = null;
+  }
+  function hud() {
+    if (!raiz || !st) return;
+    $('.rd-vidas', raiz).textContent = '❤️'.repeat(Math.max(0, st.vidas));
+    $('.rd-nivel', raiz).textContent = NIVELES[st.nivel].jefe ? 'JEFE' : 'NIVEL ' + (st.nivel + 1);
+    $('.rd-pts', raiz).textContent = st.puntos.toLocaleString('es-MX');
+  }
+  function aviso(html, ms = 1600) {
+    const a = $('.rd-aviso', raiz); if (!a) return;
+    a.innerHTML = html; a.classList.remove('on'); void a.offsetWidth; a.classList.add('on');
+    clearTimeout(a._t); if (ms) a._t = setTimeout(() => a.classList.remove('on'), ms);
+  }
+  function sumar(n, x, y, txt = null, color = '#FFD54A') { st.puntos += n; st.textos.push({ x, y, txt: txt || '+' + n, color, t: 0, grande: !!txt }); hud(); }
+
+  // ---------------------------------------------------------------- ciclo
+  function cuadro(t) {
+    raf = requestAnimationFrame(cuadro);
+    const dt = Math.min(100, t - ultimoT); ultimoT = t;
+    if (st && st.fase === 'jugando') {
+      acum += dt; let n = 0;
+      while (acum >= 1000 / 60 && n < 4) { paso1(); acum -= 1000 / 60; n++; }
+      if (n === 4) acum = 0;
+    } else acum = 0;
+    pintar();
+  }
+  function paso1() {
+    // efectos con tiempo
+    for (const k in st.efectos) if (st.efectos[k] !== true && --st.efectos[k] <= 0) { delete st.efectos[k]; if (k === 'recorte' || k === 'cafe') ajustarAncho(); }
+    // la tabla sigue al dedo (si no está atontado)
+    if (st.atonta > 0) st.atonta--;
+    else st.x += (Math.max(st.ancho / 2, Math.min(MW - st.ancho / 2, st.meta)) - st.x) * .35;
+    st.x = Math.max(st.ancho / 2, Math.min(MW - st.ancho / 2, st.x));
+    // grapas automáticas
+    if (st.efectos.grapas && (st.tGrapa = (st.tGrapa || 0) - 1) <= 0) {
+      st.tGrapa = 22; son('grapa');
+      st.balas.push({ x: st.x - st.ancho / 2 + 6, y: st.tablaY }, { x: st.x + st.ancho / 2 - 6, y: st.tablaY });
+    }
+    // bolas
+    for (const b of st.bolas) {
+      if (b.pegada != null) {
+        b.x = st.x + b.pegada; b.y = st.tablaY - b.r - 1;
+        if (st.efectos.iman && --b.tPegada <= 0) soltar(b);
+        continue;
+      }
+      const s = Math.hypot(b.vx, b.vy), pasos = Math.ceil(s / 3);
+      for (let i = 0; i < pasos && !b.fuera; i++) moverBola(b, b.vx / pasos, b.vy / pasos);
+    }
+    const antes = st.bolas.length;
+    st.bolas = st.bolas.filter(b => !b.fuera);
+    if (antes && !st.bolas.length) { perderVida(); return; }
+    // cápsulas de poder
+    for (const c of st.caps) {
+      c.y += 1.8; c.t++;
+      if (c.y + 8 > st.tablaY && c.y - 8 < st.tablaY + 10 && Math.abs(c.x - st.x) < st.ancho / 2 + 10) { c.fuera = true; poder(c.k); }
+      if (c.y > MH + 20) c.fuera = true;
+    }
+    st.caps = st.caps.filter(c => !c.fuera);
+    // grapas
+    for (const g of st.balas) {
+      g.y -= 7;
+      const bl = st.bloques.find(k => k.vida > 0 && g.x > k.x && g.x < k.x + k.w && g.y > k.y && g.y < k.y + k.h);
+      if (bl) { g.fuera = true; golpear(bl); }
+      if (st.jefe && Math.hypot(g.x - st.jefe.x, g.y - st.jefe.y) < st.jefe.r) { g.fuera = true; pegarJefe(1); }
+      if (g.y < 40) g.fuera = true;
+    }
+    st.balas = st.balas.filter(g => !g.fuera);
+    // jefe
+    if (st.jefe) jefe();
+    // ¿se acabaron las deudas?
+    if (!st.jefe && !st.bloques.some(k => k.vida > 0 && k.t !== 's')) pasarNivel();
+  }
+  function moverBola(b, dx, dy) {
+    const px = b.x, py = b.y;
+    b.x += dx; b.y += dy;
+    if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx); son('pared'); }
+    if (b.x > MW - b.r) { b.x = MW - b.r; b.vx = -Math.abs(b.vx); son('pared'); }
+    if (b.y < 44 + b.r) { b.y = 44 + b.r; b.vy = Math.abs(b.vy); son('pared'); }
+    // tabla
+    const tY = st.tablaY;
+    if (b.vy > 0 && b.y + b.r >= tY && py + b.r <= tY + 4 && Math.abs(b.x - st.x) <= st.ancho / 2 + b.r) {
+      const off = Math.max(-1, Math.min(1, (b.x - st.x) / (st.ancho / 2)));
+      if (st.efectos.iman) { b.pegada = b.x - st.x; b.tPegada = 150; b.vx = b.vy = 0; b.y = tY - b.r - 1; son('tabla'); return; }
+      const ang = off * 1.05, s = rapidez();
+      b.vx = s * Math.sin(ang); b.vy = -s * Math.cos(ang); b.y = tY - b.r;
+      son('tabla');
+      expresar($('.mm', yoEl), null, '', 0);
+      return;
+    }
+    if (b.y > MH + 20) { b.fuera = true; return; }
+    // jefe
+    const J = st.jefe;
+    if (J) {
+      const ddx = b.x - J.x, ddy = b.y - J.y, d = Math.hypot(ddx, ddy);
+      if (d < J.r + b.r) {
+        const nx = ddx / d, ny = ddy / d, pv = b.vx * nx + b.vy * ny;
+        if (pv < 0) { b.vx -= 2 * pv * nx; b.vy -= 2 * pv * ny; }
+        b.x = J.x + nx * (J.r + b.r + .5); b.y = J.y + ny * (J.r + b.r + .5);
+        pegarJefe(1);
+        return;
+      }
+    }
+    // bloques
+    for (const k of st.bloques) {
+      if (k.vida <= 0) continue;
+      const cx = Math.max(k.x, Math.min(b.x, k.x + k.w)), cy = Math.max(k.y, Math.min(b.y, k.y + k.h));
+      if ((b.x - cx) ** 2 + (b.y - cy) ** 2 > b.r * b.r) continue;
+      // de qué lado entró
+      const venia = { izq: px + b.r <= k.x, der: px - b.r >= k.x + k.w, arr: py + b.r <= k.y, aba: py - b.r >= k.y + k.h };
+      if ((venia.izq || venia.der) && !(venia.arr || venia.aba)) { b.vx = -b.vx; b.x = px; }
+      else if ((venia.arr || venia.aba) && !(venia.izq || venia.der)) { b.vy = -b.vy; b.y = py; }
+      else { b.vx = -b.vx; b.vy = -b.vy; b.x = px; b.y = py; }
+      golpear(k);
+      return;
+    }
+  }
+  function golpear(k) {
+    k.golpe = 8;
+    if (k.t === 's') { son('duro'); return; }
+    k.vida--;
+    const cx = k.x + k.w / 2, cy = k.y + k.h / 2;
+    if (k.vida > 0) { son('bloque', k.max - k.vida); return; }
+    son('rompe', Math.random() * 3); st.rotos++;
+    if (k.t === 'm') { st.cobrados++; sumar(TIPO.m.pts, cx, cy, '¡COBRADO!', '#FF4D5E'); for (let i = 0; i < 6; i++) st.parts.push({ x: cx, y: cy, vx: azar(-2, 2), vy: azar(-3, 1), t: 0, vida: 50, ic: '💵', s: 12 }); }
+    else sumar(TIPO[k.t].pts, cx, cy);
+    const col = { h: '#f4f1e6', c: '#C8925A', a: '#8A94A6', m: '#FF4D5E' }[k.t];
+    for (let i = 0; i < 6; i++) st.parts.push({ x: cx, y: cy, vx: azar(-2.5, 2.5), vy: azar(-3, 1), t: 0, vida: 30, col, s: 4 });
+    // a veces suelta un poder
+    if (Math.random() < .17) {
+      const tot = PODERES.reduce((a, p) => a + p.p, 0); let r = Math.random() * tot;
+      const pw = PODERES.find(p => (r -= p.p) < 0) || PODERES[0];
+      st.caps.push({ x: cx, y: cy, k: pw.k, ic: pw.ic, t: 0 });
+    }
+  }
+  function ajustarAncho() { st.ancho = st.efectos.recorte ? 40 : st.efectos.cafe ? 100 : 64; }
+  function poder(k) {
+    const malo = k === 'recorte';
+    son(malo ? 'malo' : 'poder');
+    st.textos.push({ x: st.x, y: st.tablaY - 30, txt: NOM_PODER[k], color: malo ? '#FF4D5E' : '#7CFFB2', t: 0, grande: true });
+    if (!malo) st.puntos += 100;
+    if (k === 'cafe') { delete st.efectos.recorte; st.efectos.cafe = true; }
+    if (k === 'recorte') { delete st.efectos.cafe; st.efectos.recorte = 600; }
+    if (k === 'clips') {
+      const nuevas = [];
+      for (const b of st.bolas.slice(0, 3)) {
+        if (b.pegada != null) soltar(b);
+        const s = Math.hypot(b.vx, b.vy), a = Math.atan2(b.vy, b.vx);
+        for (const d of [-.45, .45]) nuevas.push({ x: b.x, y: b.y, r: b.r, vx: Math.cos(a + d) * s, vy: Math.sin(a + d) * s, pegada: null });
+      }
+      st.bolas.push(...nuevas);
+    }
+    if (k === 'iman') st.efectos.iman = 720;
+    if (k === 'grapas') st.efectos.grapas = 600;
+    if (k === 'lunes') { st.efectos.lunes = 600; for (const b of st.bolas) { b.vx *= .7; b.vy *= .7; } }
+    if (k === 'vida') st.vidas++;
+    ajustarAncho(); hud();
+    expresar($('.mm', yoEl), malo ? '😱' : '😎', malo ? 'susto' : 'festeja', 1000, '');
+  }
+  function perderVida() {
+    st.vidas--; son('pierde'); hud();
+    expresar($('.mm', yoEl), '😵', 'triste', 1200, '');
+    st.efectos = {}; ajustarAncho(); st.caps = []; st.balas = [];
+    if (st.vidas <= 0) { st.fase = 'fin'; musica(false); setTimeout(() => terminar(false), 900); return; }
+    st.bolas = [nuevaBola()];
+    aviso(`<b>¡SE TE FUE!</b><small>Te quedan ${st.vidas} ${st.vidas === 1 ? 'vida' : 'vidas'}</small><em>Toca para lanzar</em>`, 1800);
+  }
+  function pasarNivel() {
+    st.fase = 'pausa'; son('nivel');
+    const bono = 1000 * (st.nivel + 1) * (st.vuelta + 1);
+    sumar(bono, MW / 2, MH / 2, null);
+    aviso(`<b>¡NIVEL ${st.nivel + 1} LIQUIDADO!</b><small>+${bono.toLocaleString('es-MX')} de bono</small>`, 1900);
+    expresar($('.mm', yoEl), '🤑', 'festeja', 1600, '');
+    setTimeout(() => { if (!st) return; st.efectos = {}; ajustarAncho(); cargar(st.nivel + 1); }, 2200);
+  }
+  function jefe() {
+    const J = st.jefe;
+    if (J.inv > 0) J.inv--;
+    J.x += J.vx; if (J.x < J.r + 6 || J.x > MW - J.r - 6) J.vx = -J.vx;
+    J.y = 150 + Math.sin(performance.now() / 600) * 10;
+    if (--J.tTiro <= 0) {
+      J.tTiro = Math.max(40, 100 - (J.max - J.vida) * 5 - st.vuelta * 10);
+      st.tiros.push({ x: J.x, y: J.y + J.r, vy: 2.6 + st.vuelta * .4, rot: 0 });
+    }
+    for (const e of st.tiros) {
+      e.y += e.vy; e.rot += .15;
+      if (e.y > st.tablaY - 6 && e.y < st.tablaY + 70 && Math.abs(e.x - st.x) < st.ancho / 2 + 6) {
+        e.fuera = true; st.atonta = 70; son('atonta');
+        st.textos.push({ x: st.x, y: st.tablaY - 30, txt: '¡Te atontó un expediente!', color: '#FF4D5E', t: 0, grande: true });
+        expresar($('.mm', yoEl), '😵', 'susto', 1200, '');
+      }
+      if (e.y > MH + 20) e.fuera = true;
+    }
+    st.tiros = st.tiros.filter(e => !e.fuera);
+  }
+  function pegarJefe(n) {
+    const J = st.jefe; if (!J || J.inv > 0) return;
+    J.vida -= n; J.inv = 45; son('jefe');
+    st.textos.push({ x: J.x, y: J.y - J.r - 10, txt: azarDe(['¡Auch!', '¡No tengo dinero!', '¡Vuelva mañana!', '¡Ya mero le pago!']), color: '#fff', t: 0, grande: true });
+    if (J.vida <= 0) {
+      st.jefe = null; st.tiros = []; st.cobrados++;
+      sumar(10000, J.x, J.y, '¡MOROSO MAYOR COBRADO!', '#FFD54A');
+      for (let i = 0; i < 40; i++) st.parts.push({ x: J.x, y: J.y, vx: azar(-5, 5), vy: azar(-6, 2), t: 0, vida: 90, ic: '💵', s: 18 });
+      st.fase = 'pausa'; son('nivel');
+      aviso(`<b>¡MOROSO MAYOR COBRADO!</b><small>+10,000 · ¡Otra vuelta, ahora más rápido!</small>`, 2600);
+      expresar($('.mm', yoEl), '🤑', 'festeja', 2400, '');
+      setTimeout(() => { if (!st) return; st.vuelta++; st.efectos = {}; ajustarAncho(); cargar(0); }, 3000);
+    }
+  }
+  function terminar() {
+    const p = $('.rd-panel', raiz);
+    const llegaste = NIVELES[st.nivel].jefe ? 'el Moroso mayor' : `el nivel ${st.nivel + 1} (${NIVELES[st.nivel].nom})`;
+    p.innerHTML = `<div class="rd-tit">¡SE ACABÓ<br><span>LA COBRANZA!</span></div>
+      <div class="rd-final"><b>${st.puntos.toLocaleString('es-MX')}</b><small>puntos · llegaste a ${llegaste}${st.vuelta ? ` en la vuelta ${st.vuelta + 1}` : ''}</small></div>
+      <p>📄 ${st.rotos} deudas rotas · 🙈 ${st.cobrados} morosos cobrados</p>
+      <p class="rd-chico" style="color:#FFD54A">🧪 Modo prueba: este puntaje no se guarda.</p>
+      <div style="display:grid;gap:10px;width:min(320px,100%)"><button class="btn" id="rd-otra">🏓 Jugar otra vez</button><button class="btn sec" id="rd-salir">Salir</button></div>`;
+    p.classList.add('on');
+    $('#rd-otra', raiz).onclick = () => { p.classList.remove('on'); nueva(); };
+    $('#rd-salir', raiz).onclick = cerrar;
+  }
+
+  // ---------------------------------------------------------------- dibujo
+  function pintar() {
+    if (!ctx) return;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#1f2a4f'); g.addColorStop(1, '#2f3f72');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.setTransform(DPR * zoom, 0, 0, DPR * zoom, 0, 0);
+    // pared con mosaico y piso
+    ctx.strokeStyle = 'rgba(255,255,255,.04)'; ctx.lineWidth = 1;
+    for (let x = 0; x < MW; x += 24) { ctx.beginPath(); ctx.moveTo(x, 44); ctx.lineTo(x, MH); ctx.stroke(); }
+    for (let y = 44; y < MH; y += 24) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MW, y); ctx.stroke(); }
+    ctx.fillStyle = '#5a3e2b'; ctx.fillRect(0, MH - 26, MW, 26); ctx.fillStyle = '#7a5640'; ctx.fillRect(0, MH - 26, MW, 4);
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(0, 44, MW, 3);
+    if (!st) return;
+    for (const k of st.bloques) if (k.vida > 0) pintarBloque(k);
+    if (st.jefe) pintarJefe(st.jefe);
+    for (const e of st.tiros) { ctx.save(); ctx.translate(e.x, e.y); ctx.rotate(e.rot); ctx.fillStyle = '#F2B233'; ctx.fillRect(-9, -7, 18, 14); ctx.fillStyle = '#a8650f'; ctx.fillRect(-9, -7, 7, 4); ctx.restore(); }
+    for (const c of st.caps) {
+      ctx.save(); ctx.translate(c.x, c.y);
+      ctx.fillStyle = c.k === 'recorte' ? '#5a1020' : '#1b5e3a'; ctx.strokeStyle = c.k === 'recorte' ? '#FF4D5E' : '#7CFFB2'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-15, -9, 30, 18, 9) : ctx.rect(-15, -9, 30, 18); ctx.fill(); ctx.stroke();
+      ctx.font = '13px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(c.ic, 0, 1);
+      ctx.restore();
+    }
+    ctx.fillStyle = '#d6dbe4';
+    for (const gp of st.balas) { ctx.fillRect(gp.x - 1.5, gp.y - 6, 3, 8); }
+    // la tabla
+    const tY = st.tablaY, ax = st.x - st.ancho / 2;
+    ctx.fillStyle = st.efectos.iman ? '#7a7f8a' : '#a0682f'; ctx.fillRect(ax, tY, st.ancho, 9);
+    ctx.fillStyle = 'rgba(255,255,255,.25)'; ctx.fillRect(ax, tY, st.ancho, 2);
+    ctx.strokeStyle = '#5c3519'; ctx.lineWidth = 1.5; ctx.strokeRect(ax + .5, tY + .5, st.ancho - 1, 8);
+    if (st.efectos.grapas) { ctx.fillStyle = '#C62828'; ctx.fillRect(ax + 2, tY - 4, 8, 5); ctx.fillRect(ax + st.ancho - 10, tY - 4, 8, 5); }
+    if (st.efectos.iman) { ctx.font = '11px system-ui'; ctx.textAlign = 'center'; ctx.fillText('🧲', st.x, tY + 8); }
+    // bolas de papel
+    for (const b of st.bolas) {
+      ctx.save(); ctx.translate(b.x, b.y);
+      ctx.fillStyle = '#f4f1e6'; ctx.beginPath(); ctx.arc(0, 0, b.r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#b9b29a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-3, -2); ctx.lineTo(1, 1); ctx.lineTo(-1, 3); ctx.moveTo(2, -3); ctx.lineTo(3, 0); ctx.stroke();
+      ctx.restore();
+    }
+    // partículas y textos
+    for (const p of st.parts) {
+      p.t++; p.x += p.vx; p.y += p.vy; p.vy += .15;
+      ctx.save(); ctx.globalAlpha = Math.max(0, 1 - p.t / p.vida);
+      if (p.ic) { ctx.font = `${p.s}px system-ui`; ctx.textAlign = 'center'; ctx.fillText(p.ic, p.x, p.y); } else { ctx.fillStyle = p.col; ctx.fillRect(p.x - p.s / 2, p.y - p.s / 2, p.s, p.s); }
+      ctx.restore();
+    }
+    st.parts = st.parts.filter(p => p.t < p.vida);
+    for (const t of st.textos) {
+      t.t++;
+      ctx.save(); ctx.globalAlpha = Math.max(0, 1 - t.t / 60);
+      ctx.font = `900 ${t.grande ? 14 : 11}px Anton, Impact, sans-serif`; ctx.textAlign = 'center';
+      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.strokeText(t.txt, t.x, t.y - t.t * .4);
+      ctx.fillStyle = t.color; ctx.fillText(t.txt, t.x, t.y - t.t * .4);
+      ctx.restore();
+    }
+    st.textos = st.textos.filter(t => t.t < 60);
+    // el monito con las manos arriba, debajo de la tabla
+    const alto = 66, k = alto * zoom / 65;
+    const px = st.x * zoom, py = (tY + 10 + alto) * zoom;
+    yoEl.style.transform = `translate(${px}px, ${py}px) scale(${k}) translate(-50%, -100%)`;
+    $('.mm', yoEl).classList.toggle('camina', Math.abs(st.meta - st.x) > 3 && !st.atonta);
+    yoEl.classList.toggle('atonta', st.atonta > 0);
+  }
+  function pintarBloque(k) {
+    const sh = k.golpe > 0 ? (k.golpe--, Math.sin(k.golpe) * 1.5) : 0;
+    const x = k.x + 1 + sh, y = k.y + 1, w = k.w - 2, h = k.h - 2;
+    if (k.t === 'h') {
+      ctx.fillStyle = '#f4f1e6'; ctx.fillRect(x, y, w, h); ctx.fillStyle = '#c8c1a8';
+      ctx.fillRect(x + 4, y + 4, w - 8, 1.2); ctx.fillRect(x + 4, y + 7.5, w - 12, 1.2); ctx.fillRect(x + 4, y + 11, w - 10, 1.2);
+    } else if (k.t === 'c') {
+      ctx.fillStyle = k.vida < k.max ? '#a8763f' : '#C8925A'; ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = 'rgba(240,215,160,.85)'; ctx.fillRect(x + w / 2 - 2, y, 4, h);
+      ctx.strokeStyle = '#7a5230'; ctx.lineWidth = 1.2; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
+    } else if (k.t === 'a') {
+      ctx.fillStyle = ['#5d6573', '#737c8c', '#8A94A6'][k.vida - 1] || '#8A94A6'; ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = '#d6dbe4'; ctx.fillRect(x + 3, y + h / 2 - .5, w - 6, 1.2); ctx.fillRect(x + w / 2 - 3, y + 3, 6, 2); ctx.fillRect(x + w / 2 - 3, y + h - 5, 6, 2);
+      if (k.vida < k.max) { ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.beginPath(); ctx.moveTo(x + 5, y + 2); ctx.lineTo(x + 10, y + 8); ctx.lineTo(x + 7, y + h - 2); ctx.stroke(); }
+    } else if (k.t === 's') {
+      ctx.fillStyle = '#2b2f3a'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = '#9aa0ab'; ctx.lineWidth = 1.5; ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+      ctx.fillStyle = '#c9a227'; ctx.beginPath(); ctx.arc(x + w / 2, y + h / 2, 3.5, 0, Math.PI * 2); ctx.fill();
+    } else if (k.t === 'm') {
+      ctx.fillStyle = '#E53935'; ctx.fillRect(x, y, w, h);
+      cara(k.j, x + 8, y + h / 2, 6.2);
+      ctx.fillStyle = '#fff'; ctx.font = '900 7px "Work Sans", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('DEBE', x + 21, y + h / 2 + .5);
+      ctx.textBaseline = 'alphabetic';
+    }
+  }
+  function cara(j, x, y, r) {
+    ctx.save();
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = j?.color || colorDe(j?.nombre || '?'); ctx.fill();
+    const im = j && caras[j.id];
+    if (im && im.complete && im.naturalWidth) {
+      ctx.save(); ctx.clip();
+      const s = Math.max(2 * r / im.naturalWidth, 2 * r / im.naturalHeight);
+      ctx.drawImage(im, x - im.naturalWidth * s / 2, y - im.naturalHeight * s / 2, im.naturalWidth * s, im.naturalHeight * s);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = '#fff'; ctx.font = `${r * 1.1}px Anton, Impact, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(j?.emoji || String(j?.nombre || '?').trim().charAt(0).toUpperCase(), x, y + .5);
+    }
+    ctx.lineWidth = Math.max(1.2, r / 6); ctx.strokeStyle = '#FFFDF6'; ctx.stroke();
+    ctx.restore();
+  }
+  function pintarJefe(J) {
+    ctx.save();
+    if (J.inv > 0 && Math.floor(J.inv / 3) % 2) ctx.globalAlpha = .5;
+    ctx.fillStyle = '#1b1b24'; ctx.fillRect(J.x - 22, J.y + J.r - 6, 44, 18);
+    ctx.fillStyle = '#C62828'; ctx.beginPath(); ctx.moveTo(J.x - 4, J.y + J.r - 6); ctx.lineTo(J.x + 4, J.y + J.r - 6); ctx.lineTo(J.x, J.y + J.r + 12); ctx.fill();
+    cara(J.j, J.x, J.y, J.r);
+    ctx.font = '24px system-ui'; ctx.textAlign = 'center'; ctx.fillText('👑', J.x, J.y - J.r + 2);
+    ctx.restore();
+    // barra de vida
+    const w = 160, x = MW / 2 - w / 2, y = 52;
+    ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(x - 2, y - 2, w + 4, 12);
+    ctx.fillStyle = '#E53935'; ctx.fillRect(x, y, w * Math.max(0, J.vida) / J.max, 8);
+    ctx.fillStyle = '#fff'; ctx.font = '900 8px "Work Sans", sans-serif'; ctx.textAlign = 'center'; ctx.fillText('MOROSO MAYOR', MW / 2, y + 7);
+  }
+  return { abrir, cerrar, _st: () => st, _nivel: n => st && cargar(n) };
+})();
+
+document.addEventListener('click', e => { if (e.target.closest?.('[data-probar-rompe]')) ROMPE.abrir(); });
+
 /* ---------- mis billetes ---------- */
 async function abrirBilletes() {
   $('#bi-caja').innerHTML = `<div class="folio"><span>Billetes Alfa</span><span>💵</span></div><h2>${fmt$(est.billetes)}</h2><p class="ayuda">Cargando…</p>`;
@@ -10093,7 +10654,7 @@ async function adminPruebas(C) {
     ? `<button class="btn sec chico" style="margin-left:8px;padding:6px 10px;font-size:.8rem;flex:none" data-reiniciar-prueba="${id}">🔄 Reiniciar</button>` : '';
   C.innerHTML = `<div class="adm-caja"><h3>🧪 Juegos en prueba</h3>
     <p class="ayuda">Solo los ves tú desde aquí. No pagan ni guardan récords hasta que los publiquemos.</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" data-probar-super>🏃 Probar Súper Cobrador</button></div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" data-probar-super>🏃 Probar Súper Cobrador</button><button class="btn" data-probar-rompe>🏓 Probar Rompe Deudas</button></div></div>
     <div class="adm-caja"><h3>Puntajes de la semana ${c.semana}</h3>
     ${c.prueba ? `<p class="ayuda">${esc(PRUEBAS[c.prueba].nombre)}</p>` : ''}
     <p class="ayuda">El líder sale 30% de la prueba (contra el mejor) y 70% en 4 partes de 17.5: misiones de esta semana (de 5), lo que jugó, sus récords y duelos ganados (contra quien más tiene).</p>
