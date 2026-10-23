@@ -206,6 +206,7 @@ Versión 68: nuevo juego Súper Cobrador 🏃 (en prueba: solo desde el panel de
 Versión 69: Súper Cobrador salta más alto, botones más grandes y ya no se atraviesa el piso de los charcos.
 Versión 70: Súper Cobrador, repisas para alcanzar los billetes de los cuartos secretos y los enemigos ya no se caen de las orillas (se regresan con paredes, trituradoras y entre ellos).
 Versión 71: nuevo juego Rompe Deudas 🏓 tipo Arkanoid (en prueba: panel de admin → Pruebas).
+Versión 72: en Rompe Deudas el monito y la tabla van más arriba.
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.

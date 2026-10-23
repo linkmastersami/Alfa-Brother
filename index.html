@@ -2081,7 +2081,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 71;
+const APP_VERSION       = 72;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -8396,7 +8396,7 @@ document.addEventListener('click', e => { if (e.target.closest?.('[data-probar-s
    8 niveles con figuras + el Moroso mayor; al vencerlo se da otra vuelta más rápida.
    ===================================================================== */
 const ROMPE = (() => {
-  const MW = 360, COLS = 10, BW = 32, BH = 16, X0 = 20, Y0 = 74;
+  const MW = 360, COLS = 10, BW = 32, BH = 16, X0 = 20, Y0 = 74, ABAJO = 170;   // ABAJO: qué tan arriba del fondo va la tabla
   const TIPO = {
     h: { vida: 1, pts: 50 },  c: { vida: 2, pts: 100 }, a: { vida: 3, pts: 150 },
     m: { vida: 1, pts: 300 }, s: { vida: Infinity, pts: 0 },
@@ -8513,7 +8513,7 @@ const ROMPE = (() => {
     W = raiz.clientWidth; H = raiz.clientHeight;
     lienzo.width = Math.round(W * DPR); lienzo.height = Math.round(H * DPR);
     zoom = W / MW; MH = H / zoom;
-    if (st) st.tablaY = MH - 104;
+    if (st) st.tablaY = MH - ABAJO;
   }
   function dedo(ev) {
     if (!st || st.fase === 'fin' || $('.rd-panel.on', raiz)) return;
@@ -8546,7 +8546,7 @@ const ROMPE = (() => {
   function nueva() {
     audio(); if (maestro) maestro.gain.value = mudo() ? 0 : .8;
     st = { nivel: 0, vuelta: 0, vidas: 3, puntos: 0, x: MW / 2, meta: MW / 2, ancho: 64, efectos: {}, bolas: [], caps: [], balas: [], parts: [], textos: [], tiros: [], fase: 'jugando', rotos: 0, cobrados: 0 };
-    st.tablaY = MH - 104;
+    st.tablaY = MH - ABAJO;
     cargar(0);
     musica(true);
   }
@@ -8803,7 +8803,8 @@ const ROMPE = (() => {
     ctx.strokeStyle = 'rgba(255,255,255,.04)'; ctx.lineWidth = 1;
     for (let x = 0; x < MW; x += 24) { ctx.beginPath(); ctx.moveTo(x, 44); ctx.lineTo(x, MH); ctx.stroke(); }
     for (let y = 44; y < MH; y += 24) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MW, y); ctx.stroke(); }
-    ctx.fillStyle = '#5a3e2b'; ctx.fillRect(0, MH - 26, MW, 26); ctx.fillStyle = '#7a5640'; ctx.fillRect(0, MH - 26, MW, 4);
+    const piso = MH - ABAJO + 76; ctx.fillStyle = '#5a3e2b'; ctx.fillRect(0, piso, MW, MH - piso); ctx.fillStyle = '#7a5640'; ctx.fillRect(0, piso, MW, 4);
+    ctx.strokeStyle = 'rgba(0,0,0,.18)'; for (let x = 0; x < MW; x += 40) { ctx.beginPath(); ctx.moveTo(x, piso + 4); ctx.lineTo(x - 20, MH); ctx.stroke(); }
     ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(0, 44, MW, 3);
     if (!st) return;
     for (const k of st.bloques) if (k.vida > 0) pintarBloque(k);
