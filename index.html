@@ -1081,12 +1081,12 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .sc-hud .sc-h-nivel{font-family:Anton,Impact,sans-serif;font-weight:400;letter-spacing:1px;margin-left:auto}
 .sc-hud .sc-h-pts{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.25rem;color:#FFD54A;min-width:70px;text-align:right}
 .sc-x{pointer-events:auto;width:36px;height:36px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;font-size:1rem}
-.sc-ctrl{position:absolute;bottom:14px;display:flex;align-items:flex-end;gap:12px;z-index:6}
-.sc-ctrl.izq{left:16px}.sc-ctrl.der{right:16px}
-.sc-ctrl button{width:66px;height:66px;border-radius:50%;border:2px solid rgba(255,255,255,.55);background:rgba(20,10,40,.35);color:#fff;font-size:1.7rem;font-weight:900;touch-action:none;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(2px)}
+.sc-ctrl{position:absolute;bottom:16px;display:flex;align-items:flex-end;gap:16px;z-index:6}
+.sc-ctrl.izq{left:20px}.sc-ctrl.der{right:20px}
+.sc-ctrl button{width:92px;height:92px;border-radius:50%;border:2px solid rgba(255,255,255,.55);background:rgba(20,10,40,.35);color:#fff;font-size:2.3rem;font-weight:900;touch-action:none;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(2px)}
 .sc-ctrl button.on{background:rgba(255,255,255,.45);transform:scale(.94)}
-.sc-ctrl .sc-salta{width:80px;height:80px;font-size:2rem;background:rgba(255,77,94,.4)}
-.sc-ctrl .sc-dispara,.sc-ctrl .sc-baja{width:58px;height:58px;font-size:1.4rem;display:none}
+.sc-ctrl .sc-salta{width:112px;height:112px;font-size:2.8rem;background:rgba(255,77,94,.4)}
+.sc-ctrl .sc-dispara,.sc-ctrl .sc-baja{width:80px;height:80px;font-size:2rem;display:none}
 .sc-ctrl .sc-dispara.ver,.sc-ctrl .sc-baja.ver{display:block}
 .sc-ctrl .sc-baja{background:rgba(61,139,255,.45);animation:sc-late .6s ease-in-out infinite alternate}
 @keyframes sc-late{to{transform:translateY(5px)}}
@@ -2046,7 +2046,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 68;
+const APP_VERSION       = 69;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -7374,7 +7374,7 @@ function tarjetaRitmo() {
 const SUPER = (() => {
   const T = 32, FILAS = 13, G = .55, VMAX_CAE = 12, ARRIBA = 1.5 * T;   // ARRIBA: lo que no se ve del techo (así todo se ve más grande)
   const PTS = { enemigo: 300, poder: 500, billete: 50, vida: 3000 };
-  const SOLIDO = new Set(['#', 'A', 'C', '?', 'u', 'P', '[', ']', '|', 'W']);
+  const SOLIDO = new Set(['#', '=', 'A', 'C', '?', 'u', 'P', '[', ']', '|', 'W']);   // '=' es piso con charco (resbala)
   const UNA_VIA = new Set(['D', 'R']);            // escritorios y repisas: se suben desde abajo
 
   // ---------------------------------------------------------------- niveles
@@ -7437,7 +7437,7 @@ const SUPER = (() => {
       const b = constructor(196);
       b.nombre = 'Archivo muerto'; b.tema = 'archivo'; b.musica = 1;
       b.suelo(0, 165);
-      b.hueco(24, 27); b.hueco(52, 55); b.hueco(88, 91); b.hueco(118, 121); b.hueco(140, 143);
+      b.hueco(24, 27); b.hueco(52, 55); b.hueco(88, 90); b.hueco(118, 121); b.hueco(140, 143);
       b.inicio = { x: 3, y: 10 };
       b.caja(9, 7, '$'); b.caja(11, 7, 'poder'); b.caja(13, 7, '$');
       b.e('engrapadora', 17);
@@ -7451,7 +7451,7 @@ const SUPER = (() => {
       b.billetes(62, 63, 5);
       b.e('moroso', 70); b.e('moroso', 73); b.e('silla', 77);
       b.fila(80, 87, 11, '='); b.t(84, 10, '^');
-      b.fila(88, 91, 7, 'R');
+      b.fila(88, 90, 7, 'R');
       b.ducto(95, 9, { x: 171, y: 9, zona: 1 });
       b.e('engrapadora', 100); b.e('moroso', 103);
       b.caja(106, 7, '$'); b.t(107, 7, 'P'); b.caja(108, 7, 'estrella'); b.t(109, 7, 'P');
@@ -7869,14 +7869,14 @@ const SUPER = (() => {
     if (p.inv > 0) p.inv--;
     if (p.estrella > 0) { p.estrella--; if (p.estrella === 0) musica(lv.musica); }
     const resbala = p.piso && p.sueloC === '=';
-    const acel = p.piso ? (resbala ? .12 : .55) : .35, freno = p.piso ? (resbala ? .02 : .4) : .05, vmax = 4.4;
+    const acel = p.piso ? (resbala ? .2 : .55) : .35, freno = p.piso ? (resbala ? .02 : .4) : .05, vmax = 4.4;
     const quieto = p.atonta > 0;
     if (quieto) p.atonta--;
     if (control.izq && !control.der && !quieto) { p.vx = Math.max(-vmax, p.vx - acel); p.dir = -1; }
     else if (control.der && !control.izq && !quieto) { p.vx = Math.min(vmax, p.vx + acel); p.dir = 1; }
     else { if (p.vx > 0) p.vx = Math.max(0, p.vx - freno); else p.vx = Math.min(0, p.vx + freno); }
     // salto (más alto si lo dejas apretado)
-    if (st.pideSalto && p.piso && !quieto) { p.vy = -10.6; p.piso = false; sonido('salto'); }
+    if (st.pideSalto && p.piso && !quieto) { p.vy = -12.6; p.piso = false; sonido('salto'); }
     st.pideSalto = false;
     if (!control.salta && p.vy < -3.5) p.vy = -3.5;
     // ventilador: te empuja hacia arriba
