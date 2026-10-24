@@ -208,6 +208,7 @@ Versión 70: Súper Cobrador, repisas para alcanzar los billetes de los cuartos 
 Versión 71: nuevo juego Rompe Deudas 🏓 tipo Arkanoid (en prueba: panel de admin → Pruebas).
 Versión 72: en Rompe Deudas el monito y la tabla van más arriba.
 Versión 73: en Rompe Deudas el monito sube otro poco.
+Versión 74: en los resultados de la pasarela hay un botón para ver los porqués de los votos (sin nombres y revueltos).
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.

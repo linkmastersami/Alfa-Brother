@@ -2081,7 +2081,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 73;
+const APP_VERSION       = 74;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -10308,8 +10308,22 @@ async function abrirGala(semana, marcarVista, conTelon = false, tarde = false, d
           <span class="pt">${t.puntos}</span></div>
       </div>`).join('')}
     </div>
+    ${(r.motivos || []).some(Boolean) ? `<div style="width:100%;margin-top:16px"><button class="btn sec" id="g-porques" style="color:#fff;box-shadow:inset 0 0 0 2px #6E5FD0">✉️ Ver los porqués de los votos</button>
+      <div id="g-porques-lista" class="hidden" style="text-align:left;margin-top:10px"></div></div>` : ''}
     <div style="width:100%;margin-top:16px"><button class="btn" id="g-cerrar">Regresar a la casa</button></div>`;
   E.scrollTop = 0; G.scrollTop = 0;
+  // los porqués: solo lo que se escribió, revuelto (sin para quién ni quién lo escribió)
+  $('#g-porques')?.addEventListener('click', () => {
+    const L = $('#g-porques-lista'), abrir = L.classList.contains('hidden');
+    if (abrir) {
+      const lista = (r.motivos || []).filter(Boolean).map(t => ({ t, k: Math.random() })).sort((a, b) => a.k - b.k).map(x => x.t);
+      L.innerHTML = `<p style="margin:0 0 6px;color:#C9C3EE;font-size:.85rem">Sin nombres y revueltos: no se sabe para quién fue ni quién lo escribió.</p>
+        <ul class="motivos" style="margin:0">${lista.map(m => `<li style="background:#FFFDF6;color:#1b1430">“${esc(m)}”</li>`).join('')}</ul>`;
+      SFX.tocar('swish');
+    }
+    L.classList.toggle('hidden', !abrir);
+    $('#g-porques').textContent = abrir ? '✉️ Ocultar los porqués' : '✉️ Ver los porqués de los votos';
+  });
   $('#g-cerrar').onclick = () => {
     G.classList.add('hidden'); E.style.justifyContent = ''; document.body.style.overflow = '';
     galaAbierta = false; SFX.pausaParaGala(false); refrescar(); SALA.despertar(); CHAT.boton();
