@@ -1,0 +1,195 @@
+-- ALFA BROTHER · ACTUALIZACIÓN v77: todos los juegos pueden ser prueba del líder
+-- Pégala en SQL Editor → Run.
+
+alter table public.config drop constraint if exists config_prueba_check;
+alter table public.config add constraint config_prueba_check check (prueba in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe'));
+
+
+create or replace function public._nombre_prueba(p text)
+returns text language sql immutable as $$
+  select case p when 'trivia' then 'Trivia de la oficina' when 'memoria' then 'Memoria de expedientes'
+                when 'adeudo' then 'Calcula el adeudo' when 'billetes' then 'Cuenta los billetes verdes'
+                when 'monster2' then 'Monster Crazy 2.0' when 'cobranza' then 'Cobranza furiosa' when 'ritmo' then 'Sigue el ritmo'
+                when 'super' then 'Súper Cobrador' when 'rompe' then 'Rompe Deudas' else 'la prueba' end
+$$;
+
+create or replace function public.enviar_puntaje(p_token uuid, p_puntaje int)
+returns int language plpgsql security definer set search_path = public as $$
+declare
+  yo public.jugadores;
+  c public.config;
+  v int;
+begin
+  yo := public._yo(p_token);
+  select * into c from public.config where id = 1;
+  if c.fase <> 'prueba' or c.prueba = 'trivia' then raise exception 'PRUEBA_CERRADA'; end if;
+  -- v77: cada juego tiene su tope de puntos
+  v := least(greatest(coalesce(p_puntaje, 0), 0), case c.prueba when 'monster2' then 5000000 when 'cobranza' then 2000000 when 'rompe' then 2000000
+                                                         when 'super' then 500000 when 'ritmo' then 200000 else 20000 end);
+  update public.intentos set puntaje = v, terminado = now()
+   where semana = c.semana and jugador_id = yo.id and terminado is null;
+  if not found then raise exception 'SIN_INTENTO'; end if;
+  return v;
+end $$;
+
+create or replace function public.admin_prueba_abre(p_cuando timestamptz)
+returns void language plpgsql security definer set search_path = public as $$
+declare c public.config; v_n text;
+begin
+  perform public._solo_admin();
+  select * into c from public.config where id = 1;
+  if c.fase <> 'prueba' then raise exception 'FASE_INCORRECTA'; end if;
+  update public.config set prueba_abre = case when p_cuando > now() then p_cuando end, actualizado = now() where id = 1;
+  if p_cuando is null or p_cuando <= now() then
+    v_n := public._nombre_prueba(c.prueba);
+    perform public._avisar('🏆 ¡Ya abrió la prueba del líder!', format('Ya puedes jugar %s. Solo tienes un intento.', v_n));
+  end if;
+end $$;
+
+create or replace function public.admin_cambiar_prueba(p_prueba text)
+returns int language plpgsql security definer set search_path = public as $$
+declare c public.config; v_n int; v_nom text;
+begin
+  perform public._solo_admin();
+  select * into c from public.config where id = 1 for update;
+  if c.fase <> 'prueba' then raise exception 'FASE_INCORRECTA'; end if;
+  if p_prueba not in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe') then raise exception 'PRUEBA_INVALIDA'; end if;
+  if p_prueba = 'trivia' and not exists (select 1 from public.trivia where activa) then raise exception 'SIN_TRIVIAS'; end if;
+  delete from public.intentos where semana = c.semana;
+  get diagnostics v_n = row_count;
+  update public.config set prueba = p_prueba, actualizado = now() where id = 1;
+  v_nom := public._nombre_prueba(p_prueba);
+  if c.prueba_abre is null or c.prueba_abre <= now() then
+    perform public._avisar('🔄 Cambió la prueba del líder', format('Ahora la prueba es %s. Si ya habías jugado, vuelve a jugar: se reinició para todos.', v_nom));
+  end if;
+  return v_n;
+end $$;
+
+create or replace function public._prueba_abre_aviso()
+returns void language plpgsql security definer set search_path = public as $$
+declare c public.config; v_n text;
+begin
+  select * into c from public.config where id = 1;
+  if c.fase <> 'prueba' or c.prueba_abre is null or c.prueba_abre > now() then return; end if;
+  update public.config set prueba_abre = null where id = 1 and prueba_abre is not null and prueba_abre <= now();
+  if not found then return; end if;
+  v_n := public._nombre_prueba(c.prueba);
+  perform public._avisar('🏆 ¡Ya abrió la prueba del líder!', format('Ya puedes jugar %s. Solo tienes un intento.', v_n));
+end $$;
+revoke all on function public._prueba_abre_aviso() from public, anon, authenticated;
+
+create or replace function public._iniciar_semana(p_prueba text)
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  c public.config;
+  v_act int;
+  v_final boolean;
+begin
+  perform public._resolver_empate(null, 'azar');            -- v27: un empate de la pasarela que nadie decidió
+  select * into c from public.config where id = 1 for update;
+  if not (c.fase = 'registro' or (c.fase = 'gala' and c.gala_revelada)) then raise exception 'FASE_INCORRECTA'; end if;
+  select count(*) into v_act from public.jugadores where rol = 'jugador' and estado = 'activo';
+  -- ya hubo gran final (o solo queda uno): no se abre otra semana
+  if c.terminado or (c.semana > 0 and v_act <= 1) then raise exception 'JUEGO_TERMINADO'; end if;
+  -- con 3 o menos en la casa es la gran final: sin prueba ni líder, se vota directo
+  v_final := v_act between 2 and 3;
+  if not v_final then
+    if p_prueba not in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe') then raise exception 'PRUEBA_INVALIDA'; end if;
+    if p_prueba = 'trivia' and not exists (select 1 from public.trivia where activa) then raise exception 'SIN_TRIVIAS'; end if;
+  end if;
+  update public.config
+     set semana = c.semana + 1,
+         fase = case when not v_final then 'prueba'
+                     when c.ag_semana = c.semana + 1 and c.ag_voto_ini > now() then 'espera'
+                     else 'votacion' end,
+         prueba = case when v_final then null else p_prueba end,
+         es_final = v_final, lider_id = case when v_final then null else c.lider_id end, eliminado_id = null,
+         prueba_abre = case when not v_final and c.ag_semana = c.semana + 1 and c.ag_prueba_abre > now() then c.ag_prueba_abre end,   -- v43: el líder sigue hasta que se nombra el siguiente
+         empatados = '{}', gala_revelada = false, actualizado = now()
+   where id = 1;
+  insert into public.sucesos (tipo, dato) values ('semana', jsonb_build_object('semana', c.semana + 1, 'prueba', case when v_final then null else p_prueba end, 'final', v_final));
+  update public.practicas set mejor = 0 where mejor <> 0;     -- v40: los récords vuelven a cero cada semana
+  -- misiones secretas de la semana nueva
+  begin perform public._repartir_misiones(c.semana + 1, false);
+  exception when others then null; end;
+end $$;
+
+create or replace function public.admin_set_agenda(p jsonb)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  perform public._solo_admin();
+  if p is null then
+    update public.config set ag_semana = null, ag_prueba = null, ag_prueba_ini = null, ag_prueba_fin = null, ag_prueba_abre = null,
+           ag_voto_ini = null, ag_voto_fin = null, ag_gala = null, actualizado = now() where id = 1;
+    return;
+  end if;
+  if coalesce(p->>'prueba', 'memoria') not in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe') then raise exception 'PRUEBA_INVALIDA'; end if;
+  update public.config
+     set ag_semana     = (p->>'semana')::int,
+         ag_prueba     = coalesce(p->>'prueba', 'memoria'),
+         ag_prueba_ini = nullif(p->>'prueba_ini', '')::timestamptz,
+         ag_prueba_fin = nullif(p->>'prueba_fin', '')::timestamptz,
+         ag_prueba_abre = nullif(p->>'prueba_abre', '')::timestamptz,
+         ag_voto_ini   = nullif(p->>'voto_ini', '')::timestamptz,
+         ag_voto_fin   = nullif(p->>'voto_fin', '')::timestamptz,
+         ag_gala       = nullif(p->>'gala', '')::timestamptz,
+         ag_repetir    = coalesce((p->>'repetir')::boolean, true),
+         actualizado   = now()
+   where id = 1;
+end $$;
+
+create or replace function public._config_avisos()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  v_lider text;
+  v_prueba text;
+begin
+  if new.fase is not distinct from old.fase and new.semana is not distinct from old.semana
+     and new.gala_revelada is not distinct from old.gala_revelada then
+    return new;
+  end if;
+  begin
+    select nombre into v_lider from public.jugadores where id = new.lider_id;
+    v_prueba := public._nombre_prueba(new.prueba);
+    if new.fase = 'prueba' and (old.fase <> 'prueba' or new.semana <> old.semana) then
+      if new.prueba_abre > now() then        -- v44: la semana empezó, pero la prueba abre más tarde
+        perform public._avisar(format('📅 ¡Empezó la semana %s!', new.semana),
+          format('Ya tienes misiones nuevas. La prueba del líder (%s) abre el %s; mientras, ve practicando.', v_prueba,
+                 to_char(new.prueba_abre at time zone 'America/Mexico_City', 'DD/MM "a las" HH24:MI')));
+      else
+        perform public._avisar(format('🏆 Semana %s: prueba del líder', new.semana),
+                               format('Ya puedes jugar %s. Solo tienes un intento.', v_prueba));
+      end if;
+    elsif new.fase = 'espera' and old.fase <> 'espera' then
+      if new.es_final then
+        perform public._avisar('🏁 ¡Llegamos a la gran final!', 'Sin prueba ni líder: todo se decide con los votos. Ya puedes preparar tu voto.');
+      elsif v_lider is not null then
+        perform public._avisar(format('👑 %s es el líder de la semana', v_lider), 'La prueba cerró. Ya puedes preparar tu voto en el confesionario.');
+      end if;
+    elsif new.fase = 'votacion' and old.fase <> 'votacion' then
+      if new.es_final then
+        perform public._avisar('🏁 ¡Gran final! Ya se puede votar', 'Quien junte menos puntos gana Alfa Brother. Entra al confesionario.');
+      else
+        perform public._avisar('🗳️ Se abrió la votación',
+          case when v_lider is not null and old.fase = 'prueba' then format('%s es el líder 👑. Entra al confesionario a votar.', v_lider)
+               else 'Entra al confesionario a votar.' end);
+      end if;
+    elsif new.fase = 'decision' and old.fase <> 'decision' and new.lider_id is not null then
+      perform public._avisar('⚖️ Hubo empate', 'Eres el líder: tú decides quién sale. Entra al juego.', array[new.lider_id]);
+    end if;
+    if new.fase = 'decision' and old.fase <> 'decision' then
+      perform public._avisar_produccion('⚖️ Hubo empate', case when new.lider_id is null then 'No hay líder: tienes que decidir quién sale desde el panel.'
+                                                              else 'El líder está decidiendo. Si tarda, puedes decidir tú desde el panel.' end);
+    elsif new.fase = 'gala' and new.gala_revelada and not old.gala_revelada then
+      if new.terminado then
+        perform public._avisar('🏆 ¡Tenemos ganador!', 'Terminó la gran final de Alfa Brother. Entra a ver el podio.');
+      else
+        perform public._avisar('🎬 ¡Empezó la gala!', 'Entra a ver quién salió de la casa.');
+      end if;
+    end if;
+  exception when others then null;
+  end;
+  return new;
+end $$;
+
+notify pgrst, 'reload schema';

@@ -2085,13 +2085,18 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 76;
+const APP_VERSION       = 77;
 /* ===================================================================== */
 
 const PRUEBAS = {
   trivia:  { nombre: 'Trivia de la oficina',   desc: 'Preguntas sobre la oficina y los compañeros. Tienes 12 segundos por pregunta; contestar rápido da puntos extra.' },
   memoria: { nombre: 'Memoria de expedientes', desc: 'Voltea los expedientes y encuentra los 8 pares. Gana quien termine más rápido y con menos errores.' },
   billetes: { nombre: 'Cuenta los billetes verdes', desc: 'Pasan billetes de colores corriendo por la calle y tú los ves con binoculares. Cuenta solo los billetes VERDES (usa el botón ¡Clic! para llevar la cuenta; ojo con los balones y tréboles) y al final di cuántos pasaron. Rondas sin fin, cada vez más billetes y más rápido: si atinas el número exacto sigues (+100 y bono por rapidez); si fallas, se acaba.' },
+  monster2: { nombre: 'Monster Crazy 2.0', desc: 'Las caras de tus compañeros salen sobre el monstruo: deslízales el dedo antes de que se acabe el tiempo. Cuidado con los círculos negros 💀.' },
+  cobranza: { nombre: 'Cobranza furiosa', desc: 'Con la resortera tumba las torres de la oficina donde se esconden los morosos. Niveles sin fin y 3 vidas.' },
+  ritmo:    { nombre: 'Sigue el ritmo', desc: 'El líder te enseña sus pasos de baile y tú los repites con los 5 botones de colores. Cada ronda se agrega un paso; un error y se acaba.' },
+  super:    { nombre: 'Súper Cobrador', desc: 'Corre y salta por la oficina con tu monito: 3 niveles y el Moroso mayor. Cuentan enemigos, poderes, billetes, vidas y tiempo.' },
+  rompe:    { nombre: 'Rompe Deudas', desc: 'Rebota la bola de papel con la tabla y rompe hojas, cajas, archiveros y morosos. 8 niveles y el Moroso mayor.' },
   adeudo:  { nombre: 'Calcula el adeudo',      desc: 'Tienes 2 minutos para cobrar cuentas de la oficina. Empiezas en fácil (mensualidades, +100); si aciertas subes a pagaré (+150) y luego a difícil (+300), donde te quedas hasta que falles. Un error resta 50 y te regresa a fácil.' },
 };
 const ERRORES = {
@@ -2849,7 +2854,7 @@ function pintarAccion() {
   if (!enFoco) extra.innerHTML = g.semana === 0 ? `<div style="height:8px"></div>` + pintarExtrasSala() : '';
   conectarSalaEspera();
   $('#a-jugar')?.addEventListener('click', abrirPrueba);
-  $('#a-practicar')?.addEventListener('click', () => PRUEBAS[est.juego.prueba] && est.juego.prueba !== 'trivia' ? abrirPractica(est.juego.prueba) : irTab('jugar'));
+  $('#a-practicar')?.addEventListener('click', () => PRACTICA_JUEGOS[est.juego.prueba] ? PRACTICA_JUEGOS[est.juego.prueba]() : PRUEBAS[est.juego.prueba] && est.juego.prueba !== 'trivia' ? abrirPractica(est.juego.prueba) : irTab('jugar'));
   $('#a-votar')?.addEventListener('click', irAlConfesionario);
   $$('[data-decide]').forEach(b => b.onclick = async () => {
     const j = porId(b.dataset.decide);
@@ -4181,10 +4186,12 @@ function tarjetaMonster() {
   return h;
 }
 const MONSTER = (() => {
+  let modoPrueba = false, pruebaEnviada = false, ultimoProgreso = 0;
   let abierto = false, juego = 'monster2';
   const caja = () => $('#m-monster');
-  function abrir(cual) {
+  function abrir(cual, esPrueba = false) {
     if (abierto) return;
+    modoPrueba = !!esPrueba; pruebaEnviada = false; ultimoProgreso = 0;
     juego = JUEGOS_MONSTER[cual] ? cual : 'monster2';
     if (juego === 'monster' && !monster1Disponible()) { toast('Monster Crazy clásico ya se retiró. ¡Juega la 2.0!'); juego = 'monster2'; }
     abierto = true;
@@ -4200,6 +4207,9 @@ const MONSTER = (() => {
     caja().innerHTML = '';
     document.body.style.overflow = '';
     SFX.pausaParaGala(false);
+    // en la prueba, si sale antes de terminar se manda lo que llevaba
+    if (modoPrueba && !pruebaEnviada) { pruebaEnviada = true; enviarPrueba(ultimoProgreso).then(() => refrescar()); }
+    if (modoPrueba) mostrar('s-casa');
     refrescar();
   }
   const enviar = m => caja().querySelector('iframe')?.contentWindow?.postMessage(m, location.origin);
@@ -4213,7 +4223,16 @@ const MONSTER = (() => {
       const mio = (est.practicas || []).find(p => p.id === est.yo.id && p.juego === j);
       enviar({ type: 'monsterCaras', caras, record: mio?.mejor || 0 });
     } else if (d.type === 'monsterProgreso') {
-      guardarPendiente(j, d.puntuacion);
+      if (modoPrueba) ultimoProgreso = Math.max(ultimoProgreso, Math.round(d.puntuacion || 0));
+      else guardarPendiente(j, d.puntuacion);
+    } else if (d.type === 'monsterGameOver' && modoPrueba) {
+      ultimoProgreso = Math.max(ultimoProgreso, Math.round(d.puntuacion || 0));
+      if (pruebaEnviada) return;
+      pruebaEnviada = true;
+      try {
+        const v = await rpc('enviar_puntaje', { p_token: token, p_puntaje: ultimoProgreso });
+        enviar({ type: 'monsterResult', ok: true, record: v, esRecord: false, premio: 0, aviso: '👑 Tu puntaje ya quedó en la prueba del líder', top: [] });
+      } catch (e) { enviar({ type: 'monsterResult', ok: false }); }
     } else if (d.type === 'monsterGameOver') {
       guardarPendiente(j, d.puntuacion);
       mandando = true;
@@ -6354,6 +6373,8 @@ function tarjetaCobranza() {
     <button class="btn" data-cobranza>🎯 Jugar</button></div>`;
 }
 const COBRANZA = (() => {
+  let modoPrueba = false, pruebaEnviada = false;
+  const mandarPrueba = p => { if (pruebaEnviada) return Promise.resolve(''); pruebaEnviada = true; return enviarPrueba(p); };
   const URLS = ['https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js',
     'https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js'];
   let cargando = null;
@@ -6404,8 +6425,9 @@ const COBRANZA = (() => {
   const azar = (a, b) => a + Math.random() * (b - a);
 
   // ---------------------------------------------------------------- abrir / cerrar
-  function abrir() {
+  function abrir(esPrueba = false) {
     if (raiz) return;
+    modoPrueba = !!esPrueba; pruebaEnviada = false;
     raiz = document.createElement('div');
     raiz.id = 'm-cobranza';
     raiz.innerHTML = `<canvas class="cf-lienzo"></canvas>
@@ -6432,10 +6454,15 @@ const COBRANZA = (() => {
     if (engine && M) { M.World.clear(engine.world, false); M.Engine.clear(engine); }
     engine = null; st = null; jalando = null; paneo = null;
     raiz?.remove(); raiz = null;
+    if (modoPrueba) mostrar('s-casa');
     refrescar();
   }
   function salir() {
-    if (st && st.vivo && st.puntos > 0) {
+    if (modoPrueba && !(st && st.vivo) && !pruebaEnviada) {
+      if (!confirm('Si sales sin jugar, tu intento de la prueba queda en cero. ¿Salir?')) return;
+      cerrar(); return;
+    }
+    if (st && st.vivo && (st.puntos > 0 || modoPrueba)) {
       if (!confirm('¿Terminar la partida? Se guardan los puntos que llevas.')) return;
       finPartida(); return;
     }
@@ -6497,6 +6524,7 @@ const COBRANZA = (() => {
       <p>Los morosos se escondieron en las torres de la oficina. <b>Jala la liga hacia atrás y suelta</b> para lanzar. Tumba a todos antes de que se te acaben los tiros.</p>
       <div class="cf-tiros">${Object.values(PROY).map(t => `<div><span>${t.ic}</span><b>${t.nom}</b><small>${t.tip}</small></div>`).join('')}</div>
       <p class="cf-chico">Morosos ${PTS_MOROSO.toLocaleString('es-MX')} pts · tiro que te sobre ${PTS_TIRO_SOBRA.toLocaleString('es-MX')} pts · 3 ❤️. Tu récord: <b>${mio.toLocaleString('es-MX')}</b></p>
+      ${modoPrueba ? `<p class="cf-chico" style="color:#FFD54A">${AVISO_PRUEBA}</p>` : ''}
       <button class="btn" id="cf-va" disabled>Cargando…</button>`;
     p.classList.add('on');
     cargarMotor().then(() => {
@@ -6514,18 +6542,20 @@ const COBRANZA = (() => {
     if (!st || !st.vivo) return;
     st.vivo = false;
     const puntos = st.puntos, nivel = st.nivel;
-    guardarPractica('cobranza', puntos);
+    if (!modoPrueba) guardarPractica('cobranza', puntos);
     const p = $('.cf-panel', raiz);
     p.innerHTML = `<div class="cf-tit">¡SE ACABÓ<br><span>LA COBRANZA!</span></div>
       <div class="cf-final"><b>${puntos.toLocaleString('es-MX')}</b><small>puntos · llegaste al nivel ${nivel} · ${st.cobrados} ${st.cobrados === 1 ? 'moroso cobrado' : 'morosos cobrados'}</small></div>
       <div class="cf-res">Guardando…</div>
       <div style="display:grid;gap:10px;margin-top:14px"><button class="btn" id="cf-otra">🎯 Jugar otra vez</button><button class="btn sec" id="cf-salir">Regresar a la casa</button></div>`;
     p.classList.add('on');
-    $('#cf-otra', raiz).onclick = () => { p.classList.remove('on'); nuevaPartida(); };
+    if (modoPrueba) $('#cf-otra', raiz).remove();
+    else $('#cf-otra', raiz).onclick = () => { p.classList.remove('on'); nuevaPartida(); };
     $('#cf-salir', raiz).onclick = cerrar;
     SFX.tocar('caja');
     let h = '';
-    try {
+    if (modoPrueba) h = await mandarPrueba(puntos);
+    else try {
       const r = await rpc('guardar_practica', { p_token: token, p_juego: 'cobranza', p_puntaje: puntos });
       if (r.record) { h += '<p style="font-weight:800;color:#FFD54A">🏆 ¡Nuevo récord de la semana!</p>'; lluviaBilletes(20); SFX.tocar('fanfarria'); }
       h += r.pago ? `<p>💵 <b>+${fmt$(r.pago)}</b> por jugar (entre mejor te va, más ganas)</p>`
@@ -7100,6 +7130,8 @@ const COBRANZA = (() => {
    Cada color tiene SIEMPRE su mismo tono (verde el más grave … naranja el más agudo).
    ===================================================================== */
 const BAILE = (() => {
+  let modoPrueba = false, pruebaEnviada = false;
+  const mandarPrueba = p => { if (pruebaEnviada) return Promise.resolve(''); pruebaEnviada = true; return enviarPrueba(p); };
   const COL = [
     { k: 'verde',    hex: '#2ECC71', nom: 'Verde',    pose: 'Brazos arriba en "Y"',       f: 261.63, nota: 'Do' },
     { k: 'azul',     hex: '#3D8BFF', nom: 'Azul',     pose: 'Señala al cielo (disco)',     f: 293.66, nota: 'Re' },
@@ -7191,8 +7223,9 @@ const BAILE = (() => {
     return l || { id: 'instructor', nombre: 'Instructor', color: '#7b2ff7', emoji: '🕺' };
   }
   function conAfro(html) { return html.replace('<div class="mm-cab', '<span class="bl-afro"></span><div class="mm-cab'); }
-  function abrir() {
+  function abrir(esPrueba = false) {
     if (raiz) return;
+    modoPrueba = !!esPrueba; pruebaEnviada = false;
     const ins = instructor();
     const estiloIns = { ...(ins.estilo || {}), sombrero: null, lentes: '🕶️', mano: null, mascota: null };
     const otros = (est.jugadores || []).filter(j => j.id !== est.yo.id && j.id !== ins.id).sort(() => Math.random() - .5).slice(0, 6);
@@ -7227,6 +7260,7 @@ const BAILE = (() => {
     limpiar(); musica(false); st = null;
     raiz?.remove(); raiz = null;
     SFX.pausaParaGala(false);
+    if (modoPrueba) { mostrar('s-casa'); refrescar(); }
   }
   function portada() {
     const p = $('.bl-panel', raiz);
@@ -7235,6 +7269,7 @@ const BAILE = (() => {
       <div class="bl-leyenda">${COL.map(c => `<div><span style="background:${c.hex}"></span><b>${c.nom}</b><small>${c.pose} · ${c.nota}</small></div>`).join('')}</div>
       <p class="bl-chico">Empiezas con 4 pasos y cada ronda se agrega 1 (los mismos de antes + 1 nuevo). Tienes ${ESPERA / 1000} segundos entre paso y paso. <b>Un error y se acaba.</b></p>
       <p class="bl-chico" style="color:#FFD23F">Tu récord: <b>${((est.practicas || []).find(x => x.id === est.yo.id && x.juego === 'ritmo')?.mejor || 0).toLocaleString('es-MX')}</b> · cada partida paga hasta $50 según qué tan lejos llegues.</p>
+      ${modoPrueba ? `<p class="bl-chico" style="color:#FFD23F">${AVISO_PRUEBA}</p>` : ''}
       <button class="btn" id="bl-va">🕺 ¡A bailar!</button>`;
     p.classList.add('on');
     $('#bl-va', raiz).onclick = () => { p.classList.remove('on'); empezar(); };
@@ -7368,12 +7403,14 @@ const BAILE = (() => {
       <div class="bl-res">Guardando…</div>
       <div style="display:grid;gap:10px;margin-top:6px"><button class="btn" id="bl-otra">🕺 Bailar otra vez</button><button class="btn sec" id="bl-salir">Salir</button></div>`;
     p.classList.add('on');
-    $('#bl-otra', raiz).onclick = () => { p.classList.remove('on'); limpiar(); empezar(); };
+    if (modoPrueba) $('#bl-otra', raiz).remove();
+    else $('#bl-otra', raiz).onclick = () => { p.classList.remove('on'); limpiar(); empezar(); };
     $('#bl-salir', raiz).onclick = cerrar;
     guardar(st.puntos).then(h => { const r = $('.bl-res', raiz); if (r) r.innerHTML = h; });
   }
   // guarda la partida (récord de la semana y lo que paga por jugar)
   async function guardar(puntos) {
+    if (modoPrueba) return mandarPrueba(puntos);
     guardarPractica('ritmo', puntos);
     let h = '';
     try {
@@ -7386,8 +7423,9 @@ const BAILE = (() => {
     return h;
   }
   function salir() {
-    if (st && st.puntos > 0 && st.fase !== 'fin') {
-      if (!confirm('¿Dejar de bailar? Se guardan los puntos que llevas.')) return;
+    if (modoPrueba && !st && !pruebaEnviada) { if (!confirm('Si sales sin jugar, tu intento de la prueba queda en cero. ¿Salir?')) return; cerrar(); return; }
+    if (st && (st.puntos > 0 || modoPrueba) && st.fase !== 'fin') {
+      if (!confirm(modoPrueba ? '¿Dejar de bailar? Se manda a la prueba lo que llevas.' : '¿Dejar de bailar? Se guardan los puntos que llevas.')) return;
       const pts = st.puntos; st.fase = 'fin';
       guardar(pts).then(() => refrescar());
     }
@@ -7411,6 +7449,18 @@ async function guardarYPagar(juego, puntos) {
 }
 const textoPago = () => est.yo.rol === 'jugador' ? 'Cada partida paga hasta $50 según qué tan bien te vaya (máximo $2,000 al día por jugar). Los récords se reinician cada semana.' : 'Como público también ganas hasta $50 por partida según tu puntaje, pero tu puntaje no entra a los récords de la casa.';
 const miRecord = j => ((est.practicas || []).find(p => p.id === est.yo.id && p.juego === j)?.mejor || 0).toLocaleString('es-MX');
+// la prueba del líder también puede ser uno de los juegos de 1 jugador
+const PRUEBA_JUEGOS = { monster2: () => MONSTER.abrir('monster2', true), cobranza: () => COBRANZA.abrir(true), ritmo: () => BAILE.abrir(true), super: () => SUPER.abrir(true), rompe: () => ROMPE.abrir(true) };
+const PRACTICA_JUEGOS = { monster2: () => MONSTER.abrir('monster2'), cobranza: () => COBRANZA.abrir(), ritmo: () => BAILE.abrir(), super: () => SUPER.abrir(), rompe: () => ROMPE.abrir() };
+const AVISO_PRUEBA = '👑 Es la prueba del líder: solo tienes un intento. Si sales a la mitad, se manda lo que lleves.';
+async function enviarPrueba(puntos) {
+  puntos = Math.max(0, Math.round(puntos || 0));
+  try {
+    const v = await rpc('enviar_puntaje', { p_token: token, p_puntaje: puntos });
+    SFX.tocar('fanfarria');
+    return `<p style="font-weight:800;color:#FFD54A">👑 Tu puntaje para la prueba del líder: ${Number(v).toLocaleString('es-MX')}</p><p>El líder se anuncia cuando cierre la prueba.</p>`;
+  } catch (e) { return `<p>No se pudo mandar tu puntaje: ${esc(mensajeError(e))}</p>`; }
+}
 function tarjetaSuper() {
   return `<div class="monster-card sc-card nuevo-brilla"><div class="ed">NUEVO · 1 JUGADOR</div><h3>SÚPER COBRADOR <span class="pr-ic">🏃</span></h3>
     <p>Tu monito corre y salta por toda la oficina: brícale encima a los morosos (con las caras de los participantes), pégale a las cajas <b>$</b>, toma café para crecer y grapas para disparar. 3 niveles y al final la oficina del jefe: brícale 3 veces al <b>Moroso mayor</b>. Se juega con el celular acostado.</p>
@@ -7441,6 +7491,8 @@ function tarjetaRitmo() {
    Al final: enemigos + poderes + billetes + vidas que te sobren + tiempo.
    ===================================================================== */
 const SUPER = (() => {
+  let modoPrueba = false, pruebaEnviada = false;
+  const mandarPrueba = p => { if (pruebaEnviada) return Promise.resolve(''); pruebaEnviada = true; return enviarPrueba(p); };
   const T = 32, FILAS = 13, G = .55, VMAX_CAE = 12, ARRIBA = 1.5 * T;   // ARRIBA: lo que no se ve del techo (así todo se ve más grande)
   const PTS = { enemigo: 300, poder: 500, billete: 50, vida: 3000 };
   const SOLIDO = new Set(['#', '=', 'A', 'C', '?', 'u', 'P', '[', ']', '|', 'W']);   // '=' es piso con charco (resbala)
@@ -7654,8 +7706,9 @@ const SUPER = (() => {
   }
 
   // ---------------------------------------------------------------- abrir / pantalla
-  function abrir() {
+  function abrir(esPrueba = false) {
     if (raiz) return;
+    modoPrueba = !!esPrueba; pruebaEnviada = false;
     raiz = document.createElement('div');
     raiz.id = 'm-super';
     raiz.innerHTML = `<canvas class="sc-lienzo"></canvas>
@@ -7701,8 +7754,13 @@ const SUPER = (() => {
     raiz?.remove(); raiz = null; st = null; lv = null;
     Object.keys(control).forEach(k => control[k] = false);
     SFX.pausaParaGala(false);
+    if (modoPrueba) { mostrar('s-casa'); refrescar(); }
   }
   function salir() {
+    if (modoPrueba && !pruebaEnviada) {
+      if (!st) { if (!confirm('Si sales sin jugar, tu intento de la prueba queda en cero. ¿Salir?')) return; cerrar(); return; }
+      if (st.fase !== 'fin') { if (!confirm('¿Salir? Se manda a la prueba lo que llevas (sin vidas ni tiempo).')) return; const pts = st.puntos; st.fase = 'fin'; mandarPrueba(pts); cerrar(); return; }
+    }
     if (st && st.fase !== 'fin' && st.puntos > 0 && !confirm('¿Salir de Súper Cobrador? Se pierde esta partida.')) return;
     cerrar();
   }
@@ -7732,6 +7790,7 @@ const SUPER = (() => {
         <div>🌀 En los ductos aprieta <b>▼</b> · cuidado con la trituradora, los charcos y los huecos del elevador</div>
       </div>
       <p class="sc-chico">3 ❤️ · Al final cuentan enemigos, poderes, billetes, vidas que te sobren y el tiempo..</p>
+      ${modoPrueba ? `<p class="sc-chico" style="color:#FFD54A">${AVISO_PRUEBA}</p>` : ''}
       <button class="btn" id="sc-va">🏃 ¡A cobrar!</button>`;
     p.classList.add('on');
     $('#sc-va', raiz).onclick = () => { p.classList.remove('on'); nuevaPartida(); };
@@ -7800,9 +7859,10 @@ const SUPER = (() => {
       <div class="sc-res">Guardando…</div>
       <div class="sc-fin-bt"><button class="btn" id="sc-otra">🏃 Jugar otra vez</button><button class="btn sec" id="sc-salir">Salir</button></div>`;
     p.classList.add('on');
-    $('#sc-otra', raiz).onclick = () => { p.classList.remove('on'); nuevaPartida(); };
+    if (modoPrueba) $('#sc-otra', raiz).remove();
+    else $('#sc-otra', raiz).onclick = () => { p.classList.remove('on'); nuevaPartida(); };
     $('#sc-salir', raiz).onclick = cerrar;
-    guardarYPagar('super', total).then(h => { const r = $('.sc-res', raiz); if (r) r.innerHTML = h; });
+    (modoPrueba ? mandarPrueba(total) : guardarYPagar('super', total)).then(h => { const r = $('.sc-res', raiz); if (r) r.innerHTML = h; });
   }
 
   // ---------------------------------------------------------------- mapa
@@ -8430,6 +8490,8 @@ const SUPER = (() => {
    8 niveles con figuras + el Moroso mayor; al vencerlo se da otra vuelta más rápida.
    ===================================================================== */
 const ROMPE = (() => {
+  let modoPrueba = false, pruebaEnviada = false;
+  const mandarPrueba = p => { if (pruebaEnviada) return Promise.resolve(''); pruebaEnviada = true; return enviarPrueba(p); };
   const MW = 360, COLS = 10, BW = 32, BH = 16, X0 = 20, Y0 = 74, ABAJO = 236;   // ABAJO: qué tan arriba del fondo va la tabla
   const TIPO = {
     h: { vida: 1, pts: 50 },  c: { vida: 2, pts: 100 }, a: { vida: 3, pts: 150 },
@@ -8510,8 +8572,9 @@ const ROMPE = (() => {
   }
 
   // ---------------------------------------------------------------- pantalla
-  function abrir() {
+  function abrir(esPrueba = false) {
     if (raiz) return;
+    modoPrueba = !!esPrueba; pruebaEnviada = false;
     raiz = document.createElement('div');
     raiz.id = 'm-rompe';
     raiz.innerHTML = `<canvas class="rd-lienzo"></canvas>
@@ -8536,11 +8599,13 @@ const ROMPE = (() => {
     window.removeEventListener('resize', medir);
     raiz?.remove(); raiz = null; st = null;
     SFX.pausaParaGala(false);
+    if (modoPrueba) { mostrar('s-casa'); refrescar(); }
   }
   function salir() {
-    if (st && st.fase !== 'fin' && st.puntos > 0) {
-      if (!confirm('¿Salir de Rompe Deudas? Se guardan los puntos que llevas.')) return;
-      st.fase = 'fin'; guardarYPagar('rompe', st.puntos).then(() => refrescar());
+    if (modoPrueba && !st && !pruebaEnviada) { if (!confirm('Si sales sin jugar, tu intento de la prueba queda en cero. ¿Salir?')) return; cerrar(); return; }
+    if (st && st.fase !== 'fin' && (st.puntos > 0 || modoPrueba)) {
+      if (!confirm(modoPrueba ? '¿Salir? Se manda a la prueba lo que llevas.' : '¿Salir de Rompe Deudas? Se guardan los puntos que llevas.')) return;
+      st.fase = 'fin'; (modoPrueba ? mandarPrueba(st.puntos) : guardarYPagar('rompe', st.puntos)).then(() => refrescar());
     }
     cerrar();
   }
@@ -8576,6 +8641,7 @@ const ROMPE = (() => {
       </div>
       <div class="rd-poderes">${PODERES.map(x => `<span>${x.ic} ${NOM_PODER[x.k].replace(/¡|!/g, '')}</span>`).join('')}</div>
       <p class="rd-chico">8 niveles y el Moroso mayor · 3 ❤️ · cada partida paga hasta $50.</p>
+      ${modoPrueba ? `<p class="rd-chico" style="color:#FFD54A">${AVISO_PRUEBA}</p>` : ''}
       <button class="btn" id="rd-va">🏓 ¡A romper deudas!</button>`;
     p.classList.add('on');
     $('#rd-va', raiz).onclick = () => { p.classList.remove('on'); nueva(); };
@@ -8825,9 +8891,10 @@ const ROMPE = (() => {
       <div class="rd-res">Guardando…</div>
       <div style="display:grid;gap:10px;width:min(320px,100%)"><button class="btn" id="rd-otra">🏓 Jugar otra vez</button><button class="btn sec" id="rd-salir">Salir</button></div>`;
     p.classList.add('on');
-    $('#rd-otra', raiz).onclick = () => { p.classList.remove('on'); nueva(); };
+    if (modoPrueba) $('#rd-otra', raiz).remove();
+    else $('#rd-otra', raiz).onclick = () => { p.classList.remove('on'); nueva(); };
     $('#rd-salir', raiz).onclick = cerrar;
-    guardarYPagar('rompe', st.puntos).then(h => { const r = $('.rd-res', raiz); if (r) r.innerHTML = h; });
+    (modoPrueba ? mandarPrueba(st.puntos) : guardarYPagar('rompe', st.puntos)).then(h => { const r = $('.rd-res', raiz); if (r) r.innerHTML = h; });
   }
 
   // ---------------------------------------------------------------- dibujo
@@ -9506,6 +9573,7 @@ function abrirPrueba() {
       if (r.prueba === 'trivia') jugarTrivia(r.preguntas);
       else if (r.prueba === 'memoria') jugarMemoria();
       else if (r.prueba === 'billetes') jugarBilletes();
+      else if (PRUEBA_JUEGOS[r.prueba]) { mostrar('s-casa'); PRUEBA_JUEGOS[r.prueba](); }
       else jugarAdeudo();
     } catch (e) { mostrarError($('#p-error'), e); }
   };

@@ -256,7 +256,7 @@ alter table public.practicas add constraint practicas_juego_check check (juego i
 alter table public.practicas drop constraint if exists practicas_juego_check;
 alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster','monster2','billetes','cobranza','ritmo','super','rompe'));
 alter table public.config drop constraint if exists config_prueba_check;
-alter table public.config add constraint config_prueba_check check (prueba in ('trivia','memoria','adeudo','billetes'));
+alter table public.config add constraint config_prueba_check check (prueba in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe'));
 create table if not exists public.partidas (
   id         bigint generated always as identity primary key,
   jugador_id uuid not null references public.jugadores(id) on delete cascade,
@@ -704,11 +704,14 @@ returns int language plpgsql security definer set search_path = public as $$
 declare
   yo public.jugadores;
   c public.config;
-  v int := least(greatest(coalesce(p_puntaje, 0), 0), 20000);
+  v int;
 begin
   yo := public._yo(p_token);
   select * into c from public.config where id = 1;
   if c.fase <> 'prueba' or c.prueba = 'trivia' then raise exception 'PRUEBA_CERRADA'; end if;
+  -- v77: cada juego tiene su tope de puntos
+  v := least(greatest(coalesce(p_puntaje, 0), 0), case c.prueba when 'monster2' then 5000000 when 'cobranza' then 2000000 when 'rompe' then 2000000
+                                                         when 'super' then 500000 when 'ritmo' then 200000 else 20000 end);
   update public.intentos set puntaje = v, terminado = now()
    where semana = c.semana and jugador_id = yo.id and terminado is null;
   if not found then raise exception 'SIN_INTENTO'; end if;
@@ -828,6 +831,15 @@ end $$;
 --  FUNCIONES DEL ADMINISTRADOR
 -- ---------------------------------------------------------------------
 
+-- v77: nombre bonito de cada juego que puede ser prueba del líder
+create or replace function public._nombre_prueba(p text)
+returns text language sql immutable as $$
+  select case p when 'trivia' then 'Trivia de la oficina' when 'memoria' then 'Memoria de expedientes'
+                when 'adeudo' then 'Calcula el adeudo' when 'billetes' then 'Cuenta los billetes verdes'
+                when 'monster2' then 'Monster Crazy 2.0' when 'cobranza' then 'Cobranza furiosa' when 'ritmo' then 'Sigue el ritmo'
+                when 'super' then 'Súper Cobrador' when 'rompe' then 'Rompe Deudas' else 'la prueba' end
+$$;
+
 create or replace function public._iniciar_semana(p_prueba text)
 returns void language plpgsql security definer set search_path = public as $$
 declare
@@ -844,7 +856,7 @@ begin
   -- con 3 o menos en la casa es la gran final: sin prueba ni líder, se vota directo
   v_final := v_act between 2 and 3;
   if not v_final then
-    if p_prueba not in ('trivia','memoria','adeudo','billetes') then raise exception 'PRUEBA_INVALIDA'; end if;
+    if p_prueba not in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe') then raise exception 'PRUEBA_INVALIDA'; end if;
     if p_prueba = 'trivia' and not exists (select 1 from public.trivia where activa) then raise exception 'SIN_TRIVIAS'; end if;
   end if;
   update public.config
@@ -1117,7 +1129,7 @@ begin
            ag_voto_ini = null, ag_voto_fin = null, ag_gala = null, actualizado = now() where id = 1;
     return;
   end if;
-  if coalesce(p->>'prueba', 'memoria') not in ('trivia','memoria','adeudo','billetes') then raise exception 'PRUEBA_INVALIDA'; end if;
+  if coalesce(p->>'prueba', 'memoria') not in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe') then raise exception 'PRUEBA_INVALIDA'; end if;
   update public.config
      set ag_semana     = (p->>'semana')::int,
          ag_prueba     = coalesce(p->>'prueba', 'memoria'),
@@ -1142,8 +1154,7 @@ begin
   if c.fase <> 'prueba' then raise exception 'FASE_INCORRECTA'; end if;
   update public.config set prueba_abre = case when p_cuando > now() then p_cuando end, actualizado = now() where id = 1;
   if p_cuando is null or p_cuando <= now() then
-    v_n := case c.prueba when 'trivia' then 'Trivia de la oficina' when 'memoria' then 'Memoria de expedientes'
-                         when 'adeudo' then 'Calcula el adeudo' when 'billetes' then 'Cuenta los billetes verdes' else 'la prueba' end;
+    v_n := public._nombre_prueba(c.prueba);
     perform public._avisar('🏆 ¡Ya abrió la prueba del líder!', format('Ya puedes jugar %s. Solo tienes un intento.', v_n));
   end if;
 end $$;
@@ -1155,13 +1166,12 @@ begin
   perform public._solo_admin();
   select * into c from public.config where id = 1 for update;
   if c.fase <> 'prueba' then raise exception 'FASE_INCORRECTA'; end if;
-  if p_prueba not in ('trivia','memoria','adeudo','billetes') then raise exception 'PRUEBA_INVALIDA'; end if;
+  if p_prueba not in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe') then raise exception 'PRUEBA_INVALIDA'; end if;
   if p_prueba = 'trivia' and not exists (select 1 from public.trivia where activa) then raise exception 'SIN_TRIVIAS'; end if;
   delete from public.intentos where semana = c.semana;
   get diagnostics v_n = row_count;
   update public.config set prueba = p_prueba, actualizado = now() where id = 1;
-  v_nom := case p_prueba when 'trivia' then 'Trivia de la oficina' when 'memoria' then 'Memoria de expedientes'
-                         when 'adeudo' then 'Calcula el adeudo' when 'billetes' then 'Cuenta los billetes verdes' end;
+  v_nom := public._nombre_prueba(p_prueba);
   if c.prueba_abre is null or c.prueba_abre <= now() then
     perform public._avisar('🔄 Cambió la prueba del líder', format('Ahora la prueba es %s. Si ya habías jugado, vuelve a jugar: se reinició para todos.', v_nom));
   end if;
@@ -1176,8 +1186,7 @@ begin
   if c.fase <> 'prueba' or c.prueba_abre is null or c.prueba_abre > now() then return; end if;
   update public.config set prueba_abre = null where id = 1 and prueba_abre is not null and prueba_abre <= now();
   if not found then return; end if;
-  v_n := case c.prueba when 'trivia' then 'Trivia de la oficina' when 'memoria' then 'Memoria de expedientes'
-                       when 'adeudo' then 'Calcula el adeudo' when 'billetes' then 'Cuenta los billetes verdes' else 'la prueba' end;
+  v_n := public._nombre_prueba(c.prueba);
   perform public._avisar('🏆 ¡Ya abrió la prueba del líder!', format('Ya puedes jugar %s. Solo tienes un intento.', v_n));
 end $$;
 revoke all on function public._prueba_abre_aviso() from public, anon, authenticated;
@@ -1420,8 +1429,7 @@ begin
   end if;
   begin
     select nombre into v_lider from public.jugadores where id = new.lider_id;
-    v_prueba := case new.prueba when 'trivia' then 'Trivia de la oficina' when 'memoria' then 'Memoria de expedientes'
-                                when 'adeudo' then 'Calcula el adeudo' when 'billetes' then 'Cuenta los billetes verdes' else 'la prueba' end;
+    v_prueba := public._nombre_prueba(new.prueba);
     if new.fase = 'prueba' and (old.fase <> 'prueba' or new.semana <> old.semana) then
       if new.prueba_abre > now() then        -- v44: la semana empezó, pero la prueba abre más tarde
         perform public._avisar(format('📅 ¡Empezó la semana %s!', new.semana),
