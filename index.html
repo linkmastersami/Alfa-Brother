@@ -2085,7 +2085,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 75;
+const APP_VERSION       = 76;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -10538,6 +10538,10 @@ async function adminJuego(C) {
       <input class="in" type="datetime-local" id="ad-abre" value="${aInputLocal(c.prueba_abre)}">
       <p class="ayuda">${c.prueba_abre && new Date(c.prueba_abre) > Date.now() ? `Todavía no abre: abre el ${esc(fmtFecha(c.prueba_abre))}. Mientras, todos pueden practicar.` : 'Ya está abierta.'}</p>
       <div class="adm-acciones"><button class="btn sec chico" id="ad-abre-guardar">Guardar hora</button><button class="btn sec chico" id="ad-abre-ya">Abrir ya</button></div>
+      <label class="campo" for="ad-cambia-prueba">Juego de la prueba</label>
+      <select class="in" id="ad-cambia-prueba">${Object.entries(PRUEBAS).map(([k, v]) => `<option value="${k}" ${k === c.prueba ? 'selected' : ''}>${esc(v.nombre)}</option>`).join('')}</select>
+      <p class="ayuda">Si lo cambias, se borran los intentos de esta semana${ints.length ? ` (${ints.length} ${ints.length === 1 ? 'persona ya entró' : 'personas ya entraron'})` : ''} y todos juegan el nuevo desde cero.</p>
+      <div class="adm-acciones"><button class="btn sec chico" id="ad-cambia-prueba-bt">Cambiar juego</button></div>
       <label class="campo" for="ad-lider">Líder</label>
       <select class="in" id="ad-lider"><option value="">Automático: mejor puntaje (prueba + semana)</option>${act.map(j => `<option value="${j.id}">${esc(j.nombre)}</option>`).join('')}</select>
       <div class="adm-acciones"><button class="btn" id="ad-cerrar-prueba">Cerrar prueba y nombrar líder</button></div></div>`;
@@ -10635,6 +10639,12 @@ async function adminJuego(C) {
   });
   $('#ad-abre-guardar')?.addEventListener('click', () => { const v = $('#ad-abre').value; accion('admin_prueba_abre', { p_cuando: v ? new Date(v).toISOString() : null }, v ? 'La prueba abre a esa hora' : 'La prueba ya está abierta'); });
   $('#ad-abre-ya')?.addEventListener('click', () => accion('admin_prueba_abre', { p_cuando: null }, '¡Prueba abierta! Ya les avisamos'));
+  $('#ad-cambia-prueba-bt')?.addEventListener('click', () => {
+    const k = $('#ad-cambia-prueba').value;
+    if (k === c.prueba) { toast('Ese ya es el juego de la prueba'); return; }
+    if (!confirm(`¿Cambiar la prueba a "${PRUEBAS[k].nombre}"? Se borran los intentos de esta semana y todos la juegan desde cero.`)) return;
+    accion('admin_cambiar_prueba', { p_prueba: k }, `Listo: ahora la prueba es ${PRUEBAS[k].nombre}`);
+  });
   $('#ad-lider2')?.addEventListener('change', e => accion('admin_set_lider', { p_id: e.target.value || null }, 'Líder actualizado'));
   $('#ad-cerrar-vot')?.addEventListener('click', async () => {
     if (!confirm('¿Cerrar la votación?')) return;

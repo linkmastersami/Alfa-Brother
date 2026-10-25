@@ -210,6 +210,7 @@ Versión 72: en Rompe Deudas el monito y la tabla van más arriba.
 Versión 73: en Rompe Deudas el monito sube otro poco.
 Versión 74: en los resultados de la pasarela hay un botón para ver los porqués de los votos (sin nombres y revueltos).
 Versión 75: Súper Cobrador y Rompe Deudas ya están en Jugar para todos (récords y pago); solo esos dos brillan. Corre actualizacion_v75_parte1.sql y parte2.
+Versión 76: en el panel (Prueba en curso) se puede cambiar el juego de la prueba ya empezada. Corre actualizacion_v76_cambiar_prueba.sql.
 Versión 21: el público junta billetes pero no compra ni apuesta, y sus votos en encuestas y sus puntajes no cuentan; el noticiero no habla del público; notas del noticiero por locutor.
 Versión 20: el noticiero habla solo del récord actual de cada juego (lo mantiene / se lo quitaron / supera su marca) y no repite frases de un día a otro; notas de producción editables.
 Versión 19: El Noticierazo, el resumen del día anterior con Elber Galarga y Rosa Melano (8 a.m.); la producción puede ver cómo va el de mañana.
