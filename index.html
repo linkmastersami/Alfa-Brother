@@ -1056,6 +1056,10 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 /* botón de la tienda: el contorno brilla y parpadea */
 #c-tienda{animation:tienda-brilla 1.6s ease-in-out infinite}
 /* 🏓 Rompe Deudas */
+.rd-card{background:radial-gradient(circle at 50% 0%,#1b5e3a,#0b1a12 75%);border-color:#7CFFB2}
+.rd-card h3{color:#7CFFB2}
+.sc-card{background:radial-gradient(circle at 50% 0%,#8a2a1a,#1a0805 75%);border-color:#FF8A2A}
+.sc-card h3{color:#FFB347}
 #m-rompe{position:fixed;inset:0;z-index:300;background:#1f2a4f;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;font-family:"Work Sans",sans-serif;color:#fff}
 .rd-lienzo{position:absolute;inset:0;width:100%;height:100%;display:block}
 .rd-yo{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none;will-change:transform;z-index:2}
@@ -2081,7 +2085,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 74;
+const APP_VERSION       = 75;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -3254,7 +3258,7 @@ async function abrirFicha(id) {
     let d;
     try { d = await rpc('ficha_semana', { p_token: token, p_id: id, p_semana: n }); } catch (e) { z.innerHTML = `<p class="ayuda">${esc(mensajeError(e))}</p>`; return; }
     if (!$('#ficha-sem') || !$(`[data-fs="${n}"].on`, caja)) return;
-    const NJ = { memoria: 'Memoria', adeudo: 'Adeudo', billetes: 'Billetes', cobranza: 'Cobranza', ritmo: 'Ritmo', monster2: 'Monster 2.0', monster: 'Monster' };
+    const NJ = { memoria: 'Memoria', adeudo: 'Adeudo', billetes: 'Billetes', cobranza: 'Cobranza', ritmo: 'Ritmo', super: 'Súper', rompe: 'Rompe', monster2: 'Monster 2.0', monster: 'Monster' };
     const t = (b, txt) => `<div class="tile"><b>${b}</b><small>${txt}</small></div>`;
     let x = `<div class="fs-tit">${d.eliminado ? '<span>🚪 Salió esa semana</span>' : ''}</div>
       <div class="tiles">${t(d.revelada ? d.puntos : '?', d.revelada ? 'puntos negativos' : 'puntos negativos (se saben en la pasarela)')}${t(d.lider ? '👑 Sí' : 'No', 'fue líder')}
@@ -4017,7 +4021,7 @@ function pintarEconomia() {
   $('#c-misiones').innerHTML = tarjetaMision(g) || `<div class="juego-card"><p>${g.semana === 0 ? 'Las misiones secretas empiezan cuando abra la casa (semana 1).' : 'Esta semana no hay misiones.'}</p>
     <p class="ayuda">Cada semana cada habitante recibe 5 misiones secretas sobre sus compañeros. Las que cumplas te dan billetes y cuentan para ser líder esa misma semana (hasta que cierre la prueba).</p></div>`;
   // pestaña Jugar: Monster Crazy y las prácticas con sus récords
-  $('#c-jugar').innerHTML = tarjetaRitmo() + tarjetaCobranza() + tarjetasDuelos(true) + tarjetaPractica('billetes') + tarjetasDuelos(false) + tarjetaMonster() + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
+  $('#c-jugar').innerHTML = tarjetaSuper() + tarjetaRompe() + tarjetaRitmo() + tarjetaCobranza() + tarjetasDuelos(true) + tarjetaPractica('billetes') + tarjetasDuelos(false) + tarjetaMonster() + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
   // botones
   const C = $('#s-casa');
   C.querySelector('[data-ver-billetes]').onclick = abrirBilletes;
@@ -4036,6 +4040,8 @@ function pintarEconomia() {
   $$('#c-jugar [data-monster]').forEach(b => b.onclick = () => MONSTER.abrir(b.dataset.monster));
   $$('#c-jugar [data-cobranza]').forEach(b => b.onclick = () => COBRANZA.abrir());
   $$('#c-jugar [data-ritmo]').forEach(b => b.onclick = () => BAILE.abrir());
+  $$('#c-jugar [data-super]').forEach(b => b.onclick = () => SUPER.abrir());
+  $$('#c-jugar [data-rompe]').forEach(b => b.onclick = () => ROMPE.abrir());
   $$('#c-jugar [data-duelo]').forEach(b => b.onclick = () => DUELO.elegir(b.dataset.duelo));
 }
 
@@ -4242,7 +4248,7 @@ const MONSTER = (() => {
 })();
 /* ---------- ⚔️ Duelos entre habitantes (2 jugadores, con apuesta) ---------- */
 const DUELOS_JUEGOS = {            // en este orden salen en Jugar
-  penales: { nombre: 'Penales', ic: '⚽🧤', clase: 'du-penales', ed: 'NUEVO · DUELO 1 VS 1', titulo: 'PENALES', desc: 'Tanda de penales: se alternan, uno tira y el otro tapa (izquierda, centro o derecha). Si el portero adivina, ¡atajada! 5 tiros cada quien; si empatan, muerte súbita. El volado decide quién tira primero.' },
+  penales: { nombre: 'Penales', ic: '⚽🧤', clase: 'du-penales', ed: 'DUELO 1 VS 1', titulo: 'PENALES', desc: 'Tanda de penales: se alternan, uno tira y el otro tapa (izquierda, centro o derecha). Si el portero adivina, ¡atajada! 5 tiros cada quien; si empatan, muerte súbita. El volado decide quién tira primero.' },
   ppt: { nombre: 'Boxeo', ic: '🤜🤛', clase: 'du-boxeo', ed: 'DUELO 1 VS 1', titulo: 'BOXEO', desc: 'Piedra, papel o tijeras a golpes: 3 corazones cada quien y un poder por pelea (🛡️ escudo o ⚡ golpe doble). Si empatan, la siguiente vale doble. Gana el último en pie.' },
   globo: { nombre: 'Globo explosivo', ic: '🎈💥', clase: 'du-globo', ed: 'DUELO 1 VS 1', titulo: 'GLOBO EXPLOSIVO', desc: 'En la feria: sube y baja el mango de tu bomba para inflar el globo de agua que cuelga sobre tu rival. El primero que lo revienta ¡lo baña y gana!' },
   camino: { nombre: 'El camino correcto', ic: '🪟', clase: 'du-camino', ed: 'DUELO 1 VS 1', titulo: 'EL CAMINO CORRECTO', desc: 'Puente de cristal: 10 fases de 2 cristales y 6 segundos por paso. Si pisas el falso se rompe para los dos, te caes y regresas a la salida. Tienes una 🪨 piedra para probar un cristal. Gana el primero en llegar a la meta.' },
@@ -4250,7 +4256,7 @@ const DUELOS_JUEGOS = {            // en este orden salen en Jugar
   calculo: { nombre: 'Cálculo rápido', ic: '➕✖️', oculto: true, desc: 'Las mismas 10 operaciones para los dos. Gana quien tenga más buenas; si empatan, el más rápido.' },
 };
 // Cada duelo tiene su propia tarjeta en Jugar (como Monster Crazy y las prácticas)
-const JUEGOS_NUEVOS = ['penales', 'billetes'];   // van hasta arriba y su contorno brilla
+const JUEGOS_NUEVOS = [];   // los duelos/prácticas que van hasta arriba con el contorno brillando (ahora brillan Súper Cobrador y Rompe Deudas)
 function tarjetasDuelos(nuevos) {
   const hab = est.yo.rol === 'jugador';
   return Object.entries(DUELOS_JUEGOS).filter(([k, j]) => !j.oculto && JUEGOS_NUEVOS.includes(k) === !!nuevos).map(([k, j]) => `<div class="monster-card du-card ${j.clase}${JUEGOS_NUEVOS.includes(k) ? ' nuevo-brilla' : ''}"><div class="ed">${j.ed}</div><h3>${j.titulo} <span class="pr-ic">${j.ic}</span></h3>
@@ -5515,7 +5521,7 @@ const TV = (() => {
   const prod = (a, b, sep = ' ') => a.flatMap(x => b.map(y => x + sep + y));
   const llenar = (t, c) => t.replace(/\{(\w+)\}/g, (_, k) => c[k] ?? '');
   const fmt = n => Number(n || 0).toLocaleString('es-MX');
-  const JUEGOS = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo' };
+  const JUEGOS = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo', super: 'Súper Cobrador', rompe: 'Rompe Deudas' };
 
   // ---------- el guion ----------
   // Exclamaciones para armar las reacciones
@@ -6310,7 +6316,7 @@ function tarjetaRecords() {
       <div class="r" style="margin-top:4px;color:#C9C3EE"><span>Tu mejor</span><span>${mio?.mejor ?? 0}</span></div></div>`;
   };
   return `<div class="juego-card"><h3>🏆 Récords de la semana <small>Juegos y duelos</small></h3>
-    <div class="record-cols">${col('monster2', 'Monster Crazy 2.0')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}${col('billetes', 'Billetes verdes')}${col('cobranza', 'Cobranza furiosa')}${col('ritmo', 'Sigue el ritmo')}</div>
+    <div class="record-cols">${col('monster2', 'Monster Crazy 2.0')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}${col('billetes', 'Billetes verdes')}${col('cobranza', 'Cobranza furiosa')}${col('ritmo', 'Sigue el ritmo')}${col('super', 'Súper Cobrador')}${col('rompe', 'Rompe Deudas')}</div>
     ${marcadorDuelos()}
     <p class="ayuda" style="margin-top:6px">Los récords vuelven a cero cada semana y cuentan para ser líder. Cada partida paga hasta $50 según tu puntaje (máximo $2,000 al día por jugar).</p></div>`;
 }
@@ -6318,7 +6324,7 @@ function tarjetaRecords() {
 const ESTILO_PRACTICA = {
   memoria: { clase: 'pr-memoria', ed: '1 JUGADOR', titulo: 'MEMORIA DE EXPEDIENTES', icono: '🗂️', boton: '🗂️ Jugar' },
   adeudo: { clase: 'pr-adeudo', ed: '1 JUGADOR', titulo: 'CALCULA EL ADEUDO', icono: '🧮', boton: '🧮 Jugar' },
-  billetes: { clase: 'pr-billetes', ed: 'NUEVO · 1 JUGADOR', titulo: 'CUENTA LOS BILLETES VERDES', icono: '💵', boton: '💵 Jugar' },
+  billetes: { clase: 'pr-billetes', ed: '1 JUGADOR', titulo: 'CUENTA LOS BILLETES VERDES', icono: '💵', boton: '💵 Jugar' },
 };
 function tarjetaPractica(juego) {
   const e = ESTILO_PRACTICA[juego], p = PRUEBAS[juego];
@@ -6341,7 +6347,7 @@ function tarjetaPractica(juego) {
 function tarjetaCobranza() {
   const mio = (est.practicas || []).find(p => p.id === est.yo.id && p.juego === 'cobranza')?.mejor || 0;
   const caras = (est.jugadores || []).filter(j => j.id !== est.yo.id).sort(() => Math.random() - 0.5).slice(0, 5);
-  return `<div class="monster-card cf-card nuevo-brilla"><div class="ed">NUEVO · 1 JUGADOR</div><h3>COBRANZA FURIOSA <span class="pr-ic">🎯</span></h3>
+  return `<div class="monster-card cf-card"><div class="ed">1 JUGADOR</div><h3>COBRANZA FURIOSA <span class="pr-ic">🎯</span></h3>
     <div class="monster-caras">${caras.map(j => avatar(j, 36)).join('')}<div class="av" style="width:36px;height:36px;background:#3a2410;font-size:20px">🐷</div></div>
     <p>Los morosos se escondieron en torres de cajas, vidrios y archiveros. Jala la liga de la resortera, suelta y tumba a todos. Tu monito te dirige con sus binoculares 🔭. Algunos tiros tienen poder: tócale a la pantalla mientras vuelan.</p>
     <p class="pr-rec">Tu récord: <b>${mio.toLocaleString('es-MX')}</b> · ${est.yo.rol === 'jugador' ? 'Cada partida paga hasta $50 según qué tan bien te vaya (máximo $2,000 al día por jugar). Los récords se reinician cada semana.' : 'Como público también ganas hasta $50 por partida según tu puntaje, pero tu puntaje no entra a los récords de la casa.'}</p>
@@ -7389,10 +7395,38 @@ const BAILE = (() => {
   }
   return { abrir, cerrar, _st: () => st };
 })();
+// guarda una partida de 1 jugador (récord de la semana + lo que paga) y regresa el texto para la pantalla final
+async function guardarYPagar(juego, puntos) {
+  puntos = Math.max(0, Math.round(puntos || 0));
+  guardarPractica(juego, puntos);
+  let h = '';
+  try {
+    const r = await rpc('guardar_practica', { p_token: token, p_juego: juego, p_puntaje: puntos });
+    if (r.record) { h += '<p style="font-weight:800;color:#FFD54A">🏆 ¡Nuevo récord de la semana!</p>'; lluviaBilletes(20); SFX.tocar('fanfarria'); }
+    h += r.pago ? `<p>💵 <b>+${fmt$(r.pago)}</b> por jugar (entre mejor te va, más ganas)</p>`
+      : r.hoy >= 2000 ? '<p>💵 Ya juntaste los $2,000 de hoy por jugar. ¡Mañana hay más!</p>' : '<p>💵 Esta vez no alcanzó para billetes. ¡Échale más ganas!</p>';
+    if ((r.top || []).length) h += `<div class="pr-top">${r.top.slice(0, 3).map((x, i) => `<span>${['🥇', '🥈', '🥉'][i]} ${esc(x.nombre)} <b>${x.mejor.toLocaleString('es-MX')}</b></span>`).join('')}</div>`;
+  } catch (e) { h = `<p>No se pudo guardar: ${esc(mensajeError(e))}</p>`; }
+  return h;
+}
+const textoPago = () => est.yo.rol === 'jugador' ? 'Cada partida paga hasta $50 según qué tan bien te vaya (máximo $2,000 al día por jugar). Los récords se reinician cada semana.' : 'Como público también ganas hasta $50 por partida según tu puntaje, pero tu puntaje no entra a los récords de la casa.';
+const miRecord = j => ((est.practicas || []).find(p => p.id === est.yo.id && p.juego === j)?.mejor || 0).toLocaleString('es-MX');
+function tarjetaSuper() {
+  return `<div class="monster-card sc-card nuevo-brilla"><div class="ed">NUEVO · 1 JUGADOR</div><h3>SÚPER COBRADOR <span class="pr-ic">🏃</span></h3>
+    <p>Tu monito corre y salta por toda la oficina: brícale encima a los morosos (con las caras de los participantes), pégale a las cajas <b>$</b>, toma café para crecer y grapas para disparar. 3 niveles y al final la oficina del jefe: brícale 3 veces al <b>Moroso mayor</b>. Se juega con el celular acostado.</p>
+    <p class="pr-rec">Tu récord: <b>${miRecord('super')}</b> · ${textoPago()}</p>
+    <button class="btn" data-super>🏃 Jugar</button></div>`;
+}
+function tarjetaRompe() {
+  return `<div class="monster-card rd-card nuevo-brilla"><div class="ed">NUEVO · 1 JUGADOR</div><h3>ROMPE DEUDAS <span class="pr-ic">🏓</span></h3>
+    <p>Tu monito sostiene una tabla con las manos arriba: rebota la bola de papel y rompe hojas, cajas, archiveros y morosos. Atrapa los poderes (¡menos el recorte de personal! 💀). 8 niveles y el <b>Moroso mayor</b>; al vencerlo, otra vuelta más rápida.</p>
+    <p class="pr-rec">Tu récord: <b>${miRecord('rompe')}</b> · ${textoPago()}</p>
+    <button class="btn" data-rompe>🏓 Jugar</button></div>`;
+}
 function tarjetaRitmo() {
   const mio = (est.practicas || []).find(p => p.id === est.yo.id && p.juego === 'ritmo')?.mejor || 0;
   const l = porId(est.juego?.lider_id);
-  return `<div class="monster-card bl-card nuevo-brilla"><div class="ed">NUEVO · 1 JUGADOR</div><h3>SIGUE EL RITMO <span class="pr-ic">🕺</span></h3>
+  return `<div class="monster-card bl-card"><div class="ed">1 JUGADOR</div><h3>SIGUE EL RITMO <span class="pr-ic">🕺</span></h3>
     <div class="bl-card-colores">${['#2ECC71', '#3D8BFF', '#FF4D5E', '#FFD23F', '#FF8A2A'].map(c => `<i style="background:${c}"></i>`).join('')}</div>
     <p>${l ? `<b>${esc(l.nombre)}</b> 👑, el líder de la semana,` : 'El líder 👑'} se pone su afro y sus lentes y te enseña sus pasos de baile: cada pose tiene un color y un tono. Repítelos en el mismo orden con los 5 botones. Empiezas con 4 pasos y cada ronda se agrega uno. ¡Un error y se acaba!</p>
     <p class="pr-rec">Tu récord: <b>${mio.toLocaleString('es-MX')}</b> · ${est.yo.rol === 'jugador' ? 'Cada partida paga hasta $50 según qué tan bien te vaya (máximo $2,000 al día por jugar). Los récords se reinician cada semana.' : 'Como público también ganas hasta $50 por partida según tu puntaje, pero tu puntaje no entra a los récords de la casa.'}</p>
@@ -7697,7 +7731,7 @@ const SUPER = (() => {
         <div>📦 Pégale desde abajo a las cajas <b>$</b> · ☕ café = creces · 📎 grapas = disparas · ⭐ bono del jefe = invencible</div>
         <div>🌀 En los ductos aprieta <b>▼</b> · cuidado con la trituradora, los charcos y los huecos del elevador</div>
       </div>
-      <p class="sc-chico">3 ❤️ · Al final cuentan enemigos, poderes, billetes, vidas que te sobren y el tiempo. 🧪 Modo prueba: no se guarda.</p>
+      <p class="sc-chico">3 ❤️ · Al final cuentan enemigos, poderes, billetes, vidas que te sobren y el tiempo..</p>
       <button class="btn" id="sc-va">🏃 ¡A cobrar!</button>`;
     p.classList.add('on');
     $('#sc-va', raiz).onclick = () => { p.classList.remove('on'); nuevaPartida(); };
@@ -7763,11 +7797,12 @@ const SUPER = (() => {
       ${gano ? '<p>Le brincaste 3 veces al Moroso mayor y pagó hasta el último peso. 💵</p>' : `<p>Llegaste a: <b>${lv.nombre}</b>. Sin vidas no cuentan las vidas ni el tiempo.</p>`}
       <div class="sc-cuenta">${filas.map(f => `<div><span>${f[0]}${f[1] !== '' ? ` <small>× ${f[1]}</small>` : ''}</span><b>${f[2].toLocaleString('es-MX')}</b></div>`).join('')}
         <div class="total"><span>TOTAL</span><b>${total.toLocaleString('es-MX')}</b></div></div>
-      <p class="sc-chico" style="color:#FFD23F">🧪 Modo prueba: este puntaje no se guarda.</p>
+      <div class="sc-res">Guardando…</div>
       <div class="sc-fin-bt"><button class="btn" id="sc-otra">🏃 Jugar otra vez</button><button class="btn sec" id="sc-salir">Salir</button></div>`;
     p.classList.add('on');
     $('#sc-otra', raiz).onclick = () => { p.classList.remove('on'); nuevaPartida(); };
     $('#sc-salir', raiz).onclick = cerrar;
+    guardarYPagar('super', total).then(h => { const r = $('.sc-res', raiz); if (r) r.innerHTML = h; });
   }
 
   // ---------------------------------------------------------------- mapa
@@ -8387,7 +8422,6 @@ const SUPER = (() => {
   return { abrir, cerrar, _st: () => st, _lv: () => lv, _nivel: n => st && cargarNivel(n), _control: control };
 })();
 
-document.addEventListener('click', e => { if (e.target.closest?.('[data-probar-super]')) SUPER.abrir(); });
 
 /* =====================================================================
    🏓 ROMPE DEUDAS (en prueba: solo desde el panel de admin)
@@ -8504,7 +8538,10 @@ const ROMPE = (() => {
     SFX.pausaParaGala(false);
   }
   function salir() {
-    if (st && st.fase !== 'fin' && st.puntos > 0 && !confirm('¿Salir de Rompe Deudas? Se pierde esta partida.')) return;
+    if (st && st.fase !== 'fin' && st.puntos > 0) {
+      if (!confirm('¿Salir de Rompe Deudas? Se guardan los puntos que llevas.')) return;
+      st.fase = 'fin'; guardarYPagar('rompe', st.puntos).then(() => refrescar());
+    }
     cerrar();
   }
   function medir() {
@@ -8538,7 +8575,7 @@ const ROMPE = (() => {
         <div><i class="b-s"></i> Caja fuerte · no se rompe</div>
       </div>
       <div class="rd-poderes">${PODERES.map(x => `<span>${x.ic} ${NOM_PODER[x.k].replace(/¡|!/g, '')}</span>`).join('')}</div>
-      <p class="rd-chico">8 niveles y el Moroso mayor · 3 ❤️ · 🧪 Modo prueba: no se guarda.</p>
+      <p class="rd-chico">8 niveles y el Moroso mayor · 3 ❤️ · cada partida paga hasta $50.</p>
       <button class="btn" id="rd-va">🏓 ¡A romper deudas!</button>`;
     p.classList.add('on');
     $('#rd-va', raiz).onclick = () => { p.classList.remove('on'); nueva(); };
@@ -8785,11 +8822,12 @@ const ROMPE = (() => {
     p.innerHTML = `<div class="rd-tit">¡SE ACABÓ<br><span>LA COBRANZA!</span></div>
       <div class="rd-final"><b>${st.puntos.toLocaleString('es-MX')}</b><small>puntos · llegaste a ${llegaste}${st.vuelta ? ` en la vuelta ${st.vuelta + 1}` : ''}</small></div>
       <p>📄 ${st.rotos} deudas rotas · 🙈 ${st.cobrados} morosos cobrados</p>
-      <p class="rd-chico" style="color:#FFD54A">🧪 Modo prueba: este puntaje no se guarda.</p>
+      <div class="rd-res">Guardando…</div>
       <div style="display:grid;gap:10px;width:min(320px,100%)"><button class="btn" id="rd-otra">🏓 Jugar otra vez</button><button class="btn sec" id="rd-salir">Salir</button></div>`;
     p.classList.add('on');
     $('#rd-otra', raiz).onclick = () => { p.classList.remove('on'); nueva(); };
     $('#rd-salir', raiz).onclick = cerrar;
+    guardarYPagar('rompe', st.puntos).then(h => { const r = $('.rd-res', raiz); if (r) r.innerHTML = h; });
   }
 
   // ---------------------------------------------------------------- dibujo
@@ -8914,7 +8952,6 @@ const ROMPE = (() => {
   return { abrir, cerrar, _st: () => st, _nivel: n => st && cargar(n) };
 })();
 
-document.addEventListener('click', e => { if (e.target.closest?.('[data-probar-rompe]')) ROMPE.abrir(); });
 
 /* ---------- mis billetes ---------- */
 async function abrirBilletes() {
@@ -9858,8 +9895,8 @@ const PASARELA = (() => {
   const de = arr => arr[Math.floor(rnd() * arr.length)];
   const pts = n => `${n} ${n === 1 ? 'punto' : 'puntos'}`;
   const lista = ns => ns.length <= 1 ? (ns[0] || '') : ns.slice(0, -1).join(', ') + ' y ' + ns[ns.length - 1];
-  const PRUEBA_N = { memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', trivia: 'la trivia', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo' };
-  const JUEGO_N = { monster2: 'Monster Crazy 2.0', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo' };
+  const PRUEBA_N = { memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', trivia: 'la trivia', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo', super: 'Súper Cobrador', rompe: 'Rompe Deudas' };
+  const JUEGO_N = { monster2: 'Monster Crazy 2.0', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo', super: 'Súper Cobrador', rompe: 'Rompe Deudas' };
 
   // ---------- la voz de Ricky ----------
   function elegirVoz() {
@@ -10667,10 +10704,7 @@ async function adminPruebas(C) {
   // botón para borrar el intento de alguien y que pueda volver a hacer la prueba
   const reini = id => ints.some(x => x.jugador_id === id)
     ? `<button class="btn sec chico" style="margin-left:8px;padding:6px 10px;font-size:.8rem;flex:none" data-reiniciar-prueba="${id}">🔄 Reiniciar</button>` : '';
-  C.innerHTML = `<div class="adm-caja"><h3>🧪 Juegos en prueba</h3>
-    <p class="ayuda">Solo los ves tú desde aquí. No pagan ni guardan récords hasta que los publiquemos.</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" data-probar-super>🏃 Probar Súper Cobrador</button><button class="btn" data-probar-rompe>🏓 Probar Rompe Deudas</button></div></div>
-    <div class="adm-caja"><h3>Puntajes de la semana ${c.semana}</h3>
+  C.innerHTML = `<div class="adm-caja"><h3>Puntajes de la semana ${c.semana}</h3>
     ${c.prueba ? `<p class="ayuda">${esc(PRUEBAS[c.prueba].nombre)}</p>` : ''}
     <p class="ayuda">El líder sale 30% de la prueba (contra el mejor) y 70% en 4 partes de 17.5: misiones de esta semana (de 5), lo que jugó, sus récords y duelos ganados (contra quien más tiene).</p>
     ${tabla.map((i, k) => `<div class="adm-fila"><div class="info"><b>${k + 1}. ${esc(nombreDe(i.jugador_id))}</b>
@@ -10799,7 +10833,7 @@ async function adminExtras(C, seccion) {
   const diaNota = dia => { const t = new Date(dia + 'T12:00:00Z').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' }); return t.charAt(0).toUpperCase() + t.slice(1); };
   const manana = dia => diaNota(diaMas(dia, 1)).toLowerCase();       // la fecha en que sale ese noticiero
   const opcionesDia = actual => [...Array(7).keys()].map(k => diaMas(sigDia, k)).map(dd => `<option value="${dd}" ${dd === actual ? 'selected' : ''}>📺 ${esc(diaNota(diaMas(dd, 1)))}, 9 a.m.${dd === sigDia ? ' (el siguiente)' : ''}</option>`).join('');
-  const JUEGOS_REC = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy (clásico)', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo' };
+  const JUEGOS_REC = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy (clásico)', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo', super: 'Súper Cobrador', rompe: 'Rompe Deudas' };
   const ahora = Date.now();
   const estadoEnc = e => +new Date(e.abre) > ahora ? `Programada: abre ${fmtFecha(e.abre)}` : +new Date(e.cierra) > ahora ? `Abierta hasta ${fmtFecha(e.cierra)}` : 'Cerrada';
   const ricos = [...adm.jug].sort((a, b) => (b.billetes ?? 0) - (a.billetes ?? 0));
