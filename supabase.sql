@@ -251,12 +251,12 @@ create table if not exists public.practicas (
 
 -- v16: Monster Crazy también guarda récord (y paga como las prácticas)
 alter table public.practicas drop constraint if exists practicas_juego_check;
-alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster','monster2','billetes','cobranza','ritmo','super','rompe'));   -- v17: Monster Crazy 2.0
+alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster','monster2','billetes','cobranza','ritmo','super','rompe','ceniza'));   -- v17: Monster Crazy 2.0
 -- v40: Cuenta los billetes verdes (práctica y prueba del líder) y registro de cada partida (paga según el puntaje)
 alter table public.practicas drop constraint if exists practicas_juego_check;
-alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster','monster2','billetes','cobranza','ritmo','super','rompe'));
+alter table public.practicas add constraint practicas_juego_check check (juego in ('memoria','adeudo','monster','monster2','billetes','cobranza','ritmo','super','rompe','ceniza'));
 alter table public.config drop constraint if exists config_prueba_check;
-alter table public.config add constraint config_prueba_check check (prueba in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe'));
+alter table public.config add constraint config_prueba_check check (prueba in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe','ceniza'));
 create table if not exists public.partidas (
   id         bigint generated always as identity primary key,
   jugador_id uuid not null references public.jugadores(id) on delete cascade,
@@ -710,7 +710,7 @@ begin
   select * into c from public.config where id = 1;
   if c.fase <> 'prueba' or c.prueba = 'trivia' then raise exception 'PRUEBA_CERRADA'; end if;
   -- v77: cada juego tiene su tope de puntos
-  v := least(greatest(coalesce(p_puntaje, 0), 0), case c.prueba when 'monster2' then 5000000 when 'cobranza' then 2000000 when 'rompe' then 2000000
+  v := least(greatest(coalesce(p_puntaje, 0), 0), case c.prueba when 'monster2' then 5000000 when 'cobranza' then 2000000 when 'rompe' then 2000000 when 'ceniza' then 5000000
                                                          when 'super' then 500000 when 'ritmo' then 200000 else 20000 end);
   update public.intentos set puntaje = v, terminado = now()
    where semana = c.semana and jugador_id = yo.id and terminado is null;
@@ -837,7 +837,7 @@ returns text language sql immutable as $$
   select case p when 'trivia' then 'Trivia de la oficina' when 'memoria' then 'Memoria de expedientes'
                 when 'adeudo' then 'Calcula el adeudo' when 'billetes' then 'Cuenta los billetes verdes'
                 when 'monster2' then 'Monster Crazy 2.0' when 'cobranza' then 'Cobranza furiosa' when 'ritmo' then 'Sigue el ritmo'
-                when 'super' then 'Súper Cobrador' when 'rompe' then 'Rompe Deudas' else 'la prueba' end
+                when 'super' then 'Súper Cobrador' when 'rompe' then 'Rompe Deudas' when 'ceniza' then 'Ciudad Ceniza' else 'la prueba' end
 $$;
 
 create or replace function public._iniciar_semana(p_prueba text)
@@ -856,7 +856,7 @@ begin
   -- con 3 o menos en la casa es la gran final: sin prueba ni líder, se vota directo
   v_final := v_act between 2 and 3;
   if not v_final then
-    if p_prueba not in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe') then raise exception 'PRUEBA_INVALIDA'; end if;
+    if p_prueba not in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe','ceniza') then raise exception 'PRUEBA_INVALIDA'; end if;
     if p_prueba = 'trivia' and not exists (select 1 from public.trivia where activa) then raise exception 'SIN_TRIVIAS'; end if;
   end if;
   update public.config
@@ -901,7 +901,7 @@ language sql stable security definer set search_path = public as $$
   pa as (select p.jugador_id, p.juego, count(*) as n, max(p.puntaje) as mejor
            from public.partidas p, v where p.creado >= v.ini and p.juego <> 'duelo' group by 1, 2),
   tops as (select pa.juego, max(pa.mejor) as top from pa join public.jugadores jj on jj.id = pa.jugador_id and jj.rol = 'jugador'
-            where pa.juego in ('monster2', 'memoria', 'adeudo', 'billetes', 'cobranza', 'ritmo', 'super', 'rompe') group by pa.juego having max(pa.mejor) > 0)
+            where pa.juego in ('monster2', 'memoria', 'adeudo', 'billetes', 'cobranza', 'ritmo', 'super', 'rompe', 'ceniza') group by pa.juego having max(pa.mejor) > 0)
   select j.id,
     least(5, (select count(*) from public.misiones m where m.semana = p_semana and m.jugador_id = j.id and m.cumplida is not null))::int,
     ((select coalesce(sum(pa.n), 0) from pa where pa.jugador_id = j.id)
@@ -1129,7 +1129,7 @@ begin
            ag_voto_ini = null, ag_voto_fin = null, ag_gala = null, actualizado = now() where id = 1;
     return;
   end if;
-  if coalesce(p->>'prueba', 'memoria') not in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe') then raise exception 'PRUEBA_INVALIDA'; end if;
+  if coalesce(p->>'prueba', 'memoria') not in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe','ceniza') then raise exception 'PRUEBA_INVALIDA'; end if;
   update public.config
      set ag_semana     = (p->>'semana')::int,
          ag_prueba     = coalesce(p->>'prueba', 'memoria'),
@@ -1166,7 +1166,7 @@ begin
   perform public._solo_admin();
   select * into c from public.config where id = 1 for update;
   if c.fase <> 'prueba' then raise exception 'FASE_INCORRECTA'; end if;
-  if p_prueba not in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe') then raise exception 'PRUEBA_INVALIDA'; end if;
+  if p_prueba not in ('trivia','memoria','adeudo','billetes','monster2','cobranza','ritmo','super','rompe','ceniza') then raise exception 'PRUEBA_INVALIDA'; end if;
   if p_prueba = 'trivia' and not exists (select 1 from public.trivia where activa) then raise exception 'SIN_TRIVIAS'; end if;
   delete from public.intentos where semana = c.semana;
   get diagnostics v_n = row_count;
@@ -1996,7 +1996,7 @@ create or replace function public._pago_jugar(p_yo uuid, p_juego text, p_puntaje
 returns int language plpgsql security definer set search_path = public as $$
 declare v int; v_ref numeric; v_hoy int;
 begin
-  v_ref := case p_juego when 'memoria' then 713 when 'adeudo' then 1450 when 'billetes' then 500 when 'cobranza' then 60000 when 'ritmo' then 7000 when 'super' then 25000 when 'rompe' then 20000 else 54228 end;   -- v60: Cobranza furiosa · v66: Sigue el ritmo
+  v_ref := case p_juego when 'memoria' then 713 when 'adeudo' then 1450 when 'billetes' then 500 when 'cobranza' then 60000 when 'ritmo' then 7000 when 'super' then 25000 when 'rompe' then 20000 when 'ceniza' then 120000 else 54228 end;   -- v60: Cobranza furiosa · v66: Sigue el ritmo
   v := coalesce(p_fijo, round(50 * least(1, greatest(coalesce(p_puntaje, 0), 0) / v_ref))::int);
   select coalesce(sum(pago), 0) into v_hoy from public.partidas
    where jugador_id = p_yo and creado >= (public._hoy()::timestamp at time zone 'America/Mexico_City');
@@ -2020,7 +2020,7 @@ declare
   v_record boolean := false;
 begin
   yo := public._yo(p_token);
-  if p_juego not in ('memoria', 'adeudo', 'monster', 'monster2', 'billetes', 'cobranza', 'ritmo', 'super', 'rompe') then raise exception 'JUEGO_INVALIDO'; end if;   -- v75: Súper Cobrador y Rompe Deudas
+  if p_juego not in ('memoria', 'adeudo', 'monster', 'monster2', 'billetes', 'cobranza', 'ritmo', 'super', 'rompe', 'ceniza') then raise exception 'JUEGO_INVALIDO'; end if;   -- v75: Súper Cobrador y Rompe Deudas
   v := least(greatest(coalesce(p_puntaje, 0), 0), case p_juego when 'memoria' then 1000 when 'billetes' then 20000 when 'adeudo' then 20000 else 5000000 end);
   select coalesce(max(p2.mejor), 0) into v_rec from public.practicas p2 join public.jugadores j on j.id = p2.jugador_id and j.rol = 'jugador' where p2.juego = p_juego;
   insert into public.practicas (jugador_id, juego) values (yo.id, p_juego) on conflict do nothing;
@@ -2314,7 +2314,7 @@ begin
           'actual', (select jsonb_build_object('id', p.jugador_id, 'nombre', j.nombre, 'puntos', p.mejor)
                        from public.practicas p join public.jugadores j on j.id = p.jugador_id and j.rol = 'jugador'
                       where p.juego = g.juego and p.mejor > 0 order by p.mejor desc limit 1)) as r
-          from (values (1, 'monster2'), (3, 'memoria'), (4, 'adeudo'), (5, 'billetes'), (6, 'cobranza'), (7, 'ritmo'), (8, 'super'), (9, 'rompe')) g(o, juego) order by g.o) x   -- v26: sin Monster Crazy clásico (ya se retiró)
+          from (values (1, 'monster2'), (3, 'memoria'), (4, 'adeudo'), (5, 'billetes'), (6, 'cobranza'), (7, 'ritmo'), (8, 'super'), (9, 'rompe', 'ceniza')) g(o, juego) order by g.o) x   -- v26: sin Monster Crazy clásico (ya se retiró)
         where x.r->'actual' <> 'null'::jsonb),
     -- v24: duelos del día (solo los que alguien ganó)
     'duelos', jsonb_build_object(

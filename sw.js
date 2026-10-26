@@ -4,7 +4,7 @@
 // Una sola caja de copias que se va actualizando (las versiones viejas se borran
 // solo cuando la nueva ya tiene la página guardada, para nunca quedarse sin copia).
 const CACHE = 'alfa-brother';
-const BASICOS = ['./', './index.html', './supabase.js?v=2.117.2', './monster.html', './monster2.html', './manifest.webmanifest', './iconos/icono-192.png'];
+const BASICOS = ['./', './index.html', './supabase.js?v=2.117.2', './monster.html', './monster2.html', './ceniza.html', './manifest.webmanifest', './iconos/icono-192.png'];
 
 self.addEventListener('install', e => {
   // cada archivo por separado: si uno falla, los demás sí se guardan
