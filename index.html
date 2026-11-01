@@ -17,6 +17,7 @@
 <!-- las letras no detienen la carga: si tardan, se usa la letra del celular mientras llegan -->
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700&family=Special+Elite&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <!-- copia propia de supabase-js (antes venía de otro servidor que algunas redes de datos bloquean o hacen lentísimo) -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
 <script src="supabase.js?v=2.117.2"></script>
 <style>
 /* =====================================================================
@@ -1683,6 +1684,12 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 .mm-cuerpo.hum .pd,.mono-cuerpo.hum .pd,.rep-cuerpo.hum .pd{transform-origin:23.4px 25px}
 .mm-cuerpo.hum,.mono-cuerpo.hum{filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
 .mono-cab,.mm-cab{z-index:2}
+
+/* ---------- la casa en 3D ---------- */
+.sala-3d{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0}
+.sala.con-3d .sala-fondo{display:none}
+.sala.con-3d{background:#1B1440}
+.sala.con-3d .mono{transform-origin:50% 100%}
 </style>
 </head>
 <body>
@@ -1821,9 +1828,9 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
         <path d="M8 138 q-5 -7 -1 -12 M8 138 q4 -8 1 -13" stroke="#1E8E5A" stroke-width="2" fill="none" stroke-linecap="round"/>
         <rect x="4.8" y="137" width="6.4" height="6" rx="1" fill="#B5541F"/>
         <!-- sillón -->
-        <rect x="6" y="48" width="34" height="8" rx="2" fill="#7A3FB5"/>
-        <rect x="7" y="54" width="32" height="6" rx="1.5" fill="#8E52CC"/>
-        <rect x="4" y="51" width="4.5" height="10" rx="1.5" fill="#6A33A0"/><rect x="37.5" y="51" width="4.5" height="10" rx="1.5" fill="#6A33A0"/>
+        <rect x="24" y="48" width="32" height="8" rx="2" fill="#7A3FB5"/>
+        <rect x="25" y="54" width="30" height="6" rx="1.5" fill="#8E52CC"/>
+        <rect x="22" y="51" width="4.5" height="10" rx="1.5" fill="#6A33A0"/><rect x="53.5" y="51" width="4.5" height="10" rx="1.5" fill="#6A33A0"/>
         <!-- mesa -->
         <rect x="62" y="69" width="26" height="3" rx="1" fill="#B5541F"/>
         <rect x="64" y="72" width="1.6" height="8" fill="#8A3F17"/><rect x="84.4" y="72" width="1.6" height="8" fill="#8A3F17"/>
@@ -2113,7 +2120,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 79;
+const APP_VERSION       = 82;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -3419,6 +3426,202 @@ function ropaVars(j, e) {
 }
 
 /* =====================================================================
+   LA CASA EN 3D: la habitación se dibuja con Three.js detrás de las personas.
+   Usa las mismas coordenadas de la sala (x 0–100, y 0–172 = profundidad):
+   x → X (centrado), y → Z. Las personas siguen siendo HTML; aquí solo se calcula
+   dónde caen en pantalla y qué tan grandes se ven según la distancia.
+   Si Three.js no carga, la sala sigue con el dibujo 2D de siempre.
+   ===================================================================== */
+const CASA3D = (() => {
+  const T3 = window.THREE;
+  if (!T3) return { listo: () => false };
+  const caja = $('#sala');
+  let R, scene, cam, lienzo, W = 300, H = 516, ok = false;
+  const V = new T3.Vector3(), ray = new T3.Raycaster(), ndc = new T3.Vector2(), piso = new T3.Plane(new T3.Vector3(0, 1, 0), 0);
+  const tocables = [];                    // puerta, tele y reloj
+  const X = x => x - 50;
+  const brillo = {};                       // materiales que laten cuando "llaman"
+  try {
+    T3.ColorManagement.legacyMode = false;
+    lienzo = document.createElement('canvas'); lienzo.className = 'sala-3d'; lienzo.setAttribute('aria-hidden', 'true');
+    caja.insertBefore(lienzo, caja.firstChild);
+    R = new T3.WebGLRenderer({ canvas: lienzo, antialias: true, powerPreference: 'low-power' });
+    R.outputEncoding = T3.sRGBEncoding; R.toneMapping = T3.ACESFilmicToneMapping; R.toneMappingExposure = 1.05;
+    R.shadowMap.enabled = true; R.shadowMap.type = T3.PCFSoftShadowMap;
+    scene = new T3.Scene(); scene.background = new T3.Color('#1B1440');
+    cam = new T3.PerspectiveCamera(34, 100 / 172, 1, 2000);
+  } catch (e) { console.warn('Casa 3D no disponible:', e); lienzo && lienzo.remove(); return { listo: () => false }; }
+
+  /* ---------- texturas pintadas ---------- */
+  function tex(w, h, pinta, rep) { const c = document.createElement('canvas'); c.width = w; c.height = h; pinta(c.getContext('2d'), w, h);
+    const t = new T3.CanvasTexture(c); t.encoding = T3.sRGBEncoding; t.anisotropy = 4; if (rep){ t.wrapS = t.wrapT = T3.RepeatWrapping; t.repeat.set(rep[0], rep[1]); } return t; }
+  function azarT(s) { return () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const r = azarT(42);
+  const TX = {
+    madera: tex(256, 256, (g, w, h) => { for (let i = 0; i < 8; i++){ const y = i * 32, v = 120 + r() * 40 | 0; g.fillStyle = `rgb(${v + 60},${v + 10},${v - 40})`; g.fillRect(0, y, w, 32);
+        for (let k = 0; k < 14; k++){ g.strokeStyle = `rgba(80,40,10,${.15 + r() * .2})`; g.lineWidth = 1; g.beginPath(); const yy = y + 2 + r() * 28; g.moveTo(0, yy); for (let x = 0; x <= w; x += 32) g.lineTo(x, yy + Math.sin(x * .05 + k) * 1.2); g.stroke(); }
+        g.fillStyle = 'rgba(40,20,5,.55)'; g.fillRect(0, y, w, 2); g.fillRect(((i * 97) % 200) + 20, y, 2, 32); } }, [3, 5]),
+    tapiz: tex(128, 256, (g, w, h) => { g.fillStyle = '#3A2E8C'; g.fillRect(0, 0, w, h); for (let x = 0; x < w; x += 32){ g.fillStyle = '#4434A0'; g.fillRect(x, 0, 16, h); }
+        g.fillStyle = 'rgba(255,213,74,.10)'; for (let y = 20; y < h; y += 48) for (let x = 8; x < w; x += 32){ g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill(); } }, [6, 1]),
+    tela: tex(128, 128, (g, w, h) => { g.fillStyle = '#d8d8d8'; g.fillRect(0, 0, w, h); for (let i = 0; i < 3000; i++){ const v = 170 + r() * 80 | 0; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(r() * w, r() * h, 2, 2); } }, [2, 2]),
+    tapete: tex(256, 256, (g, w, h) => { const gr = g.createRadialGradient(128, 128, 20, 128, 128, 128); gr.addColorStop(0, '#F7A8C0'); gr.addColorStop(.7, '#E0708E'); gr.addColorStop(1, '#B04A6A'); g.fillStyle = gr; g.beginPath(); g.arc(128, 128, 126, 0, 7); g.fill();
+        g.strokeStyle = 'rgba(255,240,200,.55)'; g.lineWidth = 6; for (const rr of [100, 70, 40]){ g.beginPath(); g.arc(128, 128, rr, 0, 7); g.stroke(); } }),
+    ojo: tex(256, 160, (g, w, h) => { g.fillStyle = '#120A30'; g.fillRect(0, 0, w, h); const gr = g.createRadialGradient(128, 80, 10, 128, 80, 140); gr.addColorStop(0, '#3A2A80'); gr.addColorStop(1, '#120A30'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+        g.fillStyle = '#FFFDF6'; g.beginPath(); g.moveTo(48, 80); g.quadraticCurveTo(128, 18, 208, 80); g.quadraticCurveTo(128, 142, 48, 80); g.fill();
+        g.fillStyle = '#D7263D'; g.beginPath(); g.arc(128, 80, 34, 0, 7); g.fill(); g.fillStyle = '#1B1440'; g.beginPath(); g.arc(128, 80, 17, 0, 7); g.fill();
+        g.fillStyle = '#FFD54A'; g.font = 'bold 30px Anton, Impact, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('$', 128, 82); g.fillStyle = 'rgba(255,255,255,.8)'; g.beginPath(); g.arc(142, 66, 6, 0, 7); g.fill(); }),
+    letrero: tex(256, 48, (g, w, h) => { g.fillStyle = '#1B1440'; g.fillRect(0, 0, w, h); g.fillStyle = '#FFD54A'; g.font = '800 26px "Work Sans", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('CONFESIONARIO', w / 2, h / 2 + 1); }),
+    banca: tex(512, 40, (g, w, h) => { g.fillStyle = '#8F86C9'; g.font = '800 24px "Work Sans", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('BANCA DE LOS ELIMINADOS', w / 2, h / 2); }),
+    reloj: tex(128, 128, (g, w, h) => { g.fillStyle = '#FFFDF6'; g.beginPath(); g.arc(64, 64, 62, 0, 7); g.fill(); g.fillStyle = '#1B1440'; for (let i = 0; i < 12; i++){ const a = i / 12 * Math.PI * 2; g.beginPath(); g.arc(64 + Math.cos(a) * 50, 64 + Math.sin(a) * 50, i % 3 ? 2.5 : 4.5, 0, 7); g.fill(); } }),
+    cielo: tex(128, 128, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#0B1030'); gr.addColorStop(1, '#3A2A7A'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+        for (let i = 0; i < 40; i++){ g.fillStyle = `rgba(255,255,255,${.4 + r() * .6})`; g.fillRect(r() * w, r() * h * .8, 1.5, 1.5); } g.fillStyle = '#FFF4C8'; g.beginPath(); g.arc(90, 30, 12, 0, 7); g.fill(); }),
+    cuadro: tex(128, 96, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#FFB347'); gr.addColorStop(1, '#D7263D'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+        g.fillStyle = '#1B1440'; g.beginPath(); g.moveTo(0, h); g.lineTo(40, 40); g.lineTo(70, 70); g.lineTo(100, 30); g.lineTo(w, h); g.fill(); g.fillStyle = '#FFE58A'; g.beginPath(); g.arc(90, 26, 10, 0, 7); g.fill(); }),
+  };
+  const M = (c, o = {}) => new T3.MeshStandardMaterial(Object.assign({ color: c, roughness: .8, metalness: 0 }, o));
+  const B = (w, h, d, mat, x, y, z, padre = scene, sombra = true) => { const m = new T3.Mesh(new T3.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); if (sombra){ m.castShadow = true; m.receiveShadow = true; } padre.add(m); return m; };
+  const Cyl = (rt, rb, h, mat, x, y, z, padre = scene, seg = 20) => { const m = new T3.Mesh(new T3.CylinderGeometry(rt, rb, h, seg), mat); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; padre.add(m); return m; };
+  const Esf = (rad, mat, x, y, z, padre = scene) => { const m = new T3.Mesh(new T3.SphereGeometry(rad, 18, 12), mat); m.position.set(x, y, z); m.castShadow = true; padre.add(m); return m; };
+  const Plano = (w, h, mat, x, y, z, padre = scene) => { const m = new T3.Mesh(new T3.PlaneGeometry(w, h), mat); m.position.set(x, y, z); padre.add(m); return m; };
+
+  function construir() {
+    // luces: lámparas cálidas del techo + el brillo de la tele
+    scene.add(new T3.HemisphereLight('#FFE9D0', '#2A1E5A', .55));
+    const sol = new T3.DirectionalLight('#FFE2B8', .9); sol.position.set(-40, 140, 190); sol.target.position.set(0, 0, 100); sol.castShadow = true;
+    sol.shadow.mapSize.set(1024, 1024); Object.assign(sol.shadow.camera, { left: -80, right: 80, top: 100, bottom: -100, near: 10, far: 400 }); sol.shadow.bias = -.001; scene.add(sol, sol.target);
+    for (const [x, z] of [[-22, 80], [22, 80], [0, 130]]){ const l = new T3.PointLight('#FFD8A0', .55, 120, 1.6); l.position.set(x, 55, z); scene.add(l); }
+    brillo.teleL = new T3.PointLight('#B04AFF', 1.2, 70, 2); brillo.teleL.position.set(0, 26, 52); scene.add(brillo.teleL);
+
+    // piso de madera, zona de la banca y paredes con tapiz
+    const piso = Plano(100, 106, M('#ffffff', { map: TX.madera, roughness: .55 }), 0, 0, 97); piso.rotation.x = -Math.PI / 2; piso.receiveShadow = true;
+    const fondoBanca = Plano(100, 22, M('#3A2E78', { map: TX.madera, color: '#8a7ab8', roughness: .7 }), 0, -.6, 161); fondoBanca.rotation.x = -Math.PI / 2; fondoBanca.receiveShadow = true;
+    B(100, 1.2, 1.2, M('#1B1440'), 0, 0, 150.2, scene, false);
+    const muroMat = M('#ffffff', { map: TX.tapiz, roughness: .9 });
+    const fondo = Plano(100, 62, muroMat, 0, 31, 44); fondo.receiveShadow = true;
+    const izq = Plano(128, 62, muroMat.clone(), -50, 31, 108); izq.rotation.y = Math.PI / 2; izq.material.color.set('#c8c0f0'); izq.receiveShadow = true;
+    const der = Plano(128, 62, muroMat.clone(), 50, 31, 108); der.rotation.y = -Math.PI / 2; der.material.color.set('#b8b0e0'); der.receiveShadow = true;
+    B(100, 2.4, 1, M('#1B1440'), 0, 1.2, 44.5, scene, false); B(1, 2.4, 128, M('#1B1440'), -49.5, 1.2, 108, scene, false); B(1, 2.4, 128, M('#1B1440'), 49.5, 1.2, 108, scene, false);
+    B(100, 2, 1.4, M('#FFD54A', { metalness: .4, roughness: .4 }), 0, 46, 44.7, scene, false);   // moldura dorada
+
+    // puerta del confesionario
+    const puerta = new T3.Group(); puerta.position.set(X(11.5), 0, 44.6); scene.add(puerta);
+    const rojo = M('#D7263D', { roughness: .5, emissive: '#FFD54A', emissiveIntensity: 0 }); brillo.puerta = rojo;
+    B(15, 31, 1.4, rojo, 0, 15.5, 0, puerta); B(11, 10, .6, M('#B01E33'), 0, 22.5, .9, puerta, false); B(11, 12, .6, M('#B01E33'), 0, 9, .9, puerta, false);
+    Esf(.9, M('#FFD54A', { metalness: .8, roughness: .2 }), 4.7, 15.5, 1.4, puerta);
+    B(17, 1.4, 2, M('#1B1440'), 0, 31.6, .4, puerta); Plano(17, 3.2, new T3.MeshBasicMaterial({ map: TX.letrero, toneMapped: false }), 0, 35, .8, puerta);
+    puerta.userData.accion = 'puerta'; tocables.push(puerta);
+
+    // la tele con el ojo
+    const tele = new T3.Group(); tele.position.set(X(50), 28.5, 45); scene.add(tele);
+    const marco = M('#FFD54A', { metalness: .6, roughness: .3, emissive: '#FFD54A', emissiveIntensity: 0 }); brillo.tele = marco;
+    B(27, 18, 1.6, marco, 0, 0, 0, tele); B(25, 16, .4, M('#1B1440'), 0, 0, .7, tele, false);
+    Plano(24.4, 15.4, new T3.MeshBasicMaterial({ map: TX.ojo, toneMapped: false }), 0, 0, 1, tele);
+    B(6, 2, 1.4, M('#1B1440'), 0, -10, 0, tele, false);
+    tele.userData.accion = 'tele'; tocables.push(tele);
+    // mueble debajo de la tele
+    B(30, 7, 7, M('#5A3A6E', { map: TX.tela, color: '#5a3a6e' }), 0, 3.5, 48);
+
+    // reloj
+    const reloj = new T3.Group(); reloj.position.set(X(80), 28, 44.8); scene.add(reloj);
+    const aro = M('#1B1440', { emissive: '#FFD54A', emissiveIntensity: 0 }); brillo.reloj = aro;
+    const cara = new T3.Mesh(new T3.CylinderGeometry(5.2, 5.2, 1, 32), M('#ffffff', { map: TX.reloj })); cara.rotation.x = Math.PI / 2; reloj.add(cara);
+    const borde = new T3.Mesh(new T3.TorusGeometry(5.4, .5, 8, 32), aro); reloj.add(borde);
+    brillo.minutero = B(.5, 3.6, .3, M('#1B1440'), 0, 0, .7, reloj, false); brillo.horario = B(.6, 2.6, .3, M('#D7263D'), 0, 0, .8, reloj, false);
+    brillo.minutero.geometry.translate(0, 1.8, 0); brillo.horario.geometry.translate(0, 1.3, 0); reloj.userData.accion = 'reloj'; tocables.push(reloj);
+
+    // cuadros y ventana en las paredes
+    const cuadro = new T3.Group(); cuadro.position.set(X(30), 33, 44.6); scene.add(cuadro); B(11, 8, .8, M('#6B4A2E'), 0, 0, 0, cuadro, false); Plano(9.6, 6.6, M('#ffffff', { map: TX.cuadro }), 0, 0, .5, cuadro);
+    const ventana = new T3.Group(); ventana.position.set(-49.4, 30, 80); ventana.rotation.y = Math.PI / 2; scene.add(ventana);
+    Plano(20, 16, new T3.MeshBasicMaterial({ map: TX.cielo, toneMapped: false }), 0, 0, .1, ventana); for (const [w, h, x, y] of [[21, 1.2, 0, 8.4], [21, 1.2, 0, -8.4], [1.2, 17.6, 10.4, 0], [1.2, 17.6, -10.4, 0], [1, 16, 0, 0]]) B(w, h, 1, M('#FFFDF6'), x, y, .3, ventana, false);
+
+    // sillón (x 24–56, y 48–61), a la derecha de la puerta para no taparla
+    const morado = M('#7A3FB5', { map: TX.tela, color: '#8E52CC', roughness: .95 }), moradoOsc = M('#6A33A0', { map: TX.tela, color: '#6A33A0', roughness: .95 });
+    B(30, 4, 11, morado, X(40), 3.5, 56); B(30, 10, 3.5, moradoOsc, X(40), 8, 50); for (const x of [X(24), X(56)]) B(4, 8, 13, moradoOsc, x, 5, 55.5);
+    for (let i = 0; i < 3; i++) B(9.6, 2.4, 9, morado, X(30 + i * 10), 6.6, 57);
+    Esf(2.6, M('#FFD54A', { map: TX.tela, color: '#FFD54A' }), X(27), 9, 53).scale.set(1, 1, .6); Esf(2.6, M('#3D8BFF', { map: TX.tela, color: '#3D8BFF' }), X(53), 9, 53).scale.set(1, 1, .6);
+    // lámpara de pie junto al sillón
+    Cyl(.5, .5, 30, M('#2A2A2A', { metalness: .6 }), X(68), 15, 50); const pantalla = Cyl(3, 4.5, 5, M('#FFE9B0', { emissive: '#FFD27A', emissiveIntensity: .6 }), X(68), 31, 50); pantalla.castShadow = false;
+    const lampL = new T3.PointLight('#FFD27A', .6, 50, 2); lampL.position.set(X(68), 29, 52); scene.add(lampL);
+
+    // comedor (mesa x 62–88, y 66–80)
+    const cafe = M('#B5541F', { roughness: .6 }), cafeOsc = M('#8A3F17', { roughness: .7 });
+    B(26, 1.6, 10, cafe, X(75), 9, 73); for (const [x, z] of [[64.6, 69], [85.4, 69], [64.6, 77], [85.4, 77]]) B(1.4, 8.4, 1.4, cafeOsc, X(x), 4.2, z);
+    B(3.6, 2, 2.6, M('#FFFDF6'), X(70), 10.8, 72); Esf(1.4, M('#FFD54A'), X(80), 11.2, 73); Esf(1.1, M('#D7263D'), X(82), 11, 74.5);
+    function silla(x, z, izq) { const g = new T3.Group(); g.position.set(X(x), 0, z); scene.add(g);
+      B(6, 1, 5.6, cafe, 0, 5, 0, g); B(1, 8, 5.6, cafeOsc, izq ? 2.6 : -2.6, 9, 0, g); for (const [a, b] of [[-2.4, -2.2], [2.4, -2.2], [-2.4, 2.2], [2.4, 2.2]]) B(.8, 5, .8, cafeOsc, a, 2.5, b, g); }
+    silla(57, 77, false); silla(93, 77, true); silla(21, 119, false); silla(39, 119, true); silla(63, 135, false); silla(81, 135, true);
+    // mesitas redondas
+    for (const [x, z] of [[30, 119], [72, 135]]){ Cyl(5.2, 5.2, 1.2, M('#E08A3C', { roughness: .5 }), X(x), 6.5, z, scene, 28); Cyl(.8, .8, 6, cafeOsc, X(x), 3, z); Cyl(3, 3, .5, cafeOsc, X(x), .25, z);
+      B(2.2, 1.6, 1.6, M('#FFFDF6'), X(x - 1.6), 8, z); Esf(.9, M('#FFD54A'), X(x + 2), 7.9, z + .5); }
+    // tapete al centro (x 50, y 96)
+    const tap = Plano(54, 20, M('#ffffff', { map: TX.tapete, transparent: true, roughness: .95 }), 0, .15, 96); tap.rotation.x = -Math.PI / 2; tap.receiveShadow = true;
+    // garrafón de agua (x 91, y 118–130)
+    B(7, 12, 7, M('#2A2160'), X(91.5), 6, 128); const bot = Cyl(2.9, 2.9, 10, M('#7FC8F8', { transparent: true, opacity: .75, roughness: .1, metalness: .1 }), X(91.5), 17, 128); bot.castShadow = false;
+    // planta (x 8, y 137)
+    Cyl(3.4, 2.6, 6, M('#B5541F'), X(8), 3, 140); const verde = M('#1E8E5A', { roughness: .7 });
+    for (let i = 0; i < 7; i++){ const h = Esf(2.4, verde, X(8) + Math.cos(i) * 2.2, 8 + (i % 3) * 2.4, 140 + Math.sin(i) * 2.2); h.scale.set(.7, 1.6, .7); h.rotation.z = Math.cos(i) * .5; }
+    // librero en la pared derecha
+    const lib = new T3.Group(); lib.position.set(48, 0, 92); scene.add(lib); B(3.6, 28, 16, cafeOsc, 0, 14, 0, lib);
+    for (let k = 0; k < 4; k++){ B(3.8, .6, 16, cafe, -.1, 3 + k * 7, 0, lib, false); for (let i = 0; i < 5; i++) B(2.6, 4.6 + r() * 1.4, 1.6, M(['#D7263D', '#3D8BFF', '#FFD54A', '#2ECC71', '#9B59B6'][(i + k) % 5]), -.6, 5.5 + k * 7, -6 + i * 2.8, lib, false); }
+    // banca de los eliminados (y ~ 165)
+    const banca = new T3.Group(); banca.position.set(0, 0, 166.5); scene.add(banca);
+    B(92, 1.4, 6, M('#8A6240', { roughness: .6 }), 0, 4.6, 0, banca); B(92, 6, 1.2, M('#6B4A2E'), 0, 8, -2.6, banca); for (const x of [-42, 42]) B(1.6, 4.6, 5, M('#4A321F'), x, 2.3, 0, banca);
+    const etiq = Plano(60, 4.6, new T3.MeshBasicMaterial({ map: TX.banca, transparent: true, toneMapped: false }), 0, .1, 171); etiq.rotation.x = -Math.PI / 2;
+  }
+
+  try { construir(); ok = true; caja.classList.add('con-3d'); }
+  catch (e) { console.warn('Casa 3D no disponible:', e); lienzo.remove(); return { listo: () => false }; }
+
+  /* ---------- cámara: encuadra toda la sala ---------- */
+  const OBJ = new T3.Vector3(0, 8, 106), DIR = new T3.Vector3(0, .8, .6).normalize();
+  // busca la cámara más cercana que deje ver toda la sala, centrada en el recuadro
+  function encuadrar() {
+    cam.aspect = W / Math.max(1, H); cam.updateProjectionMatrix();
+    const esquinas = [[-47, 0, 172], [47, 0, 172], [-50, 48, 44], [50, 48, 44]], v = new T3.Vector3(), arriba = new T3.Vector3(), mira = new T3.Vector3();
+    const ver = () => esquinas.map(([x, y, z]) => v.set(x, y, z).project(cam).clone());
+    for (let d = 120; d < 900; d += 3){
+      mira.copy(OBJ); cam.position.copy(OBJ).addScaledVector(DIR, d); cam.lookAt(mira); cam.updateMatrixWorld();
+      let p = ver(); const ys = p.map(q => q.y), mid = (Math.min(...ys) + Math.max(...ys)) / 2;
+      arriba.set(0, 1, 0).applyQuaternion(cam.quaternion); const mover = mid * Math.tan(cam.fov / 2 * Math.PI / 180) * d;
+      mira.addScaledVector(arriba, mover); cam.position.addScaledVector(arriba, mover); cam.lookAt(mira); cam.updateMatrixWorld();
+      p = ver(); if (p.every(q => Math.abs(q.x) <= 1.01 && Math.abs(q.y) <= .99)) return;
+    }
+  }
+  function resize(w, h) { if (!ok || !w || !h) return; W = w; H = h; R.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); R.setSize(w, h, false); encuadrar(); sucio = true; }
+  // posición en pantalla (px dentro de la sala) y escala de una persona parada en (x, y)
+  function proj(x, y, alto = 0) {
+    V.set(X(x), alto, y).project(cam); const px = (V.x + 1) / 2 * W, py = (1 - V.y) / 2 * H;
+    V.set(X(x) + 1, alto, y).project(cam); const uno = Math.abs((V.x + 1) / 2 * W - px);
+    return { px, py, s: uno / (W / 100) };
+  }
+  // ¿qué tocó? la puerta, la tele, el reloj o un punto del piso
+  function tocar(cx, cy) {
+    const rc = caja.getBoundingClientRect(); ndc.set((cx - rc.left) / rc.width * 2 - 1, -((cy - rc.top) / rc.height) * 2 + 1); ray.setFromCamera(ndc, cam);
+    const hit = ray.intersectObjects(tocables, true)[0];
+    if (hit){ let o = hit.object; while (o && !o.userData.accion) o = o.parent; if (o) return { accion: o.userData.accion }; }
+    const p = new T3.Vector3(); if (!ray.ray.intersectPlane(piso, p)) return null;
+    return { x: p.x + 50, y: p.z };
+  }
+  // cada cuadro: lo que "llama" late y el reloj marca la hora
+  let ultimo = 0, sucio = true;
+  function render() {
+    if (!ok) return;
+    // la habitación casi no cambia: se redibuja ~8 veces por segundo, o ~30 si algo está "llamando" (ahorra batería)
+    const llama = /llama-|votando/.test(caja.className), ahoraMs = performance.now();
+    if (!sucio && ahoraMs - ultimo < (llama ? 33 : 120)) return;
+    ultimo = ahoraMs; sucio = false;
+    const t = ahoraMs / 1000, late = .35 + .35 * Math.sin(t * 5.5);
+    brillo.puerta.emissiveIntensity = caja.classList.contains('llama-puerta') || caja.classList.contains('votando') ? late : 0;
+    brillo.tele.emissiveIntensity = caja.classList.contains('llama-tele') ? late : .05;
+    brillo.reloj.emissiveIntensity = caja.classList.contains('llama-reloj') ? late : 0;
+    brillo.teleL.intensity = 1 + Math.sin(t * 1.7) * .25;
+    const d = new Date(); brillo.minutero.rotation.z = -d.getMinutes() / 60 * Math.PI * 2; brillo.horario.rotation.z = -((d.getHours() % 12) + d.getMinutes() / 60) / 12 * Math.PI * 2;
+    R.render(scene, cam);
+  }
+  return { listo: () => ok, resize, proj, tocar, render };
+})();
+
+/* =====================================================================
    LA CASA: monitos de palitos + modo en vivo
    - Coordenadas de la sala: x 0–100, y 0–150 (y = pies).
    - Quien no está conectado camina solo; su ruta sale de la hora y su id,
@@ -3432,10 +3635,11 @@ const SALA = (() => {
     [12, 100], [34, 98], [56, 100], [76, 98], [88, 108], [8, 112], [52, 112], [66, 114], [90, 120], [12, 132],
     [46, 128], [52, 140], [24, 142], [40, 146], [88, 146], [94, 130], [70, 104]];
   // Asientos: el sillón y las sillas del comedor. izq = hacia dónde mira; en la mesa, a veces comen.
-  const ASIENTOS = [{ x: 15, y: 61, izq: false, mesa: false }, { x: 24, y: 61, izq: true, mesa: false }, { x: 33, y: 61, izq: true, mesa: false },
-    { x: 57, y: 79, izq: false, mesa: true }, { x: 93, y: 79, izq: true, mesa: true },
-    { x: 21, y: 121, izq: false, mesa: true }, { x: 39, y: 121, izq: true, mesa: true },
-    { x: 63, y: 137, izq: false, mesa: true }, { x: 81, y: 137, izq: true, mesa: true }];
+  // z y h: en la casa 3D, el punto de la superficie del cojín (o de la silla) donde se apoya la cadera
+  const ASIENTOS = [{ x: 30, y: 61, izq: false, mesa: false, z: 57.5, h: 7.8 }, { x: 40, y: 61, izq: true, mesa: false, z: 57.5, h: 7.8 }, { x: 50, y: 61, izq: true, mesa: false, z: 57.5, h: 7.8 },
+    { x: 57, y: 79, izq: false, mesa: true, z: 77.5, h: 5.5 }, { x: 93, y: 79, izq: true, mesa: true, z: 77.5, h: 5.5 },
+    { x: 21, y: 121, izq: false, mesa: true, z: 119.5, h: 5.5 }, { x: 39, y: 121, izq: true, mesa: true, z: 119.5, h: 5.5 },
+    { x: 63, y: 137, izq: false, mesa: true, z: 135.5, h: 5.5 }, { x: 81, y: 137, izq: true, mesa: true, z: 135.5, h: 5.5 }];
   const BLOQUE = 6;                        // se quedan sentados hasta ~6 turnos (casi un minuto)
   const MANOS = ['✊', '✋', '✌️'];
   const actores = new Map();               // id -> actor
@@ -3737,6 +3941,7 @@ const SALA = (() => {
       if (r.width) return [r.left + r.width / 2, r.top];
     }
     const r = caja.getBoundingClientRect();
+    if (CASA3D.listo()) { const P = CASA3D.proj(PANTALLA[0], 45, 28); return [r.left + P.px, r.top + P.py]; }
     return [r.left + r.width * PANTALLA[0] / 100, r.top + r.height * PANTALLA[1] / ALTO];
   }
   function volar(deId, aId, e) {
@@ -3757,14 +3962,25 @@ const SALA = (() => {
     const m = e.target.closest('.mono');
     if (m) { abrirFicha(m.dataset.id); return; }
     // ¿tocó la puerta del confesionario?
-    const rr = caja.getBoundingClientRect();
-    const ux = (e.clientX - rr.left) / rr.width * 100, uy = (e.clientY - rr.top) / rr.height * ALTO;
-    if (ux >= 2 && ux <= 21 && uy >= 7 && uy <= 46) { irAlConfesionario(); return; }
-    if (ux >= 35 && ux <= 65 && uy >= 5 && uy <= 28) { irAlOjo(); return; }
-    if (ux >= 73 && ux <= 87 && uy >= 9 && uy <= 23) { abrirAgenda(); return; }
-    if (!soyActor()) { toast('Solo los habitantes en la casa pueden caminar'); return; }
-    const r = caja.getBoundingClientRect();
-    const [tx, ty] = limitar((e.clientX - r.left) / r.width * 100, (e.clientY - r.top) / r.height * ALTO + 4);
+    let tx, ty;
+    if (CASA3D.listo()) {
+      // casa 3D: se calcula qué objeto o qué punto del piso está bajo el dedo
+      const h = CASA3D.tocar(e.clientX, e.clientY);
+      if (!h) return;
+      if (h.accion === 'puerta') { irAlConfesionario(); return; }
+      if (h.accion === 'tele') { irAlOjo(); return; }
+      if (h.accion === 'reloj') { abrirAgenda(); return; }
+      if (!soyActor()) { toast('Solo los habitantes en la casa pueden caminar'); return; }
+      [tx, ty] = limitar(h.x, h.y);
+    } else {
+      const rr = caja.getBoundingClientRect();
+      const ux = (e.clientX - rr.left) / rr.width * 100, uy = (e.clientY - rr.top) / rr.height * ALTO;
+      if (ux >= 2 && ux <= 21 && uy >= 7 && uy <= 46) { irAlConfesionario(); return; }
+      if (ux >= 35 && ux <= 65 && uy >= 5 && uy <= 28) { irAlOjo(); return; }
+      if (ux >= 73 && ux <= 87 && uy >= 9 && uy <= 23) { abrirAgenda(); return; }
+      if (!soyActor()) { toast('Solo los habitantes en la casa pueden caminar'); return; }
+      [tx, ty] = limitar((e.clientX - rr.left) / rr.width * 100, (e.clientY - rr.top) / rr.height * ALTO + 4);
+    }
     const yo = actores.get(miId);
     if (Date.now() < yo.ocupado || Date.now() < (yo.retoHasta || 0)) return;
     const dur = Math.max(450, Math.hypot(tx - yo.x, ty - yo.y) * 42);
@@ -3864,17 +4080,33 @@ const SALA = (() => {
     for (const a of banca) { a.rx = a.x; a.ry = a.y; }
     for (const a of [...lista, ...banca]) {
       const [x, y] = a.elim && a.y > 150 ? [a.rx, a.ry] : limitar(a.rx, a.ry), p = a.p;
-      const baja = p.sentado ? 2.6 / 100 * W : 0;      // sentado: el cuerpo baja hasta la silla
-      a.el.style.transform = `translate3d(${(x / 100 * W).toFixed(1)}px, ${(y / ALTO * H + baja).toFixed(1)}px, 0) translateY(-100%)`;
+      if (CASA3D.listo()) {
+        // casa 3D: la persona cae donde la cámara ve ese punto del piso y se achica con la distancia
+        // sentados: la cadera (no los pies) queda sobre el cojín, la silla o la banca
+        const s = p.sentado, P = s?.banca ? CASA3D.proj(x, y + 1, 5.3) : s?.h ? CASA3D.proj(x, y + s.z - s.y, s.h) : CASA3D.proj(x, y, 0);
+        const baja = s ? 5 / 100 * W * P.s : 0;
+        a.el.style.transform = `translate3d(${P.px.toFixed(1)}px, ${(P.py + baja).toFixed(1)}px, 0) translateY(-100%) scale(${P.s.toFixed(3)})`;
+      } else {
+        const baja = p.sentado ? 2.6 / 100 * W : 0;      // sentado: el cuerpo baja hasta la silla
+        a.el.style.transform = `translate3d(${(x / 100 * W).toFixed(1)}px, ${(y / ALTO * H + baja).toFixed(1)}px, 0) translateY(-100%)`;
+      }
       a.el.style.zIndex = Math.round(y * 10);
       a.el.classList.toggle('camina', p.mueve);
       a.el.classList.toggle('sentado', !!p.sentado);
       if (p.izq !== undefined) a.el.classList.toggle('izq', p.izq);
     }
+    if (CASA3D.listo()) {
+      // el reportero y el aviso de la puerta también se acomodan en la perspectiva
+      const R = CASA3D.proj(89, 58), rep = $('#reportero'), D = CASA3D.proj(11.5, 44, 38), av = $('#puerta-aviso');
+      rep.style.left = R.px + 'px'; rep.style.top = R.py + 'px'; rep.style.transform = `translate(-50%,-100%) scale(${R.s.toFixed(3)})`; rep.style.transformOrigin = '50% 100%';
+      av.style.left = D.px + 'px'; av.style.top = D.py + 'px';
+      CASA3D.render();
+    }
     raf = requestAnimationFrame(cuadro);
   }
   new ResizeObserver(() => {
     W = caja.clientWidth; H = caja.clientHeight;
+    CASA3D.listo() && CASA3D.resize(W, H);
     caja.style.setProperty('--u', (W / 100) + 'px');
     $('#palco').style.setProperty('--u', (W / 100) + 'px');
   }).observe(caja);
