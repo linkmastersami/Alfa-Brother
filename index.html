@@ -1671,6 +1671,10 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
 /* ---------- personas (antes monitos de palitos) ---------- */
 .hum .h-pant{fill:none;stroke:var(--pantalon,#2B3A67);stroke-width:6.2;stroke-linecap:round}
 .hum .h-zap{fill:var(--zapato,#2A1D16);stroke:rgba(0,0,0,.35);stroke-width:.5}
+.hum .h-falda{display:none;fill:var(--pantalon,#2B3A67);stroke:rgba(10,6,30,.4);stroke-width:.7;stroke-linejoin:round;transform-box:view-box;transform-origin:20px 25px}
+.con-falda .hum .h-falda{display:block}
+.con-falda .hum .h-pant{stroke:var(--piel,#F2C79B);stroke-width:4.4}
+.mono.sentado.con-falda .h-falda{transform:scaleY(.5)}
 .hum .h-torso{fill:var(--camisa,#3D8BFF);stroke:rgba(10,6,30,.45);stroke-width:.7;stroke-linejoin:round}
 .hum .h-brillo{fill:#fff;opacity:.16}
 .hum .h-cinto{fill:none;stroke:rgba(20,12,8,.75);stroke-width:1.5}
@@ -2120,7 +2124,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 82;
+const APP_VERSION       = 83;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -3391,6 +3395,7 @@ document.addEventListener('click', e => {
 const cuerpoHumano = cls => `<svg class="${cls} hum" viewBox="0 0 40 52" aria-hidden="true">
   <g class="pi"><path class="h-pant" d="M16.6 25 L15.6 43.4"/><ellipse class="h-zap" cx="14.8" cy="46" rx="4.1" ry="2.5"/></g>
   <g class="pd"><path class="h-pant" d="M23.4 25 L24.4 43.4"/><ellipse class="h-zap" cx="25.2" cy="46" rx="4.1" ry="2.5"/></g>
+  <path class="h-falda" d="M12.8 24.5 L27.2 24.5 L30.4 35 Q20 38.4 9.6 35 Z"/>
   <path class="h-torso" d="M12.4 5.6 Q20 3.4 27.6 5.6 L28.8 13 Q27.6 19.5 27.2 26.4 L12.8 26.4 Q12.4 19.5 11.2 13 Z"/>
   <path class="h-brillo" d="M14 7.4 Q15.4 15 14.6 24.6 L16.6 24.6 Q17 15 16.4 6.6 Z"/>
   <path class="h-cinto" d="M12.9 25.6 H27.1"/>
@@ -3398,6 +3403,7 @@ const cuerpoHumano = cls => `<svg class="${cls} hum" viewBox="0 0 40 52" aria-hi
   <g class="bi"><path class="h-manga" d="M12.8 7.4 L10.8 15.2"/><path class="h-brazo" d="M10.8 15.2 L9.9 21.4"/><circle class="h-mano" cx="9.7" cy="23" r="2.5"/></g>
   <g class="bd"><path class="h-manga" d="M27.2 7.4 L29.2 15.2"/><path class="h-brazo" d="M29.2 15.2 L30.1 21.4"/><circle class="h-mano" cx="30.3" cy="23" r="2.5"/></g>
 </svg>`;
+const FALDA = '👗';                    // icono de la prenda "falda" en la tienda
 const PANTALONES = ['#2B3A67', '#3A3F4A', '#4A3A2A', '#1F2A44', '#5A4A3A', '#2F4A3A', '#6B2E3A'], ZAPATOS = ['#2A1D16', '#1B1B1B', '#5A3A20', '#F4F1EA', '#7A1E1E'];
 const PIEL = {};
 // Tono de piel sacado de la foto de perfil (centro de la cara), para que cuello y manos combinen
@@ -3422,7 +3428,7 @@ function hashNum(s) { let h = 2166136261 >>> 0; s = String(s); for (let i = 0; i
 function ropaVars(j, e) {
   const h = hashNum(j.id || j.nombre);
   const camisa = e && e.color ? colorLinea(e.color) : (j.color || colorDe(j.nombre));
-  return `--camisa:${camisa};--pantalon:${PANTALONES[h % PANTALONES.length]};--zapato:${ZAPATOS[(h >> 4) % ZAPATOS.length]};--piel:${pielDe(j.id)};`;
+  return `--camisa:${camisa};--pantalon:${e?.pantalon || PANTALONES[h % PANTALONES.length]};--zapato:${ZAPATOS[(h >> 4) % ZAPATOS.length]};--piel:${pielDe(j.id)};`;
 }
 
 /* =====================================================================
@@ -3794,6 +3800,7 @@ const SALA = (() => {
     $('.mono-mascota', el).textContent = e.mascota || '';
     $('.mono-efecto', el).innerHTML = e.efecto ? `<i>${e.efecto}</i><i>${e.efecto}</i><i>${e.efecto}</i>` : '';
     el.classList.toggle('arcoiris', e.color === 'arcoiris');
+    el.classList.toggle('con-falda', e.prenda === FALDA);
     el.classList.toggle('con-sombrero', !!e.sombrero);
     if (e.color) el.style.setProperty('--linea', colorLinea(e.color)); else el.style.removeProperty('--linea');
     ropaVars(j, e).split(';').filter(Boolean).forEach(v => { const [k, val] = v.split(':'); el.style.setProperty(k, val); });
@@ -4191,7 +4198,7 @@ function monito(j, { cara = '', tam = 48, nombre = true, clase = '', estilo = nu
   const e = estilo || porId(j.id)?.estilo || j.estilo || {};
   const f = fotos[j.id];
   const ini = j.emoji || esc(String(j.nombre || '?').trim().charAt(0).toUpperCase());
-  return `<div class="mm ${clase}${e.color === 'arcoiris' ? ' arcoiris' : ''}" data-mm="${j.id}" style="--t:${tam}px;${e.color ? `--linea:${colorLinea(e.color)};` : ''}${ropaVars(j, e)}">
+  return `<div class="mm ${clase}${e.color === 'arcoiris' ? ' arcoiris' : ''}${e.prenda === FALDA ? ' con-falda' : ''}" data-mm="${j.id}" style="--t:${tam}px;${e.color ? `--linea:${colorLinea(e.color)};` : ''}${ropaVars(j, e)}">
     ${e.efecto ? `<span class="mm-efecto"><i>${e.efecto}</i><i>${e.efecto}</i><i>${e.efecto}</i></span>` : ''}
     <span class="mm-burbuja ${cara ? 'on' : ''}">${cara}</span>
     ${e.sombrero ? `<span class="mm-sombrero">${e.sombrero}</span>` : ''}
@@ -9392,7 +9399,7 @@ async function abrirBilletes() {
 
 /* ---------- tienda del monito ---------- */
 let catalogo = null;
-const TIPOS_TIENDA = [['halloween', '🎃 Halloween'], ['sombrero', '🎩 Sombreros'], ['lentes', '🕶️ Lentes'], ['color', '🎨 Color'], ['mano', '☕ En la mano'], ['mascota', '🐶 Mascotas'], ['efecto', '✨ Efectos']];
+const TIPOS_TIENDA = [['halloween', '🎃 Halloween'], ['sombrero', '🎩 Sombreros'], ['lentes', '🕶️ Lentes'], ['color', '👕 Camisa'], ['pantalon', '👖 Color de abajo'], ['prenda', '👗 Pantalón o falda'], ['mano', '☕ En la mano'], ['mascota', '🐶 Mascotas'], ['efecto', '✨ Efectos']];
 let tiendaTab = 'halloween';
 async function abrirTienda() {
   if (est?.yo.rol !== 'jugador') { toast(ERRORES.PUBLICO_SIN_BILLETES, 4000); return; }
@@ -9411,7 +9418,7 @@ function pintarTienda() {
   const conPrueba = prueba ? { ...mio, [prueba.tipo]: prueba.id } : mio;
   const prev = Object.fromEntries(Object.entries(conPrueba).map(([t, id]) => [t, icono(id)]));
   const yo = porId(est.yo.id) || est.yo;
-  const muestra = x => x.tipo === 'color' ? `<span class="muestra" style="background:${x.icono === 'arcoiris' ? 'conic-gradient(#FF4D5E,#FFC93C,#2ED198,#4D8DFF,#A974FF,#FF4D5E)' : x.icono}"></span>` : `<span class="ico">${x.icono}</span>`;
+  const muestra = x => x.tipo === 'color' || x.tipo === 'pantalon' ? `<span class="muestra" style="background:${x.icono === 'arcoiris' ? 'conic-gradient(#FF4D5E,#FFC93C,#2ED198,#4D8DFF,#A974FF,#FF4D5E)' : x.icono}"></span>` : `<span class="ico">${x.icono}</span>`;
   const falta = prueba ? prueba.precio - est.billetes : 0;
   $('#ti-caja').innerHTML = `<div class="folio"><span>Tienda del monito</span><span>Tienes ${fmt$(est.billetes)}</span></div>
     <div class="tienda-fija">
@@ -9429,7 +9436,7 @@ function pintarTienda() {
       <div class="ti-grid">${items.map(x => {
         const tengo = compras.has(x.id), usando = mio[t] === x.id, probando = prueba?.id === x.id;
         return `<button class="ti ${tengo ? 'tengo' : ''} ${usando ? 'usando' : ''} ${probando ? 'probando' : ''}" data-item="${x.id}">
-          ${x.temporada === 'halloween' && tiendaTab !== 'halloween' ? '<i class="ti-tag">🎃</i>' : ''}${muestra(x)}<span>${esc(x.nombre)}</span><small>${usando ? 'Usando ✓' : tengo ? 'Usar' : probando ? 'Probando 👀' : fmt$(x.precio)}</small></button>`;
+          ${x.temporada === 'halloween' && tiendaTab !== 'halloween' ? '<i class="ti-tag">🎃</i>' : ''}${muestra(x)}<span>${esc(x.nombre)}</span><small>${usando ? 'Usando ✓' : tengo ? 'Usar' : probando ? 'Probando 👀' : x.precio ? fmt$(x.precio) : 'Gratis'}</small></button>`;
       }).join('')}</div>`; }).join('')}
     <button class="btn sec" id="ti-cerrar" style="margin-top:16px">Cerrar</button>`;
   $('#ti-cerrar').onclick = () => { tiPrueba = null; $('#m-tienda').classList.add('hidden'); };
@@ -9450,6 +9457,10 @@ function pintarTienda() {
   };
   $$('#ti-caja [data-item]').forEach(b => b.onclick = async () => {
     const x = catalogo.find(i => i.id === b.dataset.item);
+    if (!compras.has(x.id) && !x.precio) {   // gratis (pantalón o falda): te lo pones de una vez
+      try { tiPrueba = null; await rpc('comprar', { p_token: token, p_item: x.id }); SFX.tocar('clic'); await refrescar(); pintarTienda(); } catch (e) { toast(mensajeError(e)); }
+      return;
+    }
     if (!compras.has(x.id)) {                // no lo tienes: te lo pruebas
       tiPrueba = tiPrueba === x.id ? null : x.id; SFX.tocar('swish'); pintarTienda(); return;
     }
