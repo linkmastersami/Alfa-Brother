@@ -1666,6 +1666,23 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
   .js-logo.vivo .ojo,.js-logo.vivo .pupila{animation:none}
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
+
+/* ---------- personas (antes monitos de palitos) ---------- */
+.hum .h-pant{fill:none;stroke:var(--pantalon,#2B3A67);stroke-width:6.2;stroke-linecap:round}
+.hum .h-zap{fill:var(--zapato,#2A1D16);stroke:rgba(0,0,0,.35);stroke-width:.5}
+.hum .h-torso{fill:var(--camisa,#3D8BFF);stroke:rgba(10,6,30,.45);stroke-width:.7;stroke-linejoin:round}
+.hum .h-brillo{fill:#fff;opacity:.16}
+.hum .h-cinto{fill:none;stroke:rgba(20,12,8,.75);stroke-width:1.5}
+.hum .h-cuello{fill:var(--piel,#F2C79B)}
+.hum .h-manga{fill:none;stroke:var(--camisa,#3D8BFF);stroke-width:5.6;stroke-linecap:round}
+.hum .h-brazo{fill:none;stroke:var(--piel,#F2C79B);stroke-width:4;stroke-linecap:round}
+.hum .h-mano{fill:var(--piel,#F2C79B);stroke:rgba(10,6,30,.3);stroke-width:.4}
+.mm-cuerpo.hum .bi,.mono-cuerpo.hum .bi,.rep-cuerpo.hum .bi{transform-origin:12.8px 7.4px}
+.mm-cuerpo.hum .bd,.mono-cuerpo.hum .bd,.rep-cuerpo.hum .bd{transform-origin:27.2px 7.4px}
+.mm-cuerpo.hum .pi,.mono-cuerpo.hum .pi,.rep-cuerpo.hum .pi{transform-origin:16.6px 25px}
+.mm-cuerpo.hum .pd,.mono-cuerpo.hum .pd,.rep-cuerpo.hum .pd{transform-origin:23.4px 25px}
+.mm-cuerpo.hum,.mono-cuerpo.hum{filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.mono-cab,.mm-cab{z-index:2}
 </style>
 </head>
 <body>
@@ -1820,7 +1837,15 @@ body.en-confesionario{background:radial-gradient(70% 45% at 50% 0%, #5A1424 0%, 
       <div class="reportero" id="reportero" role="button" aria-label="Contarle una noticia al reportero">
         <span class="rep-cam" aria-hidden="true">🎥</span>
         <div class="rep-mono"><span class="rep-burb">¡Cuéntame!</span><div class="rep-cara">🧑‍💼</div>
-          <svg class="rep-cuerpo" viewBox="0 0 40 52" aria-hidden="true"><line x1="20" y1="2" x2="20" y2="25"/><line x1="20" y1="7" x2="9" y2="19"/><line x1="20" y1="7" x2="30" y2="13"/><line x1="20" y1="25" x2="12" y2="49"/><line x1="20" y1="25" x2="28" y2="49"/></svg>
+          <svg class="rep-cuerpo hum" viewBox="0 0 40 52" aria-hidden="true" style="--camisa:#3A3F55;--pantalon:#2A2E3E;--zapato:#1B1B1B;--piel:#E8B98A">
+  <g class="pi"><path class="h-pant" d="M16.6 25 L15.6 43.4"/><ellipse class="h-zap" cx="14.8" cy="46" rx="4.1" ry="2.5"/></g>
+  <g class="pd"><path class="h-pant" d="M23.4 25 L24.4 43.4"/><ellipse class="h-zap" cx="25.2" cy="46" rx="4.1" ry="2.5"/></g>
+  <path class="h-torso" d="M12.4 5.6 Q20 3.4 27.6 5.6 L28.8 13 Q27.6 19.5 27.2 26.4 L12.8 26.4 Q12.4 19.5 11.2 13 Z"/>
+  <path d="M17.2 4.6 L20 13 L22.8 4.6 Z" fill="#FFFDF6"/><path d="M19.2 7 L20 15 L20.8 7 Z" fill="#D7263D"/>
+  <path class="h-cinto" d="M12.9 25.6 H27.1"/>
+  <g class="bi"><path class="h-manga" d="M12.8 7.4 L10.8 15.2"/><path class="h-brazo" d="M10.8 15.2 L9.9 21.4"/><circle class="h-mano" cx="9.7" cy="23" r="2.5"/></g>
+  <g class="bd" style="transform:rotate(-58deg)"><path class="h-manga" d="M27.2 7.4 L29.2 15.2"/><path class="h-brazo" d="M29.2 15.2 L30.1 21.4"/><circle class="h-mano" cx="30.3" cy="23" r="2.5"/></g>
+</svg>
           <span class="rep-mic" aria-hidden="true">🎤</span></div>
       </div>
       <div class="sala-vivo" id="sala-vivo" title="Conectados ahora"></div>
@@ -2088,7 +2113,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 78;
+const APP_VERSION       = 79;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -2475,6 +2500,43 @@ async function rpc(fn, args = {}) {
 
 /* ---------- estado local ---------- */
 let token = store.get('ab_token');
+
+/* ---------- MODO DEMO (solo en tu PC: abre index.html?demo) ----------
+   Sirve para probar cambios visuales sin entrar con nombre y PIN y sin tocar la base de datos.
+   Nunca se activa en la página publicada: solo con file:// o localhost. */
+const DEMO = new URLSearchParams(location.search).has('demo') && /^(file:|https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/)/.test(location.href);
+if (DEMO) {
+  const NOMBRES = ['Sami', 'Lupita', 'Memo', 'Karla', 'Toño', 'Dulce', 'Pancho', 'Mariana', 'Kevin', 'Abuela Rosa', 'Nacho', 'Fer'];
+  const COLS = ['#FF4D5E', '#3D8BFF', '#2ECC71', '#FFB347', '#9B59B6', '#FF7AC6', '#1ABC9C', '#F1C40F', '#E67E22', '#5DADE2', '#AF7AC5', '#48C9B0'];
+  const ESTILOS = [{ sombrero: '🎩' }, { lentes: '🕶️' }, { color: '#3D8BFF' }, {}, { mano: '☕' }, { mascota: '🐶', color: '#FF7AC6' }, {}, { color: 'arcoiris' }, { sombrero: '🧢', mano: '📱' }, { lentes: '👓' }, {}, { efecto: '✨' }];
+  const ids = NOMBRES.map((_, i) => 'demo-' + i);
+  const jugadores = NOMBRES.map((n, i) => ({ id: ids[i], nombre: n, rol: 'jugador', estado: 'activo', frase: '', semana_eliminado: null, foto: true, estilo: ESTILOS[i] }));
+  // "fotos de perfil" de prueba: caritas dibujadas con distinto tono de piel y cabello
+  const cara = i => { const c = document.createElement('canvas'); c.width = c.height = 120; const g = c.getContext('2d'), r = mulberryDemo(i * 31 + 7);
+    const piel = ['#F2C79B', '#E0A878', '#C68642', '#8D5524', '#FFDBB4', '#D9A066'][i % 6], pelo = ['#2B1B10', '#5A3A20', '#B8860B', '#111', '#7A2E10', '#3A2A1A'][(i * 5) % 6];
+    g.fillStyle = COLS[i]; g.fillRect(0, 0, 120, 120); g.fillStyle = piel; g.beginPath(); g.ellipse(60, 66, 34, 40, 0, 0, 7); g.fill();
+    g.fillStyle = pelo; g.beginPath(); g.ellipse(60, 38, 38, 24 + r() * 8, 0, Math.PI, 0); g.fill(); if (i % 3 === 1){ g.fillRect(22, 38, 12, 46); g.fillRect(86, 38, 12, 46); }
+    g.fillStyle = '#1B1440'; g.beginPath(); g.arc(46, 64, 4.5, 0, 7); g.arc(74, 64, 4.5, 0, 7); g.fill();
+    g.strokeStyle = '#8a2a2a'; g.lineWidth = 4; g.lineCap = 'round'; g.beginPath(); g.arc(60, 80, 12, .2, Math.PI - .2); g.stroke();
+    return c.toDataURL('image/jpeg', .85); };
+  function mulberryDemo(a){ return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const FOTOS = Object.fromEntries(ids.map((id, i) => [id, cara(i)]));
+  const ahora = () => new Date().toISOString();
+  const ESTADO = () => ({
+    yo: { id: ids[0], nombre: NOMBRES[0], rol: 'jugador', estado: 'activo', frase: '' },
+    mi_prediccion: null, predicciones: [], primer_eliminado: null, podio: null,
+    juego: { inicio_at: ahora(), fin: false, es_final: false, agenda: null, semana: 1, fase: 'prueba', prueba: 'memoria', cupo: 16, prueba_abre: ahora(), lider_id: null, gala_revelada: false, empatados: [], eliminado_id: null, activos: ids.length },
+    jugadores, fotos_firma: 'demo', mis_votos: [], mi_intento: null, misiones_previas: 0, galas: [], mi_lider: null, sin_votar: [],
+  });
+  const RESP = { estado: ESTADO, fotos: () => FOTOS, mis_billetes: () => ({ saldo: 250, movimientos: [] }), tienda_lista: () => [], info_publica: () => ({ habitantes: ids.length, cupo: 16 }), es_admin: () => false };
+  rpc = async (fn, args) => { const f = RESP[fn]; return f ? f(args) : {}; };
+  // sin conexión real: el canal en vivo de la casa queda "callado"
+  const canalMudo = { on(){ return this; }, subscribe(cb){ setTimeout(() => cb && cb('SUBSCRIBED'), 50); return this; }, send(){ return Promise.resolve(); }, track(){ return Promise.resolve(); }, untrack(){ return Promise.resolve(); }, presenceState(){ return {}; }, unsubscribe(){} };
+  if (sb){ sb.channel = () => canalMudo; sb.removeChannel = () => {}; }
+  token = 'demo';
+  console.info('🧪 MODO DEMO activo: datos falsos, sin conexión a Supabase.');
+}
+
 let est = null;          // respuesta de estado()
 let fotos = {};          // id -> dataURL
 let fotosFirma = null;
@@ -3316,6 +3378,47 @@ document.addEventListener('click', e => {
 });
 
 /* =====================================================================
+   PERSONAS (antes monitos de palitos): cuerpo con ropa, la foto de perfil es la cara.
+   Las piezas animables (bi, bd, pi, pd) son las mismas, así que todas las poses siguen igual.
+   ===================================================================== */
+const cuerpoHumano = cls => `<svg class="${cls} hum" viewBox="0 0 40 52" aria-hidden="true">
+  <g class="pi"><path class="h-pant" d="M16.6 25 L15.6 43.4"/><ellipse class="h-zap" cx="14.8" cy="46" rx="4.1" ry="2.5"/></g>
+  <g class="pd"><path class="h-pant" d="M23.4 25 L24.4 43.4"/><ellipse class="h-zap" cx="25.2" cy="46" rx="4.1" ry="2.5"/></g>
+  <path class="h-torso" d="M12.4 5.6 Q20 3.4 27.6 5.6 L28.8 13 Q27.6 19.5 27.2 26.4 L12.8 26.4 Q12.4 19.5 11.2 13 Z"/>
+  <path class="h-brillo" d="M14 7.4 Q15.4 15 14.6 24.6 L16.6 24.6 Q17 15 16.4 6.6 Z"/>
+  <path class="h-cinto" d="M12.9 25.6 H27.1"/>
+  <path class="h-cuello" d="M17.2 4.4 L20 9.4 L22.8 4.4 Z"/>
+  <g class="bi"><path class="h-manga" d="M12.8 7.4 L10.8 15.2"/><path class="h-brazo" d="M10.8 15.2 L9.9 21.4"/><circle class="h-mano" cx="9.7" cy="23" r="2.5"/></g>
+  <g class="bd"><path class="h-manga" d="M27.2 7.4 L29.2 15.2"/><path class="h-brazo" d="M29.2 15.2 L30.1 21.4"/><circle class="h-mano" cx="30.3" cy="23" r="2.5"/></g>
+</svg>`;
+const PANTALONES = ['#2B3A67', '#3A3F4A', '#4A3A2A', '#1F2A44', '#5A4A3A', '#2F4A3A', '#6B2E3A'], ZAPATOS = ['#2A1D16', '#1B1B1B', '#5A3A20', '#F4F1EA', '#7A1E1E'];
+const PIEL = {};
+// Tono de piel sacado de la foto de perfil (centro de la cara), para que cuello y manos combinen
+function pielDe(id) {
+  if (PIEL[id] !== undefined) return PIEL[id] || '#F2C79B';
+  const f = fotos[id]; if (!f) return '#F2C79B';
+  PIEL[id] = null;
+  const im = new Image();
+  im.onload = () => {
+    try {
+      const c = document.createElement('canvas'); c.width = c.height = 24; const g = c.getContext('2d'); g.drawImage(im, 0, 0, 24, 24);
+      const d = g.getImageData(7, 9, 10, 10).data; let r = 0, gg = 0, b = 0, n = 0;
+      for (let i = 0; i < d.length; i += 4) { const l = d[i] + d[i + 1] + d[i + 2]; if (l < 120 || l > 720 || d[i] < d[i + 2]) continue; r += d[i]; gg += d[i + 1]; b += d[i + 2]; n++; }
+      PIEL[id] = n > 6 ? `rgb(${r / n | 0},${gg / n | 0},${b / n | 0})` : '#F2C79B';
+    } catch { PIEL[id] = '#F2C79B'; }
+  };
+  im.src = f;
+  return '#F2C79B';
+}
+function hashNum(s) { let h = 2166136261 >>> 0; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+// variables de color de la ropa: camisa = color elegido en la tienda o el color de su perfil
+function ropaVars(j, e) {
+  const h = hashNum(j.id || j.nombre);
+  const camisa = e && e.color ? colorLinea(e.color) : (j.color || colorDe(j.nombre));
+  return `--camisa:${camisa};--pantalon:${PANTALONES[h % PANTALONES.length]};--zapato:${ZAPATOS[(h >> 4) % ZAPATOS.length]};--piel:${pielDe(j.id)};`;
+}
+
+/* =====================================================================
    LA CASA: monitos de palitos + modo en vivo
    - Coordenadas de la sala: x 0–100, y 0–150 (y = pies).
    - Quien no está conectado camina solo; su ruta sale de la hora y su id,
@@ -3458,10 +3561,7 @@ const SALA = (() => {
     const f = fotos[j.id];
     return f ? `<img src="${f}" alt="">` : esc(String(j.nombre || '?').trim().charAt(0).toUpperCase());
   }
-  const CUERPO = `<svg class="mono-cuerpo" viewBox="0 0 40 52" aria-hidden="true">
-    <line x1="20" y1="2" x2="20" y2="25"/>
-    <g class="bi"><line x1="20" y1="7" x2="8" y2="20"/></g><g class="bd"><line x1="20" y1="7" x2="32" y2="20"/></g>
-    <g class="pi"><line x1="20" y1="25" x2="11" y2="49"/></g><g class="pd"><line x1="20" y1="25" x2="29" y2="49"/></g></svg>`;
+  const CUERPO = cuerpoHumano('mono-cuerpo');
   function crearEl(a) {
     const el = document.createElement('div');
     el.className = 'mono'; el.dataset.id = a.id;
@@ -3473,7 +3573,7 @@ const SALA = (() => {
     const medalla = est.juego.fin ? MEDALLA[est.podio?.find(x => x.id === j.id)?.lugar] : null;
     const e = j.estilo || {};
     a.elim = j.estado !== 'activo';
-    const firma = [j.nombre, !!fotos[j.id], j.id === est.juego.lider_id, j.id === miId, medalla, JSON.stringify(e), j.estado].join('|');
+    const firma = [j.nombre, !!fotos[j.id], j.id === est.juego.lider_id, j.id === miId, medalla, JSON.stringify(e), j.estado, PIEL[j.id]].join('|');
     if (a.firma === firma) return;
     a.firma = firma;
     $('.mono-cab', el).style.background = colorDe(j.nombre);
@@ -3492,6 +3592,7 @@ const SALA = (() => {
     el.classList.toggle('arcoiris', e.color === 'arcoiris');
     el.classList.toggle('con-sombrero', !!e.sombrero);
     if (e.color) el.style.setProperty('--linea', colorLinea(e.color)); else el.style.removeProperty('--linea');
+    ropaVars(j, e).split(';').filter(Boolean).forEach(v => { const [k, val] = v.split(':'); el.style.setProperty(k, val); });
   }
 
   function sincronizar() {
@@ -3853,14 +3954,12 @@ const SALA = (() => {
    MONITO REUTILIZABLE (minijuegos, votación, apuestas, tienda)
    ===================================================================== */
 const colorLinea = c => c === 'arcoiris' ? '#FF4D5E' : c;
-const CUERPO_MM = `<svg class="mm-cuerpo" viewBox="0 0 40 52" aria-hidden="true"><line x1="20" y1="2" x2="20" y2="25"/>
-  <g class="bi"><line x1="20" y1="7" x2="8" y2="20"/></g><g class="bd"><line x1="20" y1="7" x2="32" y2="20"/></g>
-  <g class="pi"><line x1="20" y1="25" x2="11" y2="49"/></g><g class="pd"><line x1="20" y1="25" x2="29" y2="49"/></g></svg>`;
+const CUERPO_MM = cuerpoHumano('mm-cuerpo');
 function monito(j, { cara = '', tam = 48, nombre = true, clase = '', estilo = null } = {}) {
   const e = estilo || porId(j.id)?.estilo || j.estilo || {};
   const f = fotos[j.id];
   const ini = j.emoji || esc(String(j.nombre || '?').trim().charAt(0).toUpperCase());
-  return `<div class="mm ${clase}${e.color === 'arcoiris' ? ' arcoiris' : ''}" data-mm="${j.id}" style="--t:${tam}px;${e.color ? `--linea:${colorLinea(e.color)};` : ''}">
+  return `<div class="mm ${clase}${e.color === 'arcoiris' ? ' arcoiris' : ''}" data-mm="${j.id}" style="--t:${tam}px;${e.color ? `--linea:${colorLinea(e.color)};` : ''}${ropaVars(j, e)}">
     ${e.efecto ? `<span class="mm-efecto"><i>${e.efecto}</i><i>${e.efecto}</i><i>${e.efecto}</i></span>` : ''}
     <span class="mm-burbuja ${cara ? 'on' : ''}">${cara}</span>
     ${e.sombrero ? `<span class="mm-sombrero">${e.sombrero}</span>` : ''}
