@@ -298,6 +298,8 @@ input.pin{letter-spacing:.6em;font-size:1.4rem;text-align:center;font-family:"Sp
 .monster-card.du-globo .btn{background:#b0308f;box-shadow:0 5px 0 #601a4e}
 .monster-card.du-camino{background:radial-gradient(circle at 50% 0%,#1b5c74,#04161f 75%);border-color:#7fe3ff;box-shadow:0 0 22px rgba(127,227,255,.25)}
 .monster-card.du-camino h3{color:#bff1ff;text-shadow:0 0 14px #2ec8ff}
+.monster-card.ec-card{background:radial-gradient(circle at 50% 0%,#3a2a70,#07060f 75%);border-color:#ffb547}
+.monster-card.ec-card h3{color:#ffb547}
 .monster-card.cc-card{background:radial-gradient(circle at 50% 0%,#5a1a14,#120a0e 75%);border-color:#e8b84a;box-shadow:0 0 22px rgba(200,40,31,.3)}
 .monster-card.cc-card h3{color:#ece4d0;text-shadow:0 3px 0 #c8281f,0 0 14px rgba(200,40,31,.6)}
 .monster-card.cc-card .btn{background:#c8281f;box-shadow:0 5px 0 #6a120c}
@@ -2120,7 +2122,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 82;
+const APP_VERSION       = 83;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -3336,7 +3338,7 @@ async function abrirFicha(id) {
     let d;
     try { d = await rpc('ficha_semana', { p_token: token, p_id: id, p_semana: n }); } catch (e) { z.innerHTML = `<p class="ayuda">${esc(mensajeError(e))}</p>`; return; }
     if (!$('#ficha-sem') || !$(`[data-fs="${n}"].on`, caja)) return;
-    const NJ = { memoria: 'Memoria', adeudo: 'Adeudo', billetes: 'Billetes', cobranza: 'Cobranza', ritmo: 'Ritmo', super: 'Súper', rompe: 'Rompe', ceniza: 'Ceniza', monster2: 'Monster 2.0', monster: 'Monster' };
+    const NJ = { memoria: 'Memoria', adeudo: 'Adeudo', billetes: 'Billetes', cobranza: 'Cobranza', ritmo: 'Ritmo', super: 'Súper', rompe: 'Rompe', ceniza: 'Ceniza', eclipse: 'Eclipse', monster2: 'Monster 2.0', monster: 'Monster' };
     const t = (b, txt) => `<div class="tile"><b>${b}</b><small>${txt}</small></div>`;
     let x = `<div class="fs-tit">${d.eliminado ? '<span>🚪 Salió esa semana</span>' : ''}</div>
       <div class="tiles">${t(d.revelada ? d.puntos : '?', d.revelada ? 'puntos negativos' : 'puntos negativos (se saben en la pasarela)')}${t(d.lider ? '👑 Sí' : 'No', 'fue líder')}
@@ -4361,7 +4363,7 @@ function pintarEconomia() {
   $('#c-misiones').innerHTML = tarjetaMision(g) || `<div class="juego-card"><p>${g.semana === 0 ? 'Las misiones secretas empiezan cuando abra la casa (semana 1).' : 'Esta semana no hay misiones.'}</p>
     <p class="ayuda">Cada semana cada habitante recibe 5 misiones secretas sobre sus compañeros. Las que cumplas te dan billetes y cuentan para ser líder esa misma semana (hasta que cierre la prueba).</p></div>`;
   // pestaña Jugar: Monster Crazy y las prácticas con sus récords
-  $('#c-jugar').innerHTML = tarjetaCeniza() + tarjetaSuper() + tarjetaRompe() + tarjetaRitmo() + tarjetaCobranza() + tarjetasDuelos(true) + tarjetaPractica('billetes') + tarjetasDuelos(false) + tarjetaMonster() + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
+  $('#c-jugar').innerHTML = tarjetaEclipse() + tarjetaCeniza() + tarjetaSuper() + tarjetaRompe() + tarjetaRitmo() + tarjetaCobranza() + tarjetasDuelos(true) + tarjetaPractica('billetes') + tarjetasDuelos(false) + tarjetaMonster() + tarjetaPractica('memoria') + tarjetaPractica('adeudo') + tarjetaRecords();
   // botones
   const C = $('#s-casa');
   C.querySelector('[data-ver-billetes]').onclick = abrirBilletes;
@@ -4505,6 +4507,7 @@ const JUEGOS_MONSTER = {
   monster2: { nombre: 'Monster Crazy 2.0', archivo: 'monster2.html?v=1' },
   monster: { nombre: 'Monster Crazy', archivo: 'monster.html?v=2' },
   ceniza: { nombre: 'Ciudad Ceniza', archivo: 'ceniza.html?v=1' },
+  eclipse: { nombre: 'Eclipse 3D', archivo: 'eclipse.html?v=1' },
 };
 const monster1Disponible = () => Date.now() < MONSTER1_HASTA;
 function tarjetaMonster() {
@@ -5876,7 +5879,7 @@ const TV = (() => {
   const prod = (a, b, sep = ' ') => a.flatMap(x => b.map(y => x + sep + y));
   const llenar = (t, c) => t.replace(/\{(\w+)\}/g, (_, k) => c[k] ?? '');
   const fmt = n => Number(n || 0).toLocaleString('es-MX');
-  const JUEGOS = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo', super: 'Súper Cobrador', rompe: 'Rompe Deudas', ceniza: 'Ciudad Ceniza' };
+  const JUEGOS = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo', super: 'Súper Cobrador', rompe: 'Rompe Deudas', ceniza: 'Ciudad Ceniza', eclipse: 'Eclipse 3D' };
 
   // ---------- el guion ----------
   // Exclamaciones para armar las reacciones
@@ -6671,7 +6674,7 @@ function tarjetaRecords() {
       <div class="r" style="margin-top:4px;color:#C9C3EE"><span>Tu mejor</span><span>${mio?.mejor ?? 0}</span></div></div>`;
   };
   return `<div class="juego-card"><h3>🏆 Récords de la semana <small>Juegos y duelos</small></h3>
-    <div class="record-cols">${col('monster2', 'Monster Crazy 2.0')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}${col('billetes', 'Billetes verdes')}${col('cobranza', 'Cobranza furiosa')}${col('ritmo', 'Sigue el ritmo')}${col('super', 'Súper Cobrador')}${col('rompe', 'Rompe Deudas')}${col('ceniza', 'Ciudad Ceniza')}</div>
+    <div class="record-cols">${col('monster2', 'Monster Crazy 2.0')}${col('memoria', 'Memoria de expedientes')}${col('adeudo', 'Calcula el adeudo')}${col('billetes', 'Billetes verdes')}${col('cobranza', 'Cobranza furiosa')}${col('ritmo', 'Sigue el ritmo')}${col('super', 'Súper Cobrador')}${col('rompe', 'Rompe Deudas')}${col('ceniza', 'Ciudad Ceniza')}${col('eclipse', 'Eclipse 3D')}</div>
     ${marcadorDuelos()}
     <p class="ayuda" style="margin-top:6px">Los récords vuelven a cero cada semana y cuentan para ser líder. Cada partida paga hasta $50 según tu puntaje (máximo $2,000 al día por jugar).</p></div>`;
 }
@@ -7802,6 +7805,12 @@ function tarjetaSuper() {
     <p>Tu monito corre y salta por toda la oficina: brícale encima a los morosos (con las caras de los participantes), pégale a las cajas <b>$</b>, toma café para crecer y grapas para disparar. 3 niveles y al final la oficina del jefe: brícale 3 veces al <b>Moroso mayor</b>. Se juega con el celular acostado.</p>
     <p class="pr-rec">Tu récord: <b>${miRecord('super')}</b> · ${textoPago()}</p>
     <button class="btn" data-super>🏃 Jugar</button></div>`;
+}
+function tarjetaEclipse() {
+  return `<div class="monster-card ec-card nuevo-brilla"><div class="ed">NUEVO · 1 JUGADOR</div><h3>ECLIPSE 3D <span class="pr-ic">🌗</span></h3>
+    <p>El Sol y la Luna bailan por un camino al ritmo de la música: toca la pantalla justo cuando el astro que gira llega a la siguiente casilla. Más de 20 canciones en Fácil, Medio y Difícil. Ponte audífonos 🎧. Más difícil la canción y mejor tu precisión = más puntos.</p>
+    <p class="pr-rec">Tu récord: <b>${miRecord('eclipse')}</b> · ${textoPago()}</p>
+    <button class="btn" data-monster="eclipse">🌗 Jugar</button></div>`;
 }
 function tarjetaCeniza() {
   return `<div class="monster-card cc-card nuevo-brilla"><div class="ed">NUEVO · 1 JUGADOR</div><h3>CIUDAD CENIZA <span class="pr-ic">🧟</span></h3>
@@ -10305,8 +10314,8 @@ const PASARELA = (() => {
   const de = arr => arr[Math.floor(rnd() * arr.length)];
   const pts = n => `${n} ${n === 1 ? 'punto' : 'puntos'}`;
   const lista = ns => ns.length <= 1 ? (ns[0] || '') : ns.slice(0, -1).join(', ') + ' y ' + ns[ns.length - 1];
-  const PRUEBA_N = { memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', trivia: 'la trivia', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo', super: 'Súper Cobrador', rompe: 'Rompe Deudas', ceniza: 'Ciudad Ceniza' };
-  const JUEGO_N = { monster2: 'Monster Crazy 2.0', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo', super: 'Súper Cobrador', rompe: 'Rompe Deudas', ceniza: 'Ciudad Ceniza' };
+  const PRUEBA_N = { memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', trivia: 'la trivia', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo', super: 'Súper Cobrador', rompe: 'Rompe Deudas', ceniza: 'Ciudad Ceniza', eclipse: 'Eclipse 3D' };
+  const JUEGO_N = { monster2: 'Monster Crazy 2.0', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo', super: 'Súper Cobrador', rompe: 'Rompe Deudas', ceniza: 'Ciudad Ceniza', eclipse: 'Eclipse 3D' };
 
   // ---------- la voz de Ricky ----------
   function elegirVoz() {
@@ -11253,7 +11262,7 @@ async function adminExtras(C, seccion) {
   const diaNota = dia => { const t = new Date(dia + 'T12:00:00Z').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' }); return t.charAt(0).toUpperCase() + t.slice(1); };
   const manana = dia => diaNota(diaMas(dia, 1)).toLowerCase();       // la fecha en que sale ese noticiero
   const opcionesDia = actual => [...Array(7).keys()].map(k => diaMas(sigDia, k)).map(dd => `<option value="${dd}" ${dd === actual ? 'selected' : ''}>📺 ${esc(diaNota(diaMas(dd, 1)))}, 9 a.m.${dd === sigDia ? ' (el siguiente)' : ''}</option>`).join('');
-  const JUEGOS_REC = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy (clásico)', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo', super: 'Súper Cobrador', rompe: 'Rompe Deudas', ceniza: 'Ciudad Ceniza' };
+  const JUEGOS_REC = { monster2: 'Monster Crazy 2.0', monster: 'Monster Crazy (clásico)', memoria: 'Memoria de expedientes', adeudo: 'Calcula el adeudo', billetes: 'Cuenta los billetes verdes', cobranza: 'Cobranza furiosa', ritmo: 'Sigue el ritmo', super: 'Súper Cobrador', rompe: 'Rompe Deudas', ceniza: 'Ciudad Ceniza', eclipse: 'Eclipse 3D' };
   const ahora = Date.now();
   const estadoEnc = e => +new Date(e.abre) > ahora ? `Programada: abre ${fmtFecha(e.abre)}` : +new Date(e.cierra) > ahora ? `Abierta hasta ${fmtFecha(e.cierra)}` : 'Cerrada';
   const ricos = [...adm.jug].sort((a, b) => (b.billetes ?? 0) - (a.billetes ?? 0));
