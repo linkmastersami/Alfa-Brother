@@ -2120,7 +2120,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 81;
+const APP_VERSION       = 82;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -3635,11 +3635,11 @@ const SALA = (() => {
     [12, 100], [34, 98], [56, 100], [76, 98], [88, 108], [8, 112], [52, 112], [66, 114], [90, 120], [12, 132],
     [46, 128], [52, 140], [24, 142], [40, 146], [88, 146], [94, 130], [70, 104]];
   // Asientos: el sillón y las sillas del comedor. izq = hacia dónde mira; en la mesa, a veces comen.
-  // z y h: en la casa 3D, el punto del cojín (o de la silla) donde se apoya la persona
-  const ASIENTOS = [{ x: 30, y: 61, izq: false, mesa: false, z: 57.5, h: 6.6 }, { x: 40, y: 61, izq: true, mesa: false, z: 57.5, h: 6.6 }, { x: 50, y: 61, izq: true, mesa: false, z: 57.5, h: 6.6 },
-    { x: 57, y: 79, izq: false, mesa: true, z: 77.5, h: 4.4 }, { x: 93, y: 79, izq: true, mesa: true, z: 77.5, h: 4.4 },
-    { x: 21, y: 121, izq: false, mesa: true, z: 119.5, h: 4.4 }, { x: 39, y: 121, izq: true, mesa: true, z: 119.5, h: 4.4 },
-    { x: 63, y: 137, izq: false, mesa: true, z: 135.5, h: 4.4 }, { x: 81, y: 137, izq: true, mesa: true, z: 135.5, h: 4.4 }];
+  // z y h: en la casa 3D, el punto de la superficie del cojín (o de la silla) donde se apoya la cadera
+  const ASIENTOS = [{ x: 30, y: 61, izq: false, mesa: false, z: 57.5, h: 7.8 }, { x: 40, y: 61, izq: true, mesa: false, z: 57.5, h: 7.8 }, { x: 50, y: 61, izq: true, mesa: false, z: 57.5, h: 7.8 },
+    { x: 57, y: 79, izq: false, mesa: true, z: 77.5, h: 5.5 }, { x: 93, y: 79, izq: true, mesa: true, z: 77.5, h: 5.5 },
+    { x: 21, y: 121, izq: false, mesa: true, z: 119.5, h: 5.5 }, { x: 39, y: 121, izq: true, mesa: true, z: 119.5, h: 5.5 },
+    { x: 63, y: 137, izq: false, mesa: true, z: 135.5, h: 5.5 }, { x: 81, y: 137, izq: true, mesa: true, z: 135.5, h: 5.5 }];
   const BLOQUE = 6;                        // se quedan sentados hasta ~6 turnos (casi un minuto)
   const MANOS = ['✊', '✋', '✌️'];
   const actores = new Map();               // id -> actor
@@ -4082,9 +4082,10 @@ const SALA = (() => {
       const [x, y] = a.elim && a.y > 150 ? [a.rx, a.ry] : limitar(a.rx, a.ry), p = a.p;
       if (CASA3D.listo()) {
         // casa 3D: la persona cae donde la cámara ve ese punto del piso y se achica con la distancia
-        // sentados: se apoyan sobre el cojín, la silla o la banca (más alto que el piso)
-        const s = p.sentado, P = s?.banca ? CASA3D.proj(x, y + 1, 4.4) : s?.h ? CASA3D.proj(x, y + s.z - s.y, s.h) : CASA3D.proj(x, y, 0);
-        a.el.style.transform = `translate3d(${P.px.toFixed(1)}px, ${P.py.toFixed(1)}px, 0) translateY(-100%) scale(${P.s.toFixed(3)})`;
+        // sentados: la cadera (no los pies) queda sobre el cojín, la silla o la banca
+        const s = p.sentado, P = s?.banca ? CASA3D.proj(x, y + 1, 5.3) : s?.h ? CASA3D.proj(x, y + s.z - s.y, s.h) : CASA3D.proj(x, y, 0);
+        const baja = s ? 5 / 100 * W * P.s : 0;
+        a.el.style.transform = `translate3d(${P.px.toFixed(1)}px, ${(P.py + baja).toFixed(1)}px, 0) translateY(-100%) scale(${P.s.toFixed(3)})`;
       } else {
         const baja = p.sentado ? 2.6 / 100 * W : 0;      // sentado: el cuerpo baja hasta la silla
         a.el.style.transform = `translate3d(${(x / 100 * W).toFixed(1)}px, ${(y / ALTO * H + baja).toFixed(1)}px, 0) translateY(-100%)`;
