@@ -2126,7 +2126,7 @@ const SUPABASE_URL      = 'https://unprmjtvxyxyzbblynmd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__rpkxXhEMKUO2ZxHXPkm3g_WO26df6h';
 const ADMIN_EMAIL       = 'produccion@alfabrother.app';  // el correo del usuario admin que crees en Supabase
 // Versión del juego: súbela junto con version.json en cada actualización
-const APP_VERSION       = 83;
+const APP_VERSION       = 84;
 /* ===================================================================== */
 
 const PRUEBAS = {
@@ -3999,8 +3999,7 @@ const SALA = (() => {
     clearTimeout(yo.llegaT);
   });
   $('#palco-lista').addEventListener('click', e => { const m = e.target.closest('.mono'); if (m) abrirFicha(m.dataset.id); });
-  // camina hasta un punto (puerta, tele) y al llegar hace algo
-  const irAPuerta = alLlegar => irA(PUERTA[0], PUERTA[1] + 1, '🤫', alLlegar);
+  // camina hasta un punto (la tele) y al llegar hace algo
   const irATele = alLlegar => irA(PANTALLA[0], 58, '👀', alLlegar);
   function irA(tx, ty, emoji, alLlegar) {
     const yo = actores.get(miId);
@@ -4188,7 +4187,7 @@ const SALA = (() => {
   const avisarMision = a => mandar({ tipo: 'mision', a });
   const mandarDuelo = m => mandar({ tipo: 'duelo', ...m });
   const enLinea = id => online.has(id);
-  return { sincronizar, conectar, desconectar, miEmoji, enviarEmoji, retar, puedeRetar, soyActor, avisarChat, avisarMision, mandarDuelo, enLinea, irAPuerta, irATele, enVivo: () => vivo, despertar };
+  return { sincronizar, conectar, desconectar, miEmoji, enviarEmoji, retar, puedeRetar, soyActor, avisarChat, avisarMision, mandarDuelo, enLinea, irATele, enVivo: () => vivo, despertar };
 })();
 
 /* =====================================================================
@@ -9815,11 +9814,10 @@ $('#bv-ok').onclick = () => {
   else refrescar();          // por si hay una gala esperando
 };
 
-// Camina al confesionario (si tu monito está en la casa) y entra
+// Entra al confesionario de inmediato, sin esperar a que el monito camine a la puerta
 function irAlConfesionario() {
   if (est?.juego?.fin) { toast('El juego ya terminó: el confesionario está cerrado. ¡Gracias por jugar!', 3500); return; }
-  if (SALA.soyActor() && pantalla === 's-casa') SALA.irAPuerta(abrirVotacion);
-  else abrirVotacion();
+  abrirVotacion();
 }
 
 function abrirVotacion() {
